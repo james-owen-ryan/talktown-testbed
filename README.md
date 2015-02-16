@@ -1,2 +1,2 @@
 # testament
-An asymmetric multiplayer game undergirded by a rich knowledge-propagation simulation.
+An asymmetric multiplayer game underpinned by a rich knowledge-propagation simulation.
