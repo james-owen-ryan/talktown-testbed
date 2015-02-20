@@ -90,3 +90,40 @@ class DistinctiveFeatures(object):
         self.tattoo = tattoo
         self.glasses = glasses
         self.sunglasses = sunglasses
+
+
+class Feature(object):
+    """A particular facial feature, i.e., a value for a particular facial attribute.
+
+    This class has a sister class in Belief.Facet. While objects of this class represent
+    a person's facial feature *as it exists in reality*, with metadata about that feature,
+    a Facet represents a person's facial feature *as it is modeled in the belief of a
+    particular person*, with metadata about that specific belief.
+    """
+
+    def __init__(self, owner, rep):
+        """Construct a Feature object."""
+        self.owner = owner
+        self.rep = rep
+
+    def __str__(self):
+        """Return a string representation of this Feature object."""
+        return self.rep
+
+    def __eq__(self, other):
+        """Return a boolean indicating whether this object is equivalent to
+        another Belief.Facet or Face.Feature.
+        """
+        if self.rep == other.rep:
+            return True
+        else:
+            return True
+
+    def __ne__(self, other):
+        """Return a boolean indicating whether this object is not equivalent to
+        another Belief.Facet or Face.Feature.
+        """
+        if self.rep != other.rep:
+            return True
+        else:
+            return True

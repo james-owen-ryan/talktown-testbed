@@ -1,16 +1,24 @@
 from random import random
 from business import *
 from residence import *
-from names import Names
+from occupation import *
+from corpora import Names
+from config import Config
 
 
 class City(object):
-    """A city wherein a gameplay instance takes place."""
+    """A city in which a gameplay instance takes place."""
 
-    def __init__(self, game):
+    def __init__(self, game, founded):
         """Construct a City object."""
         self.game = game
+        self.founded = founded
         self.business_needs = self.determine_business_needs(config=self.game.config)
+        self.residents = set()
+        self.departed = set()  # People who leave the city (i.e., leave the simulation)
+        self.companies = set()
+        self.vacant_homes = set()
+        self.vacant_lots = set()
 
     @staticmethod
     def determine_business_needs(config):
@@ -28,6 +36,23 @@ class City(object):
             self.business_needs = self.determine_business_needs(config=self.game.config)
         random.shuffle(self.business_needs)
         return self.business_needs.pop()
+
+    @property
+    def unemployed_people(self):
+        """Return unemployed (young) people, excluding retirees."""
+        unemployed_people = set()
+        for resident in self.residents:
+            if not resident.occupation and not resident.retired:
+                if resident.age >= self.game.config.age_people_start_working:
+                    unemployed_people.add(resident)
+        return unemployed_people
+
+    def workers_of_trade(self, occupation):
+        """Return all residents in the city who practice to given occupation.
+
+        @param occupation: The class pertaining to the occupation in question.
+        """
+        return (resident for resident in self.residents if isinstance(resident.occupation, occupation))
 
 
 class Street(object):
@@ -49,7 +74,7 @@ class Street(object):
             1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th'
         }
         if random.random() < 0.13:
-            name = Names.any_surname
+            name = Names.any_surname()
         else:
             name = number_to_ordinal[number]
         if direction == 'E' or direction == 'W':
@@ -67,31 +92,27 @@ class Street(object):
 class Block(object):
     """A block on a street in a city."""
 
-    def __init__(self, street, number):
+    def __init__(self, x_coord, y_coord, street, number):
         """Construct a Block object."""
         self.game = street.city.game
         self.city = street.city
         self.street = street
         self.number = number
-        self.buildings = self.generate_buildings()
+        self.lots = []
 
     def __str__(self):
         """Return string representation."""
         return "{} block of {}".format(self.number, str(self.street))
 
-    def generate_buildings(self):
-        """Generate the buildings located on this lot."""
-        house_numbers = self.determine_house_numbering(
-            block_number=self.number, n_buildings=self.game.config.n_buildings_per_block
-        )
-        buildings = []
-        for house_number in house_numbers:
-            pass
-        return buildings
+    @property
+    def buildings(self):
+        """Return all the buildings on this block."""
+        return (lot.building for lot in self.lots if lot.building)
 
     @staticmethod
-    def determine_house_numbering(block_number, n_buildings):
+    def determine_house_numbering(block_number, config):
         """Devise an appropriate house numbering scheme given the number of buildings on the block."""
+        n_buildings = config.n_buildings_per_block
         house_numbers = []
         house_number_increment = 100.0 / n_buildings
         # Determine numbers for even side of the street
@@ -119,3 +140,15 @@ class Block(object):
             house_number += block_number
             house_numbers.append(house_number)
         return house_numbers
+
+
+class Lot(object):
+    """A lot on a block in a city."""
+
+    def __init__(self, block, house_number):
+        """Construct a Lot object."""
+        self.game = block.city.game
+        self.city = block.city
+        self.street = block.street
+        self.block = block
+        self.house_number = house_number  # In the event a building is erected here, it inherits this

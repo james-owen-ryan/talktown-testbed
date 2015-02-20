@@ -3,10 +3,14 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-        self.n_buildings_per_block = 5
+        self.n_buildings_per_block = 4
                 ## WORLD GEN ##
         # Misc
         self.year_city_gets_founded = 1909  # Year world gen begins
+        # City dimensions
+        self.city_width_in_blocks = 8
+        self.city_height_in_blocks = 8
+        self.city_downtown_blocks_displaced_from_center_max = 2
         # Founding residents of the city
         self.n_founding_families_mean = 5
         self.n_founding_families_sd = 1
@@ -26,8 +30,83 @@ class Config(object):
         self.founding_father_age_at_marriage_floor = 17
         self.founding_mother_age_at_marriage_floor = 17
                 ## FULL SIMULATION ##
+        # Marriage
         self.chance_newlyweds_keep_former_love_interests = 0.01
-                ## PEOPLE ##
+        self.chance_stepchildren_take_stepparent_name = 0.3
+        self.age_after_which_stepchildren_will_not_take_stepparent_name = 6
+        # Divorce
+        self.chance_a_divorcee_falls_out_of_love = 0.9
+        self.chance_a_male_divorcee_is_one_who_moves_out = 0.7
+        self.function_to_derive_chance_spouse_changes_name_back = (
+            lambda years_married: min((0.9 / (years_married / 4.0)), 0.9)
+        )
+        # People finding new homes
+        self.desire_to_live_near_family_base = 0.3  # Scale of -1 to 1; affected by personality
+        self.desire_to_live_near_family_floor = -2
+        self.desire_to_live_near_family_cap = 2
+        self.pull_to_live_near_a_child = 7  # Arbitrary units (are just relative to each other; family ones get altered)
+        self.pull_to_live_near_a_parent = 5
+        self.pull_to_live_near_a_grandchild = 3
+        self.pull_to_live_near_a_sibling = 2
+        self.pull_to_live_near_a_grandparent = 2
+        self.pull_to_live_near_a_friend = 1.5
+        self.pull_to_live_near_a_greatgrandparent = 1
+        self.pull_to_live_near_a_niece_or_nephew = 1
+        self.pull_to_live_near_an_aunt_or_uncle = 1
+        self.pull_to_live_near_a_first_cousin = 1
+        self.penalty_for_having_to_build_a_home_vs_buying_one = 0.5  # i.e., relative desire to build
+                ## ECONOMY ##
+        self.age_people_start_working = 16
+        # Companies hiring people
+        self.preference_to_hire_immediate_family = 3
+        self.preference_to_hire_from_within_company = 2
+        self.preference_to_hire_friend = 1
+        self.preference_to_hire_extended_family = 1
+        self.preference_to_hire_known_person = 0.5
+        self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
+        self.generated_job_candidate_from_outside_city_age_mean = 24
+        self.generated_job_candidate_from_outside_city_age_sd = 3
+        self.generated_job_candidate_from_outside_city_age_floor = 17
+        self.generated_job_candidate_from_outside_city_age_cap = 60
+        self.amount_of_money_generated_people_from_outside_city_start_with = 5000
+        # Job levels of various occupations
+        self.job_level_cashier = 1
+        self.job_level_janitor = 1
+        self.job_level_hotel_maid = 1
+        self.job_level_waiter = 1
+        self.job_level_bank_teller = 2
+        self.job_level_concierge = 2
+        self.job_level_hair_stylist = 2
+        self.job_level_construction_worker = 2
+        self.job_level_firefighter = 2
+        self.job_level_police_officer = 2
+        self.job_level_nurse = 2
+        self.job_level_tattoo_artist = 2
+        self.job_level_manager = 3
+        self.job_level_fire_chief = 3
+        self.job_level_police_chief = 3
+        self.job_level_realtor = 3
+        self.job_level_doctor = 4
+        self.job_level_architect = 4
+        self.job_level_optometrist = 4
+        self.job_level_plastic_surgeon = 4
+        self.job_level_owner = 5
+        # Compensation for various occupations
+        self.compensation_upon_building_construction_for_construction_firm_owner = 5000
+        self.compensation_upon_building_construction_for_architect = 2000
+        self.compensation_upon_building_construction_for_construction_worker = 400
+        self.compensation_upon_home_purchase_for_realty_firm_owner = 2000
+        self.compensation_upon_home_purchase_for_realtor = 600
+        # People contracting people (e.g., realtors, architects)
+        self.function_to_derive_score_multiplier_bonus_for_experience = (
+            lambda years_experience: years_experience**0.2
+        )
+        self.preference_to_contract_immediate_family = 3
+        self.preference_to_contract_friend = 2
+        self.preference_to_contract_former_contract = 2
+        self.preference_to_contract_extended_family = 1
+        self.preference_to_contract_known_person = 0.5
+                ## PEOPLE REPRESENTATION ##
         # Infertility
         self.male_infertility_rate = 0.07
         self.female_infertility_rate = 0.11
@@ -44,8 +123,7 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
-        # Big Five personality traits (source Schmitt et al. "Big Five Traits
-        # Across 56 Nations"; other papers for heritability)
+        # Big Five personality traits (source [0])
         self.big_5_sd = 0.35
         self.big_5_o_mean = 0.375
         self.big_5_c_mean = 0.25

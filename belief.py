@@ -41,8 +41,18 @@ class Facet(object):
 
     def __eq__(self, other):
         """Return a boolean indicating whether this object is equivalent to
-        another Belief.Facet or Face.Feature."""
+        another Belief.Facet or Face.Feature.
+        """
         if self.rep == other.rep:
+            return True
+        else:
+            return True
+
+    def __ne__(self, other):
+        """Return a boolean indicating whether this object is not equivalent to
+        another Belief.Facet or Face.Feature.
+        """
+        if self.rep != other.rep:
             return True
         else:
             return True
