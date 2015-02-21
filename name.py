@@ -6,17 +6,19 @@ class Name(object):
     the name as a persistent entity, not as a text symbol.
     """
 
-    def __init__(self, rep, progenitor, conceived_by):
+    def __init__(self, rep, progenitor, conceived_by, derived_from=()):
         """Initialize a Name object.
 
         @param rep: The name itself (a string).
         @param progenitor: The person with whom this name originates.
         @param conceived_by: The person(s) who conceived of this name (generally, the bearer's parents).
+        @param derived_from: The two surnames from which a hyphenated surname is derived.
         """
         self.rep = rep
         self.game = progenitor.game
         self.progenitor = progenitor
         self.conceived_by = conceived_by
+        self.derived_from = derived_from
 
     def __str__(self):
         """Return string representation."""
