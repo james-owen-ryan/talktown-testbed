@@ -3,53 +3,66 @@ from config import Config
 from occupation import *
 
 
-# A business Class represents both the company itself and the building
-# at which it is headquartered.
+# Objects of a business class represents both the company itself and the building
+# at which it is headquartered. All business subclasses inherit generic attributes
+# and methods from the superclass Business, and each define their own methods as
+# appropriate.
 
 
-class ApartmentComplex(object):
-    """An apartment complex."""
+class Business(object):
+    """A business in a city (representing both the notion of a company and its physical building)."""
 
     def __init__(self, lot, construction):
-        """Construct an ApartmentComplex object.
+        """Construct a Business object.
 
-        @param lot: A Lot object representing the lot this building is on.
+        @param lot: A Lot object representing the lot this company's building is on.
         @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+                             the construction of this company's building.
         """
         self.city = lot.city
         self.founded = self.city.game.year
         self.lot = lot
         self.construction = construction
         self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
-        self.manager = self.hire(occupation=Manager)
-        self.employees = set()
-        self.construction.construction_firm.buildings_constructed.append(self)
         self.owner.building_commissions.append(self)
+        self.employees = set()
+        self.address = self.init_generate_address(lot=self.lot)
 
-    def hire(self, candidate):
-        """Formally hire a person."""
+    @staticmethod
+    def init_get_named(owner):
+        """Get named by the owner of this building (the client for which it was constructed)."""
+        pass
 
+    @staticmethod
+    def init_generate_address(lot):
+        """Generate an address, given the lot building is on."""
+        house_number = lot.house_number
+        street = str(lot.street)
+        return "{} {}".format(house_number, street)
 
-    def select_candidate(self, occupation):
-        """Select a person to serve in a certain occupational capacity."""
-        candidates = self.assemble_job_candidates(occupation=occupation)
-        if not candidates:
-            chosen_candidate = self.find_candidate_from_outside_the_city()
+    def hire(self, occupation):
+        """Scour the job market to hire someone to fulfill the duties of occupation."""
+        job_candidates_in_town = self._assemble_job_candidates(occupation=occupation)
+        if job_candidates_in_town:
+            candidate_scores = self._rate_all_job_candidates(candidates=job_candidates_in_town)
+            selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
         else:
-            candidate_scores = self.rate_all_job_candidates(candidates=candidates)
-            # Pick from top three
-            top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
-            if random.random() < 0.6:
-                chosen_candidate = top_three_choices[0]
-            elif random.random() < 0.9:
-                chosen_candidate = top_three_choices[1]
-            else:
-                chosen_candidate = top_three_choices[2]
+            selected_candidate = self._find_candidate_from_outside_the_city()
+        Hiring(subject=selected_candidate, company=self, occupation=occupation)
+
+    def _select_candidate(self, candidate_scores):
+        """Select a person to serve in a certain occupational capacity."""
+        # Pick from top three
+        top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
+        if random.random() < 0.6:
+            chosen_candidate = top_three_choices[0]
+        elif random.random() < 0.9:
+            chosen_candidate = top_three_choices[1]
+        else:
+            chosen_candidate = top_three_choices[2]
         return chosen_candidate
 
-    def find_candidate_from_outside_the_city(self):
+    def _find_candidate_from_outside_the_city(self):
         """Generate a person with no parents to move into the city for this job."""
         config = self.city.game.config
         age_of_this_person = random.normalvariate(
@@ -64,14 +77,14 @@ class ApartmentComplex(object):
         candidate = Person(mother=None, father=None, birth_year=birth_year_of_this_person)
         return candidate
 
-    def rate_all_job_candidates(self, candidates):
+    def _rate_all_job_candidates(self, candidates):
         """Rate all job candidates."""
         scores = {}
         for candidate in candidates:
-            scores[candidate] = self.rate_job_candidate(person=candidate)
+            scores[candidate] = self._rate_job_candidate(person=candidate)
         return scores
 
-    def rate_job_candidate(self, person):
+    def _rate_job_candidate(self, person):
         """Rate a job candidate, given an open position and owner biases."""
         config = self.city.game.config
         score = 0
@@ -91,7 +104,7 @@ class ApartmentComplex(object):
             score *= config.unemployment_occupation_level
         return score
 
-    def assemble_job_candidates(self, occupation):
+    def _assemble_job_candidates(self, occupation):
         """Assemble a group of job candidates for an open position."""
         candidates = set()
         # Consider employees in this company for promotion
@@ -107,20 +120,21 @@ class ApartmentComplex(object):
         candidates |= self.city.unemployed_people
         return candidates
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
+class ApartmentComplex(Business):
+    """An apartment complex."""
+
+    def __init__(self, lot, construction):
+        """Construct an ApartmentComplex object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        Business.__init__(self=self, lot=lot, construction=construction)
 
 
-class Bank(object):
+class Bank(Business):
     """A bank."""
 
     def __init__(self, lot, construction):
@@ -130,29 +144,12 @@ class Bank(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
-        # tellers, manager
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
+        # tellers, manager, janitors
 
 
-class Barbershop(object):
+class Barbershop(Business):
     """A barbershop."""
 
     def __init__(self, lot, construction):
@@ -162,29 +159,12 @@ class Barbershop(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # hair stylists, cashiers, manager
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class ConstructionFirm(object):
+class ConstructionFirm(Business):
     """A construction firm."""
 
     def __init__(self, lot, construction):
@@ -194,18 +174,9 @@ class ConstructionFirm(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
-        self.architects = set()
-        self.former_architects = set()
-        self.construction_workers = []
-        self.former_construction_workers = []
+        Business.__init__(self=self, lot=lot, construction=construction)
 
-        # architects, construction workers, janitors?
+        # architects, construction workers, janitors
 
     @property
     def house_constructions(self):
@@ -223,20 +194,8 @@ class ConstructionFirm(object):
             building_constructions |= architect.building_constructions
         return building_constructions
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class OptometryClinic(object):
+class OptometryClinic(Business):
     """An optometry clinic."""
 
     def __init__(self, lot, construction):
@@ -246,29 +205,12 @@ class OptometryClinic(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
-        # optometrist(s), cashiers, manager
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
+        # optometrist(s), cashiers, manager, janitors
 
 
-class FireStation(object):
+class FireStation(Business):
     """A fire station."""
 
     def __init__(self, lot, construction):
@@ -278,29 +220,12 @@ class FireStation(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
-        # Firefighters, chief
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
+        # Firefighters, chief, janitors
 
 
-class Hospital(object):
+class Hospital(Business):
     """A hospital."""
 
     def __init__(self, lot, construction):
@@ -310,29 +235,12 @@ class Hospital(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
-        # Doctors, nurses, manager
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
+        # Doctors, nurses, manager, janitors
 
 
-class Hotel(object):
+class Hotel(Business):
     """A hotel."""
 
     def __init__(self, lot, construction):
@@ -342,29 +250,12 @@ class Hotel(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # concierge(s), maids, cashier, manager
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class PlasticSurgeryClinic(object):
+class PlasticSurgeryClinic(Business):
     """A plastic-surgery clinic."""
 
     def __init__(self, lot, construction):
@@ -374,29 +265,12 @@ class PlasticSurgeryClinic(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # plastic surgeons, manager
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class PoliceStation(object):
+class PoliceStation(Business):
     """A police station."""
 
     def __init__(self, lot, construction):
@@ -406,29 +280,12 @@ class PoliceStation(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # police officers, chief
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class RealtyFirm(object):
+class RealtyFirm(Business):
     """A realty firm."""
 
     def __init__(self, lot, construction):
@@ -438,14 +295,7 @@ class RealtyFirm(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
-        self.realtors = set()
-        self.former_realtors = set()
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # realtors, manager
 
@@ -457,20 +307,8 @@ class RealtyFirm(object):
             home_sales |= realtor.home_sales
         return home_sales
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class Restaurant(object):
+class Restaurant(Business):
     """A restaurant."""
 
     def __init__(self, lot, construction):
@@ -480,29 +318,12 @@ class Restaurant(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # cashiers, waiters, manager
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class Supermarket(object):
+class Supermarket(Business):
     """A supermarket on a lot in a city."""
 
     def __init__(self, lot, construction):
@@ -512,29 +333,12 @@ class Supermarket(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # cashiers, manager
 
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
 
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class TattooParlor(object):
+class TattooParlor(Business):
     """A tattoo parlor."""
 
     def __init__(self, lot, construction):
@@ -544,23 +348,6 @@ class TattooParlor(object):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        self.city = lot.city
-        self.founded = self.city.game.year
-        self.lot = lot
-        self.construction = construction
-        self.owner = construction.client
-        self.address = self.generate_address(lot=self.lot)
+        Business.__init__(self=self, lot=lot, construction=construction)
 
         # tattoo artists, cashiers, manager
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
