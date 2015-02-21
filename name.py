@@ -10,7 +10,7 @@ class Name(object):
         """Initialize a Name object.
 
         @param rep: The name itself (a string).
-        @param bearer: The person with whom this name originates.
+        @param progenitor: The person with whom this name originates.
         @param conceived_by: The person(s) who conceived of this name (generally, the bearer's parents).
         """
         self.rep = rep
@@ -21,6 +21,26 @@ class Name(object):
     def __str__(self):
         """Return string representation."""
         return self.rep
+
+    def __eq__(self, other):
+        """Return whether two names have the same rep."""
+        assert (isinstance(other, Name)), (
+            "An attempt was made to compare a Name object to an object of another class."
+        )
+        if self.rep == other.rep:
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        """Return whether two names do not have the same rep."""
+        assert (isinstance(other, Name)), (
+            "An attempt was made to compare a Name object to an object of another class."
+        )
+        if self.rep != other.rep:
+            return True
+        else:
+            return False
 
     @property
     def bearers(self):
