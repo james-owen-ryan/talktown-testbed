@@ -1,8 +1,9 @@
 import random
 import heapq
 from corpora import Names
-from event import *
 from config import Config
+from event import *
+from name import Name
 
 
 class Person(object):
@@ -16,6 +17,7 @@ class Person(object):
         # Set parents
         self.mother = mother
         self.father = father
+        self.biological_father = father
         # Set year of birth
         self.birth_year = self.game.year
         # Set sex
@@ -34,11 +36,13 @@ class Person(object):
         )
         # Set mental attributes
         self.memory = self.init_memory()
-        # Prepare name attributes that get set by Birth.name_baby()
+        # Prepare name attributes that get set by Birth.name_baby() (or PersonExNihilo.init_name())
         self.first_name = None
         self.middle_name = None
         self.last_name = None
+        self.suffix = None
         self.maiden_name = None
+        self.named_for = (None, None)  # From whom first and middle name originate, respectively
         # Prepare familial attributes that get populated by self.init_familial_attributes()
         self.ancestors = set()
         self.descendants = set()
@@ -46,7 +50,6 @@ class Person(object):
         self.extended_family = set()
         self.greatgrandparents = set()
         self.grandparents = set()
-        self.parents = set()
         self.aunts = set()
         self.uncles = set()
         self.siblings = set()
@@ -265,7 +268,6 @@ class Person(object):
         """Populate lists representing this person's family members."""
         self.greatgrandparents = self.father.grandparents | self.mother.grandparents
         self.grandparents = self.father.parents | self.mother.parents
-        self.parents = {self.father, self.mother}
         self.uncles = self.father.brothers | self.mother.brothers
         self.aunts = self.father.sisters | self.mother.sisters
         self.siblings = self.father.kids | self.mother.kids
@@ -362,8 +364,28 @@ class Person(object):
         return 0
 
     @property
+    def parents(self):
+        """Return parents.
+
+        The @property decorator is used so that this attribute can be dynamic to adoption.
+        """
+        return self.mother, self.father,
+
+    @property
     def full_name(self):
         """Return a person's full name."""
+        full_name = "{} {} {} {}".format(
+            self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
+        )
+        return full_name
+
+    @property
+    def full_name_without_suffix(self):
+        """Return a person's full name sans suffix.
+
+        This is used to determine whether a child has the same full name as their parent,
+        which would necessitate them getting a suffix of their own to disambiguate.
+        """
         full_name = "{} {} {} {}".format(
             self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
         )
@@ -380,6 +402,19 @@ class Person(object):
         """Return a person's name, appended with their tag, if any."""
         nametag = "{} {}".format(self.name, self.tag)
         return nametag
+
+    @property
+    def queer(self):
+        """Return whether this person is not heterosexual."""
+        if self.male and self.attracted_to_men:
+            queer = True
+        elif self.female and self.attracted_to_women:
+            queer = True
+        elif not self.attracted_to_men and not self.attracted_to_women:
+            queer = True
+        else:
+            queer = False
+        return queer
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
@@ -688,19 +723,20 @@ class PersonExNihilo(Person):
                 self.attracted_to_men = True
         # Since they don't have a parent to name them, generate a name for this person
         self.first_name, self.middle_name, self.last_name, self.suffix = (
-            self.init_name(male=self.male)
+            self.init_name()
         )
+        self.maiden_name = self.last_name
+        self.named_for = None
 
-    @staticmethod
-    def init_name(male):
+    def init_name(self):
         """Generate a name for a primordial person who has no parents."""
-        if male:
-            first_name = Names.a_masculine_name()
-            middle_name = Names.a_masculine_name()
+        if self.male:
+            first_name = Name(rep=Names.a_masculine_name(), progenitor=self, conceived_by=None)
+            middle_name = Name(rep=Names.a_masculine_name(), progenitor=self, conceived_by=None)
         else:
-            first_name = Names.a_feminine_name()
-            middle_name = Names.a_feminine_name()
-        last_name = Names.any_surname()
+            first_name = Name(rep=Names.a_feminine_name(), progenitor=self, conceived_by=None)
+            middle_name = Name(rep=Names.a_feminine_name(), progenitor=self, conceived_by=None)
+        last_name = Name(rep=Names.any_surname(), progenitor=self, conceived_by=None)
         suffix = ''
         return first_name, middle_name, last_name, suffix
 
