@@ -8,38 +8,18 @@ from config import Config
 class Person(object):
     """A person living in a city of a gameplay instance."""
 
-    def __init__(self, mother, father, birth_year=None, assigned_male=False, assigned_female=False):
+    def __init__(self, game, mother, father):
         """Initialize a Person object."""
         # Set location and gameplay instance
-        self.game = self.mother.city.game
-        self.city = self.mother.city
+        self.game = game
+        self.city = game.city
         # Set parents
         self.mother = mother
         self.father = father
         # Set year of birth
-        if birth_year:
-            self.birth_year = birth_year
-        else:
-            self.birth_year = self.game.year
-        # Set sex (unless it's assigned as part of world gen)
-        if assigned_male:
-            self.male = True
-            self.female = False
-        elif assigned_female:
-            self.male = False
-            self.female = True
-        else:
-            self.male, self.female = self.init_sex()
-        # Set name
-        if not self.mother:
-            self.first_name, self.middle_name, self.last_name, self.suffix = (
-                self.prim_init_name(male=self.male)
-            )
-        elif self.mother:
-            self.first_name, self.middle_name, self.last_name, self.suffix = (
-                self.mother.name_child(child=self, father=father)
-            )
-        self.maiden_name = self.last_name
+        self.birth_year = self.game.year
+        # Set sex
+        self.male, self.female = self.init_sex()
         self.tag = ''  # Allows players to tag characters with arbitrary strings
         # Set misc attributes
         self.alive = True
@@ -48,27 +28,18 @@ class Person(object):
         self.attracted_to_men, self.attracted_to_women = (
             self.init_sexuality(male=self.male, config=self.game.config)
         )
-        if assigned_male:  # Assure interest in opposite sex in support of world gen
-            self.attracted_to_women = True
-        elif assigned_female:
-            self.attracted_to_men = True
         # Set personality
-        if not self.mother:
-            self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
-                self.prim_init_personality()
-            )
-        elif self.mother:
-            self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
-                self.init_personality(mother=self.mother, father=self.father)
-            )
+        self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
+            self.init_personality()
+        )
         # Set mental attributes
-        if not self.mother:
-            self.memory = self.prim_init_memory(male=self.male, config=self.game.config)
-        elif self.mother:
-            self.memory = self.init_memory(
-                male=self.male, mother=self.mother, father=self.father, config=self.game.config
-            )
-        # Familial attributes that get populated by self.init_familial_attributes() as appropriate
+        self.memory = self.init_memory()
+        # Prepare name attributes that get set by Birth.name_baby()
+        self.first_name = None
+        self.middle_name = None
+        self.last_name = None
+        self.maiden_name = None
+        # Prepare familial attributes that get populated by self.init_familial_attributes()
         self.ancestors = set()
         self.descendants = set()
         self.immediate_family = set()
@@ -98,10 +69,9 @@ class Person(object):
         self.granddaughters = set()
         self.greatgrandchildren = set()
         # Set familial attributes; update those of family members
-        if self.mother:
-            self.init_familial_attributes()
-            self.init_update_familial_attributes_of_family_members()
-        # Set attributes representing this person's interpersonal relationships.
+        self.init_familial_attributes()
+        self.init_update_familial_attributes_of_family_members()
+        # Prepare attributes representing this person's interpersonal relationships.
         self.spouse = None
         self.friends = set()
         self.known_people = set()
@@ -111,7 +81,7 @@ class Person(object):
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
         self.sexual_partners = set()
-        # Set attributes representing events in this person's life
+        # Prepare attributes representing events in this person's life
         self.marriage = None
         self.marriages = []
         self.divorces = []
@@ -119,20 +89,14 @@ class Person(object):
         self.name_changes = []
         self.departure = None
         self.building_commissions = []  # Constructions of houses or buildings that they commissioned
-        # Set attributes pertaining to business affairs
-        if not self.mother:
-            self.money = self.game.config.amount_of_money_generated_people_from_outside_city_start_with
-        else:
-            self.money = 0
+        # Set and prepare attributes pertaining to business affairs
+        self.money = self.init_money()
         self.occupation = None
         self.occupations = []
         self.former_contractors = set()
         self.retired = False
-        # Misc attributes that get set by other methods
+        # Prepare misc attributes that get set by other methods
         self.home = None
-        self.lives_with_parents = False  # Gets set by Event.MoveIn.__init__()
-        # Move into mother's home
-        self.move_in(self.mother.home)
 
     @staticmethod
     def init_sex():
@@ -187,84 +151,109 @@ class Person(object):
                 attracted_to_women = False
         return attracted_to_men, attracted_to_women
 
-    @staticmethod
-    def init_personality(mother, father, config):
-        """Determine this person's Big Five disposition, given their parents'.
+    def init_personality(self):
+        """Determine this person's Big Five disposition.
 
         TODO: Have this affected by a person's sex."""
-        # Openness to experience
+        config = self.game.config
+        openness_to_experience = self._init_big_5_o()
+        conscientiousness = self._init_big_5_c()
+        extroversion = self._init_big_5_e()
+        agreeableness = self._init_big_5_a()
+        neuroticism = self._init_big_5_n()
+        return openness_to_experience, conscientiousness, extroversion, agreeableness, neuroticism
+
+    def _init_big_5_o(self):
+        """Initialize a value for the Big Five personality trait 'openness to experience'."""
+        config = self.game.config
         if random.random() < config.big_5_o_heritability:
             # Inherit this trait (with slight variance)
-            takes_after = random.choice([father, mother])
+            takes_after = random.choice([self.father, self.mother])
             openness_to_experience = random.normalvariate(
                 takes_after.openness_to_experience, config.big_5_heritability_sd
             )
         else:
             # Generate from the population mean
             openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience > 1:
-            openness_to_experience = 1.0
-        elif openness_to_experience < -1:
+        if openness_to_experience < config.big_5_floor:
             openness_to_experience = -1.0
-        # Conscientiousness
+        elif openness_to_experience > config.big_5_cap:
+            openness_to_experience = 1.0
+        return openness_to_experience
+
+    def _init_big_5_c(self):
+        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
+        config = self.game.config
         if random.random() < config.big_5_c_heritability:
-            takes_after = random.choice([father, mother])
+            takes_after = random.choice([self.father, self.mother])
             conscientiousness = random.normalvariate(
                 takes_after.conscientiousness, config.big_5_heritability_sd
             )
         else:
             conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness > 1:
-            conscientiousness = 1.0
-        elif conscientiousness < -1:
+        if conscientiousness < config.big_5_floor:
             conscientiousness = -1.0
-        # Extroversion
+        elif conscientiousness > config.big_5_cap:
+            conscientiousness = 1.0
+        return conscientiousness
+
+    def _init_big_5_e(self):
+        """Initialize a value for the Big Five personality trait 'extroversion'."""
+        config = self.game.config
         if random.random() < config.big_5_e_heritability:
-            takes_after = random.choice([father, mother])
+            takes_after = random.choice([self.father, self.mother])
             extroversion = random.normalvariate(
                 takes_after.extroversion, config.big_5_heritability_sd
             )
         else:
             extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion > 1:
-            extroversion = 1.0
-        elif extroversion < -1:
+        if extroversion < config.big_5_floor:
             extroversion = -1.0
-        # Agreeableness
+        elif extroversion > config.big_5_cap:
+            extroversion = 1.0
+        return extroversion
+
+    def _init_big_5_a(self):
+        """Initialize a value for the Big Five personality trait 'agreeableness'."""
+        config = self.game.config
         if random.random() < config.big_5_a_heritability:
-            takes_after = random.choice([father, mother])
+            takes_after = random.choice([self.father, self.mother])
             agreeableness = random.normalvariate(
                 takes_after.agreeableness, config.big_5_heritability_sd
             )
         else:
             agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness > 1:
+        if agreeableness < config.big_5_floor:
+            agreeableness = -1.0
+        elif agreeableness > config.big_5_cap:
             agreeableness = 1.0
-        elif agreeableness < -1:
-            extroversion = -1.0
-        # Neuroticism
+        return agreeableness
+
+    def _init_big_5_n(self):
+        """Initialize a value for the Big Five personality trait 'neuroticism'."""
+        config = self.game.config
         if random.random() < config.big_5_n_heritability:
-            takes_after = random.choice([father, mother])
+            takes_after = random.choice([self.father, self.mother])
             neuroticism = random.normalvariate(
                 takes_after.neuroticism, config.big_5_heritability_sd
             )
         else:
             neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism > 1:
-            neuroticism = 1.0
-        elif neuroticism < -1:
+        if neuroticism < config.big_5_floor:
             neuroticism = -1.0
-        return openness_to_experience, conscientiousness, extroversion, agreeableness, neuroticism
+        elif neuroticism > config.big_5_cap:
+            neuroticism = 1.0
+        return neuroticism
 
-    @staticmethod
-    def init_memory(male, mother, father, config):
+    def init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
+        config = self.game.config
         if random.random() < config.memory_heritability:
-            takes_after = random.choice([mother, father])
+            takes_after = random.choice([self.mother, self.father])
             memory = random.normalvariate(takes_after.memory, config.memory_heritability_sd)
         else:
             memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if male:  # Men have slightly worse memory (studies show)
+        if self.male:  # Men have slightly worse memory (studies show)
             memory -= config.memory_sex_diff
         if memory > config.memory_cap:
             memory = config.memory_cap
@@ -368,64 +357,9 @@ class Person(object):
             c.cousins.add(self)
 
     @staticmethod
-    def prim_init_name(male):
-        """Generate a name for a primordial person who has no parents."""
-        if male:
-            first_name = Names.a_masculine_name()
-            middle_name = Names.a_masculine_name()
-        elif not male:
-            first_name = Names.a_feminine_name()
-            middle_name = Names.a_feminine_name()
-        last_name = Names.any_surname()
-        suffix = ''
-        return first_name, middle_name, last_name, suffix
-
-    @staticmethod
-    def prim_init_personality(config):
-        """Generate values for each of the Big Five personality traits."""
-        # Openness to experience
-        openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience > 1:
-            openness_to_experience = 1.0
-        elif openness_to_experience < -1:
-            openness_to_experience = -1.0
-        # Conscientiousness
-        conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness > 1:
-            conscientiousness = 1.0
-        elif conscientiousness < -1:
-            conscientiousness = -1.0
-        # Extroversion
-        extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion > 1:
-            extroversion = 1.0
-        elif extroversion < -1:
-            extroversion = -1.0
-        # Agreeableness
-        agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness > 1:
-            agreeableness = 1.0
-        elif agreeableness < -1:
-            extroversion = -1.0
-        # Neuroticism
-        neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism > 1:
-            neuroticism = 1.0
-        elif neuroticism < -1:
-            neuroticism = -1.0
-        return openness_to_experience, conscientiousness, extroversion, agreeableness, neuroticism
-
-    @staticmethod
-    def prim_init_memory(male, config):
-        """Determine this person's base memory capability, which will deteriorate with age."""
-        memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if male:  # Men have slightly worse memory (studies show)
-            memory -= config.memory_sex_diff
-        if memory > config.memory_cap:
-            memory = config.memory_cap
-        elif memory < config.memory_floor:
-            memory = config.memory_floor
-        return memory
+    def init_money():
+        """Determine how much money this person has to start with."""
+        return 0
 
     @property
     def full_name(self):
@@ -500,60 +434,7 @@ class Person(object):
             attracted = False
         return attracted
 
-    def change_name(self, new_last_name, reason):
-        """Change this person's (official) name."""
-        NameChange(subject=self, new_last_name=new_last_name, reason=reason)
-
-    def marry(self, partner):
-        """Marry partner."""
-        assert(self.alive and partner.alive), "{} tried to marry {}, but one of them is dead."
-        Marriage(subjects=(self, partner))
-
-    def divorce(self, partner):
-        """Divorce partner."""
-        assert(self.alive and partner.alive), "{} tried to divorce {}, but one of them is dead."
-        assert(partner is self.spouse and partner.spouse is self), (
-            "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
-        )
-        Divorce(subjects=(self, partner))
-
-    def secure_home(self):
-        """Find a home to move into.
-
-        The person (and their spouse, if any) will decide between all the vacant
-        homes and vacant lots (upon which they would build a new home) in the city.
-        """
-        chosen_home_or_lot = self._choose_vacant_home_or_vacant_lot()
-        if chosen_home_or_lot:
-            if isinstance(chosen_home_or_lot, Lot):
-                # A vacant lot was chosen, so build
-                home_to_move_into = self._commission_construction_of_a_house(lot=chosen_home_or_lot)
-            else:
-                # A vacant home was chosen
-                home_to_move_into = self._purchase_home(home=chosen_home_or_lot)
-        else:
-            home_to_move_into = None  # The city is full; this will spark a departure
-        return home_to_move_into
-
-    def _commission_construction_of_a_house(self, lot):
-        """Build a house to move into."""
-        architect = self._contract_person_of_certain_occupation(occupation=Architect)
-        if self.spouse:
-            clients = {self, self.spouse}
-        else:
-            clients = {self}
-        return architect.construct_house(clients=clients, lot=lot)
-
-    def _purchase_home(self, home):
-        """Purchase a house or apartment unit, with the help of a realtor."""
-        realtor = self._contract_person_of_certain_occupation(occupation=Realtor)
-        if self.spouse:
-            clients = {self, self.spouse}
-        else:
-            clients = {self}
-        return realtor.sell_home(clients=clients, home=home)
-
-    def _contract_person_of_certain_occupation(self, occupation):
+    def contract_person_of_certain_occupation(self, occupation):
         """Find a person of a certain occupation.
 
         Currently, a person scores all the potential hires in town and then selects
@@ -606,6 +487,64 @@ class Person(object):
             years_experience=person.occupation.years_experience
         )
         return score
+
+    def change_name(self, new_last_name, reason):
+        """Change this person's (official) name."""
+        NameChange(subject=self, new_last_name=new_last_name, reason=reason)
+
+    def marry(self, partner):
+        """Marry partner."""
+        assert(self.alive and partner.alive), "{} tried to marry {}, but one of them is dead."
+        Marriage(subjects=(self, partner))
+
+    def divorce(self, partner):
+        """Divorce partner."""
+        assert(self.alive and partner.alive), "{} tried to divorce {}, but one of them is dead."
+        assert(partner is self.spouse and partner.spouse is self), (
+            "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
+        )
+        Divorce(subjects=(self, partner))
+
+    def give_birth(self):
+        """Select a doctor and go to the hospital to give birth."""
+        doctor = self.contract_person_of_certain_occupation(occupation=Doctor)
+        doctor.deliver_baby(mother=self)
+
+    def secure_home(self):
+        """Find a home to move into.
+
+        The person (and their spouse, if any) will decide between all the vacant
+        homes and vacant lots (upon which they would build a new home) in the city.
+        """
+        chosen_home_or_lot = self._choose_vacant_home_or_vacant_lot()
+        if chosen_home_or_lot:
+            if isinstance(chosen_home_or_lot, Lot):
+                # A vacant lot was chosen, so build
+                home_to_move_into = self._commission_construction_of_a_house(lot=chosen_home_or_lot)
+            else:
+                # A vacant home was chosen
+                home_to_move_into = self._purchase_home(home=chosen_home_or_lot)
+        else:
+            home_to_move_into = None  # The city is full; this will spark a departure
+        return home_to_move_into
+
+    def _commission_construction_of_a_house(self, lot):
+        """Build a house to move into."""
+        architect = self.contract_person_of_certain_occupation(occupation=Architect)
+        if self.spouse:
+            clients = {self, self.spouse}
+        else:
+            clients = {self}
+        return architect.construct_house(clients=clients, lot=lot)
+
+    def _purchase_home(self, home):
+        """Purchase a house or apartment unit, with the help of a realtor."""
+        realtor = self.contract_person_of_certain_occupation(occupation=Realtor)
+        if self.spouse:
+            clients = {self, self.spouse}
+        else:
+            clients = {self}
+        return realtor.sell_home(clients=clients, home=home)
 
     def _choose_vacant_home_or_vacant_lot(self):
         """Choose a vacant home to move into or a vacant lot to build on.
@@ -717,3 +656,125 @@ class Person(object):
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
         Departure(subject=self)
+
+
+class PersonExNihilo(Person):
+    """A person who is generated from nothing, i.e., who has no parents.
+
+    This is a subclass of Person whose objects are people that enter the simulation
+    from outside the city, either as city founders or as new hires for open positions
+    that could not be filled by anyone currently in the city. Because these people don't
+    have parents, a subclass is needed to override any attributes or methods that rely
+    on inheritance.
+    """
+
+    def __init__(self, game, birth_year, assigned_male=False, assigned_female=False):
+        Person.__init__(game=game, mother=None, father=None)
+        # Overwrite birth year set by Person.__init__()
+        self.birth_year = birth_year
+        # Potentially overwrite sex set by Person.__init__()
+        if assigned_male:
+            self.male = True
+            self.female = False
+        elif assigned_female:
+            self.male = False
+            self.female = True
+        # Potentially overwrite sexuality set by Person.__init__() (to ensure interest in opposite
+        # sex consistent with marriages that are initiated in a top-down way during world gen)
+        if self.game.year < self.game.config.year_city_gets_founded:
+            if self.male:
+                self.attracted_to_women = True
+            elif self.female:
+                self.attracted_to_men = True
+        # Since they don't have a parent to name them, generate a name for this person
+        self.first_name, self.middle_name, self.last_name, self.suffix = (
+            self.init_name(male=self.male)
+        )
+
+    @staticmethod
+    def init_name(male):
+        """Generate a name for a primordial person who has no parents."""
+        if male:
+            first_name = Names.a_masculine_name()
+            middle_name = Names.a_masculine_name()
+        else:
+            first_name = Names.a_feminine_name()
+            middle_name = Names.a_feminine_name()
+        last_name = Names.any_surname()
+        suffix = ''
+        return first_name, middle_name, last_name, suffix
+
+    def _init_big_5_o(self):
+        """Initialize a value for the Big Five personality trait 'openness to experience'."""
+        config = self.game.config
+        openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
+        if openness_to_experience < config.big_5_floor:
+            openness_to_experience = -1.0
+        elif openness_to_experience > config.big_5_cap:
+            openness_to_experience = 1.0
+        return openness_to_experience
+
+    def _init_big_5_c(self):
+        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
+        config = self.game.config
+        conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
+        if conscientiousness < config.big_5_floor:
+            conscientiousness = -1.0
+        elif conscientiousness > config.big_5_cap:
+            conscientiousness = 1.0
+        return conscientiousness
+
+    def _init_big_5_e(self):
+        """Initialize a value for the Big Five personality trait 'extroversion'."""
+        config = self.game.config
+        extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
+        if extroversion < config.big_5_floor:
+            extroversion = -1.0
+        elif extroversion > config.big_5_cap:
+            extroversion = 1.0
+        return extroversion
+
+    def _init_big_5_a(self):
+        """Initialize a value for the Big Five personality trait 'agreeableness'."""
+        config = self.game.config
+        agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
+        if agreeableness < config.big_5_floor:
+            agreeableness = -1.0
+        elif agreeableness > config.big_5_cap:
+            agreeableness = 1.0
+        return agreeableness
+
+    def _init_big_5_n(self):
+        """Initialize a value for the Big Five personality trait 'neuroticism'."""
+        config = self.game.config
+        neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
+        if neuroticism < config.big_5_floor:
+            neuroticism = -1.0
+        elif neuroticism > config.big_5_cap:
+            neuroticism = 1.0
+        return neuroticism
+
+    def init_memory(self):
+        """Determine this person's base memory capability, which will deteriorate with age."""
+        config = self.game.config
+        memory = random.normalvariate(config.memory_mean, config.memory_sd)
+        if self.male:  # Men have slightly worse memory (studies show)
+            memory -= config.memory_sex_diff
+        if memory > config.memory_cap:
+            memory = config.memory_cap
+        elif memory < config.memory_floor:
+            memory = config.memory_floor
+        return memory
+
+    def init_familial_attributes(self):
+        """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
+        pass
+
+    def init_update_familial_attributes_of_family_members(self):
+        """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
+        pass
+
+    @staticmethod
+    def init_money():
+        """Determine how much money this person has to start with."""
+        return 5000
