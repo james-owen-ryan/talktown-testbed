@@ -2,7 +2,7 @@ class Person(object):
     """A person's mental model of another person, representing everything she believes about her."""
 
     def __init__(self, owner, subject):
-        """Construct a Person object."""
+        """Initialize a Person object."""
         self.owner = owner  # Owner of the belief
         self.subject = subject  # Subject of the belief
 
@@ -11,7 +11,7 @@ class Place(object):
     """A person's mental model of a place, representing everything she believes about it."""
 
     def __init__(self, owner, subject):
-        """Construct a Place object."""
+        """Initialize a Place object."""
         self.owner = owner
         self.subject = subject
 
@@ -26,7 +26,7 @@ class Facet(object):
     """
 
     def __init__(self, owner, rep):
-        """Construct a Facet object.
+        """Initialize a Facet object.
 
         @param owner: The larger belief representation (e.g., Person) this belongs to.
         @param rep: A computable representation of this facet, e.g., 'brown' as the Hair.color

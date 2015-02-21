@@ -6,7 +6,7 @@ class Creator(object):
     """Creator of a city that simulates up to the start of gameplay."""
 
     def __init__(self, game):
-        """Construct a Creator object."""
+        """Initialize a Creator object."""
         self.game = game
 
     def generate_city(self):

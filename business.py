@@ -13,7 +13,7 @@ class Business(object):
     """A business in a city (representing both the notion of a company and its physical building)."""
 
     def __init__(self, lot, construction):
-        """Construct a Business object.
+        """Initialize a Business object.
 
         @param lot: A Lot object representing the lot this company's building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -125,7 +125,7 @@ class ApartmentComplex(Business):
     """An apartment complex."""
 
     def __init__(self, lot, construction):
-        """Construct an ApartmentComplex object.
+        """Initialize an ApartmentComplex object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -138,7 +138,7 @@ class Bank(Business):
     """A bank."""
 
     def __init__(self, lot, construction):
-        """Construct a Bank object.
+        """Initialize a Bank object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -153,7 +153,7 @@ class Barbershop(Business):
     """A barbershop."""
 
     def __init__(self, lot, construction):
-        """Construct a Barbershop object.
+        """Initialize a Barbershop object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -168,7 +168,7 @@ class ConstructionFirm(Business):
     """A construction firm."""
 
     def __init__(self, lot, construction):
-        """Construct an ConstructionFirm object.
+        """Initialize an ConstructionFirm object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -199,7 +199,7 @@ class OptometryClinic(Business):
     """An optometry clinic."""
 
     def __init__(self, lot, construction):
-        """Construct an OptometryClinic object.
+        """Initialize an OptometryClinic object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -214,7 +214,7 @@ class FireStation(Business):
     """A fire station."""
 
     def __init__(self, lot, construction):
-        """Construct an FireStation object.
+        """Initialize an FireStation object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -229,7 +229,7 @@ class Hospital(Business):
     """A hospital."""
 
     def __init__(self, lot, construction):
-        """Construct an Hospital object.
+        """Initialize an Hospital object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -244,7 +244,7 @@ class Hotel(Business):
     """A hotel."""
 
     def __init__(self, lot, construction):
-        """Construct a Hotel object.
+        """Initialize a Hotel object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -259,7 +259,7 @@ class PlasticSurgeryClinic(Business):
     """A plastic-surgery clinic."""
 
     def __init__(self, lot, construction):
-        """Construct a PlasticSurgeryClinic object.
+        """Initialize a PlasticSurgeryClinic object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -274,7 +274,7 @@ class PoliceStation(Business):
     """A police station."""
 
     def __init__(self, lot, construction):
-        """Construct a PoliceStation object.
+        """Initialize a PoliceStation object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -289,7 +289,7 @@ class RealtyFirm(Business):
     """A realty firm."""
 
     def __init__(self, lot, construction):
-        """Construct an RealtyFirm object.
+        """Initialize an RealtyFirm object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -312,7 +312,7 @@ class Restaurant(Business):
     """A restaurant."""
 
     def __init__(self, lot, construction):
-        """Construct a Restaurant object.
+        """Initialize a Restaurant object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -327,7 +327,7 @@ class Supermarket(Business):
     """A supermarket on a lot in a city."""
 
     def __init__(self, lot, construction):
-        """Construct an Supermarket object.
+        """Initialize an Supermarket object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about
@@ -342,7 +342,7 @@ class TattooParlor(Business):
     """A tattoo parlor."""
 
     def __init__(self, lot, construction):
-        """Construct a TattooParlor object.
+        """Initialize a TattooParlor object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about

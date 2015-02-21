@@ -5,7 +5,7 @@ class House(object):
     """A house on a block in a city."""
 
     def __init__(self, lot, construction):
-        """Construct a House object.
+        """Initialize a House object.
 
         @param lot: A Lot object representing the lot this building is on.
         @param construction: A BuildingConstruction object holding data about

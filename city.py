@@ -10,7 +10,7 @@ class City(object):
     """A city in which a gameplay instance takes place."""
 
     def __init__(self, game, founded):
-        """Construct a City object."""
+        """Initialize a City object."""
         self.game = game
         self.founded = founded
         self.business_needs = self.determine_business_needs(config=self.game.config)
@@ -59,7 +59,7 @@ class Street(object):
     """A street in a city."""
 
     def __init__(self, city, number, direction):
-        """Construct a Street object."""
+        """Initialize a Street object."""
         self.game = city.game
         self.city = city
         self.type = type
@@ -93,7 +93,7 @@ class Block(object):
     """A block on a street in a city."""
 
     def __init__(self, x_coord, y_coord, street, number):
-        """Construct a Block object."""
+        """Initialize a Block object."""
         self.game = street.city.game
         self.city = street.city
         self.street = street
@@ -146,7 +146,7 @@ class Lot(object):
     """A lot on a block in a city."""
 
     def __init__(self, block, house_number):
-        """Construct a Lot object."""
+        """Initialize a Lot object."""
         self.game = block.city.game
         self.city = block.city
         self.street = block.street

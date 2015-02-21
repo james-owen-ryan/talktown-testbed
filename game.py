@@ -5,7 +5,7 @@ class Game(object):
     """A gameplay instance."""
 
     def __init__(self):
-        """Construct a Game object."""
+        """Initialize a Game object."""
         self.config = Config()
         self.year = self.config.year_city_gets_founded
 

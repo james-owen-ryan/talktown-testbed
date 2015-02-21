@@ -9,7 +9,7 @@ class Person(object):
     """A person living in a city of a gameplay instance."""
 
     def __init__(self, mother, father, birth_year=None, assigned_male=False, assigned_female=False):
-        """Construct a Person object."""
+        """Initialize a Person object."""
         # Set location and gameplay instance
         self.game = self.mother.city.game
         self.city = self.mother.city
@@ -447,6 +447,44 @@ class Person(object):
         nametag = "{} {}".format(self.name, self.tag)
         return nametag
 
+    def relation_to_me(self, person):
+        """Return the primary (immediate) familial relation to another person, if any."""
+        if person in self.greatgrandparents:
+            if person.male:
+                relation = 'Greatgrandfather'
+            else:
+                relation = 'Greatgrandmother'
+        elif person in self.grandparents:
+            if person.male:
+                relation = 'Grandfather'
+            else:
+                relation = 'Grandmother'
+        elif person is self.father:
+            relation = 'Father'
+        elif person is self.mother:
+            relation = 'Mother'
+        elif person in self.aunts:
+            relation = 'Aunt'
+        elif person in self.uncles:
+            relation = 'Uncle'
+        elif person in self.brothers:
+            relation = 'Brother'
+        elif person in self.sisters:
+            relation = 'Sister'
+        elif person in self.cousins:
+            relation = 'Cousin'
+        elif person in self.sons:
+            relation = 'Son'
+        elif person in self.daughters:
+            relation = 'Daughter'
+        elif person in self.nephews:
+            relation = 'Nephew'
+        elif person in self.nieces:
+            relation = 'Niece'
+        else:
+            relation = None
+        return relation
+
     def attracted_to(self, other_person):
         """Return whether this person is attracted to other_person.
 
@@ -461,177 +499,6 @@ class Person(object):
         if other_person in self.extended_family:
             attracted = False
         return attracted
-
-    def contract_person_of_certain_occupation(self, occupation):
-        """Find a person of a certain occupation.
-
-        Currently, a person scores all the potential hires in town and then selects
-        one of the top three. TODO: Probabilistically select from all potential hires
-        using the scores to derive likelihoods of selecting each.
-        """
-        potential_hire_scores = self.rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
-        # Pick from top three
-        top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
-        if random.random() < 0.6:
-            choice = top_three_choices[0]
-        elif random.random() < 0.9:
-            choice = top_three_choices[1]
-        else:
-            choice = top_three_choices[2]
-        return choice
-
-    def rate_all_potential_contractors_of_certain_occupation(self, occupation):
-        """Score all potential hires of a certain occupation."""
-        pool = self.city.workers_of_trade(occupation)
-        scores = {}
-        for person in pool:
-            my_score = self.rate_potential_contractor_of_certain_occupation(person=person)
-            if self.spouse:
-                spouse_score = self.spouse.rate_potential_contractor_of_certain_occupation(person=person)
-            else:
-                spouse_score = 0
-            scores[person] = my_score + spouse_score
-        return scores
-
-    def rate_potential_contractor_of_certain_occupation(self, person):
-        """Score a potential hire of a certain occupation, with preference to family, friends, former hires.
-
-        TODO: Have this be affected by personality (beyond what being a friend captures).
-        """
-        score = 0
-        # Rate according to social reasons
-        if person in self.immediate_family:
-            score += self.game.config.preference_to_contract_immediate_family
-        elif person in self.extended_family:  # elif because immediate family is subset of extended family
-            score += self.game.config.preference_to_contract_extended_family
-        if person in self.friends:
-            score += self.game.config.preference_to_contract_friend
-        elif person in self.known_people:
-            score += self.game.config.preference_to_contract_known_person
-        if person in self.former_contractors:
-            score += self.game.config.preference_to_contract_former_contract
-        # Multiply score according to this person's experience in this occupation
-        score *= person.game.config.function_to_derive_score_multiplier_from_years_experience(
-            years_experience=person.occupation.years_experience
-        )
-        return score
-
-    def choose_vacant_home_or_vacant_lot(self):
-        """Choose a vacant home to move into or a vacant lot to build on.
-
-        Currently, a person scores all the vacant homes/lots in town and then selects
-        one of the top three. TODO: Probabilistically select from all homes/lots using the
-        scores to derive likelihoods of selecting each.
-        """
-        home_and_lot_scores = self.rate_all_vacant_homes_and_vacant_lots()
-        if len(home_and_lot_scores) >= 3:
-            # Pick from top three
-            top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
-            if random.random() < 0.6:
-                choice = top_three_choices[0]
-            elif random.random() < 0.9:
-                choice = top_three_choices[1]
-            else:
-                choice = top_three_choices[2]
-        elif home_and_lot_scores:
-            choice = home_and_lot_scores[0]
-        else:
-            choice = None
-        return choice
-
-    def rate_all_vacant_homes_and_vacant_lots(self):
-        """Find a home to move into in a chosen neighborhood.
-
-        By this method, a person appraises every vacant home and lot in the city for
-        how much they would like to move or build there, given considerations to the people
-        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
-        a penalty that makes people less willing to build a home on a vacant lot than to move
-        into a vacant home.
-        """
-        scores = {}
-        for home in self.city.vacant_homes:
-            my_score = self.rate_potential_lot(lot=home.lot)
-            if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=home)
-            else:
-                spouse_score = 0
-            scores[home] = my_score + spouse_score
-        for lot in self.city.vacant_lots:
-            my_score = self.rate_potential_lot(lot=lot)
-            if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=lot)
-            else:
-                spouse_score = 0
-            scores[lot] = (
-                (my_score + spouse_score) * self.game.config.penalty_for_having_to_build_a_home_vs_buying_one
-            )
-        return scores
-
-    def rate_potential_lot(self, lot):
-        """Score the desirability of living at the location of a lot.
-
-        TODO: Other considerations here.
-        """
-        config = self.game.config
-        desire_to_live_near_family = self.determine_desire_to_move_near_family()
-        score = 0
-        # Score home for its proximity to family (either positively or negatively, depending)
-        for kid in self.kids:
-            # Don't consider kids that still live with you here
-            if kid.home is not self.home:
-                dist = kid.home.lot.get_dist_to(lot) + 1  # Since we're dividing by this next
-                score += (desire_to_live_near_family * config.pull_to_live_near_a_child) / dist
-        for parent in self.parents:
-            dist = parent.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_parent) / dist
-        for grandchild in self.grandchildren:
-            dist = grandchild.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_grandchild) / dist
-        for sibling in self.siblings:
-            dist = sibling.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_sibling) / dist
-        for grandparent in self.grandparents:
-            dist = grandparent.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_grandparent) / dist
-        for greatgrandparent in self.greatgrandparents:
-            dist = greatgrandparent.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_greatgrandparent) / dist
-        for niece in self.nieces:
-            dist = niece.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_niece_or_nephew) / dist
-        for nephew in self.nephews:
-            dist = nephew.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_niece_or_nephew) / dist
-        for aunt in self.aunts:
-            dist = aunt.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_an_aunt_or_uncle) / dist
-        for uncle in self.uncles:
-            dist = uncle.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_an_aunt_or_uncle) / dist
-        for cousin in self.cousins:
-            dist = cousin.home.lot.get_dist_to(lot)
-            score += (desire_to_live_near_family * config.pull_to_live_near_a_first_cousin) / dist
-        # Score for proximity to friends (only positively)
-        for friend in self.friends:
-            dist = friend.home.lot.get_dist_to(lot)
-            score += config.pull_to_live_near_a_friend / dist
-        return score
-
-    def determine_desire_to_move_near_family(self):
-        """Decide how badly you want to move near/away from family."""
-        config = self.game.config
-        # People with personality C-, O+ most likely to leave home (source [1])
-        base_desire_to_live_near_family = config.desire_to_live_near_family_base
-        desire_to_live_near_family = self.big_5_c
-        desire_to_live_away_from_family = self.big_5_o
-        final_desire_to_live_near_family = (
-            base_desire_to_live_near_family + desire_to_live_near_family - desire_to_live_away_from_family
-        )
-        if final_desire_to_live_near_family < config.desire_to_live_near_family_floor:
-            final_desire_to_live_near_family = config.desire_to_live_near_family_floor
-        elif final_desire_to_live_near_family > config.desire_to_live_near_family_cap:
-            final_desire_to_live_near_family = config.desire_to_live_near_family_cap
-        return final_desire_to_live_near_family
 
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
@@ -656,35 +523,184 @@ class Person(object):
         The person (and their spouse, if any) will decide between all the vacant
         homes and vacant lots (upon which they would build a new home) in the city.
         """
-        chosen_home_or_lot = self.choose_vacant_home_or_vacant_lot()
+        chosen_home_or_lot = self._choose_vacant_home_or_vacant_lot()
         if chosen_home_or_lot:
             if isinstance(chosen_home_or_lot, Lot):
                 # A vacant lot was chosen, so build
-                home_to_move_into = self.commission_construction_of_a_house()
+                home_to_move_into = self._commission_construction_of_a_house(lot=chosen_home_or_lot)
             else:
                 # A vacant home was chosen
-                home_to_move_into = chosen_home_or_lot
+                home_to_move_into = self._purchase_home(home=chosen_home_or_lot)
         else:
             home_to_move_into = None  # The city is full; this will spark a departure
         return home_to_move_into
 
-    def commission_construction_of_a_house(self, lot):
+    def _commission_construction_of_a_house(self, lot):
         """Build a house to move into."""
-        architect = self.contract_person_of_certain_occupation(occupation=Architect)
+        architect = self._contract_person_of_certain_occupation(occupation=Architect)
         if self.spouse:
             clients = {self, self.spouse}
         else:
             clients = {self}
         return architect.construct_house(clients=clients, lot=lot)
 
-    def purchase_home(self, home):
+    def _purchase_home(self, home):
         """Purchase a house or apartment unit, with the help of a realtor."""
-        realtor = self.contract_person_of_certain_occupation(occupation=Realtor)
+        realtor = self._contract_person_of_certain_occupation(occupation=Realtor)
         if self.spouse:
             clients = {self, self.spouse}
         else:
             clients = {self}
         return realtor.sell_home(clients=clients, home=home)
+
+    def _contract_person_of_certain_occupation(self, occupation):
+        """Find a person of a certain occupation.
+
+        Currently, a person scores all the potential hires in town and then selects
+        one of the top three. TODO: Probabilistically select from all potential hires
+        using the scores to derive likelihoods of selecting each.
+        """
+        potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
+        # Pick from top three
+        top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
+        if random.random() < 0.6:
+            choice = top_three_choices[0]
+        elif random.random() < 0.9:
+            choice = top_three_choices[1]
+        else:
+            choice = top_three_choices[2]
+        return choice
+
+    def _rate_all_potential_contractors_of_certain_occupation(self, occupation):
+        """Score all potential hires of a certain occupation."""
+        pool = self.city.workers_of_trade(occupation)
+        scores = {}
+        for person in pool:
+            my_score = self._rate_potential_contractor_of_certain_occupation(person=person)
+            if self.spouse:
+                spouse_score = self.spouse._rate_potential_contractor_of_certain_occupation(person=person)
+            else:
+                spouse_score = 0
+            scores[person] = my_score + spouse_score
+        return scores
+
+    def _rate_potential_contractor_of_certain_occupation(self, person):
+        """Score a potential hire of a certain occupation, with preference to family, friends, former hires.
+
+        TODO: Have this be affected by personality (beyond what being a friend captures).
+        """
+        score = 0
+        # Rate according to social reasons
+        if person in self.immediate_family:
+            score += self.game.config.preference_to_contract_immediate_family
+        elif person in self.extended_family:  # elif because immediate family is subset of extended family
+            score += self.game.config.preference_to_contract_extended_family
+        if person in self.friends:
+            score += self.game.config.preference_to_contract_friend
+        elif person in self.known_people:
+            score += self.game.config.preference_to_contract_known_person
+        if person in self.former_contractors:
+            score += self.game.config.preference_to_contract_former_contract
+        # Multiply score according to this person's experience in this occupation
+        score *= person.game.config.function_to_derive_score_multiplier_from_years_experience(
+            years_experience=person.occupation.years_experience
+        )
+        return score
+
+    def _choose_vacant_home_or_vacant_lot(self):
+        """Choose a vacant home to move into or a vacant lot to build on.
+
+        Currently, a person scores all the vacant homes/lots in town and then selects
+        one of the top three. TODO: Probabilistically select from all homes/lots using the
+        scores to derive likelihoods of selecting each.
+        """
+        home_and_lot_scores = self._rate_all_vacant_homes_and_vacant_lots()
+        if len(home_and_lot_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
+        elif home_and_lot_scores:
+            choice = home_and_lot_scores[0]
+        else:
+            choice = None
+        return choice
+
+    def _rate_all_vacant_homes_and_vacant_lots(self):
+        """Find a home to move into in a chosen neighborhood.
+
+        By this method, a person appraises every vacant home and lot in the city for
+        how much they would like to move or build there, given considerations to the people
+        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
+        a penalty that makes people less willing to build a home on a vacant lot than to move
+        into a vacant home.
+        """
+        scores = {}
+        for home in self.city.vacant_homes:
+            my_score = self._rate_potential_lot(lot=home.lot)
+            if self.spouse:
+                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=home)
+            else:
+                spouse_score = 0
+            scores[home] = my_score + spouse_score
+        for lot in self.city.vacant_lots:
+            my_score = self._rate_potential_lot(lot=lot)
+            if self.spouse:
+                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=lot)
+            else:
+                spouse_score = 0
+            scores[lot] = (
+                (my_score + spouse_score) * self.game.config.penalty_for_having_to_build_a_home_vs_buying_one
+            )
+        return scores
+
+    def _rate_potential_lot(self, lot):
+        """Score the desirability of living at the location of a lot.
+
+        TODO: Other considerations here.
+        """
+        config = self.game.config
+        desire_to_live_near_family = self._determine_desire_to_move_near_family()
+        # Score home for its proximity to family (either positively or negatively, depending); only
+        # consider family members that are alive, in town, and not living with you already (i.e., kids)
+        relatives_in_town = {
+            f for f in self.extended_family if f.alive and not f.departed and f.home is not self.home
+        }
+        score = 0
+        for relative in relatives_in_town:
+            relation_to_me = self.relation_to_me(person=relative)
+            pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
+            dist = relative.home.lot.get_dist_to(lot) + 1  # Since we're dividing by this next
+            score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
+        # Score for proximity to friends (only positively)
+        for friend in self.friends:
+            dist = friend.home.lot.get_dist_to(lot) + 1
+            score += config.pull_to_live_near_a_friend / dist
+        return score
+
+    def _determine_desire_to_move_near_family(self):
+        """Decide how badly you want to move near/away from family.
+
+        Currently, this relies on immutable personality traits, but eventually
+        this desire could be made dynamic according to life events, etc.
+        """
+        config = self.game.config
+        # People with personality C-, O+ most likely to leave home (source [1])
+        base_desire_to_live_near_family = config.desire_to_live_near_family_base
+        desire_to_live_near_family = self.big_5_c
+        desire_to_live_away_from_family = self.big_5_o
+        final_desire_to_live_near_family = (
+            base_desire_to_live_near_family + desire_to_live_near_family - desire_to_live_away_from_family
+        )
+        if final_desire_to_live_near_family < config.desire_to_live_near_family_floor:
+            final_desire_to_live_near_family = config.desire_to_live_near_family_floor
+        elif final_desire_to_live_near_family > config.desire_to_live_near_family_cap:
+            final_desire_to_live_near_family = config.desire_to_live_near_family_cap
+        return final_desire_to_live_near_family
 
     def move(self, new_home, reason):
         """Move to an apartment or home."""

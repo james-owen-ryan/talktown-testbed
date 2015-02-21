@@ -7,7 +7,7 @@ class Name(object):
     """
 
     def __init__(self, rep, bearer, conceived_by):
-        """Construct a Name object.
+        """Initialize a Name object.
 
         @param rep: The name itself (a string).
         @param bearer: The person with whom this name originates.

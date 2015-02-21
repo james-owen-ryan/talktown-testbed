@@ -11,7 +11,7 @@ class Birth(object):
     """A birth of a person in the city."""
 
     def __init__(self, subject, mother, father, hospital, doctor):
-        """Construct a Birth object."""
+        """Initialize a Birth object."""
         pass
 
 
@@ -19,7 +19,7 @@ class Death(object):
     """A death of a person in the city."""
 
     def __init__(self):
-        """Construct a Death object."""
+        """Initialize a Death object."""
         pass
 
 
@@ -27,7 +27,7 @@ class Marriage(object):
     """A marriage between two people in the city."""
 
     def __init__(self, subjects):
-        """Construct a Marriage object."""
+        """Initialize a Marriage object."""
         self.subjects = subjects
         self.year = self.subjects[0].city.game.year
         self.names_at_time_of_marriage = (self.subjects[0].name, self.subjects[1].name)
@@ -166,7 +166,7 @@ class Divorce(object):
     """A divorce between two people in the city."""
 
     def __init__(self, subjects):
-        """Construct a divorce object."""
+        """Initialize a divorce object."""
         self.subjects = subjects
         self.marriage = subjects[0].marriage
         self.year = subjects[0].game.year
@@ -304,7 +304,7 @@ class NameChange(object):
     """A (legal) name change someone makes."""
 
     def __init__(self, subject, new_last_name, reason):
-        """Construct a NameChange object."""
+        """Initialize a NameChange object."""
         self.subject = subject
         self.old_last_name = subject.last_name
         self.new_last_name = new_last_name
@@ -328,7 +328,7 @@ class Move(object):
     """A move from one home into another, or from no home to a home."""
 
     def __init__(self, subject, new_home, reason):
-        """Construct a Move object."""
+        """Initialize a Move object."""
         self.subject = subject
         self.old_home = subject.home  # May be None if newborn or person moved from outside the city
         self.new_home = new_home
@@ -344,7 +344,7 @@ class HomePurchase(object):
     """A purchase of a home by a person or couple, with the help of a realtor."""
 
     def __init__(self, clients, home, realtor):
-        """Construct a HomePurchase object."""
+        """Initialize a HomePurchase object."""
         self.clients = clients
         self.home = home
         self.home.transactions.append(self)
@@ -362,15 +362,16 @@ class HomePurchase(object):
     def remunerate(self):
         """Have subject remunerate realty firm for services rendered."""
         config = self.clients[0].game.config
+        service_rendered = self.__class__
         # Pay owner of the realty firm
         self.clients[0].pay(
             payee=self.realty_firm.owner,
-            amount=config.compensation_upon_home_purchase_for_realty_firm_owner
+            amount=config.compensations[service_rendered][Owner]
         )
         # Pay realtor
         self.clients[0].pay(
             payee=self.realtor,
-            amount=config.compensation_upon_home_purchase_for_realtor
+            amount=config.compensations[service_rendered][Realtor]
         )
 
 
@@ -378,7 +379,7 @@ class Departure(object):
     """A departure by which someone leaves the city (i.e., leaves the simulation)."""
 
     def __init__(self, subject):
-        """Construct a Departure object."""
+        """Initialize a Departure object."""
         self.subject = subject
         self.year = subject.game.year
         subject.city.residents.remove(subject)
@@ -390,9 +391,10 @@ class Hiring(object):
     """A hiring of a person by a company to serve in a specific occupational role."""
 
     def __init__(self, subject, company, occupation):
-        """Construct a Hiring object."""
+        """Initialize a Hiring object."""
         self.subject = subject
         self.company = company
+        self.old_occupation = subject.occupation
         self.occupation = occupation
         self.year = self.subject.city.game.year
         # Determine whether this was a promotion
@@ -402,15 +404,20 @@ class Hiring(object):
             self.promotion = False
         # Terminate the person's former occupation, if any
         if subject.occupation:
-            subject.occupation.end_date = subject.game.year
+            subject.occupation.terminate()
         occupation(person=subject, company=company, hiring=self)
+        # If this person had a former occupation, have the company that
+        # they worked for fill that now vacant position
+        if self.old_occupation:
+            position_that_is_now_vacant = self.old_occupation.__class__
+            self.old_occupation.company.hire(occupation=position_that_is_now_vacant)
 
 
 class HouseConstruction(object):
     """Construction of a house."""
 
     def __init__(self, clients, architect, lot):
-        """Construct a HouseConstruction object."""
+        """Initialize a HouseConstruction object."""
         self.clients = clients
         self.construction_firm = architect.company
         self.architect = architect
@@ -423,21 +430,22 @@ class HouseConstruction(object):
     def remunerate(self):
         """Have client remunerate construction firm for services rendered."""
         config = self.clients[0].game.config
+        service_rendered = self.__class__
         # Pay owner of the company
         self.clients[0].pay(
             payee=self.construction_firm.owner,
-            amount=config.compensation_upon_building_construction_for_construction_firm_owner
+            amount=config.compensations[service_rendered][Owner]
         )
         # Pay architect
         self.clients[0].pay(
             payee=self.architect,
-            amount=config.compensation_upon_building_construction_for_architect
+            amount=config.compensations[service_rendered][Architect]
         )
         # Pay construction workers
         for construction_worker in self.construction_firm.construction_workers:
             self.clients[0].pay(
                 payee=construction_worker,
-                amount=config.compensation_upon_building_construction_for_construction_worker
+                amount=config.compensations[service_rendered][ConstructionWorker]
             )
 
 
@@ -445,7 +453,7 @@ class BuildingConstruction(object):
     """Construction of a building."""
 
     def __init__(self, client, architect, lot, type_of_building):
-        """Construct a BuildingConstruction object."""
+        """Initialize a BuildingConstruction object."""
         self.client = client
         self.construction_firm = architect.company
         self.architect = architect
@@ -458,19 +466,20 @@ class BuildingConstruction(object):
     def remunerate(self):
         """Have client remunerate construction firm for services rendered."""
         config = self.client.game.config
+        service_rendered = self.__class__
         # Pay owner of the company
         self.client.pay(
             payee=self.construction_firm.owner,
-            amount=config.compensation_upon_building_construction_for_construction_firm_owner
+            amount=config.compensations[service_rendered][Owner]
         )
         # Pay architect
         self.client.pay(
             payee=self.architect,
-            amount=config.compensation_upon_building_construction_for_architect
+            amount=config.compensations[service_rendered][Architect]
         )
         # Pay construction workers
         for construction_worker in self.construction_firm.construction_workers:
             self.client.pay(
                 payee=construction_worker,
-                amount=config.compensation_upon_building_construction_for_construction_worker
+                amount=config.compensations[service_rendered][ConstructionWorker]
             )

@@ -1,3 +1,7 @@
+from occupation import *
+from event import *
+
+
 class Config(object):
     """Configuration for a gameplay instance in terms of simulation and gameplay parameters."""
 
@@ -41,20 +45,31 @@ class Config(object):
             lambda years_married: min((0.9 / (years_married / 4.0)), 0.9)
         )
         # People finding new homes
+        self.penalty_for_having_to_build_a_home_vs_buying_one = 0.5  # i.e., relative desire to build
         self.desire_to_live_near_family_base = 0.3  # Scale of -1 to 1; affected by personality
         self.desire_to_live_near_family_floor = -2
         self.desire_to_live_near_family_cap = 2
-        self.pull_to_live_near_a_child = 7  # Arbitrary units (are just relative to each other; family ones get altered)
-        self.pull_to_live_near_a_parent = 5
-        self.pull_to_live_near_a_grandchild = 3
-        self.pull_to_live_near_a_sibling = 2
-        self.pull_to_live_near_a_grandparent = 2
         self.pull_to_live_near_a_friend = 1.5
-        self.pull_to_live_near_a_greatgrandparent = 1
-        self.pull_to_live_near_a_niece_or_nephew = 1
-        self.pull_to_live_near_an_aunt_or_uncle = 1
-        self.pull_to_live_near_a_first_cousin = 1
-        self.penalty_for_having_to_build_a_home_vs_buying_one = 0.5  # i.e., relative desire to build
+        self.pull_to_live_near_family = {
+            # Arbitrary units (are just relative to each other; family ones get altered)
+            'Daughter': 7,
+            'Son': 7,
+            'Mother': 5,
+            'Father': 5,
+            'Granddaughter': 3,
+            'Grandson': 3,
+            'Sister': 2,
+            'Brother': 2,
+            'Grandmother': 2,
+            'Grandfather': 2,
+            'Greatgrandmother': 2,
+            'Greatgrandfather': 2,
+            'Niece': 1,
+            'Nephew': 1,
+            'Aunt': 1,
+            'Uncle': 1,
+            'Cousin': 1,
+        }
                 ## ECONOMY ##
         self.age_people_start_working = 16
         # Companies hiring people
@@ -69,29 +84,47 @@ class Config(object):
         self.generated_job_candidate_from_outside_city_age_floor = 17
         self.generated_job_candidate_from_outside_city_age_cap = 60
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
-        # Job levels of various occupations
-        self.job_level_cashier = 1
-        self.job_level_janitor = 1
-        self.job_level_hotel_maid = 1
-        self.job_level_waiter = 1
-        self.job_level_bank_teller = 2
-        self.job_level_concierge = 2
-        self.job_level_hair_stylist = 2
-        self.job_level_construction_worker = 2
-        self.job_level_firefighter = 2
-        self.job_level_police_officer = 2
-        self.job_level_nurse = 2
-        self.job_level_tattoo_artist = 2
-        self.job_level_manager = 3
-        self.job_level_fire_chief = 3
-        self.job_level_police_chief = 3
-        self.job_level_realtor = 3
-        self.job_level_doctor = 4
-        self.job_level_architect = 4
-        self.job_level_optometrist = 4
-        self.job_level_plastic_surgeon = 4
-        self.job_level_owner = 5
+        # Job levels of various occupations (indexed by their class names)
+        self.job_levels = {
+            Cashier: 1,
+            Janitor: 1,
+            HotelMaid: 1,
+            Waiter: 1,
+            BankTeller: 2,
+            Concierge: 2,
+            HairStylist: 2,
+            ConstructionWorker: 2,
+            Firefighter: 2,
+            PoliceOfficer: 2,
+            Nurse: 2,
+            TattooArtist: 2,
+            Manager: 3,
+            FireChief: 3,
+            PoliceChief: 3,
+            Realtor: 3,
+            Doctor: 4,
+            Architect: 4,
+            Optometrist: 4,
+            PlasticSurgeon: 4,
+            Owner: 5,
+        }
         # Compensation for various occupations
+        self.compensations = {
+            BuildingConstruction: {
+                Owner: 5000,
+                Architect: 2000,
+                ConstructionWorker: 400,
+            },
+            HouseConstruction: {
+                Owner: 2500,
+                Architect: 1000,
+                ConstructionWorker: 200,
+            },
+            HomePurchase: {
+                Owner: 2000,
+                Realtor: 600,
+            }
+        }
         self.compensation_upon_building_construction_for_construction_firm_owner = 5000
         self.compensation_upon_building_construction_for_architect = 2000
         self.compensation_upon_building_construction_for_construction_worker = 400
