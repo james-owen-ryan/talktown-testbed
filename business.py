@@ -424,3 +424,18 @@ class TaxiDepot(Business):
         super(TaxiDepot, self).__init__(lot, construction)
 
         # taxi drivers, manager, janitors?
+
+
+class University(Business):
+    """The local university."""
+
+    def __init__(self, lot, construction):
+        """Initialize a University object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        super(University, self).__init__(lot, construction)
+
+        # professors, janitor

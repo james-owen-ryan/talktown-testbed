@@ -21,7 +21,12 @@ class Occupation(object):
         self.terminus = None  # Changed by self.terminate
         self.person.occupation = self
         self.person.occupations.add(self)
+        # Set job level of this occupation
         self.level = person.game.config.job_levels[self.__class__]
+        # Set industry and what industry a potential applicant must come from to be hired for this occupation
+        self.industry = 'General'
+        self.prerequisite_industry = None
+
 
     @property
     def years_experience(self):
@@ -416,6 +421,20 @@ class PoliceOfficer(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(PoliceOfficer, self).__init__(person=person, company=company, hiring=hiring)
+
+
+class Professor(Occupation):
+    """A professor at the university."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a Professor object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(Professor, self).__init__(person=person, company=company, hiring=hiring)
 
 
 class Realtor(Occupation):
