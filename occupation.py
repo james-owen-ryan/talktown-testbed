@@ -29,9 +29,17 @@ class Occupation(object):
         return self.person.game.year - self.start_date
 
     def terminate(self, reason):
-        """Terminate this occupation, likely due to another hiring or retirement."""
+        """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
+        # If the person hasn't already been hired to a new position, set their
+        # occupation attribute to None
+        if self.person.occupation is self:
+            self.person.occupation = None
+        # This position is now vacant, so now have the company that this person worked
+        # for fill that now vacant position (which may cause a hiring chain)
+        position_that_is_now_vacant = self.__class__
+        self.company.hire(occupation=position_that_is_now_vacant)
 
 
 ##################################
@@ -174,6 +182,20 @@ class BankTeller(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(BankTeller, self).__init__(person=person, company=company, hiring=hiring)
+
+
+class BusDriver(Occupation):
+    """A bus driver."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a TaxiDriver object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(BusDriver, self).__init__(person=person, company=company, hiring=hiring)
 
 
 class Concierge(Occupation):
@@ -387,6 +409,20 @@ class TattooArtist(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(TattooArtist, self).__init__(person=person, company=company, hiring=hiring)
+
+
+class TaxiDriver(Occupation):
+    """A taxi driver."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a TaxiDriver object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(TaxiDriver, self).__init__(person=person, company=company, hiring=hiring)
 
 
 class Waiter(Occupation):
