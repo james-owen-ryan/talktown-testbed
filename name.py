@@ -10,15 +10,19 @@ class Name(object):
         """Initialize a Name object.
 
         @param rep: The name itself (a string).
-        @param progenitor: The person with whom this name originates.
-        @param conceived_by: The person(s) who conceived of this name (generally, the bearer's parents).
-        @param derived_from: The two surnames from which a hyphenated surname is derived.
+        @param progenitor: The Person with whom this name originates; if this is a hyphenated surname,
+                           the progenitor will be the first child to whom it is given.
+        @param conceived_by: The Person(s) who conceived of this name; if it's a forename, this will
+                             be the progenitor's parents, but if it's a surname this will be None unless
+                             the name is hyphenated.
+        @param derived_from: The two Names from which a hyphenated surname is derived.
         """
         self.rep = rep
         self.game = progenitor.game
         self.progenitor = progenitor
         self.conceived_by = conceived_by
         self.derived_from = derived_from
+        self.hyphenated = True if derived_from else False
 
     def __str__(self):
         """Return string representation."""
