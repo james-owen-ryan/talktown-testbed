@@ -587,6 +587,7 @@ class Person(object):
 
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
+        lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
         NameChange(subject=self, new_last_name=new_last_name, reason=reason)
 
     def marry(self, partner):
@@ -600,7 +601,10 @@ class Person(object):
         assert(partner is self.spouse and partner.spouse is self), (
             "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
         )
-        Divorce(subjects=(self, partner))
+        # The soon-to-be divorcees will decide together which lawyer to hire, because they are
+        # technically still married (and spouses are considered as part of this method call)
+        lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
+        Divorce(subjects=(self, partner), lawyer=lawyer)
 
     def give_birth(self):
         """Select a doctor and go to the hospital to give birth."""

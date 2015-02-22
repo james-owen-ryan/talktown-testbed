@@ -97,13 +97,16 @@ class Config(object):
             Janitor: 1,
             HotelMaid: 1,
             Waiter: 1,
-            Groundskeeper: 3,
+            Secretary: 1,
+            Groundskeeper: 1,
             BankTeller: 2,
             Concierge: 2,
             HairStylist: 2,
             ConstructionWorker: 2,
             Firefighter: 2,
             PoliceOfficer: 2,
+            TaxiDriver: 2,
+            BusDriver: 2,
             Nurse: 2,
             TattooArtist: 2,
             Manager: 3,
@@ -115,7 +118,9 @@ class Config(object):
             Architect: 4,
             Optometrist: 4,
             PlasticSurgeon: 4,
+            Lawyer: 4,
             Owner: 5,
+            Mayor: 5,
         }
         # Compensation for various occupations
         self.compensations = {
@@ -131,6 +136,11 @@ class Config(object):
             },
             Death: {
                 Mortician: 1000,
+                # [Cemetery doesn't have an owner]
+            },
+            Divorce: {
+                Lawyer: 1000,
+                Owner: 500,
             },
             HouseConstruction: {
                 Owner: 2500,
@@ -140,7 +150,11 @@ class Config(object):
             HomePurchase: {
                 Owner: 2000,
                 Realtor: 600,
-            }
+            },
+            NameChange: {
+                Owner: 200,
+                Lawyer: 200,
+            },
         }
         self.compensation_upon_building_construction_for_construction_firm_owner = 5000
         self.compensation_upon_building_construction_for_architect = 2000

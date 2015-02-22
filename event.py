@@ -417,9 +417,11 @@ class Marriage(object):
 class Divorce(object):
     """A divorce between two people in the city."""
 
-    def __init__(self, subjects):
+    def __init__(self, subjects, lawyer):
         """Initialize a divorce object."""
         self.subjects = subjects
+        self.lawyer = lawyer
+        self.law_firm = lawyer.company
         self.marriage = subjects[0].marriage
         self.year = subjects[0].game.year
         self.marriage.terminus = self
@@ -427,6 +429,7 @@ class Divorce(object):
         self._have_divorcees_split_up_money()
         self._have_a_spouse_and_possibly_kids_change_name_back()
         self._decide_and_enact_new_living_arrangements()
+        self._remunerate()
 
     def __str__(self):
         """Return string representation."""
@@ -551,17 +554,36 @@ class Divorce(object):
             for family_member in family_members_who_will_move:
                 family_member.depart_city()
 
+    def _remunerate(self):
+        """Have divorcees pay law firm for services rendered."""
+        config = self.subjects[0].game.config
+        service_rendered = self.__class__
+        # Pay owner of the law firm -- divorcees split the cost 50/50
+        amount_due_to_owner = config.compensations[service_rendered][Owner]
+        amount_due_to_lawyer = config.compensations[service_rendered][Lawyer]
+        for divorcee in self.subjects:
+            divorcee.pay(
+                payee=self.law_firm.owner,
+                amount=amount_due_to_owner/2
+            )
+            divorcee.pay(
+                payee=self.lawyer,
+                amount=amount_due_to_lawyer/2
+            )
+
 
 class NameChange(object):
     """A (legal) name change someone makes."""
 
-    def __init__(self, subject, new_last_name, reason):
+    def __init__(self, subject, new_last_name, reason, lawyer):
         """Initialize a NameChange object."""
         self.year = subject.game.year
         self.subject = subject
         self.old_last_name = subject.last_name
         self.new_last_name = new_last_name
         self.old_name = subject.name
+        self.lawyer = lawyer
+        self.law_firm = lawyer
         # Actually change the name
         subject.last_name = new_last_name
         self.new_name = subject.name
@@ -574,6 +596,21 @@ class NameChange(object):
         """Return string representation."""
         return "Name change by which {} became known as {}".format(
             self.old_name, self.new_name
+        )
+
+    def _remunerate(self):
+        """Have name changer pay law firm for services rendered."""
+        config = self.subject.game.config
+        service_rendered = self.__class__
+        # Pay owner of the law firm
+        self.subject.pay(
+            payee=self.law_firm.owner,
+            amount=config.compensations[service_rendered][Owner]
+        )
+        # Pay lawyer
+        self.subject.pay(
+            payee=self.lawyer,
+            amount=config.compensations[service_rendered][Lawyer]
         )
 
 
