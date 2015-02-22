@@ -27,7 +27,6 @@ class Occupation(object):
         self.industry = 'General'
         self.prerequisite_industry = None
 
-
     @property
     def years_experience(self):
         """Return years this person has had this occupation."""
@@ -333,6 +332,17 @@ class Lawyer(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(Lawyer, self).__init__(person=person, company=company, hiring=hiring)
+        # Work accomplishments
+        self.filed_divorces = []
+        self.filed_name_changes = []
+
+    def file_divorce(self, clients):
+        """File a name change on behalf of person."""
+        Divorce(subjects=clients, lawyer=self)
+
+    def file_name_change(self, person, new_last_name, reason):
+        """File a name change on behalf of person."""
+        NameChange(subject=person, new_last_name=new_last_name, reason=reason, lawyer=self)
 
 
 class Mayor(Occupation):
@@ -361,6 +371,8 @@ class Mortician(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(Mortician, self).__init__(person=person, company=company, hiring=hiring)
+        # Work accomplishments
+        self.body_interments = []
 
     def inter_body(self, deceased, cause_of_death):
         """Inter a body in a cemetery."""

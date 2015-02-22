@@ -20,6 +20,7 @@ class Business(object):
                              the construction of this company's building.
         """
         self.city = lot.city
+        self.city.companies.add(self)
         self.founded = self.city.game.year
         self.lot = lot
         self.construction = construction
@@ -151,8 +152,6 @@ class Bank(Business):
         """
         super(Bank, self).__init__(lot, construction)
 
-        # tellers, manager, janitors
-
 
 class Barbershop(Business):
     """A barbershop."""
@@ -165,8 +164,6 @@ class Barbershop(Business):
                              the construction of this building.
         """
         super(Barbershop, self).__init__(lot, construction)
-
-        # hair stylists, cashiers, manager
 
 
 class BusDepot(Business):
@@ -181,8 +178,6 @@ class BusDepot(Business):
         """
         super(BusDepot, self).__init__(lot, construction)
 
-        # bus drivers, manager, janitors?
-
 
 class CityHall(Business):
     """The city hall."""
@@ -195,8 +190,6 @@ class CityHall(Business):
                              the construction of this building.
         """
         super(CityHall, self).__init__(lot, construction)
-
-        # secretaries, mayor, janitors
 
 
 class ConstructionFirm(Business):
@@ -212,8 +205,6 @@ class ConstructionFirm(Business):
         super(ConstructionFirm, self).__init__(lot, construction)
         self.architects = set()
         self.former_architects = set()
-
-        # architects, construction workers, janitors
 
     @property
     def house_constructions(self):
@@ -244,8 +235,6 @@ class OptometryClinic(Business):
         """
         super(OptometryClinic, self).__init__(lot, construction)
 
-        # optometrist(s), cashiers, manager, janitors
-
 
 class FireStation(Business):
     """A fire station."""
@@ -258,8 +247,6 @@ class FireStation(Business):
                              the construction of this building.
         """
         super(FireStation, self).__init__(lot, construction)
-
-        # Firefighters, chief, janitors
 
 
 class Hospital(Business):
@@ -284,8 +271,6 @@ class Hospital(Business):
             baby_deliveries |= realtor.home_sales
         return baby_deliveries
 
-        # Doctors, nurses, manager, janitors
-
 
 class Hotel(Business):
     """A hotel."""
@@ -299,8 +284,6 @@ class Hotel(Business):
         """
         super(Hotel, self).__init__(lot, construction)
 
-        # concierge(s), maids, cashier, manager
-
 
 class LawFirm(Business):
     """A law firm."""
@@ -313,8 +296,24 @@ class LawFirm(Business):
                              the construction of this building.
         """
         super(LawFirm, self).__init__(lot, construction)
+        self.lawyers = set()
+        self.former_lawyers = set()
 
-        # lawyers, janitors
+    @property
+    def filed_divorces(self):
+        """Return all divorces filed through this law firm."""
+        filed_divorces = set()
+        for lawyer in self.lawyers | self.former_lawyers:
+            filed_divorces |= lawyer.filed_divorces
+        return filed_divorces
+
+    @property
+    def filed_name_changes(self):
+        """Return all name changes filed through this law firm."""
+        filed_name_changes = set()
+        for lawyer in self.lawyers | self.former_lawyers:
+            filed_name_changes |= lawyer.filed_name_changes
+        return filed_name_changes
 
 
 class PlasticSurgeryClinic(Business):
@@ -329,8 +328,6 @@ class PlasticSurgeryClinic(Business):
         """
         super(PlasticSurgeryClinic, self).__init__(lot, construction)
 
-        # plastic surgeons, manager
-
 
 class PoliceStation(Business):
     """A police station."""
@@ -343,8 +340,6 @@ class PoliceStation(Business):
                              the construction of this building.
         """
         super(PoliceStation, self).__init__(lot, construction)
-
-        # police officers, chief
 
 
 class RealtyFirm(Business):
@@ -360,8 +355,6 @@ class RealtyFirm(Business):
         super(RealtyFirm, self).__init__(lot, construction)
         self.realtors = set()
         self.former_realtors = set()
-
-        # realtors, manager
 
     @property
     def home_sales(self):
@@ -384,8 +377,6 @@ class Restaurant(Business):
         """
         super(Restaurant, self).__init__(lot, construction)
 
-        # cashiers, waiters, manager
-
 
 class Supermarket(Business):
     """A supermarket on a lot in a city."""
@@ -398,8 +389,6 @@ class Supermarket(Business):
                              the construction of this building.
         """
         super(Supermarket, self).__init__(lot, construction)
-
-        # cashiers, manager
 
 
 class TattooParlor(Business):
@@ -414,8 +403,6 @@ class TattooParlor(Business):
         """
         super(TattooParlor, self).__init__(lot, construction)
 
-        # tattoo artists, cashiers, manager
-
 
 class TaxiDepot(Business):
     """A taxi depot."""
@@ -429,8 +416,6 @@ class TaxiDepot(Business):
         """
         super(TaxiDepot, self).__init__(lot, construction)
 
-        # taxi drivers, manager, janitors?
-
 
 class University(Business):
     """The local university."""
@@ -443,5 +428,3 @@ class University(Business):
                              the construction of this building.
         """
         super(University, self).__init__(lot, construction)
-
-        # professors, janitor

@@ -10,25 +10,29 @@ from name import Name
 
 
 class Birth(object):
-    """A birth of a person in the city."""
+    """A birth of a person."""
 
     def __init__(self, mother, doctor):
         """Initialize a Birth object."""
         self.year = mother.game.year
+        self.city = mother.city
         self.biological_mother = mother
         self.mother = mother
         self.biological_father = mother.impregnated_by
         self.father = self.mother.spouse if self.mother.spouse and self.mother.spouse.male else None
         if self.father and self.father is not self.biological_father:
             self.adoption = Adoption(subject=self.subject, adoptive_parents=(self.father,))
-        self.doctor = doctor
-        self.doctor.baby_deliveries.append(self)
-        self.hospital = doctor.company
         self.subject = Person(game=mother.game, birth=self)
         if self.biological_father is self.mother.spouse:
             self.mother.marriage.children_produced.add(self.subject)
+        self.doctor = doctor
         self._name_baby()
-        self._remunerate()
+        if self.city:  # There won't be a doctor if the birth happened outside the city
+            self.hospital = doctor.company
+            self.doctor.baby_deliveries.append(self)
+            self._remunerate()
+        else:
+            self.hospital = None
 
     def _update_mother_attributes(self):
         """Update attributes of the mother that are affected by this birth."""
@@ -199,6 +203,7 @@ class Death(object):
     def __init__(self, subject, mortician, cause_of_death):
         """Initialize a Death object."""
         self.year = self.subject.game.year
+        self.city = self.subject.city
         self.subject = self.subject
         self.cause = cause_of_death
         self.mortician = mortician
@@ -208,8 +213,14 @@ class Death(object):
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()
         self._vacate_job_position_of_the_deceased()
-        self._inter_the_body()
-        self._remunerate()
+        if self.city:
+            # Death shouldn't be possibly outside the city, but I'm doing
+            # this to be consistent with other event classes
+            self._remunerate()
+            self.cemetery_plot = self._inter_the_body()
+            self.mortician.bodies_interred.append(self)
+        else:
+            self.cemetery_plot = None
 
     def _update_attributes_of_deceased_and_spouse(self):
         config = self.subject.game.config
@@ -232,7 +243,7 @@ class Death(object):
 
     def _inter_the_body(self):
         """Inter the body at the local cemetery."""
-        self.cemetery.inter_person(person=self.subject)
+        return self.cemetery.inter_person(person=self.subject)
 
     def _remunerate(self):
         """Have deceased's next of kin pay mortician for services rendered."""
@@ -257,6 +268,7 @@ class Adoption(object):
         self.year = subject.year
         self.subject = subject
         self.adoptive_parents = adoptive_parents
+        self.city = self.adoptive_parents[0].city  # May be None if parents not in the city yet
 
 
 class Marriage(object):
@@ -264,8 +276,9 @@ class Marriage(object):
 
     def __init__(self, subjects):
         """Initialize a Marriage object."""
+        self.year = self.subjects[0].game.year
+        self.city = self.subjects[0].city
         self.subjects = subjects
-        self.year = self.subjects[0].city.game.year
         self.names_at_time_of_marriage = (self.subjects[0].name, self.subjects[1].name)
         self.name_changes = []  # Gets set by NameChange object, as appropriate
         self.terminus = None  # May point to a Divorce or Death object, as determined by self.terminate()
@@ -274,7 +287,10 @@ class Marriage(object):
         self._update_newlywed_attributes()
         self._have_newlyweds_pool_money_together()
         self._have_one_spouse_and_possibly_stepchildren_take_the_others_name()
-        self._decide_and_enact_new_living_arrangements()
+        if self.city:
+            self._decide_and_enact_new_living_arrangements()
+            # If they're not in the city yet (marriage between two PersonsExNihilo during
+            # world generation), living arrangements will be made once they move into it
         self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
 
     def __str__(self):
@@ -419,17 +435,25 @@ class Divorce(object):
 
     def __init__(self, subjects, lawyer):
         """Initialize a divorce object."""
+        self.year = self.subjects[0].game.year
+        self.city = self.subjects[0].city
         self.subjects = subjects
         self.lawyer = lawyer
-        self.law_firm = lawyer.company
         self.marriage = subjects[0].marriage
-        self.year = subjects[0].game.year
         self.marriage.terminus = self
         self._update_divorcee_attributes()
         self._have_divorcees_split_up_money()
         self._have_a_spouse_and_possibly_kids_change_name_back()
-        self._decide_and_enact_new_living_arrangements()
-        self._remunerate()
+        if self.city:
+            # Divorce isn't currently possible outside a city, but still
+            # doing this to be consistent with other event classes
+            self.law_firm = lawyer.company
+            self.lawyer.divorces_filed.append(self)
+            self._decide_and_enact_new_living_arrangements()
+            self._remunerate()
+        else:
+            self.law_firm = None
+
 
     def __str__(self):
         """Return string representation."""
@@ -578,12 +602,12 @@ class NameChange(object):
     def __init__(self, subject, new_last_name, reason, lawyer):
         """Initialize a NameChange object."""
         self.year = subject.game.year
+        self.city = subject.city
         self.subject = subject
         self.old_last_name = subject.last_name
         self.new_last_name = new_last_name
         self.old_name = subject.name
         self.lawyer = lawyer
-        self.law_firm = lawyer
         # Actually change the name
         subject.last_name = new_last_name
         self.new_name = subject.name
@@ -591,6 +615,11 @@ class NameChange(object):
         if isinstance(reason, Marriage):
             reason.name_changes.append(self)
         subject.name_changes.append(self)
+        if self.city:
+            self.law_firm = lawyer
+            self.lawyer.filed_name_changes.append(self)
+        else:
+            self.law_firm = None
 
     def __str__(self):
         """Return string representation."""
@@ -636,14 +665,15 @@ class HomePurchase(object):
     def __init__(self, clients, home, realtor):
         """Initialize a HomePurchase object."""
         self.year = clients[0].game.year
+        self.city = self.clients[0].city
         self.clients = clients
         self.home = home
         self.home.transactions.append(self)
         self.realtor = realtor
         self.realty_firm = realtor.company
-        self.realtor.home_sales.append(self)
         self._transfer_ownership()
         self._remunerate()
+        self.realtor.home_sales.append(self)
 
     def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
@@ -722,11 +752,11 @@ class HouseConstruction(object):
         self.clients = clients
         self.construction_firm = architect.company
         self.architect = architect
-        self.architect.house_constructions.append(self)
         self.builders = self.construction_firm.construction_workers
         self.lot = lot
         self.house = House(lot=lot, construction=self)
         self._remunerate()
+        self.architect.house_constructions.append(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -759,11 +789,11 @@ class BuildingConstruction(object):
         self.client = client
         self.construction_firm = architect.company
         self.architect = architect
-        self.architect.building_constructions.append(self)
         self.builders = self.construction_firm.construction_workers
         self.lot = lot
         self.building = type_of_building(lot=lot, construction=self)
         self._remunerate()
+        self.architect.building_constructions.append(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
