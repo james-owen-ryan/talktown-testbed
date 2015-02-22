@@ -15,18 +15,16 @@ class City(object):
         self.founded = founded
         self.business_needs = self.determine_business_needs(config=self.game.config)
         self.residents = set()
-        self.departed = set()  # People who leave the city (i.e., leave the simulation)
+        self.departed = set()  # People who left the city (i.e., left the simulation)
+        self.deceased = set()  # People who died in in the city
         self.companies = set()
         self.vacant_homes = set()
         self.vacant_lots = set()
 
-    @staticmethod
-    def determine_business_needs(config):
-        """Determine what types of businesses are needed in this city."""
-        business_needs = []
-        for business_type in config.business_frequencies:
-            business_needs += [business_type] * config.business_frequencies[business_type]
-        return business_needs
+    @property
+    def all_time_residents(self):
+        """Return everyone who has at one time lived in the city."""
+        return self.residents | self.deceased | self.departed
 
     @property
     def a_business_need(self):
@@ -38,7 +36,7 @@ class City(object):
         return self.business_needs.pop()
 
     @property
-    def unemployed_people(self):
+    def unemployed(self):
         """Return unemployed (young) people, excluding retirees."""
         unemployed_people = set()
         for resident in self.residents:
@@ -46,6 +44,14 @@ class City(object):
                 if resident.age >= self.game.config.age_people_start_working:
                     unemployed_people.add(resident)
         return unemployed_people
+
+    @staticmethod
+    def determine_business_needs(config):
+        """Determine what types of businesses are needed in this city."""
+        business_needs = []
+        for business_type in config.business_frequencies:
+            business_needs += [business_type] * config.business_frequencies[business_type]
+        return business_needs
 
     def workers_of_trade(self, occupation):
         """Return all residents in the city who practice to given occupation.
@@ -142,8 +148,19 @@ class Block(object):
         return house_numbers
 
 
+class Tract(object):
+    """A tract of land on a block in a city, upon which parks and cemeteries are established."""
+
+    def __init__(self, block):
+        """Initialize a Lot object."""
+        self.game = block.city.game
+        self.city = block.city
+        self.street = block.street
+        self.block = block
+
+
 class Lot(object):
-    """A lot on a block in a city."""
+    """A lot on a block in a city, upon which buildings and houses get erected."""
 
     def __init__(self, block, house_number):
         """Initialize a Lot object."""
