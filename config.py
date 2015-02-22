@@ -35,6 +35,8 @@ class Config(object):
         self.founding_mother_age_at_marriage_floor = 17
                 ## FULL SIMULATION ##
         # Marriage
+        self.chance_one_newlywed_takes_others_name = 0.9
+        self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.02
         self.chance_newlyweds_keep_former_love_interests = 0.01
         self.chance_stepchildren_take_stepparent_name = 0.3
         self.age_after_which_stepchildren_will_not_take_stepparent_name = 6
@@ -42,7 +44,14 @@ class Config(object):
         self.chance_a_divorcee_falls_out_of_love = 0.9
         self.chance_a_male_divorcee_is_one_who_moves_out = 0.7
         self.function_to_derive_chance_spouse_changes_name_back = (
-            lambda years_married: min((0.9 / (years_married / 4.0)), 0.9)
+            lambda years_married: min(
+                0.9 / ((years_married + 0.1) / 4.0),  # '+0.1' is to avoid ZeroDivisionError
+                0.9
+            )
+        )
+        # Death
+        self.function_to_derive_chance_a_widow_remarries = (
+            lambda years_married: 1.0 / (int(years_married) + 4)
         )
         # People finding new homes
         self.penalty_for_having_to_build_a_home_vs_buying_one = 0.5  # i.e., relative desire to build
@@ -51,7 +60,8 @@ class Config(object):
         self.desire_to_live_near_family_cap = 2
         self.pull_to_live_near_a_friend = 1.5
         self.pull_to_live_near_family = {
-            # Arbitrary units (are just relative to each other; family ones get altered)
+            # Arbitrary units (are just relative to each other; will also get
+            # altered by the person's desire to live near family)
             'Daughter': 7,
             'Son': 7,
             'Mother': 5,
@@ -71,7 +81,9 @@ class Config(object):
             'Cousin': 1,
         }
                 ## ECONOMY ##
+        # Misc
         self.age_people_start_working = 16
+        self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
@@ -79,17 +91,13 @@ class Config(object):
         self.preference_to_hire_extended_family = 1
         self.preference_to_hire_known_person = 0.5
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
-        self.generated_job_candidate_from_outside_city_age_mean = 24
-        self.generated_job_candidate_from_outside_city_age_sd = 3
-        self.generated_job_candidate_from_outside_city_age_floor = 17
-        self.generated_job_candidate_from_outside_city_age_cap = 60
-        self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Job levels of various occupations (indexed by their class names)
         self.job_levels = {
             Cashier: 1,
             Janitor: 1,
             HotelMaid: 1,
             Waiter: 1,
+            Groundskeeper: 3,
             BankTeller: 2,
             Concierge: 2,
             HairStylist: 2,
@@ -102,6 +110,7 @@ class Config(object):
             FireChief: 3,
             PoliceChief: 3,
             Realtor: 3,
+            Mortician: 3,
             Doctor: 4,
             Architect: 4,
             Optometrist: 4,
@@ -110,10 +119,18 @@ class Config(object):
         }
         # Compensation for various occupations
         self.compensations = {
+            Birth: {
+                Owner: 500,
+                Doctor: 750,
+                Nurse: 300,
+            },
             BuildingConstruction: {
                 Owner: 5000,
                 Architect: 2000,
                 ConstructionWorker: 400,
+            },
+            Death: {
+                Mortician: 1000,
             },
             HouseConstruction: {
                 Owner: 2500,
@@ -140,6 +157,11 @@ class Config(object):
         self.preference_to_contract_extended_family = 1
         self.preference_to_contract_known_person = 0.5
                 ## PEOPLE REPRESENTATION ##
+        # People ex nihilo
+        self.generated_job_candidate_from_outside_city_age_mean = 24
+        self.generated_job_candidate_from_outside_city_age_sd = 3
+        self.generated_job_candidate_from_outside_city_age_floor = 17
+        self.generated_job_candidate_from_outside_city_age_cap = 60
         # Infertility
         self.male_infertility_rate = 0.07
         self.female_infertility_rate = 0.11
@@ -157,6 +179,8 @@ class Config(object):
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
         # Big Five personality traits (source [0])
+        self.big_5_floor = -1.0
+        self.big_5_cap = 1.0
         self.big_5_sd = 0.35
         self.big_5_o_mean = 0.375
         self.big_5_c_mean = 0.25
@@ -169,7 +193,18 @@ class Config(object):
         self.big_5_a_heritability = 0.48
         self.big_5_n_heritability = 0.42
         self.big_5_heritability_sd = 0.05
-        # Businesses
+        # Names
+        self.chance_son_inherits_fathers_exact_name = 0.03
+        self.chance_child_inherits_first_name = 0.1
+        self.chance_child_inherits_middle_name = 0.25
+        self.frequency_of_naming_after_father = 12
+        self.frequency_of_naming_after_grandfather = 5
+        self.frequency_of_naming_after_greatgrandfather = 2
+        self.frequency_of_naming_after_mother = 0
+        self.frequency_of_naming_after_grandmother = 5
+        self.frequency_of_naming_after_greatgrandmother = 2
+
+        # Businesses  -- DELETE???
         self.business_frequencies = self.set_frequency_of_each_business_type()
 
     @staticmethod
