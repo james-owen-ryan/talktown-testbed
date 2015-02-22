@@ -316,6 +316,20 @@ class Lawyer(Occupation):
         super(Lawyer, self).__init__(person=person, company=company, hiring=hiring)
 
 
+class Mayor(Occupation):
+    """A mayor at the city hall."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a Mayor object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(Mayor, self).__init__(person=person, company=company, hiring=hiring)
+
+
 class Mortician(Occupation):
     """A mortician at a cemetery."""
 
