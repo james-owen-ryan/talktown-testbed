@@ -3,27 +3,39 @@
 # building and is not owned by anyone.
 
 
-class Cemetery(object):
+class Landmark(object):
+    """A landmark on a tract in a city."""
+
+    def __init__(self, tract):
+        """Initialize a Landmark object."""
+        self.city = tract.city
+        self.founded = self.city.game.year
+        self.tract = tract
+        self.employees = set()
+        self.address = self._init_generate_address()
+
+    def _init_get_named(self):
+        """Get named by [???]."""
+        pass
+
+    def _init_generate_address(self):
+        """Generate an address, given the lot building is on."""
+        house_number = self.tract.house_number
+        street = str(self.tract.street)
+        return "{} {}".format(house_number, street)
+
+
+class Cemetery(Landmark):
     """A cemetery on a tract in a city."""
 
-    def __init__(self, block):
+    def __init__(self, tract):
         """Initialize a Cemetery object."""
-        self.game = block.city.game
-        self.city = block.city
-        self.street = block.street
-        self.block = block
-
-        # groundskeepers, mortician
+        super(Cemetery, self).__init__(tract)
 
 
-class Park(object):
+class Park(Landmark):
     """A park on a tract in a city."""
 
-    def __init__(self, block):
+    def __init__(self, tract):
         """Initialize a Park object."""
-        self.game = block.city.game
-        self.city = block.city
-        self.street = block.street
-        self.block = block
-
-        # groundskeepers
+        super(Park, self).__init__(tract)

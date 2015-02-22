@@ -1,7 +1,7 @@
 import heapq
 from config import Config
 from occupation import *
-
+from person import Person, PersonExNihilo
 
 # Objects of a business class represents both the company itself and the building
 # at which it is headquartered. All business subclasses inherit generic attributes
@@ -26,18 +26,17 @@ class Business(object):
         self.owner = construction.client
         self.owner.building_commissions.append(self)
         self.employees = set()
-        self.address = self.init_generate_address(lot=self.lot)
+        self.name = self._init_get_named()
+        self.address = self._init_generate_address()
 
-    @staticmethod
-    def init_get_named(owner):
+    def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
         pass
 
-    @staticmethod
-    def init_generate_address(lot):
+    def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
+        house_number = self.lot.house_number
+        street = str(self.lot.street)
         return "{} {}".format(house_number, street)
 
     def hire(self, occupation):
@@ -63,7 +62,7 @@ class Business(object):
         return chosen_candidate
 
     def _find_candidate_from_outside_the_city(self):
-        """Generate a person with no parents to move into the city for this job."""
+        """Generate a PersonExNihilo to move into the city for this job."""
         config = self.city.game.config
         age_of_this_person = random.normalvariate(
             config.generated_job_candidate_from_outside_city_age_mean,
@@ -74,7 +73,7 @@ class Business(object):
         elif age_of_this_person > config.generated_job_candidate_from_outside_city_age_cap:
             age_of_this_person = config.generated_job_candidate_from_outside_city_age_cap
         birth_year_of_this_person = self.city.game.year-age_of_this_person
-        candidate = Person(mother=None, father=None, birth_year=birth_year_of_this_person)
+        candidate = PersonExNihilo(game=self.city.game, birth_year=birth_year_of_this_person)
         return candidate
 
     def _rate_all_job_candidates(self, candidates):
@@ -117,7 +116,7 @@ class Business(object):
                 if employee.occupation.level < occupation.level:
                     candidates.add(employee)
         # Consider unemployed (young) people
-        candidates |= self.city.unemployed_people
+        candidates |= self.city.unemployed
         return candidates
 
 
@@ -131,7 +130,7 @@ class ApartmentComplex(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(ApartmentComplex, self).__init__(lot, construction)
 
 
 class Bank(Business):
@@ -144,7 +143,7 @@ class Bank(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Bank, self).__init__(lot, construction)
 
         # tellers, manager, janitors
 
@@ -159,7 +158,7 @@ class Barbershop(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Barbershop, self).__init__(lot, construction)
 
         # hair stylists, cashiers, manager
 
@@ -174,7 +173,9 @@ class ConstructionFirm(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(ConstructionFirm, self).__init__(lot, construction)
+        self.architects = set()
+        self.former_architects = set()
 
         # architects, construction workers, janitors
 
@@ -205,7 +206,7 @@ class OptometryClinic(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(OptometryClinic, self).__init__(lot, construction)
 
         # optometrist(s), cashiers, manager, janitors
 
@@ -220,7 +221,7 @@ class FireStation(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(FireStation, self).__init__(lot, construction)
 
         # Firefighters, chief, janitors
 
@@ -235,7 +236,17 @@ class Hospital(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Hospital, self).__init__(lot, construction)
+        self.doctors = set()
+        self.former_doctors = set()
+
+    @property
+    def baby_deliveries(self):
+        """Return all baby deliveries."""
+        baby_deliveries = set()
+        for realtor in self.doctors | self.former_doctors:
+            baby_deliveries |= realtor.home_sales
+        return baby_deliveries
 
         # Doctors, nurses, manager, janitors
 
@@ -250,7 +261,7 @@ class Hotel(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Hotel, self).__init__(lot, construction)
 
         # concierge(s), maids, cashier, manager
 
@@ -265,7 +276,7 @@ class PlasticSurgeryClinic(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(PlasticSurgeryClinic, self).__init__(lot, construction)
 
         # plastic surgeons, manager
 
@@ -280,7 +291,7 @@ class PoliceStation(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(PoliceStation, self).__init__(lot, construction)
 
         # police officers, chief
 
@@ -295,7 +306,9 @@ class RealtyFirm(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(RealtyFirm, self).__init__(lot, construction)
+        self.realtors = set()
+        self.former_realtors = set()
 
         # realtors, manager
 
@@ -318,7 +331,7 @@ class Restaurant(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Restaurant, self).__init__(lot, construction)
 
         # cashiers, waiters, manager
 
@@ -333,7 +346,7 @@ class Supermarket(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(Supermarket, self).__init__(lot, construction)
 
         # cashiers, manager
 
@@ -348,6 +361,6 @@ class TattooParlor(Business):
         @param construction: A BuildingConstruction object holding data about
                              the construction of this building.
         """
-        Business.__init__(self=self, lot=lot, construction=construction)
+        super(TattooParlor, self).__init__(lot, construction)
 
         # tattoo artists, cashiers, manager

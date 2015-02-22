@@ -34,6 +34,7 @@ class Person(object):
         self.tag = ''  # Allows players to tag characters with arbitrary strings
         # Set misc attributes
         self.alive = True
+        self.death_year = None
         # Set biological characteristics
         self.infertile = self._init_fertility(male=self.male, config=self.game.config)
         self.attracted_to_men, self.attracted_to_women = (
@@ -45,7 +46,7 @@ class Person(object):
         )
         # Set mental attributes
         self.memory = self._init_memory()
-        # Prepare name attributes that get set by event.Birth.name_baby() (or PersonExNihilo.init_name())
+        # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo.init_name())
         self.first_name = None
         self.middle_name = None
         self.last_name = None
@@ -105,6 +106,7 @@ class Person(object):
         self._init_update_familial_attributes_of_family_members()
         # Prepare attributes representing this person's interpersonal relationships.
         self.spouse = None
+        self.widowed = False
         self.friends = set()
         self.known_people = set()
         self.known_by = set()
@@ -427,10 +429,27 @@ class Person(object):
         for c in self.cousins:
             c.cousins.add(self)
 
-    @staticmethod
-    def _init_money():
+    def _init_money(self):
         """Determine how much money this person has to start with."""
         return 0
+
+    @property
+    def age(self):
+        """Return whether this person is at least 18 years old."""
+        return self.game.year - self.birth_year
+
+    @property
+    def adult(self):
+        """Return whether this person is at least 18 years old."""
+        return self.age >= 18
+
+    @property
+    def present(self):
+        """Return whether the person is alive and in the city."""
+        if self.alive and not self.departure:
+            return True
+        else:
+            return False
 
     @property
     def parents(self):
@@ -439,6 +458,34 @@ class Person(object):
         The @property decorator is used so that this attribute can be dynamic to adoption.
         """
         return self.mother, self.father,
+
+    @property
+    def next_of_kin(self):
+        """Return next of kin.
+
+        A person's next of kin will make decisions about their estate and
+        so forth upon the person's death.
+        """
+        assert not self.alive, "{} is dead, but a request was made for his next of kin."
+        if self.spouse and self.spouse.present:
+            next_of_kin = self.spouse
+        elif self.mother and self.mother.present:
+            next_of_kin = self.mother
+        elif self.father and self.father.present:
+            next_of_kin = self.father
+        elif any(k for k in self.kids if k.adult and k.present):
+            next_of_kin = next(k for k in self.kids if k.adult and k.present)
+        elif any(f for f in self.immediate_family if f.adult and f.present):
+            next_of_kin = next(f for f in self.immediate_family if f.adult and f.present)
+        elif any(f for f in self.extended_family if f.adult and f.present):
+            next_of_kin = next(f for f in self.extended_family if f.adult and f.present)
+        elif any(f for f in self.friends if f.adult and f.present):
+            next_of_kin = next(f for f in self.friends if f.adult and f.present)
+        else:
+            next_of_kin = random.choice(
+                [r for r in self.city.residents if r.adult and r.present]
+            )
+        return next_of_kin
 
     @property
     def full_name(self):
@@ -544,7 +591,7 @@ class Person(object):
 
     def marry(self, partner):
         """Marry partner."""
-        assert(self.alive and partner.alive), "{} tried to marry {}, but one of them is dead."
+        assert(self.present and partner.present), "{} tried to marry {}, but one of them is dead or departed."
         Marriage(subjects=(self, partner))
 
     def divorce(self, partner):
@@ -559,6 +606,11 @@ class Person(object):
         """Select a doctor and go to the hospital to give birth."""
         doctor = self.contract_person_of_certain_occupation(occupation=Doctor)
         doctor.deliver_baby(mother=self)
+
+    def die(self, cause_of_death):
+        """Die and get interred at the local cemetery."""
+        mortician = self.next_of_kin.contract_person_of_certain_occupation(occupation=Mortician)
+        mortician.inter_body(deceased=self, cause_of_death=cause_of_death)
 
     def move(self, new_home, reason):
         """Move to an apartment or home."""
@@ -727,7 +779,7 @@ class Person(object):
         # Score home for its proximity to family (either positively or negatively, depending); only
         # consider family members that are alive, in town, and not living with you already (i.e., kids)
         relatives_in_town = {
-            f for f in self.extended_family if f.alive and not f.departed and f.home is not self.home
+            f for f in self.extended_family if f.present and f.home is not self.home
         }
         score = 0
         for relative in relatives_in_town:
@@ -773,7 +825,7 @@ class PersonExNihilo(Person):
     """
 
     def __init__(self, game, birth_year, assigned_male=False, assigned_female=False):
-        Person.__init__(game=game, birth=None)
+        super(PersonExNihilo, self).__init__(game, birth=None)
         # Overwrite birth year set by Person.__init__()
         self.birth_year = birth_year
         # Potentially overwrite sex set by Person.__init__()
@@ -879,7 +931,6 @@ class PersonExNihilo(Person):
         """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
         pass
 
-    @staticmethod
-    def _init_money():
+    def _init_money(self):
         """Determine how much money this person has to start with."""
-        return 5000
+        return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
