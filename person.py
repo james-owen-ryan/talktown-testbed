@@ -9,34 +9,43 @@ from name import Name
 class Person(object):
     """A person living in a city of a gameplay instance."""
 
-    def __init__(self, game, mother, father):
+    def __init__(self, game, birth):
         """Initialize a Person object."""
         # Set location and gameplay instance
         self.game = game
         self.city = game.city
-        # Set parents
-        self.mother = mother
-        self.father = father
-        self.biological_father = father
-        # Set year of birth
-        self.birth_year = self.game.year
+        if birth:
+            # Set parents
+            self.biological_mother = birth.biological_mother
+            self.mother = birth.mother
+            self.biological_father = birth.biological_father
+            self.father = birth.father
+            # Set year of birth
+            self.birth_year = birth.year
+        else:
+            # PersonExNihilo
+            self.biological_mother = None
+            self.mother = None
+            self.biological_father = None
+            self.father = None
+            self.birth_year = None  # Gets set by PersonExNihilo.__init__()
         # Set sex
-        self.male, self.female = self.init_sex()
+        self.male, self.female = self._init_sex()
         self.tag = ''  # Allows players to tag characters with arbitrary strings
         # Set misc attributes
         self.alive = True
         # Set biological characteristics
-        self.infertile = self.init_fertility(male=self.male, config=self.game.config)
+        self.infertile = self._init_fertility(male=self.male, config=self.game.config)
         self.attracted_to_men, self.attracted_to_women = (
-            self.init_sexuality(male=self.male, config=self.game.config)
+            self._init_sexuality(male=self.male, config=self.game.config)
         )
         # Set personality
         self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
-            self.init_personality()
+            self._init_personality()
         )
         # Set mental attributes
-        self.memory = self.init_memory()
-        # Prepare name attributes that get set by Birth.name_baby() (or PersonExNihilo.init_name())
+        self.memory = self._init_memory()
+        # Prepare name attributes that get set by event.Birth.name_baby() (or PersonExNihilo.init_name())
         self.first_name = None
         self.middle_name = None
         self.last_name = None
@@ -44,8 +53,8 @@ class Person(object):
         self.maiden_name = None
         self.named_for = (None, None)  # From whom first and middle name originate, respectively
         # Prepare familial attributes that get populated by self.init_familial_attributes()
-        self.ancestors = set()
-        self.descendants = set()
+        self.ancestors = set()  # Biological only
+        self.descendants = set()  # Biological only
         self.immediate_family = set()
         self.extended_family = set()
         self.greatgrandparents = set()
@@ -71,9 +80,29 @@ class Person(object):
         self.grandsons = set()
         self.granddaughters = set()
         self.greatgrandchildren = set()
+        self.bio_parents = set()
+        self.bio_grandparents = set()
+        self.bio_siblings = set()
+        self.bio_full_siblings = set()
+        self.bio_half_siblings = set()
+        self.bio_brothers = set()
+        self.bio_full_brothers = set()
+        self.bio_half_brothers = set()
+        self.bio_sisters = set()
+        self.bio_full_sisters = set()
+        self.bio_half_sisters = set()
+        self.bio_immediate_family = set()
+        self.bio_greatgrandparents = set()
+        self.bio_uncles = set()
+        self.bio_aunts = set()
+        self.bio_cousins = set()
+        self.bio_nephews = set()
+        self.bio_nieces = set()
+        self.bio_ancestors = set()
+        self.bio_extended_family = set()
         # Set familial attributes; update those of family members
-        self.init_familial_attributes()
-        self.init_update_familial_attributes_of_family_members()
+        self._init_familial_attributes()
+        self._init_update_familial_attributes_of_family_members()
         # Prepare attributes representing this person's interpersonal relationships.
         self.spouse = None
         self.friends = set()
@@ -85,15 +114,17 @@ class Person(object):
         self.befriended_this_year = set()
         self.sexual_partners = set()
         # Prepare attributes representing events in this person's life
+        self.birth = birth
         self.marriage = None
         self.marriages = []
         self.divorces = []
         self.moves = []  # From one home to another
         self.name_changes = []
-        self.departure = None
         self.building_commissions = []  # Constructions of houses or buildings that they commissioned
+        self.departure = None  # Leaving the city, i.e., leaving the simulation
+        self.death = None
         # Set and prepare attributes pertaining to business affairs
-        self.money = self.init_money()
+        self.money = self._init_money()
         self.occupation = None
         self.occupations = []
         self.former_contractors = set()
@@ -102,7 +133,7 @@ class Person(object):
         self.home = None
 
     @staticmethod
-    def init_sex():
+    def _init_sex():
         """Determine the sex of this person."""
         if random.random() < 0.5:
             male = True
@@ -113,7 +144,7 @@ class Person(object):
         return male, female
 
     @staticmethod
-    def init_fertility(male, config):
+    def _init_fertility(male, config):
         """Determine whether this person will be able to reproduce."""
         x = random.random()
         if male and x < config.male_infertility_rate:
@@ -125,7 +156,7 @@ class Person(object):
         return infertile
 
     @staticmethod
-    def init_sexuality(male, config):
+    def _init_sexuality(male, config):
         """Determine this person's sexuality."""
         x = random.random()
         if x < config.homosexuality_incidence:
@@ -133,7 +164,7 @@ class Person(object):
             if male:
                 attracted_to_men = True
                 attracted_to_women = False
-            elif not male:
+            else:
                 attracted_to_men = False
                 attracted_to_women = True
         elif x < config.homosexuality_incidence+config.bisexuality_incidence:
@@ -149,16 +180,15 @@ class Person(object):
             if male:
                 attracted_to_men = False
                 attracted_to_women = True
-            elif not male:
+            else:
                 attracted_to_men = True
                 attracted_to_women = False
         return attracted_to_men, attracted_to_women
 
-    def init_personality(self):
+    def _init_personality(self):
         """Determine this person's Big Five disposition.
 
         TODO: Have this affected by a person's sex."""
-        config = self.game.config
         openness_to_experience = self._init_big_5_o()
         conscientiousness = self._init_big_5_c()
         extroversion = self._init_big_5_e()
@@ -248,7 +278,7 @@ class Person(object):
             neuroticism = 1.0
         return neuroticism
 
-    def init_memory(self):
+    def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
         config = self.game.config
         if random.random() < config.memory_heritability:
@@ -264,12 +294,16 @@ class Person(object):
             memory = config.memory_floor_at_birth
         return memory
 
-    def init_familial_attributes(self):
+    def _init_familial_attributes(self):
         """Populate lists representing this person's family members."""
-        self.greatgrandparents = self.father.grandparents | self.mother.grandparents
+        self._init_immediate_family()
+        self._init_biological_immediate_family()
+        self._init_extended_family()
+        self._init_biological_extended_family()
+
+    def _init_immediate_family(self):
+        """Populate lists representing this person's (legal) immediate family."""
         self.grandparents = self.father.parents | self.mother.parents
-        self.uncles = self.father.brothers | self.mother.brothers
-        self.aunts = self.father.sisters | self.mother.sisters
         self.siblings = self.father.kids | self.mother.kids
         self.full_siblings = self.father.kids & self.mother.kids
         self.half_siblings = self.father.kids ^ self.mother.kids
@@ -279,17 +313,52 @@ class Person(object):
         self.sisters = self.father.daughters | self.mother.daughters
         self.full_sisters = self.father.daughters & self.mother.daughters
         self.half_sisters = self.father.daughters ^ self.mother.daughters
+        self.immediate_family = self.grandparents | self.parents | self.siblings
+
+    def _init_biological_immediate_family(self):
+        """Populate lists representing this person's immediate."""
+        self.bio_parents = self.biological_mother, self.biological_father,
+        self.bio_grandparents = self.biological_father.parents | self.biological_mother.parents
+        self.bio_siblings = self.biological_father.kids | self.biological_mother.kids
+        self.bio_full_siblings = self.biological_father.kids & self.biological_mother.kids
+        self.bio_half_siblings = self.biological_father.kids ^ self.biological_mother.kids
+        self.bio_brothers = self.biological_father.sons | self.biological_mother.sons
+        self.bio_full_brothers = self.biological_father.sons & self.biological_mother.sons
+        self.bio_half_brothers = self.biological_father.sons ^ self.biological_mother.sons
+        self.bio_sisters = self.biological_father.daughters | self.biological_mother.daughters
+        self.bio_full_sisters = self.biological_father.daughters & self.biological_mother.daughters
+        self.bio_half_sisters = self.biological_father.daughters ^ self.biological_mother.daughters
+        self.bio_immediate_family = self.bio_grandparents | self.bio_parents | self.bio_siblings
+
+    def _init_extended_family(self):
+        """Populate lists representing this person's (legal) extended family."""
+        self.greatgrandparents = self.father.grandparents | self.mother.grandparents
+        self.uncles = self.father.brothers | self.mother.brothers
+        self.aunts = self.father.sisters | self.mother.sisters
         self.cousins = self.father.nieces | self.father.nephews | self.mother.nieces | self.mother.nephews
         self.nephews = self.father.grandsons | self.mother.grandsons
         self.nieces = self.father.granddaughters | self.mother.granddaughters
         self.ancestors = self.father.ancestors | self.mother.ancestors | self.parents
-        self.immediate_family = self.grandparents | self.parents | self.siblings
         self.extended_family = (
             self.greatgrandparents | self.immediate_family | self.uncles | self.aunts |
             self.cousins | self.nieces | self.nephews
         )
 
-    def init_update_familial_attributes_of_family_members(self):
+    def _init_biological_extended_family(self):
+        """Populate lists representing this person's (legal) extended family."""
+        self.bio_greatgrandparents = self.father.grandparents | self.mother.grandparents
+        self.bio_uncles = self.father.brothers | self.mother.brothers
+        self.bio_aunts = self.father.sisters | self.mother.sisters
+        self.bio_cousins = self.father.nieces | self.father.nephews | self.mother.nieces | self.mother.nephews
+        self.bio_nephews = self.father.grandsons | self.mother.grandsons
+        self.bio_nieces = self.father.granddaughters | self.mother.granddaughters
+        self.bio_ancestors = self.father.ancestors | self.mother.ancestors | self.parents
+        self.bio_extended_family = (
+            self.bio_greatgrandparents | self.bio_immediate_family | self.bio_uncles | self.bio_aunts |
+            self.bio_cousins | self.bio_nieces | self.bio_nephews
+        )
+
+    def _init_update_familial_attributes_of_family_members(self):
         """Update familial attributes of myself and family members."""
         for member in self.immediate_family:
             member.immediate_family.add(self)
@@ -359,7 +428,7 @@ class Person(object):
             c.cousins.add(self)
 
     @staticmethod
-    def init_money():
+    def _init_money():
         """Determine how much money this person has to start with."""
         return 0
 
@@ -469,6 +538,44 @@ class Person(object):
             attracted = False
         return attracted
 
+    def change_name(self, new_last_name, reason):
+        """Change this person's (official) name."""
+        NameChange(subject=self, new_last_name=new_last_name, reason=reason)
+
+    def marry(self, partner):
+        """Marry partner."""
+        assert(self.alive and partner.alive), "{} tried to marry {}, but one of them is dead."
+        Marriage(subjects=(self, partner))
+
+    def divorce(self, partner):
+        """Divorce partner."""
+        assert(self.alive and partner.alive), "{} tried to divorce {}, but one of them is dead."
+        assert(partner is self.spouse and partner.spouse is self), (
+            "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
+        )
+        Divorce(subjects=(self, partner))
+
+    def give_birth(self):
+        """Select a doctor and go to the hospital to give birth."""
+        doctor = self.contract_person_of_certain_occupation(occupation=Doctor)
+        doctor.deliver_baby(mother=self)
+
+    def move(self, new_home, reason):
+        """Move to an apartment or home."""
+        Move(subject=self, new_home=new_home, reason=reason)
+
+    def pay(self, payee, amount):
+        """Pay someone (for services rendered)."""
+        if self.spouse:
+            self.marriage.money -= amount
+        else:
+            self.money -= amount
+        payee.money += amount
+
+    def depart_city(self):
+        """Depart the city (and thus the simulation), never to return."""
+        Departure(subject=self)
+
     def contract_person_of_certain_occupation(self, occupation):
         """Find a person of a certain occupation.
 
@@ -522,28 +629,6 @@ class Person(object):
             years_experience=person.occupation.years_experience
         )
         return score
-
-    def change_name(self, new_last_name, reason):
-        """Change this person's (official) name."""
-        NameChange(subject=self, new_last_name=new_last_name, reason=reason)
-
-    def marry(self, partner):
-        """Marry partner."""
-        assert(self.alive and partner.alive), "{} tried to marry {}, but one of them is dead."
-        Marriage(subjects=(self, partner))
-
-    def divorce(self, partner):
-        """Divorce partner."""
-        assert(self.alive and partner.alive), "{} tried to divorce {}, but one of them is dead."
-        assert(partner is self.spouse and partner.spouse is self), (
-            "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
-        )
-        Divorce(subjects=(self, partner))
-
-    def give_birth(self):
-        """Select a doctor and go to the hospital to give birth."""
-        doctor = self.contract_person_of_certain_occupation(occupation=Doctor)
-        doctor.deliver_baby(mother=self)
 
     def secure_home(self):
         """Find a home to move into.
@@ -676,22 +761,6 @@ class Person(object):
             final_desire_to_live_near_family = config.desire_to_live_near_family_cap
         return final_desire_to_live_near_family
 
-    def move(self, new_home, reason):
-        """Move to an apartment or home."""
-        Move(subject=self, new_home=new_home, reason=reason)
-
-    def pay(self, payee, amount):
-        """Pay someone (for services rendered)."""
-        if self.spouse:
-            self.marriage.money -= amount
-        else:
-            self.money -= amount
-        payee.money += amount
-
-    def depart_city(self):
-        """Depart the city (and thus the simulation), never to return."""
-        Departure(subject=self)
-
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.
@@ -704,7 +773,7 @@ class PersonExNihilo(Person):
     """
 
     def __init__(self, game, birth_year, assigned_male=False, assigned_female=False):
-        Person.__init__(game=game, mother=None, father=None)
+        Person.__init__(game=game, birth=None)
         # Overwrite birth year set by Person.__init__()
         self.birth_year = birth_year
         # Potentially overwrite sex set by Person.__init__()
@@ -790,7 +859,7 @@ class PersonExNihilo(Person):
             neuroticism = 1.0
         return neuroticism
 
-    def init_memory(self):
+    def _init_memory(self):
         """Determine this person's base memory capability, which will deteriorate with age."""
         config = self.game.config
         memory = random.normalvariate(config.memory_mean, config.memory_sd)
@@ -802,15 +871,15 @@ class PersonExNihilo(Person):
             memory = config.memory_floor
         return memory
 
-    def init_familial_attributes(self):
+    def _init_familial_attributes(self):
         """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
         pass
 
-    def init_update_familial_attributes_of_family_members(self):
+    def _init_update_familial_attributes_of_family_members(self):
         """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
         pass
 
     @staticmethod
-    def init_money():
+    def _init_money():
         """Determine how much money this person has to start with."""
         return 5000
