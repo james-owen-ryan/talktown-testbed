@@ -27,14 +27,16 @@ class Birth(object):
         self.subject = Person(game=mother.game, birth=self)
         if self.biological_father is self.mother.spouse:
             self.mother.marriage.children_produced.add(self.subject)
+        self._name_baby()
+        self._remunerate()
 
-    def init_update_mother_attributes(self):
+    def _update_mother_attributes(self):
         """Update attributes of the mother that are affected by this birth."""
         self.mother.pregnant = False
         self.mother.conception_date = None
         self.mother.impregnated_by = None
 
-    def name_baby(self):
+    def _name_baby(self):
         """Name the baby.
 
         TODO: Support a child inheriting a person's middle name as their own
@@ -169,7 +171,7 @@ class Birth(object):
             suffix = ''
         return suffix
 
-    def remunerate(self):
+    def _remunerate(self):
         """Have parents pay hospital for services rendered."""
         config = self.mother.game.config
         service_rendered = self.__class__
@@ -194,39 +196,44 @@ class Birth(object):
 class Death(object):
     """A death of a person in the city."""
 
-    def __init__(self, subject, mortician):
+    def __init__(self, subject, mortician, cause_of_death):
         """Initialize a Death object."""
+        self.year = self.subject.game.year
+        self.subject = self.subject
+        self.cause = cause_of_death
+        self.mortician = mortician
+        self.cemetery = self.mortician.company
+        self.next_of_kin = subject.next_of_kin
+        subject.city.residents.remove(subject)
+        subject.city.deceased.add(subject)
 
+    def update_attributes_of_deceased_and_spouse(self):
+        config = self.subject.game.config
+        self.subject.alive = False
+        if self.subject.marriage:
+            widow = self.subject.spouse
+            widow.marriage.terminus = self
+            widow.marriage = None
+            widow.spouse = None
+            widow.widowed = True
+            widow.grieving = True
+            widow.chance_of_remarrying = config.function_to_derive_chance_spouse_changes_name_back(
+                years_married=self.subject.marriage.duration
+            )
 
-        self.alive = False
-        self.dead = True
-        self.cod = cod
-        self.year = self.world.year
+    def inter_the_body(self):
+        """Inter the body at the local cemetery."""
+        self.cemetery.inter_person(person=self.subject)
 
-        # Make gravestone
-
-        gravestone = None
-
-        # Update demographic registries
-        self.city.residents.remove(self.subject)
-        self.city.deceased.add(self.subject)
-
-        if self.married:
-            self.spouse.married = False
-            self.spouse.widowed = True
-            self.spouse.single = True
-            self.marriage_timeline[-1] = (self.marriage_timeline[-1][:-7] +
-                                          str(self.death_year) +
-                                          ' (death)')
-            self.spouse.marriage_timeline[-1] = (
-                                     self.spouse.marriage_timeline[-1][:-7] +
-                                     str(self.death_year) +
-                                     ' (death)')
-            # Spouse now grieving
-
-            self.spouse.grieving = True
-            years_married = self.world.year-self.marriage_date
-            self.spouse.remarry_chance = 1.0/(int(years_married)+4)
+    def remunerate(self):
+        """Have deceased's next of kin pay mortician for services rendered."""
+        config = self.subject.game.config
+        service_rendered = self.__class__
+        # Pay mortician
+        self.next_of_kin.pay(
+            payee=self.mortician,
+            amount=config.compensations[service_rendered][Mortician]
+        )
 
 
 class Adoption(object):
@@ -238,6 +245,7 @@ class Adoption(object):
         @param subject: The adoptee.
         @param adoptive_parents: The adoptive parent(s).
         """
+        self.year = subject.year
         self.subject = subject
         self.adoptive_parents = adoptive_parents
 
@@ -251,14 +259,14 @@ class Marriage(object):
         self.year = self.subjects[0].city.game.year
         self.names_at_time_of_marriage = (self.subjects[0].name, self.subjects[1].name)
         self.name_changes = []  # Gets set by NameChange object, as appropriate
-        self.terminus = None  # May point to a Divorce or Death object
-        self.money = None  # Gets set by self.have_newlyweds_pool_money_together()
+        self.terminus = None  # May point to a Divorce or Death object, as determined by self.terminate()
+        self.money = None  # Gets set by self._have_newlyweds_pool_money_together()
         self.children_produced = set()  # Gets set by Birth objects, as appropriate
-        self.update_newlywed_attributes()
-        self.have_newlyweds_pool_money_together()
-        self.have_one_spouse_and_possibly_stepchildren_take_the_others_name()
-        self.decide_and_enact_new_living_arrangements()
-        self.will_hyphenate_child_surnames = self.decide_whether_children_will_get_hyphenated_names()
+        self._update_newlywed_attributes()
+        self._have_newlyweds_pool_money_together()
+        self._have_one_spouse_and_possibly_stepchildren_take_the_others_name()
+        self._decide_and_enact_new_living_arrangements()
+        self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
 
     def __str__(self):
         """Return string representation."""
@@ -275,7 +283,7 @@ class Marriage(object):
             duration = self.subjects[0].game.year-self.year
         return duration
 
-    def update_newlywed_attributes(self):
+    def _update_newlywed_attributes(self):
         """Update newlywed attributes that pertain to marriage concerns."""
         spouse1, spouse2 = self.subjects
         config = spouse1.game.config
@@ -289,18 +297,18 @@ class Marriage(object):
         spouse2.immediate_family.add(spouse1)
         spouse1.extended_family |= spouse2.extended_family
         spouse2.extended_family |= spouse1.extended_family
-        self.cease_grieving_of_former_spouses(newlyweds=self.subjects)
-        self.cease_feelings_for_former_love_interests(newlyweds=self.subjects, config=config)
+        self._cease_grieving_of_former_spouses(newlyweds=self.subjects)
+        self._cease_feelings_for_former_love_interests(newlyweds=self.subjects, config=config)
 
     @staticmethod
-    def cease_grieving_of_former_spouses(newlyweds):
+    def _cease_grieving_of_former_spouses(newlyweds):
         """Make the newlyweds stop grieving former spouses, if applicable."""
         if any(newlywed for newlywed in newlyweds if newlywed.grieving):
             for newlywed in newlyweds:
                 newlywed.grieving = False
 
     @staticmethod
-    def cease_feelings_for_former_love_interests(newlyweds, config):
+    def _cease_feelings_for_former_love_interests(newlyweds, config):
         """Make the newlyweds (probably) have each other as their strongest love interests."""
         spouse1, spouse2 = newlyweds
         x = random.random()
@@ -312,13 +320,13 @@ class Marriage(object):
             spouse1.love_interest = spouse2
             spouse2.love_interest = spouse1
 
-    def have_newlyweds_pool_money_together(self):
+    def _have_newlyweds_pool_money_together(self):
         """Have the newlyweds combine their money holdings into a single account."""
         self.money = self.subjects[0].money + self.subjects[1].money
         self.subjects[0].money = 0
         self.subjects[1].money = 0
 
-    def have_one_spouse_and_possibly_stepchildren_take_the_others_name(self):
+    def _have_one_spouse_and_possibly_stepchildren_take_the_others_name(self):
         """Have one spouse (potentially) take the other's name.
 
         TODO: Have this be affected by the newlyweds' personalities."""
@@ -336,12 +344,12 @@ class Marriage(object):
                 if stepchild.age <= config.age_after_which_stepchildren_will_not_take_stepparent_name:
                     stepchild.change_name(new_last_name=other_spouse.last_name, reason=self)
 
-    def decide_and_enact_new_living_arrangements(self):
+    def _decide_and_enact_new_living_arrangements(self):
         """Handle the full pipeline from finding a place to moving into it."""
-        home_they_will_move_into = self.decide_where_newlyweds_will_live()
-        self.move_spouses_and_any_kids_in_together(home_they_will_move_into=home_they_will_move_into)
+        home_they_will_move_into = self._decide_where_newlyweds_will_live()
+        self._move_spouses_and_any_kids_in_together(home_they_will_move_into=home_they_will_move_into)
 
-    def decide_where_newlyweds_will_live(self):
+    def _decide_where_newlyweds_will_live(self):
         """Decide where the newlyweds will live.
 
         This may require that they find a vacant lot to build a home on.
@@ -356,7 +364,7 @@ class Marriage(object):
             home_they_will_move_into = self.subjects[0].secure_home()
         return home_they_will_move_into
 
-    def move_spouses_and_any_kids_in_together(self, home_they_will_move_into):
+    def _move_spouses_and_any_kids_in_together(self, home_they_will_move_into):
         """Move the two newlyweds (and any kids) in together.
 
         Note: The family will depart the city (and thus the simulation) if they are
@@ -368,12 +376,12 @@ class Marriage(object):
             # Have (non-adult) children of spouse1, if any, also move too
             family_members_that_will_move.add(spouse1)
             for kid in spouse1.kids:
-                if kid.alive and kid.home is spouse1.home:
+                if kid.present and kid.home is spouse1.home:
                     family_members_that_will_move.add(kid)
         if home_they_will_move_into is not spouse2.home:
             # Have (non-adult) children of spouse1, if any, also move too
             for kid in spouse2.kids:
-                if kid.alive and not kid.married and kid.home is spouse2.home:
+                if kid.present and not kid.marriage and kid.home is spouse2.home:
                     family_members_that_will_move.add(kid)
         if home_they_will_move_into:
             for family_member in family_members_that_will_move:
@@ -382,7 +390,7 @@ class Marriage(object):
             for family_member in family_members_that_will_move:
                 family_member.depart_city()
 
-    def decide_whether_children_will_get_hyphenated_names(self):
+    def _decide_whether_children_will_get_hyphenated_names(self):
         """Decide whether any children resulting from this marriage will get hyphenated names.
 
         TODO: Have this be affected by newlywed personalities.
@@ -406,10 +414,10 @@ class Divorce(object):
         self.marriage = subjects[0].marriage
         self.year = subjects[0].game.year
         self.marriage.terminus = self
-        self.update_divorcee_attributes()
-        self.have_divorcees_split_up_money()
-        self.have_a_spouse_and_possibly_kids_change_name_back()
-        self.decide_and_enact_new_living_arrangements()
+        self._update_divorcee_attributes()
+        self._have_divorcees_split_up_money()
+        self._have_a_spouse_and_possibly_kids_change_name_back()
+        self._decide_and_enact_new_living_arrangements()
 
     def __str__(self):
         """Return string representation."""
@@ -417,7 +425,7 @@ class Divorce(object):
             self.subjects[0].name, self.subjects[1].name, self.year
         )
 
-    def update_divorcee_attributes(self):
+    def _update_divorcee_attributes(self):
         """Update divorcee attributes that pertain to marriage concerns."""
         spouse1, spouse2 = self.subjects
         config = spouse1.game.config
@@ -438,10 +446,10 @@ class Divorce(object):
             spouse2.greatgrandparents | spouse2.immediate_family | spouse2.uncles | spouse2.aunts |
             spouse2.cousins | spouse2.nieces | spouse2.nephews
         )
-        self.have_divorcees_fall_out_of_love(divorcees=self.subjects, config=config)
+        self._have_divorcees_fall_out_of_love(divorcees=self.subjects, config=config)
 
     @staticmethod
-    def have_divorcees_fall_out_of_love(divorcees, config):
+    def _have_divorcees_fall_out_of_love(divorcees, config):
         """Make the divorcees (probably) lose each other as their strongest love interests."""
         spouse1, spouse2 = divorcees
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
@@ -449,14 +457,14 @@ class Divorce(object):
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
             spouse2.love_interest = None
 
-    def have_divorcees_split_up_money(self):
+    def _have_divorcees_split_up_money(self):
         """Have the divorcees split their money up (50/50)."""
         money_to_split_up = self.marriage.money
         amount_given_to_each = money_to_split_up / 2
         self.subjects[0].money = amount_given_to_each
         self.subjects[1].money = amount_given_to_each
 
-    def have_a_spouse_and_possibly_kids_change_name_back(self):
+    def _have_a_spouse_and_possibly_kids_change_name_back(self):
         """Have a spouse and kids potentially change their names back."""
         config = self.subjects[0].game.config
         chance_of_a_name_reversion = config.function_to_derive_chance_spouse_changes_name_back(
@@ -468,19 +476,19 @@ class Divorce(object):
                     subject=name_change.subject, new_last_name=name_change.old_last_name, reason=self
                 )
 
-    def decide_and_enact_new_living_arrangements(self):
+    def _decide_and_enact_new_living_arrangements(self):
         """Handle the full pipeline from discussion to one spouse (and possibly kids) moving out."""
-        spouse_who_will_move_out = self.decide_who_will_move_out()
-        kids_who_will_move_out_also = self.decide_which_kids_will_move_out()
+        spouse_who_will_move_out = self._decide_who_will_move_out()
+        kids_who_will_move_out_also = self._decide_which_kids_will_move_out()
         family_members_who_will_move = {spouse_who_will_move_out} | kids_who_will_move_out_also
-        home_spouse_will_move_to = self.decide_where_spouse_moving_out_will_live(
+        home_spouse_will_move_to = self._decide_where_spouse_moving_out_will_live(
             spouse_who_will_move=spouse_who_will_move_out
         )
-        self.move_spouse_and_possibly_kids_out(
+        self._move_spouse_and_possibly_kids_out(
             home_spouse_will_move_to=home_spouse_will_move_to, family_members_who_will_move=family_members_who_will_move
         )
 
-    def decide_who_will_move_out(self):
+    def _decide_who_will_move_out(self):
         """Decide which of the divorcees will move out."""
         spouse1, spouse2 = self.subjects
         config = spouse1.game.config
@@ -498,7 +506,7 @@ class Divorce(object):
             spouse_who_will_move_out = spouse1
         return spouse_who_will_move_out
 
-    def decide_which_kids_will_move_out(self, spouse_moving):
+    def _decide_which_kids_will_move_out(self, spouse_moving):
         """Decide which kids will also be moving out, if any.
 
         This currently only has stepkids to the spouse who is staying move out
@@ -513,7 +521,7 @@ class Divorce(object):
         return living_with_spouse_moving
 
     @staticmethod
-    def decide_where_spouse_moving_out_will_live(spouse_who_will_move):
+    def _decide_where_spouse_moving_out_will_live(spouse_who_will_move):
         """Decide where the spouse who is moving out will live.
 
         This may require that they find a vacant lot to build a home on.
@@ -521,7 +529,7 @@ class Divorce(object):
         home_spouse_will_move_into = spouse_who_will_move.secure_home()
         return home_spouse_will_move_into
 
-    def move_spouse_and_possibly_kids_out(self, home_spouse_will_move_to, family_members_who_will_move):
+    def _move_spouse_and_possibly_kids_out(self, home_spouse_will_move_to, family_members_who_will_move):
         """Move the two newlyweds (and any kids) in together.
 
         Note: The spouse/kids will depart the city (and thus the simulation) if they are
@@ -540,6 +548,7 @@ class NameChange(object):
 
     def __init__(self, subject, new_last_name, reason):
         """Initialize a NameChange object."""
+        self.year = subject.game.year
         self.subject = subject
         self.old_last_name = subject.last_name
         self.new_last_name = new_last_name
@@ -547,7 +556,7 @@ class NameChange(object):
         # Actually change the name
         subject.last_name = new_last_name
         self.new_name = subject.name
-        self.reason = reason  # Likely will point to a Marriage object
+        self.reason = reason  # Likely will point to a Marriage or Divorce object
         if isinstance(reason, Marriage):
             reason.name_changes.append(self)
         subject.name_changes.append(self)
@@ -564,12 +573,12 @@ class Move(object):
 
     def __init__(self, subject, new_home, reason):
         """Initialize a Move object."""
+        self.year = self.subject.city.game.year
         self.subject = subject
         self.old_home = subject.home  # May be None if newborn or person moved from outside the city
         self.new_home = new_home
         self.old_home.move_outs.append(self)
         self.old_home.move_ins.append(self)
-        self.year = self.subject.city.game.year
         self.reason = reason  # Likely will point to a Marriage or Divorce object
         # Actually move the person
         subject.home = new_home
@@ -580,22 +589,22 @@ class HomePurchase(object):
 
     def __init__(self, clients, home, realtor):
         """Initialize a HomePurchase object."""
+        self.year = clients[0].game.year
         self.clients = clients
         self.home = home
         self.home.transactions.append(self)
         self.realtor = realtor
         self.realty_firm = realtor.company
         self.realtor.home_sales.append(self)
-        self.transfer_ownership()
-        # Pay the realtor
-        self.remunerate()
+        self._transfer_ownership()
+        self._remunerate()
 
-    def transfer_ownership(self):
+    def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
         self.home.owners = self.clients
 
-    def remunerate(self):
-        """Have subject remunerate realty firm for services rendered."""
+    def _remunerate(self):
+        """Have subject pay realty firm for services rendered."""
         config = self.clients[0].game.config
         service_rendered = self.__class__
         # Pay owner of the realty firm
@@ -615,8 +624,8 @@ class Departure(object):
 
     def __init__(self, subject):
         """Initialize a Departure object."""
-        self.subject = subject
         self.year = subject.game.year
+        self.subject = subject
         subject.city.residents.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
@@ -627,11 +636,11 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
+        self.year = self.subject.city.game.year
         self.subject = subject
         self.company = company
         self.old_occupation = subject.occupation
         self.occupation = occupation
-        self.year = self.subject.city.game.year
         # Determine whether this was a promotion
         if subject.occupation and subject.occupation.company is company:
             self.promotion = True
@@ -653,17 +662,18 @@ class HouseConstruction(object):
 
     def __init__(self, clients, architect, lot):
         """Initialize a HouseConstruction object."""
+        self.year = self.clients[0].game.year
         self.clients = clients
         self.construction_firm = architect.company
         self.architect = architect
         self.architect.house_constructions.append(self)
         self.builders = self.construction_firm.construction_workers
         self.lot = lot
-        self.year = self.clients[0].game.year
         self.house = House(lot=lot, construction=self)
+        self._remunerate()
 
-    def remunerate(self):
-        """Have client remunerate construction firm for services rendered."""
+    def _remunerate(self):
+        """Have client pay construction firm for services rendered."""
         config = self.clients[0].game.config
         service_rendered = self.__class__
         # Pay owner of the company
@@ -689,17 +699,18 @@ class BuildingConstruction(object):
 
     def __init__(self, client, architect, lot, type_of_building):
         """Initialize a BuildingConstruction object."""
+        self.year = self.client.game.year
         self.client = client
         self.construction_firm = architect.company
         self.architect = architect
         self.architect.building_constructions.append(self)
         self.builders = self.construction_firm.construction_workers
         self.lot = lot
-        self.year = self.client.game.year
         self.building = type_of_building(lot=lot, construction=self)
+        self._remunerate()
 
-    def remunerate(self):
-        """Have client remunerate construction firm for services rendered."""
+    def _remunerate(self):
+        """Have client pay construction firm for services rendered."""
         config = self.client.game.config
         service_rendered = self.__class__
         # Pay owner of the company
