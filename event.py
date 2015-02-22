@@ -1,26 +1,245 @@
 import random
 from config import Config
+from corpora import Names
 from person import Person
 from city import Lot
 from business import *
 from residence import *
 from occupation import *
+from name import Name
 
 
 class Birth(object):
     """A birth of a person in the city."""
 
-    def __init__(self, subject, mother, father, hospital, doctor):
+    def __init__(self, mother, doctor):
         """Initialize a Birth object."""
-        pass
+        self.year = mother.game.year
+        self.biological_mother = mother
+        self.mother = mother
+        self.biological_father = mother.impregnated_by
+        self.father = self.mother.spouse if self.mother.spouse and self.mother.spouse.male else None
+        if self.father and self.father is not self.biological_father:
+            self.adoption = Adoption(subject=self.subject, adoptive_parents=(self.father,))
+        self.doctor = doctor
+        self.doctor.baby_deliveries.append(self)
+        self.hospital = doctor.company
+        self.subject = Person(game=mother.game, birth=self)
+        if self.biological_father is self.mother.spouse:
+            self.mother.marriage.children_produced.add(self.subject)
+
+    def init_update_mother_attributes(self):
+        """Update attributes of the mother that are affected by this birth."""
+        self.mother.pregnant = False
+        self.mother.conception_date = None
+        self.mother.impregnated_by = None
+
+    def name_baby(self):
+        """Name the baby.
+
+        TODO: Support a child inheriting a person's middle name as their own
+        first or middle name.
+        """
+        config = self.subject.game.config
+        if self.subject.male and random.random() < config.chance_son_inherits_fathers_exact_name:
+            self.subject.first_name = self.father.first_name
+            self.subject.middle_name = self.father.middle_name
+            self.subject.suffix = self._get_suffix()
+            self.subject.named_for = self.father, self.father,
+        else:
+            if self.subject.male:
+                potential_namegivers = self._get_potential_male_namegivers()
+            else:
+                potential_namegivers = self._get_potential_female_namegivers()
+            self.subject.first_name, first_name_namegiver = (
+                self._decide_first_name(potential_namegivers=potential_namegivers)
+            )
+            self.subject.middle_name, middle_name_namegiver = (
+                self._decide_middle_name(potential_namegivers=potential_namegivers)
+            )
+            self.subject.suffix = ''
+            self.subject.named_for = first_name_namegiver, middle_name_namegiver,
+        self.subject.last_name = self._decide_last_name()
+
+    def _decide_last_name(self):
+        """Return what will be the baby's last name."""
+        if self.mother.marriage:
+            if self.mother.marriage.will_hyphenate_child_surnames:
+                last_name = self._get_hyphenated_last_name()
+            else:
+                last_name = self.father.last_name
+        else:
+            last_name = self.mother.last_name
+        return last_name
+
+    def _get_hyphenated_last_name(self):
+        """Get a hyphenated last name for the child, if the parents have decided to attribute one."""
+        hyphenated_last_name = "{}-{}".format(
+            self.mother.last_name.rep
+        )
+        # Check if this child will be the progenitor of this hyphenated surname, i.e.,
+        # whether an older sibling has already been given it
+        if any(k for k in self.mother.marriage.children_produced if k.maiden_name.rep == hyphenated_last_name):
+            older_sibling_with_hyphenated_surname = next(
+                k for k in self.mother.marriage.children_produced if k.maiden_name.rep == hyphenated_last_name
+            )
+            hyphenated_surname_object = older_sibling_with_hyphenated_surname.maiden_name
+        else:
+            # Instantiate a new Name object with this child as the progenitor
+            hyphenated_surname_object = Name(
+                rep=hyphenated_last_name, progenitor=self.subject, conceived_by=self.subject.parents,
+                derived_from=(self.mother.last_name, self.father.last_name,)
+            )
+        return hyphenated_surname_object
+
+    def _decide_first_name(self, potential_namegivers):
+        """Return what will be the baby's first name."""
+        config = self.subject.game.config
+        if random.random() < config.chance_child_inherits_first_name:
+            first_name_namegiver = random.choice(potential_namegivers)
+            first_name = first_name_namegiver.first_name
+        else:
+            first_name_namegiver = None
+            first_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
+            first_name = Name(rep=first_name_rep, progenitor=self.subject, conceived_by=self.subject.parents)
+        return first_name, first_name_namegiver
+
+    def _decide_middle_name(self, potential_namegivers):
+        """Return what will be the baby's first name."""
+        config = self.subject.game.config
+        if random.random() < config.chance_child_inherits_middle_name:
+            middle_name_namegiver = random.choice(potential_namegivers)
+            middle_name = middle_name_namegiver.first_name
+        else:
+            middle_name_namegiver = None
+            middle_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
+            middle_name = Name(rep=middle_name_rep, progenitor=self.subject, conceived_by=self.subject.parents)
+        return middle_name, middle_name_namegiver
+
+    def _get_potential_male_namegivers(self):
+        """Return a set of men on the father's side of the family whom the child may be named for."""
+        config = self.subject.game.config
+        namegivers = []
+        for parent in self.subject.parents:
+            # Add the child's legal father
+            if parent.male:
+                namegivers += [parent] * config.frequency_of_naming_after_father
+            # Add the child's (legal) great/grandfathers
+            if parent.father:
+                namegivers += [parent.father] * config.frequency_of_naming_after_grandfather
+                if parent.father.father:
+                    namegivers += [parent.father.father] * config.frequency_of_naming_after_greatgrandfather
+                if parent.mother.father:
+                    namegivers += [parent.mother.father] * config.frequency_of_naming_after_greatgrandfather
+            # Add a random sampling child's uncles and great uncles
+            namegivers += random.sample(parent.brothers, random.randint(0, len(parent.brothers)))
+            namegivers += random.sample(parent.uncles, random.randint(0, len(parent.uncles)))
+        return namegivers
+
+    def _get_potential_female_namegivers(self):
+        """Return a set of women on the father's side of the family whom the child may be named for."""
+        config = self.subject.game.config
+        namegivers = []
+        for parent in self.subject.parents:
+            # Add the child's mother
+            if parent.female:
+                namegivers += [parent] * config.frequency_of_naming_after_mother
+            # Add the child's (legal) great/grandmothers
+            if parent.mother:
+                namegivers += [parent.mother] * config.frequency_of_naming_after_grandmother
+                if parent.father.mother:
+                    namegivers += [parent.father.mother] * config.frequency_of_naming_after_greatgrandmother
+                if parent.mother.mother:
+                    namegivers += [parent.mother.mother] * config.frequency_of_naming_after_greatgrandmother
+            # Add a random sampling child's aunts and great aunts
+            namegivers += random.sample(parent.sisters, random.randint(0, len(parent.sisters)))
+            namegivers += random.sample(parent.aunts, random.randint(0, len(parent.aunts)))
+        return namegivers
+
+    def _get_suffix(self):
+        """Return a suffix if the person shares their parent's full name, else an empty string."""
+        son, father = self.subject, self.subject.father
+        increment_suffix = {
+            '': 'II', 'II': 'III', 'III': 'IV', 'IV': 'V', 'V': 'VI',
+            'VI': 'VII', 'VII': 'VIII', 'VIII': 'IX', 'IX': 'X'
+        }
+        if son.full_name_without_suffix == father.full_name_without_suffix:
+            suffix = increment_suffix[father.suffix]
+        else:
+            suffix = ''
+        return suffix
+
+    def remunerate(self):
+        """Have parents pay hospital for services rendered."""
+        config = self.mother.game.config
+        service_rendered = self.__class__
+        # Pay owner of the hospital
+        self.mother.pay(
+            payee=self.hospital.owner,
+            amount=config.compensations[service_rendered][Owner]
+        )
+        # Pay doctor
+        self.mother.pay(
+            payee=self.doctor,
+            amount=config.compensations[service_rendered][Doctor]
+        )
+        # Pay construction workers
+        for nurse in self.hospital.nurses:
+            self.mother.pay(
+                payee=nurse,
+                amount=config.compensations[service_rendered][Nurse]
+            )
 
 
 class Death(object):
     """A death of a person in the city."""
 
-    def __init__(self):
+    def __init__(self, subject, mortician):
         """Initialize a Death object."""
-        pass
+
+
+        self.alive = False
+        self.dead = True
+        self.cod = cod
+        self.year = self.world.year
+
+        # Make gravestone
+
+        gravestone = None
+
+        # Update demographic registries
+        self.city.residents.remove(self.subject)
+        self.city.deceased.add(self.subject)
+
+        if self.married:
+            self.spouse.married = False
+            self.spouse.widowed = True
+            self.spouse.single = True
+            self.marriage_timeline[-1] = (self.marriage_timeline[-1][:-7] +
+                                          str(self.death_year) +
+                                          ' (death)')
+            self.spouse.marriage_timeline[-1] = (
+                                     self.spouse.marriage_timeline[-1][:-7] +
+                                     str(self.death_year) +
+                                     ' (death)')
+            # Spouse now grieving
+
+            self.spouse.grieving = True
+            years_married = self.world.year-self.marriage_date
+            self.spouse.remarry_chance = 1.0/(int(years_married)+4)
+
+
+class Adoption(object):
+    """An adoption of a child by a person(s) who is/are not their biological parent."""
+
+    def __init__(self, subject, adoptive_parents):
+        """Initialize an Adoption object.
+
+        @param subject: The adoptee.
+        @param adoptive_parents: The adoptive parent(s).
+        """
+        self.subject = subject
+        self.adoptive_parents = adoptive_parents
 
 
 class Marriage(object):
@@ -34,10 +253,12 @@ class Marriage(object):
         self.name_changes = []  # Gets set by NameChange object, as appropriate
         self.terminus = None  # May point to a Divorce or Death object
         self.money = None  # Gets set by self.have_newlyweds_pool_money_together()
+        self.children_produced = set()  # Gets set by Birth objects, as appropriate
         self.update_newlywed_attributes()
         self.have_newlyweds_pool_money_together()
         self.have_one_spouse_and_possibly_stepchildren_take_the_others_name()
         self.decide_and_enact_new_living_arrangements()
+        self.will_hyphenate_child_surnames = self.decide_whether_children_will_get_hyphenated_names()
 
     def __str__(self):
         """Return string representation."""
@@ -108,7 +329,7 @@ class Marriage(object):
             spouse_who_may_take_name = self.subjects[0]
         other_spouse = next(newlywed for newlywed in self.subjects if newlywed is not spouse_who_may_take_name)
         if spouse_who_may_take_name.last_name is not other_spouse.last_name:
-            if random.random() < 0.1:
+            if random.random() < config.chance_one_newlywed_takes_others_name:
                 spouse_who_may_take_name.change_name(new_last_name=other_spouse.last_name, reason=self)
         if random.random() < config.chance_stepchildren_take_stepparent_name:
             for stepchild in spouse_who_may_take_name.kids:
@@ -160,6 +381,20 @@ class Marriage(object):
         else:
             for family_member in family_members_that_will_move:
                 family_member.depart_city()
+
+    def decide_whether_children_will_get_hyphenated_names(self):
+        """Decide whether any children resulting from this marriage will get hyphenated names.
+
+        TODO: Have this be affected by newlywed personalities.
+        """
+        config = self.subjects[0].game.config
+        if any(s for s in self.subjects if s.last_name.hyphenated):
+            choice = False
+        elif random.random() < config.chance_newlyweds_decide_children_will_get_hyphenated_surname:
+            choice = True
+        else:
+            choice = False
+        return choice
 
 
 class Divorce(object):
