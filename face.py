@@ -92,7 +92,7 @@ class DistinctiveFeatures(object):
         self.sunglasses = sunglasses
 
 
-class Feature(object):
+class Feature(str):
     """A particular facial feature, i.e., a value for a particular facial attribute.
 
     This class has a sister class in Belief.Facet. While objects of this class represent
@@ -101,29 +101,13 @@ class Feature(object):
     particular person*, with metadata about that specific belief.
     """
 
-    def __init__(self, owner, rep):
-        """Initialize a Feature object."""
-        self.owner = owner
-        self.rep = rep
+    def __init__(self, value):
+        """Initialize a Facet object.
 
-    def __str__(self):
-        """Return a string representation of this Feature object."""
-        return self.rep
-
-    def __eq__(self, other):
-        """Return a boolean indicating whether this object is equivalent to
-        another Belief.Facet or Face.Feature.
+        @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
+                      attribute this represents.
         """
-        if self.rep == other.rep:
-            return True
-        else:
-            return True
+        super(Feature, self).__init__()
 
-    def __ne__(self, other):
-        """Return a boolean indicating whether this object is not equivalent to
-        another Belief.Facet or Face.Feature.
-        """
-        if self.rep != other.rep:
-            return True
-        else:
-            return True
+    def __new__(cls, value):
+        return str.__new__(cls, value)
