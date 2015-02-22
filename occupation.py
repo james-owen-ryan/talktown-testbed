@@ -142,7 +142,7 @@ class Nurse(Occupation):
 
 
 class Architect(Occupation):
-    """An architect."""
+    """An architect at a construction firm."""
 
     def __init__(self, person, company, hiring):
         """Initialize an Architect object.
@@ -171,7 +171,7 @@ class Architect(Occupation):
 
 
 class BankTeller(Occupation):
-    """A bank teller."""
+    """A bank teller at a bank."""
 
     def __init__(self, person, company, hiring):
         """Initialize a BankTeller object.
@@ -185,10 +185,10 @@ class BankTeller(Occupation):
 
 
 class BusDriver(Occupation):
-    """A bus driver."""
+    """A bus driver at a bus depot."""
 
     def __init__(self, person, company, hiring):
-        """Initialize a TaxiDriver object.
+        """Initialize a BusDriver object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
@@ -213,7 +213,7 @@ class Concierge(Occupation):
 
 
 class ConstructionWorker(Occupation):
-    """A construction worker."""
+    """A construction worker at a construction firm."""
 
     def __init__(self, person, company, hiring):
         """Initialize a ConstructionWorker object.
@@ -247,7 +247,7 @@ class Doctor(Occupation):
 
 
 class FireChief(Occupation):
-    """A fire chief."""
+    """A fire chief at a fire station."""
 
     def __init__(self, person, company, hiring):
         """Initialize a FireChief object.
@@ -261,7 +261,7 @@ class FireChief(Occupation):
 
 
 class Firefighter(Occupation):
-    """A firefighter."""
+    """A firefighter at a fire station."""
 
     def __init__(self, person, company, hiring):
         """Initialize a Firefighter object.
@@ -275,7 +275,7 @@ class Firefighter(Occupation):
 
 
 class HairStylist(Occupation):
-    """A hair stylist."""
+    """A hair stylist at a barbershop."""
 
     def __init__(self, person, company, hiring):
         """Initialize a HairStylist object.
@@ -289,7 +289,7 @@ class HairStylist(Occupation):
 
 
 class HotelMaid(Occupation):
-    """A hotel maid."""
+    """A hotel maid at a hotel."""
 
     def __init__(self, person, company, hiring):
         """Initialize a HotelMaid object.
@@ -300,6 +300,20 @@ class HotelMaid(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(HotelMaid, self).__init__(person=person, company=company, hiring=hiring)
+
+
+class Lawyer(Occupation):
+    """A lawyer at a law firm."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a Lawyer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(Lawyer, self).__init__(person=person, company=company, hiring=hiring)
 
 
 class Mortician(Occupation):
@@ -321,7 +335,7 @@ class Mortician(Occupation):
 
 
 class Optometrist(Occupation):
-    """An optometrist."""
+    """An optometrist at an optometry clinic."""
 
     def __init__(self, person, company, hiring):
         """Initialize an Optometrist object.
@@ -335,7 +349,7 @@ class Optometrist(Occupation):
 
 
 class PlasticSurgeon(Occupation):
-    """A plastic surgeon."""
+    """A plastic surgeon at a plastic-surgery clinic."""
 
     def __init__(self, person, company, hiring):
         """Initialize a PlasticSurgeon object.
@@ -349,7 +363,7 @@ class PlasticSurgeon(Occupation):
 
 
 class PoliceChief(Occupation):
-    """A police chief."""
+    """A police chief at a police station."""
 
     def __init__(self, person, company, hiring):
         """Initialize a PoliceChief object.
@@ -363,7 +377,7 @@ class PoliceChief(Occupation):
 
 
 class PoliceOfficer(Occupation):
-    """A police officer."""
+    """A police officer at a police station."""
 
     def __init__(self, person, company, hiring):
         """Initialize a PoliceOfficer object.
@@ -377,7 +391,7 @@ class PoliceOfficer(Occupation):
 
 
 class Realtor(Occupation):
-    """A realtor."""
+    """A realtor at a realty firm."""
 
     def __init__(self, person, company, hiring):
         """Initialize an Realtor object.
@@ -398,7 +412,7 @@ class Realtor(Occupation):
 
 
 class TattooArtist(Occupation):
-    """A tattoo artist."""
+    """A tattoo artist at a tattoo parlor."""
 
     def __init__(self, person, company, hiring):
         """Initialize a TattooArtist object.
@@ -412,7 +426,7 @@ class TattooArtist(Occupation):
 
 
 class TaxiDriver(Occupation):
-    """A taxi driver."""
+    """A taxi driver at a taxi depot."""
 
     def __init__(self, person, company, hiring):
         """Initialize a TaxiDriver object.
