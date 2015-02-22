@@ -635,15 +635,22 @@ class Person(object):
         one of the top three. TODO: Probabilistically select from all potential hires
         using the scores to derive likelihoods of selecting each.
         """
-        potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
-        # Pick from top three
-        top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
-        if random.random() < 0.6:
-            choice = top_three_choices[0]
-        elif random.random() < 0.9:
-            choice = top_three_choices[1]
+        # If you or your spouse practice this occupation, DIY
+        if isinstance(self.occupation, occupation):
+            choice = self
+        elif self.spouse and isinstance(self.spouse.occupation, occupation):
+            choice = self.spouse
+        # Otherwise, pick from the various people in town who do practice this occupation
         else:
-            choice = top_three_choices[2]
+            potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
         return choice
 
     def _rate_all_potential_contractors_of_certain_occupation(self, occupation):
