@@ -16,7 +16,7 @@ class Place(object):
         self.subject = subject
 
 
-class Facet(object):
+class Facet(str):
     """A facet of one person's belief about another person that pertains to a specific feature.
 
     This class has a sister class in Face.Feature. While objects of the Feature class represent
@@ -25,34 +25,16 @@ class Facet(object):
     person*, with metadata about that specific belief.
     """
 
-    def __init__(self, owner, rep):
+    def __init__(self, value, evidence):
         """Initialize a Facet object.
 
-        @param owner: The larger belief representation (e.g., Person) this belongs to.
-        @param rep: A computable representation of this facet, e.g., 'brown' as the Hair.color
-                    attribute this represents.
+        @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
+                      attribute this represents.
+        @param evidence: An information object that serves as the evidence for this being a
+                         facet of a person's belief.
         """
-        self.owner = owner
-        self.rep = rep
+        super(Facet, self).__init__()
+        self.evidence = evidence
 
-    def __str__(self):
-        """Return a string representation of this Facet object."""
-        return self.rep
-
-    def __eq__(self, other):
-        """Return a boolean indicating whether this object is equivalent to
-        another Belief.Facet or Face.Feature.
-        """
-        if self.rep == other.rep:
-            return True
-        else:
-            return True
-
-    def __ne__(self, other):
-        """Return a boolean indicating whether this object is not equivalent to
-        another Belief.Facet or Face.Feature.
-        """
-        if self.rep != other.rep:
-            return True
-        else:
-            return True
+    def __new__(cls, value, evidence):
+        return str.__new__(cls, value)
