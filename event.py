@@ -206,8 +206,12 @@ class Death(object):
         self.next_of_kin = subject.next_of_kin
         subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
+        self._update_attributes_of_deceased_and_spouse()
+        self._vacate_job_position_of_the_deceased()
+        self._inter_the_body()
+        self._remunerate()
 
-    def update_attributes_of_deceased_and_spouse(self):
+    def _update_attributes_of_deceased_and_spouse(self):
         config = self.subject.game.config
         self.subject.alive = False
         if self.subject.marriage:
@@ -221,11 +225,16 @@ class Death(object):
                 years_married=self.subject.marriage.duration
             )
 
-    def inter_the_body(self):
+    def _vacate_job_position_of_the_deceased(self):
+        """Vacate the deceased's job position, if any."""
+        if self.subject.occupation:
+            self.subject.occupation.terminate(reason=self)
+
+    def _inter_the_body(self):
         """Inter the body at the local cemetery."""
         self.cemetery.inter_person(person=self.subject)
 
-    def remunerate(self):
+    def _remunerate(self):
         """Have deceased's next of kin pay mortician for services rendered."""
         config = self.subject.game.config
         service_rendered = self.__class__
@@ -629,6 +638,12 @@ class Departure(object):
         subject.city.residents.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
+        self._vacate_job_position_of_the_departed()
+
+    def _vacate_job_position_of_the_departed(self):
+        """Vacate the departed's job position, if any."""
+        if self.subject.occupation:
+            self.subject.occupation.terminate(reason=self)
 
 
 class Hiring(object):
@@ -646,15 +661,19 @@ class Hiring(object):
             self.promotion = True
         else:
             self.promotion = False
-        # Terminate the person's former occupation, if any
+        # Instantiate the new occupation -- this means that the subject may
+        # momentarily have two occupations simultaneously
+        Occupation(person=subject, company=company, hiring=self)
+        # Now terminate the person's former occupation, if any (which may cause
+        # a hiring chain and this person's former position goes vacant and is filled,
+        # and so forth); this has to happen after the new occupation is instantiated, or
+        # else they may be hired to fill their own vacated position, which will cause problems
+        # [Actually, this currently wouldn't happen, because lateral job movement is not
+        # possible given how companies assemble job candidates, but it still makes more sense
+        # to have this person put in their new position *before* the chain sets off, because it
+        # better represents what really is a domino-effect situation)
         if subject.occupation:
             subject.occupation.terminate()
-        occupation(person=subject, company=company, hiring=self)
-        # If this person had a former occupation, have the company that
-        # they worked for fill that now vacant position
-        if self.old_occupation:
-            position_that_is_now_vacant = self.old_occupation.__class__
-            self.old_occupation.company.hire(occupation=position_that_is_now_vacant)
 
 
 class HouseConstruction(object):
