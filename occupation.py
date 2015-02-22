@@ -15,6 +15,7 @@ class Occupation(object):
         """
         self.person = person
         self.company = company
+        self.company.employees.add(self)
         self.hiring = hiring  # event.Hiring object holding data about the hiring
         self.start_date = person.game.year
         self.end_date = None  # Changed by self.terminate
@@ -36,6 +37,8 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
+        self.company.employees.remove(self)
+        self.company.former_employees.add(self)
         # If the person hasn't already been hired to a new position, set their
         # occupation attribute to None
         if self.person.occupation is self:

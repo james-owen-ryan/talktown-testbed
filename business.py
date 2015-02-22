@@ -27,6 +27,7 @@ class Business(object):
         self.owner = construction.client
         self.owner.building_commissions.append(self)
         self.employees = set()
+        self.former_employees = set()
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
 
@@ -203,23 +204,23 @@ class ConstructionFirm(Business):
                              the construction of this building.
         """
         super(ConstructionFirm, self).__init__(lot, construction)
-        self.architects = set()
-        self.former_architects = set()
 
     @property
     def house_constructions(self):
         """Return all house constructions."""
         house_constructions = set()
-        for architect in self.architects | self.former_architects:
-            house_constructions |= architect.house_constructions
+        for employee in self.employees | self.former_employees:
+            if hasattr(employee, 'house_constructions'):
+                house_constructions |= employee.house_constructions
         return house_constructions
 
     @property
     def building_constructions(self):
         """Return all building constructions."""
         building_constructions = set()
-        for architect in self.architects | self.former_architects:
-            building_constructions |= architect.building_constructions
+        for employee in self.employees | self.former_employees:
+            if hasattr(employee, 'building_constructions'):
+                building_constructions |= employee.building_constructions
         return building_constructions
 
 
@@ -260,15 +261,14 @@ class Hospital(Business):
                              the construction of this building.
         """
         super(Hospital, self).__init__(lot, construction)
-        self.doctors = set()
-        self.former_doctors = set()
 
     @property
     def baby_deliveries(self):
         """Return all baby deliveries."""
         baby_deliveries = set()
-        for realtor in self.doctors | self.former_doctors:
-            baby_deliveries |= realtor.home_sales
+        for employee in self.employees | self.former_employees:
+            if hasattr(employee, 'baby_deliveries'):
+                baby_deliveries |= employee.baby_deliveries
         return baby_deliveries
 
 
@@ -296,15 +296,14 @@ class LawFirm(Business):
                              the construction of this building.
         """
         super(LawFirm, self).__init__(lot, construction)
-        self.lawyers = set()
-        self.former_lawyers = set()
 
     @property
     def filed_divorces(self):
         """Return all divorces filed through this law firm."""
         filed_divorces = set()
-        for lawyer in self.lawyers | self.former_lawyers:
-            filed_divorces |= lawyer.filed_divorces
+        for employee in self.employees | self.former_employees:
+            if hasattr(employee, 'filed_divorces'):
+                filed_divorces |= employee.filed_divorces
         return filed_divorces
 
     @property
@@ -353,15 +352,14 @@ class RealtyFirm(Business):
                              the construction of this building.
         """
         super(RealtyFirm, self).__init__(lot, construction)
-        self.realtors = set()
-        self.former_realtors = set()
 
     @property
     def home_sales(self):
         """Return all home sales."""
         home_sales = set()
-        for realtor in self.realtors | self.former_realtors:
-            home_sales |= realtor.home_sales
+        for employee in self.employees | self.former_employees:
+            if hasattr(employee, 'home_sales'):
+                home_sales |= employee.home_sales
         return home_sales
 
 
