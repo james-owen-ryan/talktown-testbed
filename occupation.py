@@ -76,7 +76,7 @@ class Janitor(Occupation):
 
 
 class Manager(Occupation):
-    """A manager of a business."""
+    """A manager at a business."""
 
     def __init__(self, person, company, hiring):
         """Initialize an Owner object.
@@ -87,6 +87,20 @@ class Manager(Occupation):
                        the person's hiring into this occupation at this company.
         """
         super(Manager, self).__init__(person=person, company=company, hiring=hiring)
+
+
+class Secretary(Occupation):
+    """A secretary at a business."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize an Secretary object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        super(Secretary, self).__init__(person=person, company=company, hiring=hiring)
 
 
 class Owner(Occupation):
