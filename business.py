@@ -115,7 +115,7 @@ class Business(object):
             for employee in company.employees:
                 if employee.occupation.level < occupation.level:
                     candidates.add(employee)
-        # Consider unemployed (young) people
+        # Consider unemployed (mostly young) people
         candidates |= self.city.unemployed
         return candidates
 
@@ -161,6 +161,36 @@ class Barbershop(Business):
         super(Barbershop, self).__init__(lot, construction)
 
         # hair stylists, cashiers, manager
+
+
+class BusDepot(Business):
+    """A bus depot."""
+
+    def __init__(self, lot, construction):
+        """Initialize a BusDepot object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        super(BusDepot, self).__init__(lot, construction)
+
+        # bus drivers, manager, janitors?
+
+
+class CityHall(Business):
+    """The city hall."""
+
+    def __init__(self, lot, construction):
+        """Initialize a CityHall object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        super(CityHall, self).__init__(lot, construction)
+
+        # secretaries, mayor, janitors
 
 
 class ConstructionFirm(Business):
@@ -266,6 +296,21 @@ class Hotel(Business):
         # concierge(s), maids, cashier, manager
 
 
+class LawFirm(Business):
+    """A law firm."""
+
+    def __init__(self, lot, construction):
+        """Initialize a LawFirm object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        super(LawFirm, self).__init__(lot, construction)
+
+        # lawyers, janitors
+
+
 class PlasticSurgeryClinic(Business):
     """A plastic-surgery clinic."""
 
@@ -364,3 +409,18 @@ class TattooParlor(Business):
         super(TattooParlor, self).__init__(lot, construction)
 
         # tattoo artists, cashiers, manager
+
+
+class TaxiDepot(Business):
+    """A taxi depot."""
+
+    def __init__(self, lot, construction):
+        """Initialize a TaxiDepot object.
+
+        @param lot: A Lot object representing the lot this building is on.
+        @param construction: A BuildingConstruction object holding data about
+                             the construction of this building.
+        """
+        super(TaxiDepot, self).__init__(lot, construction)
+
+        # taxi drivers, manager, janitors?
