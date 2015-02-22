@@ -95,6 +95,39 @@ class Owner(Occupation):
         Occupation.__init__(self=self, person=person, company=company, hiring=hiring)
 
 
+################################################
+##           BUSINESS-SEMIDEPENDENT           ##
+################################################
+
+
+class Groundskeeper(Occupation):
+    """A mortician at a cemetery or park."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a Mortician object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        Occupation.__init__(self=self, person=person, company=company, hiring=hiring)
+
+
+class Nurse(Occupation):
+    """A nurse at a hospital or optometry clinic or plastic-surgery clinic."""
+
+    def __init__(self, person, company, hiring):
+        """Initialize a Nurse object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        @param hiring: The Hiring object that constructed this object and holds metadata about
+                       the person's hiring into this occupation at this company.
+        """
+        Occupation.__init__(self=self, person=person, company=company, hiring=hiring)
+
+
 ############################################
 ##           BUSINESS-DEPENDENT           ##
 ############################################
@@ -183,6 +216,12 @@ class Doctor(Occupation):
                        the person's hiring into this occupation at this company.
         """
         Occupation.__init__(self=self, person=person, company=company, hiring=hiring)
+        # Work accomplishments
+        self.baby_deliveries = []
+
+    def deliver_baby(self, mother):
+        """Instantiate a new Birth object."""
+        Birth(mother=mother, doctor=self)
 
 
 class FireChief(Occupation):
@@ -241,11 +280,11 @@ class HotelMaid(Occupation):
         Occupation.__init__(self=self, person=person, company=company, hiring=hiring)
 
 
-class Nurse(Occupation):
-    """A nurse at a hospital."""
+class Mortician(Occupation):
+    """A mortician at a cemetery."""
 
     def __init__(self, person, company, hiring):
-        """Initialize a Nurse object.
+        """Initialize a Mortician object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
@@ -328,8 +367,8 @@ class Realtor(Occupation):
 
     def sell_home(self, clients, home):
         """Return a sold home."""
-        home_purchase = HomePurchase(clients=clients, home=home, realtor=self)
-        return home_purchase.home
+        home_sales = HomePurchase(clients=clients, home=home, realtor=self)
+        return home_sales.home
 
 
 class TattooArtist(Occupation):
