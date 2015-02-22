@@ -31,6 +31,12 @@ class Cemetery(Landmark):
     def __init__(self, tract):
         """Initialize a Cemetery object."""
         super(Cemetery, self).__init__(tract)
+        self.plots = {}
+
+    def inter_person(self, person):
+        """Inter a new person by assigning them a plot in the graveyard."""
+        new_plot_number = max(self.plots) + 1
+        self.plots[new_plot_number] = person
 
 
 class Park(Landmark):
