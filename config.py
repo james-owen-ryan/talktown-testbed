@@ -1,3 +1,5 @@
+from business import *
+from landmark import *
 from occupation import *
 from event import *
 
@@ -91,6 +93,96 @@ class Config(object):
         self.preference_to_hire_extended_family = 1
         self.preference_to_hire_known_person = 0.5
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
+        # Initial vacant positions for each business type
+        self.initial_job_vacancies = {
+            ApartmentComplex: (Janitor, Janitor, Manager),
+            Bank: (Janitor, BankTeller, BankTeller, Manager),
+            Barbershop: (Cashier, HairStylist, HairStylist, Manager),
+            BusDepot: (BusDriver, BusDriver, Manager),
+            CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
+            ConstructionFirm: (
+                Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
+                ConstructionWorker, Architect
+            ),
+            OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
+            FireStation: (Secretary, Firefighter, Firefighter, FireChief),
+            Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
+            Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
+            LawFirm: (Secretary, Lawyer, Lawyer),
+            PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+            PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
+            RealtyFirm: (Secretary, Realtor, Realtor),
+            Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
+            TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
+            University: (Professor, Professor),
+            Cemetery: (Groundskeeper, Groundskeeper, Mortician),
+            Park: (Groundskeeper, Groundskeeper, Manager),
+        }
+        # Industries of various occupations (indexed by their class names)
+        self.industries = {
+            Cashier: None,
+            Janitor: None,
+            HotelMaid: 'Hospitality',
+            Waiter: 'Hospitality',
+            Secretary: None,
+            Groundskeeper: 'Parks',
+            BankTeller: 'Finance',
+            Concierge: 'Hospitality',
+            HairStylist: 'Cosmetic',
+            ConstructionWorker: 'Construction',
+            Firefighter: 'Fire',
+            PoliceOfficer: 'Police',
+            TaxiDriver: 'Transportation',
+            BusDriver: 'Transportation',
+            Nurse: 'Medical',
+            TattooArtist: 'Cosmetic',
+            Manager: None,
+            FireChief: 'Fire',
+            PoliceChief: 'Police',
+            Realtor: 'Realty',
+            Mortician: 'Medical',
+            Doctor: 'Medical',
+            Architect: 'Construction',
+            Optometrist: 'Medical',
+            PlasticSurgeon: 'Medical',
+            Lawyer: 'Law',
+            Owner: None,
+            Mayor: 'Politics',
+        }
+        # Prerequisite industries for which experience is required to get hired
+        # for various occupations
+        self.prerequisite_industries = {
+            Cashier: None,
+            Janitor: None,
+            HotelMaid: None,
+            Waiter: None,
+            Secretary: None,
+            Groundskeeper: None,
+            BankTeller: None,
+            Concierge: None,
+            HairStylist: None,
+            ConstructionWorker: None,
+            Firefighter: None,
+            PoliceOfficer: None,
+            TaxiDriver: None,
+            BusDriver: None,
+            Nurse: None,
+            TattooArtist: None,
+            Manager: 'Self',  # Must have worked in the industry for which you will manage
+            FireChief: 'Fire',
+            PoliceChief: 'Police',
+            Realtor: None,
+            Mortician: None,
+            Doctor: 'Student',  # Requires graduation from college
+            Architect: 'Student',
+            Optometrist: 'Student',
+            PlasticSurgeon: 'Student',
+            Lawyer: 'Student',
+            Owner: None,
+            Mayor: None,
+        }
         # Job levels of various occupations (indexed by their class names)
         self.job_levels = {
             Cashier: 1,
@@ -119,6 +211,7 @@ class Config(object):
             Optometrist: 4,
             PlasticSurgeon: 4,
             Lawyer: 4,
+            Professor: 4,
             Owner: 5,
             Mayor: 5,
         }

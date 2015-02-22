@@ -39,6 +39,11 @@ class Business(object):
         street = str(self.lot.street)
         return "{} {}".format(house_number, street)
 
+    def _init_hire_initial_employees(self):
+        """Fill all the positions that are vacant at the time of this company forming."""
+        for vacant_position in self.city.game.config.initial_job_vacancies:
+            self.hire(occupation=vacant_position)
+
     def hire(self, occupation):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
         job_candidates_in_town = self._assemble_job_candidates(occupation=occupation)
@@ -49,6 +54,7 @@ class Business(object):
             selected_candidate = self._find_candidate_from_outside_the_city()
         Hiring(subject=selected_candidate, company=self, occupation=occupation)
 
+    @staticmethod
     def _select_candidate(self, candidate_scores):
         """Select a person to serve in a certain occupational capacity."""
         # Pick from top three
