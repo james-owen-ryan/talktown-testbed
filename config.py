@@ -311,22 +311,3 @@ class Config(object):
         self.frequency_of_naming_after_mother = 0
         self.frequency_of_naming_after_grandmother = 5
         self.frequency_of_naming_after_greatgrandmother = 2
-
-        # Businesses  -- DELETE???
-        self.business_frequencies = self.set_frequency_of_each_business_type()
-
-    @staticmethod
-    def set_frequency_of_each_business_type():
-        """Sets the frequency of each business type (relative to one another)."""
-        business_frequency = {
-            "Supermarket": 8,
-            "Bank": 6,
-            "Hotel": 5,
-            "Barbershop": 5,
-            "Eyeglass Shop": 3,
-            "Tattoo Parlor": 3,
-            "LASIK": 2,
-            "Plastic Surgeon": 2,
-            "Tattoo Removal": 1,
-        }
-        return business_frequency
