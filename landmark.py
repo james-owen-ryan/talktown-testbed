@@ -22,6 +22,66 @@ class Landmark(object):
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
 
+    def _init_choose_vacant_tract(self):
+        """Choose a vacant tract on which to build the company building.
+
+        Currently, a landmark scores all the vacant tracts in town and then selects
+        one of the top three. TODO: Probabilistically select from all tracts using
+        the scores to derive likelihoods of selecting each.
+        """
+        tract_scores = self._rate_all_vacant_tracts()
+        if len(tract_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, tract_scores, key=tract_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
+        elif tract_scores:
+            choice = tract_scores[0]
+        else:
+            raise Exception("A company attempted to secure a lot in town when in fact none are vacant.")
+        return choice
+
+    def _rate_all_vacant_tracts(self):
+        """Rate all vacant tracts for the desirability of their locations.
+        """
+        scores = {}
+        for tract in self.city.vacant_tracts:
+            scores[tract] = self._rate_potential_tract(tract=tract)
+        return scores
+
+    def _rate_potential_tract(self, tract):
+        """Rate a vacant tract for the desirability of its location.
+
+        By this method, a landmark appraises a vacant tract in the city for how much they
+        would like to build there, given considerations to its proximity to downtown,
+        proximity to other landmarks of the same type, and to the number of people living
+        near the tract.
+        """
+        config = self.city.game.config
+        score = 0
+        # Increase score for population surrounding this tract -- secondary population is the
+        # total population of this tract's neighboring tracts; tertiary population is the
+        # total population of this tract's neighboring tracts and those tracts' neighboring tracts
+        score += config.function_to_determine_company_preference_for_local_population(
+            secondary_pop=tract.secondary_population, tertiary_pop=tract.tertiary_population
+        )
+        # Decrease score for being near to another landmark of this same type
+        dist_to_nearest_company_of_same_type = (
+            tract.dist_to_nearest_company_of_type(company_type=self.__class__)
+        )
+        if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
+            score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
+                dist_to_nearest_company_of_same_type=dist_to_nearest_company_of_same_type
+            )
+        # As an emergency criterion for the case where there are no people or companies in the town
+        # yet, rate lots according to their distance from downtown
+        score -= tract.dist_from_downtown
+        return score
+
     def _init_get_named(self):
         """Get named by the city's mayor."""
         pass
