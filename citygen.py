@@ -1,6 +1,15 @@
 import pyqtree
 import random
-#from city import *
+from city import *
+
+
+# It would be great if this script could be wrapped up in a single function that returns
+# an instantiated city with all its component objects instantiated and attributed. E.g.:
+
+def generate_city_plan(game):
+    city = City(game=game)
+    return city
+
 
 def clamp(val,minimum,maximum):
     return max(minimum,min(val,maximum))
