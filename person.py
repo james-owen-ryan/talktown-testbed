@@ -603,15 +603,23 @@ class Person(object):
         lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
         lawyer.file_name_change(person=self, new_last_name=new_last_name, reason=reason)
 
-    def copulate(self, partner, protection):
+    def fall_in_love(self, person):
+        """Fall in love with person."""
+        self.love_interest = person
+
+    def fall_out_of_love(self):
+        """Fall out of love."""
+        self.love_interest = None
+
+    def have_sex(self, partner, protection):
         """Have sex with partner."""
         config = self.game.config
         self.sexual_partners.add(partner)
         partner.sexual_partners.add(self)
         if random.random() > config.chance_person_falls_in_love_after_sex:
-            self.love_interest = partner
+            self.fall_in_love(person=partner)
         if random.random() > config.chance_person_falls_in_love_after_sex:
-            partner.love_interest = self
+            partner.fall_in_love(person=self)
         if self.male != partner.male and not self.pregnant and not partner.pregnant:
             if not protection or random.random() < config.chance_protection_does_not_work:
                 self._determine_whether_pregnant(partner=partner)
@@ -993,6 +1001,8 @@ class PersonExNihilo(Person):
         spouse = PersonExNihilo(
             game=self.game, job_opportunity_impetus=job_opportunity_impetus, spouse_already_generated=True
         )
+        self.fall_in_love(spouse)
+        spouse.fall_in_love(self)
         self._init_retcon_marriage(spouse=spouse)
         self._init_retcon_births_of_children(spouse=spouse)
 
@@ -1032,9 +1042,9 @@ class PersonExNihilo(Person):
                 )
             )
             if random.random() < chance_they_are_trying_to_conceive_this_year:
-                self.copulate(partner=self.spouse, protection=False)
+                self.have_sex(partner=self.spouse, protection=False)
             else:
-                self.copulate(partner=self.spouse, protection=True)
+                self.have_sex(partner=self.spouse, protection=True)
 
     def _init_move_to_city(self, hiring_that_instigated_move):
         """Move into the city in which gameplay takes place."""
