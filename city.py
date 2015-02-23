@@ -13,7 +13,6 @@ class City(object):
         """Initialize a City object."""
         self.game = game
         self.founded = founded
-        self.business_needs = self.determine_business_needs(config=self.game.config)
         self.residents = set()
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city
@@ -83,8 +82,8 @@ class Block(object):
 
     def __init__(self, x_coord, y_coord,ewstreet,nsstreet, number):
         """Initialize a Block object."""
-        self.game = street.city.game
-        self.city = street.city
+        # self.game = street.city.game
+        # self.city = street.city
         self.ewstreet = ewstreet
         self.nsstreet = nsstreet
         self.number = number
