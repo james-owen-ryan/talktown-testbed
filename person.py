@@ -691,7 +691,7 @@ class Person(object):
         return choice
 
     def _rate_all_vacant_homes_and_vacant_lots(self):
-        """Find a home to move into in a chosen neighborhood.
+        """Find a vacant home to move into or a vacant lot to build a house on.
 
         By this method, a person appraises every vacant home and lot in the city for
         how much they would like to move or build there, given considerations to the people
