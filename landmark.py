@@ -15,12 +15,12 @@ class Landmark(object):
     def __init__(self, tract):
         """Initialize a Landmark object."""
         self.city = tract.city
+        self.city.companies.add(self)
         self.founded = self.city.game.year
         self.tract = tract
         self.employees = set()
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
-        self.city.companies.add(self)
 
     def _init_get_named(self):
         """Get named by the city's mayor."""
@@ -131,6 +131,7 @@ class Cemetery(Landmark):
         """Inter a new person by assigning them a plot in the graveyard."""
         new_plot_number = max(self.plots) + 1
         self.plots[new_plot_number] = person
+        return new_plot_number
 
 
 class Park(Landmark):

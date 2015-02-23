@@ -843,12 +843,17 @@ class Person(object):
         for relative in relatives_in_town:
             relation_to_me = self.relation_to_me(person=relative)
             pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
-            dist = relative.home.lot.get_dist_to(lot) + 1  # Since we're dividing by this next
+            dist = relative.home.lot.get_dist_to(lot=lot) + 1.0  # To avoid ZeroDivisionError
             score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
         # Score for proximity to friends (only positively)
         for friend in self.friends:
-            dist = friend.home.lot.get_dist_to(lot) + 1
+            dist = friend.home.lot.get_dist_to(lot=lot) + 1.0
             score += config.pull_to_live_near_a_friend / dist
+        # Score for proximity to workplace (only positively) -- will be only criterion for person
+        # who is new to the city (and thus knows no one there yet)
+        if self.occupation:
+            dist = self.occupation.company.lot.get_dist_to(lot=lot) + 1.0
+            score += config.pull_to_live_near_workplace / dist
         return score
 
     def _determine_desire_to_move_near_family(self):

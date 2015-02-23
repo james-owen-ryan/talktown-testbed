@@ -37,7 +37,7 @@ class City(object):
 
     @property
     def unemployed(self):
-        """Return unemployed (young) people, excluding retirees."""
+        """Return unemployed (mostly young) people, excluding retirees."""
         unemployed_people = set()
         for resident in self.residents:
             if not resident.occupation and not resident.retired:

@@ -337,13 +337,14 @@ class Marriage(object):
         """Make the newlyweds (probably) have each other as their strongest love interests."""
         spouse1, spouse2 = newlyweds
         x = random.random()
-        if x < config.chance_newlyweds_keep_former_love_interests:
-            spouse1.love_interest = spouse2
-        elif x < config.chance_newlyweds_keep_former_love_interests * 2:
-            spouse2.love_interest = spouse1
+        if x < config.chance_a_newlywed_keeps_former_love_interest:
+            # Only spouse1 guaranteed to have fallen in love
+            spouse1.fall_in_love(person=spouse2)
+        elif x < config.chance_a_newlywed_keeps_former_love_interest * 2:
+            spouse2.fall_in_love(person=spouse1)
         else:
-            spouse1.love_interest = spouse2
-            spouse2.love_interest = spouse1
+            spouse1.fall_in_love(person=spouse2)
+            spouse2.fall_in_love(person=spouse1)
 
     def _have_newlyweds_pool_money_together(self):
         """Have the newlyweds combine their money holdings into a single account."""
@@ -489,9 +490,9 @@ class Divorce(object):
         """Make the divorcees (probably) lose each other as their strongest love interests."""
         spouse1, spouse2 = divorcees
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
-            spouse1.love_interest = None
+            spouse1.fall_out_of_love()
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
-            spouse2.love_interest = None
+            spouse2.fall_out_of_love()
 
     def _have_divorcees_split_up_money(self):
         """Have the divorcees split their money up (50/50)."""

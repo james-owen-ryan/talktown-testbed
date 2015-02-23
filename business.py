@@ -53,11 +53,11 @@ class Business(object):
             candidate_scores = self._rate_all_job_candidates(candidates=job_candidates_in_town)
             selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
         else:
-            selected_candidate = self._find_candidate_from_outside_the_city()
+            selected_candidate = self._find_candidate_from_outside_the_city(occupation=occupation)
         Hiring(subject=selected_candidate, company=self, occupation=occupation)
 
     @staticmethod
-    def _select_candidate(self, candidate_scores):
+    def _select_candidate(candidate_scores):
         """Select a person to serve in a certain occupational capacity."""
         # Pick from top three
         top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
@@ -69,19 +69,11 @@ class Business(object):
             chosen_candidate = top_three_choices[2]
         return chosen_candidate
 
-    def _find_candidate_from_outside_the_city(self):
+    def _find_candidate_from_outside_the_city(self, occupation):
         """Generate a PersonExNihilo to move into the city for this job."""
-        config = self.city.game.config
-        age_of_this_person = random.normalvariate(
-            config.generated_job_candidate_from_outside_city_age_mean,
-            config.generated_job_candidate_from_outside_city_age_sd
+        candidate = PersonExNihilo(
+            game=self.owner.game, job_opportunity_impetus=occupation, spouse_already_generated=False
         )
-        if age_of_this_person < config.generated_job_candidate_from_outside_city_age_floor:
-            age_of_this_person = config.generated_job_candidate_from_outside_city_age_floor
-        elif age_of_this_person > config.generated_job_candidate_from_outside_city_age_cap:
-            age_of_this_person = config.generated_job_candidate_from_outside_city_age_cap
-        birth_year_of_this_person = self.city.game.year-age_of_this_person
-        candidate = PersonExNihilo(game=self.city.game, birth_year=birth_year_of_this_person)
         return candidate
 
     def _rate_all_job_candidates(self, candidates):

@@ -107,7 +107,7 @@ class Feature(str):
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
                       attribute this represents.
         """
-        super(Feature, self).__init__()
+        str.__init__()
 
     def __new__(cls, value):
         return str.__new__(cls, value)

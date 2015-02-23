@@ -8,6 +8,7 @@ class Game(object):
         """Initialize a Game object."""
         self.config = Config()
         self.year = self.config.year_city_gets_founded
+        self.true_year = self.config.year_city_gets_founded  # True year never gets changed during retconning
 
     def establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
@@ -15,4 +16,5 @@ class Game(object):
 
     def advance_one_year(self):
         """Advance one year (the timestep during simulation."""
-        self.year += 1
+        self.true_year += 1
+        self.year = self.true_year

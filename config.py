@@ -17,31 +17,18 @@ class Config(object):
         self.city_width_in_blocks = 8
         self.city_height_in_blocks = 8
         self.city_downtown_blocks_displaced_from_center_max = 2
-        # Founding residents of the city
-        self.n_founding_families_mean = 5
-        self.n_founding_families_sd = 1
-        self.n_founding_families_floor = 3
-        self.n_founding_families_cap = 7
-        self.n_single_founders_mean = 4
-        self.n_single_founders_sd = 2
-        self.n_single_founders_floor = 2
-        self.n_single_founders_cap = 11
-        self.founding_mother_age_floor = 19
-        self.founding_mother_age_cap = 59
-        self.founding_father_age_floor = 19
-        self.founding_father_age_diff_floor = -2
-        self.founding_father_age_diff_cap = 8
-        self.founding_father_age_at_marriage_mean = 21
-        self.founding_father_age_at_marriage_sd = 2.7
-        self.founding_father_age_at_marriage_floor = 17
-        self.founding_mother_age_at_marriage_floor = 17
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.02
-        self.chance_newlyweds_keep_former_love_interests = 0.01
+        self.chance_a_newlywed_keeps_former_love_interest = 0.01
         self.chance_stepchildren_take_stepparent_name = 0.3
         self.age_after_which_stepchildren_will_not_take_stepparent_name = 6
+        self.function_to_determine_chance_married_couple_are_trying_to_conceive = (
+            # This is the chance they try to conceive across a given year -- it decreases
+            # according to the number of kids they have
+            lambda n_kids: 0.4 / (n_kids + 1)
+        )
         # Divorce
         self.chance_a_divorcee_falls_out_of_love = 0.9
         self.chance_a_male_divorcee_is_one_who_moves_out = 0.7
@@ -50,6 +37,13 @@ class Config(object):
                 0.9 / ((years_married + 0.1) / 4.0),  # '+0.1' is to avoid ZeroDivisionError
                 0.9
             )
+        )
+        # Sex
+        self.chance_person_falls_in_love_after_sex = 0.8
+        self.chance_protection_does_not_work = 0.01
+        # Pregnancy
+        self.function_to_determine_chance_of_conception = lambda female_age: min(
+            female_age/10000., (100 - ((female_age**1.98) / 20.)) / 100  # Decreases exponentially with age
         )
         # Death
         self.function_to_derive_chance_a_widow_remarries = (
@@ -81,7 +75,9 @@ class Config(object):
             'Aunt': 1,
             'Uncle': 1,
             'Cousin': 1,
+            None: 0,
         }
+        self.pull_to_live_near_workplace = 5
                 ## ECONOMY ##
         # Misc
         self.age_people_start_working = 16
@@ -265,10 +261,15 @@ class Config(object):
         self.preference_to_contract_known_person = 0.5
                 ## PEOPLE REPRESENTATION ##
         # People ex nihilo
-        self.generated_job_candidate_from_outside_city_age_mean = 24
-        self.generated_job_candidate_from_outside_city_age_sd = 3
-        self.generated_job_candidate_from_outside_city_age_floor = 17
-        self.generated_job_candidate_from_outside_city_age_cap = 60
+        self.function_to_determine_person_ex_nihilo_age_given_job_level = (
+            lambda job_level: 18 + (random.randint(2, 5) * job_level)
+        )
+        self.function_to_determine_chance_person_ex_nihilo_starts_with_family = (
+            lambda age: (age / 100.0) * 1.4
+        )
+        self.person_ex_nihilo_age_at_marriage_mean = 23
+        self.person_ex_nihilo_age_at_marriage_sd = 2.7
+        self.person_ex_nihilo_age_at_marriage_floor = 17
         # Infertility
         self.male_infertility_rate = 0.07
         self.female_infertility_rate = 0.11
