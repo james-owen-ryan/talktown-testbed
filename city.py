@@ -98,17 +98,19 @@ class Street(object):
 class Block(object):
     """A block on a street in a city."""
 
-    def __init__(self, x_coord, y_coord, street, number):
+    def __init__(self, x_coord, y_coord,ewstreet,nsstreet, number):
         """Initialize a Block object."""
         self.game = street.city.game
         self.city = street.city
-        self.street = street
+        self.ewstreet = ewstreet
+        self.nsstreet = nsstreet
         self.number = number
         self.lots = []
 
     def __str__(self):
         """Return string representation."""
-        return "{} block of {}".format(self.number, str(self.street))
+        return "intersection of {} and {}".format(str(self.ewstreet),str(self.nsstreet))
+        #return "{} block of {}".format(self.number, str(self.street))
 
     @property
     def buildings(self):
