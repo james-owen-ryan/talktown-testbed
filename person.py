@@ -4,6 +4,7 @@ from corpora import Names
 from config import Config
 from event import *
 from name import Name
+from personality import Personality
 
 
 class Person(object):
@@ -42,9 +43,7 @@ class Person(object):
             self._init_sexuality(male=self.male, config=self.game.config)
         )
         # Set personality
-        self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
-            self._init_personality()
-        )
+        self.personality = Personality(subject=self)
         # Set mental attributes
         self.memory = self._init_memory()
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
@@ -191,99 +190,6 @@ class Person(object):
                 attracted_to_men = True
                 attracted_to_women = False
         return attracted_to_men, attracted_to_women
-
-    def _init_personality(self):
-        """Determine this person's Big Five disposition.
-
-        TODO: Have this affected by a person's sex."""
-        openness_to_experience = self._init_big_5_o()
-        conscientiousness = self._init_big_5_c()
-        extroversion = self._init_big_5_e()
-        agreeableness = self._init_big_5_a()
-        neuroticism = self._init_big_5_n()
-        return openness_to_experience, conscientiousness, extroversion, agreeableness, neuroticism
-
-    def _init_big_5_o(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
-        config = self.game.config
-        if random.random() < config.big_5_o_heritability:
-            # Inherit this trait (with slight variance)
-            takes_after = random.choice([self.father, self.mother])
-            openness_to_experience = random.normalvariate(
-                takes_after.openness_to_experience, config.big_5_heritability_sd
-            )
-        else:
-            # Generate from the population mean
-            openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        return openness_to_experience
-
-    def _init_big_5_c(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.game.config
-        if random.random() < config.big_5_c_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            conscientiousness = random.normalvariate(
-                takes_after.conscientiousness, config.big_5_heritability_sd
-            )
-        else:
-            conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        return conscientiousness
-
-    def _init_big_5_e(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.game.config
-        if random.random() < config.big_5_e_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            extroversion = random.normalvariate(
-                takes_after.extroversion, config.big_5_heritability_sd
-            )
-        else:
-            extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        return extroversion
-
-    def _init_big_5_a(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.game.config
-        if random.random() < config.big_5_a_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            agreeableness = random.normalvariate(
-                takes_after.agreeableness, config.big_5_heritability_sd
-            )
-        else:
-            agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        return agreeableness
-
-    def _init_big_5_n(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.game.config
-        if random.random() < config.big_5_n_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            neuroticism = random.normalvariate(
-                takes_after.neuroticism, config.big_5_heritability_sd
-            )
-        else:
-            neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        return neuroticism
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
@@ -926,56 +832,6 @@ class PersonExNihilo(Person):
         )
         birth_year = self.game.true_year - age_at_time_of_city_founding
         return birth_year
-
-    def _init_big_5_o(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
-        config = self.game.config
-        openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        return openness_to_experience
-
-    def _init_big_5_c(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.game.config
-        conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        return conscientiousness
-
-    def _init_big_5_e(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.game.config
-        extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        return extroversion
-
-    def _init_big_5_a(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.game.config
-        agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        return agreeableness
-
-    def _init_big_5_n(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.game.config
-        neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        return neuroticism
 
     def _init_memory(self):
         """Determine this person's base memory capability, which will deteriorate with age."""
