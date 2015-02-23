@@ -22,7 +22,7 @@ class Business(object):
         self.city = lot.city
         self.city.companies.add(self)
         self.founded = self.city.game.year
-        self.lot = self._init_secure_lot()
+        self.lot = self._init_choose_vacant_lot()
         self.construction = construction
         self.owner = construction.client
         self.owner.building_commissions.append(self)
@@ -31,64 +31,64 @@ class Business(object):
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
 
-    def _init_secure_lot(self):
-        """Secure a lot on which to build the company building."""
+    def _init_choose_vacant_lot(self):
+        """Choose a vacant lot on which to build the company building.
+
+        Currently, a company scores all the vacant lots in town and then selects
+        one of the top three. TODO: Probabilistically select from all lots using
+        the scores to derive likelihoods of selecting each.
+        """
+        lot_scores = self._rate_all_vacant_lots()
+        if len(lot_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, lot_scores, key=lot_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
+        elif lot_scores:
+            choice = lot_scores[0]
+        else:
+            raise Exception("A company attempted to secure a lot in town when in fact none are vacant.")
+        return choice
 
     def _rate_all_vacant_lots(self):
-        """Find a home to move into in a chosen neighborhood.
-
-        By this method, a person appraises every vacant home and lot in the city for
-        how much they would like to move or build there, given considerations to the people
-        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
-        a penalty that makes people less willing to build a home on a vacant lot than to move
-        into a vacant home.
+        """Rate all vacant lots for the desirability of their locations.
         """
         scores = {}
-        for home in self.city.vacant_homes:
-            my_score = self._rate_potential_lot(lot=home.lot)
-            if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=home)
-            else:
-                spouse_score = 0
-            scores[home] = my_score + spouse_score
         for lot in self.city.vacant_lots:
-            my_score = self._rate_potential_lot(lot=lot)
-            if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=lot)
-            else:
-                spouse_score = 0
-            scores[lot] = (
-                (my_score + spouse_score) * self.game.config.penalty_for_having_to_build_a_home_vs_buying_one
-            )
+            scores[lot] = self._rate_potential_lot(lot=lot)
         return scores
 
     def _rate_potential_lot(self, lot):
-        """Score the desirability of living at the location of a lot.
+        """Rate a vacant lot for the desirability of its location.
 
-        TODO: Other considerations here.
+        By this method, a company appraises a vacant lot in the city for how much they
+        would like to build there, given considerations to its proximity to downtown,
+        proximity to other businesses of the same type, and to the number of people living
+        near the lot.
         """
-        config = self.game.config
-        desire_to_live_near_family = self._determine_desire_to_move_near_family()
-        # Score home for its proximity to family (either positively or negatively, depending); only
-        # consider family members that are alive, in town, and not living with you already (i.e., kids)
-        relatives_in_town = {
-            f for f in self.extended_family if f.present and f.home is not self.home
-        }
+        config = self.city.game.config
         score = 0
-        for relative in relatives_in_town:
-            relation_to_me = self.relation_to_me(person=relative)
-            pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
-            dist = relative.home.lot.get_dist_to(lot=lot) + 1.0  # To avoid ZeroDivisionError
-            score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
-        # Score for proximity to friends (only positively)
-        for friend in self.friends:
-            dist = friend.home.lot.get_dist_to(lot=lot) + 1.0
-            score += config.pull_to_live_near_a_friend / dist
-        # Score for proximity to workplace (only positively) -- will be only criterion for person
-        # who is new to the city (and thus knows no one there yet)
-        if self.occupation:
-            dist = self.occupation.company.lot.get_dist_to(lot=lot) + 1.0
-            score += config.pull_to_live_near_workplace / dist
+        # Increase score for population surrounding this lot -- secondary population is the
+        # total population of this lot's neighboring lots; tertiary population is the
+        # total population of this lot's neighboring lots and those lots' neighboring lots
+        score += config.function_to_determine_company_preference_for_local_population(
+            secondary_pop=lot.secondary_population, tertiary_pop=lot.tertiary_population
+        )
+        # Decrease score for being near to another company of this same type
+        dist_to_nearest_company_of_same_type = (
+            lot.dist_to_nearest_company_of_type(company_type=self.__class__)
+        )
+        if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
+            score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
+                dist_to_nearest_company_of_same_type=dist_to_nearest_company_of_same_type
+            )
+        # As an emergency criterion for the case where there are no people or companies in the town
+        # yet, rate lots according to their distance from downtown
+        score -= lot.dist_from_downtown
         return score
 
     def _init_get_named(self):
