@@ -27,15 +27,6 @@ class City(object):
         return self.residents | self.deceased | self.departed
 
     @property
-    def a_business_need(self):
-        """Pop and return a random business need."""
-        # If you've run out of business needs, just repopulate the list from scratch
-        if not self.business_needs:
-            self.business_needs = self.determine_business_needs(config=self.game.config)
-        random.shuffle(self.business_needs)
-        return self.business_needs.pop()
-
-    @property
     def unemployed(self):
         """Return unemployed (mostly young) people, excluding retirees."""
         unemployed_people = set()
@@ -44,14 +35,6 @@ class City(object):
                 if resident.age >= self.game.config.age_people_start_working:
                     unemployed_people.add(resident)
         return unemployed_people
-
-    @staticmethod
-    def determine_business_needs(config):
-        """Determine what types of businesses are needed in this city."""
-        business_needs = []
-        for business_type in config.business_frequencies:
-            business_needs += [business_type] * config.business_frequencies[business_type]
-        return business_needs
 
     def workers_of_trade(self, occupation):
         """Return all residents in the city who practice to given occupation.
@@ -153,12 +136,18 @@ class Block(object):
 class Tract(object):
     """A tract of land on a block in a city, upon which parks and cemeteries are established."""
 
-    def __init__(self, block):
+    def __init__(self, block, house_number):
         """Initialize a Lot object."""
         self.game = block.city.game
         self.city = block.city
         self.street = block.street
         self.block = block
+        self.house_number = house_number  # In the event a building is erected here, it inherits this
+
+    def get_dist_to(self, lot_or_tract):
+        """Return the Manhattan distance between this tract and some lot or tract."""
+        dist = -1
+        return dist
 
 
 class Lot(object):
@@ -171,3 +160,8 @@ class Lot(object):
         self.street = block.street
         self.block = block
         self.house_number = house_number  # In the event a building is erected here, it inherits this
+
+    def get_dist_to(self, lot_or_tract):
+        """Return the Manhattan distance between this lot and some lot or tract."""
+        dist = -1
+        return dist
