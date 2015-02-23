@@ -1,5 +1,6 @@
 from random import random
 from business import *
+from landmark import *
 from residence import *
 from occupation import *
 from corpora import Names
@@ -17,8 +18,13 @@ class City(object):
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city
         self.companies = set()
-        self.vacant_homes = set()
-        self.vacant_lots = set()
+        self.lots = set()
+        self.tracts = set()
+
+    @property
+    def vacant_lots(self):
+        """Return all vacant lots in the city."""
+        vacant_lots = (lot for lot in self.lots if not lot.building)
 
     @property
     def all_time_residents(self):
@@ -36,7 +42,7 @@ class City(object):
         return unemployed_people
 
     def workers_of_trade(self, occupation):
-        """Return all residents in the city who practice to given occupation.
+        """Return all population in the city who practice to given occupation.
 
         @param occupation: The class pertaining to the occupation in question.
         """
@@ -132,23 +138,6 @@ class Block(object):
         return house_numbers
 
 
-class Tract(object):
-    """A tract of land on a block in a city, upon which parks and cemeteries are established."""
-
-    def __init__(self, block, house_number):
-        """Initialize a Lot object."""
-        self.game = block.city.game
-        self.city = block.city
-        self.street = block.street
-        self.block = block
-        self.house_number = house_number  # In the event a building is erected here, it inherits this
-
-    def get_dist_to(self, lot_or_tract):
-        """Return the Manhattan distance between this tract and some lot or tract."""
-        dist = -1
-        return dist
-
-
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
 
@@ -158,9 +147,74 @@ class Lot(object):
         self.city = block.city
         self.street = block.street
         self.block = block
-        self.house_number = house_number  # In the event a building is erected here, it inherits this
+        self.house_number = house_number  # In the event a business/landmark is erected here, it inherits this
+        self.building = None  # Will always be None for Tract
+        self.landmark = None  # Will always be None for Lot
+        self._init_add_to_city_plan()
+        self.neighboring_lots = self._init_get_neighboring_lots()
+
+    def _init_add_to_city_plan(self):
+        """Add self to the city plan."""
+        self.city.lots.add(self)
+
+    def _init_get_neighboring_lots(self):
+        """Collect all lots that neighbor this lot."""
+        neighboring_lots = set()
+        return neighboring_lots
+
+    @property
+    def population(self):
+        """Return the number of people living/working on the lot."""
+        return len(self.building.residents)
+
+    @property
+    def secondary_population(self):
+        """Return the total population of this lot and its neighbors."""
+        secondary_population = 0
+        for lot in {self} | self.neighboring_lots:
+            secondary_population += lot.population
+        return secondary_population
+
+    @property
+    def tertiary_population(self):
+        """Return the total population of this lot and its neighbors and its neighbors' neighbors."""
+        lots_already_considered = set()
+        tertiary_population = 0
+        for lot in {self} | self.neighboring_lots:
+            if lot not in lots_already_considered:
+                lots_already_considered |= lot
+                tertiary_population += lot.population
+                for neighbor_to_that_lot in lot.neighboring_lots:
+                    if neighbor_to_that_lot not in lots_already_considered:
+                        tertiary_population += lot.population
+        return tertiary_population
+
+    @property
+    def dist_from_downtown(self):
+        """Return the Manhattan distance between this lot and the center of downtown."""
+        dist = -1
+        return dist
 
     def get_dist_to(self, lot_or_tract):
         """Return the Manhattan distance between this lot and some lot or tract."""
         dist = -1
         return dist
+
+    def dist_to_nearest_company_of_type(self, company_type):
+        """Return the Manhattan distance between this lot and the nearest company of the given type."""
+        distances = (
+            self.get_dist_to(company.lot) for company in self.city.companies if isinstance(company, company_type)
+        )
+        return min(distances)
+
+
+class Tract(Lot):
+    """A tract of land on a block in a city, upon which parks and cemeteries are established."""
+
+    def __init__(self, block, house_number):
+        """Initialize a Lot object."""
+        super(Tract, self).__init__(block, house_number)
+
+    def _init_add_to_city_plan(self):
+        """Add self to the city plan."""
+        self.city.tracts.add(self)

@@ -22,7 +22,7 @@ class Business(object):
         self.city = lot.city
         self.city.companies.add(self)
         self.founded = self.city.game.year
-        self.lot = lot
+        self.lot = self._init_secure_lot()
         self.construction = construction
         self.owner = construction.client
         self.owner.building_commissions.append(self)
@@ -30,6 +30,66 @@ class Business(object):
         self.former_employees = set()
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
+
+    def _init_secure_lot(self):
+        """Secure a lot on which to build the company building."""
+
+    def _rate_all_vacant_lots(self):
+        """Find a home to move into in a chosen neighborhood.
+
+        By this method, a person appraises every vacant home and lot in the city for
+        how much they would like to move or build there, given considerations to the people
+        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
+        a penalty that makes people less willing to build a home on a vacant lot than to move
+        into a vacant home.
+        """
+        scores = {}
+        for home in self.city.vacant_homes:
+            my_score = self._rate_potential_lot(lot=home.lot)
+            if self.spouse:
+                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=home)
+            else:
+                spouse_score = 0
+            scores[home] = my_score + spouse_score
+        for lot in self.city.vacant_lots:
+            my_score = self._rate_potential_lot(lot=lot)
+            if self.spouse:
+                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=lot)
+            else:
+                spouse_score = 0
+            scores[lot] = (
+                (my_score + spouse_score) * self.game.config.penalty_for_having_to_build_a_home_vs_buying_one
+            )
+        return scores
+
+    def _rate_potential_lot(self, lot):
+        """Score the desirability of living at the location of a lot.
+
+        TODO: Other considerations here.
+        """
+        config = self.game.config
+        desire_to_live_near_family = self._determine_desire_to_move_near_family()
+        # Score home for its proximity to family (either positively or negatively, depending); only
+        # consider family members that are alive, in town, and not living with you already (i.e., kids)
+        relatives_in_town = {
+            f for f in self.extended_family if f.present and f.home is not self.home
+        }
+        score = 0
+        for relative in relatives_in_town:
+            relation_to_me = self.relation_to_me(person=relative)
+            pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
+            dist = relative.home.lot.get_dist_to(lot=lot) + 1.0  # To avoid ZeroDivisionError
+            score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
+        # Score for proximity to friends (only positively)
+        for friend in self.friends:
+            dist = friend.home.lot.get_dist_to(lot=lot) + 1.0
+            score += config.pull_to_live_near_a_friend / dist
+        # Score for proximity to workplace (only positively) -- will be only criterion for person
+        # who is new to the city (and thus knows no one there yet)
+        if self.occupation:
+            dist = self.occupation.company.lot.get_dist_to(lot=lot) + 1.0
+            score += config.pull_to_live_near_workplace / dist
+        return score
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
@@ -45,6 +105,19 @@ class Business(object):
         """Fill all the positions that are vacant at the time of this company forming."""
         for vacant_position in self.city.game.config.initial_job_vacancies:
             self.hire(occupation=vacant_position)
+
+    @property
+    def residents(self):
+        """Return the employees that work here.
+
+         This is meant to facilitate a Lot reasoning over its population and the population
+         of its local area. This reasoning is needed so that developers can decide where to
+         build businesses. For all businesses but ApartmentComplex, this just returns the
+         employees that work at this building (which makes sense in the case of, e.g., building
+         a restaurant nearby where people work); for ApartmentComplex, this is overridden
+         to return the employees that work there and also the people that live there.
+         """
+        return self.employees
 
     def hire(self, occupation):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
@@ -131,6 +204,15 @@ class ApartmentComplex(Business):
                              the construction of this building.
         """
         super(ApartmentComplex, self).__init__(lot, construction)
+        self.units = set()
+
+    @property
+    def residents(self):
+        """Return the employees that work here and residents that live here."""
+        residents = set(self.employees)
+        for unit in self.units:
+            residents |= unit.residents
+        return residents
 
 
 class Bank(Business):

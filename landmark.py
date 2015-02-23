@@ -37,6 +37,16 @@ class Landmark(object):
         for vacant_position in self.city.game.config.initial_job_vacancies:
             self.hire(occupation=vacant_position)
 
+    @property
+    def residents(self):
+        """Return the employees that work here.
+
+         This is meant to facilitate a Lot reasoning over its population and the population
+         of its local area. This reasoning is needed so that developers can decide where to
+         build businesses.
+         """
+        return self.employees
+
     def hire(self, occupation):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
         job_candidates_in_town = self._assemble_job_candidates(occupation=occupation)
