@@ -1,7 +1,6 @@
 import random
 import heapq
 from corpora import Names
-from config import Config
 from event import *
 from name import Name
 from personality import Personality
@@ -691,14 +690,7 @@ class Person(object):
         return choice
 
     def _rate_all_vacant_homes_and_vacant_lots(self):
-        """Find a vacant home to move into or a vacant lot to build a house on.
-
-        By this method, a person appraises every vacant home and lot in the city for
-        how much they would like to move or build there, given considerations to the people
-        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
-        a penalty that makes people less willing to build a home on a vacant lot than to move
-        into a vacant home.
-        """
+        """Rate all vacant homes and vacant lots."""
         scores = {}
         for home in self.city.vacant_homes:
             my_score = self._rate_potential_lot(lot=home.lot)
@@ -719,9 +711,13 @@ class Person(object):
         return scores
 
     def _rate_potential_lot(self, lot):
-        """Score the desirability of living at the location of a lot.
+        """Rate the desirability of living at the location of a lot.
 
-        TODO: Other considerations here.
+        By this method, a person appraises a vacant home or lot in the city for
+        how much they would like to move or build there, given considerations to the people
+        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
+        a penalty that makes people less willing to build a home on a vacant lot than to move
+        into a vacant home.
         """
         config = self.game.config
         desire_to_live_near_family = self._determine_desire_to_move_near_family()
