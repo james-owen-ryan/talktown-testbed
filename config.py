@@ -13,10 +13,6 @@ class Config(object):
                 ## WORLD GEN ##
         # Misc
         self.year_city_gets_founded = 1909  # Year world gen begins
-        # City dimensions
-        self.city_width_in_blocks = 8
-        self.city_height_in_blocks = 8
-        self.city_downtown_blocks_displaced_from_center_max = 2
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
@@ -82,6 +78,17 @@ class Config(object):
         # Misc
         self.age_people_start_working = 16
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
+        # Companies deciding where to locate themselves
+        self.function_to_determine_company_preference_for_local_population = (
+            lambda secondary_pop, tertiary_pop: (secondary_pop * 5) + (tertiary_pop * 2)
+        )
+        self.function_to_determine_company_penalty_for_nearby_company_of_same_type = (
+            # This is jury-rigged so that being within a few blocks of another company of the
+            # same type will cancel out a relatively huge local population
+            lambda dist_to_nearest_company_of_same_type: min(
+                (((100-dist_to_nearest_company_of_same_type) ** 0.5) - 8) ** 10,
+                0)
+        )
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
