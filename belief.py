@@ -37,4 +37,5 @@ class Facet(str):
         self.evidence = evidence
 
     def __new__(cls, value, evidence):
+        """Do str stuff."""
         return str.__new__(cls, value)

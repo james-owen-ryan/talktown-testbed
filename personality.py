@@ -208,4 +208,5 @@ class Feature(float):
         self.inherited_from = inherited_from
 
     def __new__(cls, value, inherited_from):
+        """Do float stuff."""
         return float.__new__(cls, value)

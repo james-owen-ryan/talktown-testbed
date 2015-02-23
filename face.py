@@ -113,4 +113,5 @@ class Feature(str):
         self.inherited_from = inherited_from
 
     def __new__(cls, value, inherited_from):
+        """Do str stuff."""
         return str.__new__(cls, value)
