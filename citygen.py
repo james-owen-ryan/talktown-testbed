@@ -42,7 +42,7 @@ def traverseTree(node):
             lots.append((w+0.5,xx+0.5))
             lots.append((e-0.5,xx+0.5))
         if (node.width > 2):
-            tracts.append([w+1,n+1,width-2])
+            tracts.append([w+1,n+1,node.width-2])
         nsstreets[ (w,n)] = (w,s)
         nsstreets[ (e,n)] = (e,s)
         ewstreets[ (w,n)] = (e,n)
