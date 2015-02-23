@@ -1,64 +1,59 @@
 from config import Config
+from event import HomePurchase
 
 
-class House(object):
-    """A house on a block in a city."""
+class DwellingPlace(object):
+    """A dwelling place in a city."""
 
-    def __init__(self, lot, construction):
-        """Initialize a House object.
+    def __init__(self, lot, owners):
+        """Initialize a DwellingPlace object.
 
         @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
         """
         self.city = lot.city
         self.lot = lot
+        self._init_get_named()
+        self.address = self._init_generate_address()
+        self.owners = set()  # Gets set via self._init_ownership()
+        self.former_owners = set()
+        self.residents = set()
+        self.former_residents = set()
+        self.transactions = []
+        self.move_ins = []
+        self.move_outs = []
+        self._init_ownership(initial_owners=owners)
+
+    def _init_get_named(self):
+        """Get named by the owner of this building (the client for which it was constructed)."""
+        pass
+
+    def _init_generate_address(self):
+        """Generate an address, given the lot building is on."""
+        house_number = self.lot.house_number
+        street = str(self.lot.street)
+        return "{} {}".format(house_number, street)
+
+    def _init_ownership(self, initial_owners):
+        """Set the initial owners of this dwelling place."""
+        HomePurchase(subjects=initial_owners, home=self, realtor=None)
+
+
+class Apartment(DwellingPlace):
+    """An individual apartment unit in an apartment building in a city."""
+
+    def __init__(self, apartment_complex, lot):
+        super(Apartment, self).__init__(lot, owners=(apartment_complex.subject,))
+        self.complex = apartment_complex
+
+
+class House(DwellingPlace):
+    """A house in a city.
+
+    @param lot: A Lot object representing the lot this building is on.
+    @param construction: A BuildingConstruction object holding data about
+                         the construction of this building.
+    """
+
+    def __init__(self, lot, construction):
+        super(House, self).__init__(lot, owners=construction.subjects)
         self.construction = construction
-        self.address = self.generate_address(lot=self.lot)
-        self.owners = construction.clients
-        self.residents = set()
-        self.transactions = []
-        self.move_ins = []
-        self.move_outs = []
-        self.construction.construction_firm.houses_constructed.append(self)
-        for owner in self.owners:
-            owner.building_commissions.append(self)
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)
-
-
-class Apartment(object):
-    """An individual apartment unit in an apartment building."""
-
-    def __init__(self, complex):
-        self.city = complex.city
-        self.lot = complex.lot
-        self.complex = complex
-        self.address = self.generate_address(lot=self.lot)
-        self.owners = None  # Owned when someone moves in
-        self.residents = set()
-        self.transactions = []
-        self.move_ins = []
-        self.move_outs = []
-
-    @staticmethod
-    def get_named(owner):
-        """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
-
-    @staticmethod
-    def generate_address(lot):
-        """Generate an address, given the lot building is on."""
-        house_number = lot.house_number
-        street = str(lot.street)
-        return "{} {}".format(house_number, street)

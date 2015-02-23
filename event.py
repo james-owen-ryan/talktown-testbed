@@ -209,7 +209,7 @@ class Death(object):
         self.mortician = mortician
         self.cemetery = self.mortician.company
         self.next_of_kin = subject.next_of_kin
-        subject.city.residents.remove(subject)
+        subject.city.population.remove(subject)
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()
         self._vacate_job_position_of_the_deceased()
@@ -663,34 +663,39 @@ class Move(object):
 class HomePurchase(object):
     """A purchase of a home by a person or couple, with the help of a realtor."""
 
-    def __init__(self, clients, home, realtor):
+    def __init__(self, subjects, home, realtor):
         """Initialize a HomePurchase object."""
-        self.year = clients[0].game.year
-        self.city = self.clients[0].city
-        self.clients = clients
+        self.year = subjects[0].game.year
+        self.city = subjects[0].city
+        self.subjects = subjects
         self.home = home
         self.home.transactions.append(self)
         self.realtor = realtor
-        self.realty_firm = realtor.company
         self._transfer_ownership()
-        self._remunerate()
-        self.realtor.home_sales.append(self)
+        if realtor:
+            self.realty_firm = realtor.company
+            self._remunerate()
+            self.realtor.home_sales.append(self)
+        else:  # No realtor when setting initial owners as people who built the home
+            self.realty_firm = None
 
     def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
-        self.home.owners = self.clients
+        self.home.former_owners |= self.home.owners
+        self.home.owners = self.subjects
+        self.home.transactions.append(self)
 
     def _remunerate(self):
         """Have subject pay realty firm for services rendered."""
-        config = self.clients[0].game.config
+        config = self.subjects[0].game.config
         service_rendered = self.__class__
         # Pay owner of the realty firm
-        self.clients[0].pay(
+        self.subjects[0].pay(
             payee=self.realty_firm.owner,
             amount=config.compensations[service_rendered][Owner]
         )
         # Pay realtor
-        self.clients[0].pay(
+        self.subjects[0].pay(
             payee=self.realtor,
             amount=config.compensations[service_rendered][Realtor]
         )
@@ -703,7 +708,7 @@ class Departure(object):
         """Initialize a Departure object."""
         self.year = subject.game.year
         self.subject = subject
-        subject.city.residents.remove(subject)
+        subject.city.population.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
         self._vacate_job_position_of_the_departed()
@@ -747,10 +752,10 @@ class Hiring(object):
 class HouseConstruction(object):
     """Construction of a house."""
 
-    def __init__(self, clients, architect, lot):
+    def __init__(self, subjects, architect, lot):
         """Initialize a HouseConstruction object."""
-        self.year = self.clients[0].game.year
-        self.clients = clients
+        self.year = subjects[0].game.year
+        self.subjects = subjects
         self.construction_firm = architect.company
         self.architect = architect
         self.builders = self.construction_firm.construction_workers
@@ -758,6 +763,8 @@ class HouseConstruction(object):
         self.house = House(lot=lot, construction=self)
         self._remunerate()
         self.architect.house_constructions.append(self)
+        for subject in self.subjects:
+            subject.building_commissions.append(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -784,10 +791,10 @@ class HouseConstruction(object):
 class BuildingConstruction(object):
     """Construction of a building."""
 
-    def __init__(self, client, architect, lot, type_of_building):
+    def __init__(self, subject, architect, lot, type_of_building):
         """Initialize a BuildingConstruction object."""
-        self.year = self.client.game.year
-        self.client = client
+        self.year = subject.game.year
+        self.subject = subject
         self.construction_firm = architect.company
         self.architect = architect
         self.builders = self.construction_firm.construction_workers
@@ -795,6 +802,7 @@ class BuildingConstruction(object):
         self.building = type_of_building(lot=lot, construction=self)
         self._remunerate()
         self.architect.building_constructions.append(self)
+        self.subject.building_commissions.append(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
