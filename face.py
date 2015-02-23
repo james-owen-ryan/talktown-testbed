@@ -101,13 +101,16 @@ class Feature(str):
     particular person*, with metadata about that specific belief.
     """
 
-    def __init__(self, value):
+    def __init__(self, value, inherited_from):
         """Initialize a Facet object.
 
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
                       attribute this represents.
+        @param inherited_from: The parent from whom this personality feature was
+                               inherited, if any.
         """
-        str.__init__()
+        super(Feature, self).__init__()
+        self.inherited_from = inherited_from
 
-    def __new__(cls, value):
+    def __new__(cls, value, inherited_from):
         return str.__new__(cls, value)
