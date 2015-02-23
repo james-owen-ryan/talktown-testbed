@@ -5,6 +5,7 @@ from config import Config
 from event import *
 from name import Name
 from personality import Personality
+from mind import Mind
 
 
 class Person(object):
@@ -44,8 +45,8 @@ class Person(object):
         )
         # Set personality
         self.personality = Personality(subject=self)
-        # Set mental attributes
-        self.memory = self._init_memory()
+        # Set mental attributes (just memory currently)
+        self.mind = Mind(subject=self)
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
         self.first_name = None
         self.middle_name = None
@@ -190,22 +191,6 @@ class Person(object):
                 attracted_to_men = True
                 attracted_to_women = False
         return attracted_to_men, attracted_to_women
-
-    def _init_memory(self):
-        """Determine a person's base memory capability, given their parents'."""
-        config = self.game.config
-        if random.random() < config.memory_heritability:
-            takes_after = random.choice([self.mother, self.father])
-            memory = random.normalvariate(takes_after.memory, config.memory_heritability_sd)
-        else:
-            memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.male:  # Men have slightly worse memory (studies show)
-            memory -= config.memory_sex_diff
-        if memory > config.memory_cap:
-            memory = config.memory_cap
-        elif memory < config.memory_floor_at_birth:
-            memory = config.memory_floor_at_birth
-        return memory
 
     def _init_familial_attributes(self):
         """Populate lists representing this person's family members."""
@@ -832,18 +817,6 @@ class PersonExNihilo(Person):
         )
         birth_year = self.game.true_year - age_at_time_of_city_founding
         return birth_year
-
-    def _init_memory(self):
-        """Determine this person's base memory capability, which will deteriorate with age."""
-        config = self.game.config
-        memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.male:  # Men have slightly worse memory (studies show)
-            memory -= config.memory_sex_diff
-        if memory > config.memory_cap:
-            memory = config.memory_cap
-        elif memory < config.memory_floor:
-            memory = config.memory_floor
-        return memory
 
     def _init_familial_attributes(self):
         """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
