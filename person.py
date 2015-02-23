@@ -13,8 +13,8 @@ class Person(object):
         """Initialize a Person object."""
         # Set location and gameplay instance
         self.game = game
-        self.city = game.city
         if birth:
+            self.city = self.birth.city
             # Set parents
             self.biological_mother = birth.biological_mother
             self.mother = birth.mother
@@ -23,6 +23,7 @@ class Person(object):
             # Set year of birth
             self.birth_year = birth.year
         else:
+            self.city = None
             # PersonExNihilo
             self.biological_mother = None
             self.mother = None
@@ -46,7 +47,7 @@ class Person(object):
         )
         # Set mental attributes
         self.memory = self._init_memory()
-        # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo.init_name())
+        # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
         self.first_name = None
         self.middle_name = None
         self.last_name = None
@@ -114,7 +115,11 @@ class Person(object):
         self.last_saw = {}
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
+        self.love_interest = None
         self.sexual_partners = set()
+        # Prepare attributes pertaining to pregnancy
+        self.impregnated_by = None
+        self.conception_date = None  # Year of conception
         # Prepare attributes representing events in this person's life
         self.birth = birth
         self.marriage = None
@@ -444,6 +449,14 @@ class Person(object):
         return self.age >= 18
 
     @property
+    def pregnant(self):
+        """Return whether this person is pregnant."""
+        if self.impregnated_by:
+            return True
+        else:
+            return False
+
+    @property
     def present(self):
         """Return whether the person is alive and in the city."""
         if self.alive and not self.departure:
@@ -588,7 +601,33 @@ class Person(object):
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
         lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
-        NameChange(subject=self, new_last_name=new_last_name, reason=reason)
+        lawyer.file_name_change(person=self, new_last_name=new_last_name, reason=reason)
+
+    def copulate(self, partner, protection):
+        """Have sex with partner."""
+        config = self.game.config
+        self.sexual_partners.add(partner)
+        partner.sexual_partners.add(self)
+        if random.random() > config.chance_person_falls_in_love_after_sex:
+            self.love_interest = partner
+        if random.random() > config.chance_person_falls_in_love_after_sex:
+            partner.love_interest = self
+        if self.male != partner.male and not self.pregnant and not partner.pregnant:
+            if not protection or random.random() < config.chance_protection_does_not_work:
+                self._determine_whether_pregnant(partner=partner)
+
+    def _determine_whether_pregnant(self, partner):
+        """Determine whether self or partner is now pregnant."""
+        config = self.game.config
+        # Determine whether child is conceived
+        female_partner = self if self.female else partner
+        chance_of_conception = config.function_to_determine_chance_of_conception(
+            female_age=female_partner.age
+        )
+        if random.random() < chance_of_conception:
+            female_partner.pregnant = True
+            female_partner.impregnated_by = self if female_partner is partner else partner
+            female_partner.conception_date = self.game.year
 
     def marry(self, partner):
         """Marry partner."""
@@ -604,7 +643,7 @@ class Person(object):
         # The soon-to-be divorcees will decide together which lawyer to hire, because they are
         # technically still married (and spouses are considered as part of this method call)
         lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
-        Divorce(subjects=(self, partner), lawyer=lawyer)
+        lawyer.file_divorce(clients=(self, partner,))
 
     def give_birth(self):
         """Select a doctor and go to the hospital to give birth."""
@@ -832,35 +871,29 @@ class PersonExNihilo(Person):
     from outside the city, either as city founders or as new hires for open positions
     that could not be filled by anyone currently in the city. Because these people don't
     have parents, a subclass is needed to override any attributes or methods that rely
-    on inheritance.
+    on inheritance. Additionally, a family (i.e., a PersonExNihilo spouse and possibly Person
+    children) may be generated for a person of this class.
     """
 
-    def __init__(self, game, birth_year, assigned_male=False, assigned_female=False):
+    def __init__(self, game, job_opportunity_impetus, spouse_already_generated):
         super(PersonExNihilo, self).__init__(game, birth=None)
         # Overwrite birth year set by Person.__init__()
-        self.birth_year = birth_year
-        # Potentially overwrite sex set by Person.__init__()
-        if assigned_male:
-            self.male = True
-            self.female = False
-        elif assigned_female:
-            self.male = False
-            self.female = True
-        # Potentially overwrite sexuality set by Person.__init__() (to ensure interest in opposite
-        # sex consistent with marriages that are initiated in a top-down way during world gen)
-        if self.game.year < self.game.config.year_city_gets_founded:
-            if self.male:
-                self.attracted_to_women = True
-            elif self.female:
-                self.attracted_to_men = True
-        # Since they don't have a parent to name them, generate a name for this person
+        self.birth_year = self._init_birth_year(job_level=job_opportunity_impetus.level)
+        # Since they don't have a parent to name them, generate a name for this person (if
+        # they get married outside the city, this will still potentially change, as normal)
         self.first_name, self.middle_name, self.last_name, self.suffix = (
-            self.init_name()
+            self._init_name()
         )
         self.maiden_name = self.last_name
         self.named_for = None
+        if not spouse_already_generated:
+            chance_of_having_family = (
+                self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(age=self.age)
+            )
+            if random.random() < chance_of_having_family:
+                self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
 
-    def init_name(self):
+    def _init_name(self):
         """Generate a name for a primordial person who has no parents."""
         if self.male:
             first_name = Name(rep=Names.a_masculine_name(), progenitor=self, conceived_by=None)
@@ -871,6 +904,15 @@ class PersonExNihilo(Person):
         last_name = Name(rep=Names.any_surname(), progenitor=self, conceived_by=None)
         suffix = ''
         return first_name, middle_name, last_name, suffix
+
+    def _init_birth_year(self, job_level):
+        """Generate a birth year for this person that is consistent with the job level they/spouse will get."""
+        config = self.game.config
+        age_at_time_of_city_founding = config.function_to_determine_person_ex_nihilo_age_given_job_level(
+            job_level=job_level
+        )
+        birth_year = self.game.true_year - age_at_time_of_city_founding
+        return birth_year
 
     def _init_big_5_o(self):
         """Initialize a value for the Big Five personality trait 'openness to experience'."""
@@ -945,3 +987,55 @@ class PersonExNihilo(Person):
     def _init_money(self):
         """Determine how much money this person has to start with."""
         return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
+
+    def _init_generate_family(self, job_opportunity_impetus):
+        """Generate a family that this person will take with them into the city."""
+        spouse = PersonExNihilo(
+            game=self.game, job_opportunity_impetus=job_opportunity_impetus, spouse_already_generated=True
+        )
+        self._init_retcon_marriage(spouse=spouse)
+        self._init_retcon_births_of_children(spouse=spouse)
+
+    def _init_retcon_marriage(self, spouse):
+        """Jump back in time to instantiate a marriage that began outside the city."""
+        config = self.game.config
+        # Change actual game year to marriage year, instantiate a Marriage object
+        marriage_date = self.birth_year + (
+            random.normalvariate(
+                config.person_ex_nihilo_age_at_marriage_mean, config.person_ex_nihilo_age_at_marriage_sd
+            )
+        )
+        while (
+            # Make sure spouses aren't too young for marriage and that marriage isn't slated
+            # to happen after the city has been founded
+            marriage_date - self.birth_year < config.founding_father_age_at_marriage_floor or
+            marriage_date - spouse.birth_year < config.founding_mother_age_at_marriage_floor or
+            marriage_date >= self.game.true_year
+        ):
+            marriage_date = self.birth_year + (
+                random.normalvariate(
+                    config.person_ex_nihilo_age_at_marriage_mean, config.person_ex_nihilo_age_at_marriage_sd
+                )
+            )
+        self.game.year = int(round(marriage_date))
+        self.marry(spouse)
+
+    def _init_retcon_births_of_children(self, spouse):
+        """Simulate from marriage to the present day for children potentially being born."""
+        config = self.game.config
+        # Simulate sex (and thus potentially birth) in marriage thus far
+        for year in xrange(self.marriage.year, self.game.true_year+1):
+            self.game.year = year
+            chance_they_are_trying_to_conceive_this_year = (
+                config.function_to_determine_chance_married_couple_are_trying_to_conceive(
+                    n_kids=len(self.marriage.children_produced)
+                )
+            )
+            if random.random() < chance_they_are_trying_to_conceive_this_year:
+                self.copulate(partner=self.spouse, protection=False)
+            else:
+                self.copulate(partner=self.spouse, protection=True)
+
+    def _init_move_to_city(self, hiring_that_instigated_move):
+        """Move into the city in which gameplay takes place."""
+        pass
