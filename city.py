@@ -205,7 +205,10 @@ class Lot(object):
         distances = (
             self.get_dist_to(company.lot) for company in self.city.companies if isinstance(company, company_type)
         )
-        return min(distances)
+        if distances:
+            return min(distances)
+        else:
+            return None
 
 
 class Tract(Lot):
