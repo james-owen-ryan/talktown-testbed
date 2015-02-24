@@ -1,23 +1,20 @@
 from event import *
-from config import Config
 
 
 class Occupation(object):
     """An occupation at a business in a city."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Occupation object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         self.person = person
         self.company = company
         self.company.employees.add(self)
-        self.hiring = hiring  # event.Hiring object holding data about the hiring
         self.start_date = person.game.year
+        self.hiring = None  # event.Hiring object holding data about the hiring; gets set by that object's __init__()
         self.end_date = None  # Changed by self.terminate
         self.terminus = None  # Changed by self.terminate
         self.person.occupation = self
