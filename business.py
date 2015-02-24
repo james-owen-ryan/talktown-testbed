@@ -2,6 +2,7 @@ import heapq
 from config import Config
 from occupation import *
 from person import Person, PersonExNihilo
+from residence import *
 
 # Objects of a business class represents both the company itself and the building
 # at which it is headquartered. All business subclasses inherit generic attributes
@@ -23,7 +24,7 @@ class Business(object):
         self.founded = self.city.game.year
         self.lot = self._init_choose_vacant_lot()
         architect = self.owner.contract_person_of_certain_occupation(occupation=Architect)
-        self.construction = BuildingConstruction(subject=owner, business=self, architect=architect)
+        self.construction = BusinessConstruction(subject=owner, business=self, architect=architect)
         self.employees = set()
         self.former_employees = set()
         self.name = self._init_get_named()
@@ -207,6 +208,12 @@ class ApartmentComplex(Business):
         super(ApartmentComplex, self).__init__(owner)
         self.units = set()
 
+    def _init_apartment_units(self):
+        """Instantiate objects for the individual units in this apartment complex."""
+        for i in xrange(len(self.owner.game.config.number_of_apartment_units_per_complex)):
+            unit_number = i + 1
+            Apartment(apartment_complex=self, lot=self.lot, unit_number=unit_number)
+
     @property
     def residents(self):
         """Return the employees that work here and residents that live here."""
@@ -258,6 +265,10 @@ class CityHall(Business):
         @param owner: The owner of this business.
         """
         super(CityHall, self).__init__(owner)
+
+    def _init_make_city_founder_mayor_de_facto(self):
+        """Make the city founder mayor."""
+        mayor = self.city.the_founder
 
 
 class ConstructionFirm(Business):
