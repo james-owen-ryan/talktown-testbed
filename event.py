@@ -212,8 +212,8 @@ class Birth(object):
             )
 
 
-class BuildingConstruction(object):
-    """Construction of a business's building.
+class BusinessConstruction(object):
+    """Construction of the building where a business is headquartered.
 
     This must be preceded by the business being founded -- the business makes the
     call to instantiate one of these objects -- where in a HouseConstruction the
@@ -222,7 +222,7 @@ class BuildingConstruction(object):
     """
 
     def __init__(self, subject, business, architect):
-        """Initialize a BuildingConstruction object."""
+        """Initialize a BusinessConstruction object."""
         self.year = subject.game.year
         self.subject = subject
         self.architect = architect
