@@ -1,9 +1,10 @@
 import random
 import heapq
 from corpora import Names
-from config import Config
 from event import *
 from name import Name
+from personality import Personality
+from mind import Mind
 
 
 class Person(object):
@@ -42,11 +43,9 @@ class Person(object):
             self._init_sexuality(male=self.male, config=self.game.config)
         )
         # Set personality
-        self.big_5_o, self.big_5_c, self.big_5_e, self.big_5_a, self.big_5_n = (
-            self._init_personality()
-        )
-        # Set mental attributes
-        self.memory = self._init_memory()
+        self.personality = Personality(subject=self)
+        # Set mental attributes (just memory currently)
+        self.mind = Mind(subject=self)
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
         self.first_name = None
         self.middle_name = None
@@ -136,6 +135,8 @@ class Person(object):
         self.occupations = []
         self.former_contractors = set()
         self.retired = False
+        # Prepare attributes pertaining to education
+        self.college_graduate = False
         # Prepare misc attributes that get set by other methods
         self.home = None
 
@@ -162,13 +163,13 @@ class Person(object):
             infertile = False
         return infertile
 
-    @staticmethod
-    def _init_sexuality(male, config):
+    def _init_sexuality(self):
         """Determine this person's sexuality."""
+        config = self.game.config
         x = random.random()
         if x < config.homosexuality_incidence:
             # Homosexual
-            if male:
+            if self.male:
                 attracted_to_men = True
                 attracted_to_women = False
             else:
@@ -184,122 +185,13 @@ class Person(object):
             attracted_to_women = True
         else:
             # Heterosexual
-            if male:
+            if self.male:
                 attracted_to_men = False
                 attracted_to_women = True
             else:
                 attracted_to_men = True
                 attracted_to_women = False
         return attracted_to_men, attracted_to_women
-
-    def _init_personality(self):
-        """Determine this person's Big Five disposition.
-
-        TODO: Have this affected by a person's sex."""
-        openness_to_experience = self._init_big_5_o()
-        conscientiousness = self._init_big_5_c()
-        extroversion = self._init_big_5_e()
-        agreeableness = self._init_big_5_a()
-        neuroticism = self._init_big_5_n()
-        return openness_to_experience, conscientiousness, extroversion, agreeableness, neuroticism
-
-    def _init_big_5_o(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
-        config = self.game.config
-        if random.random() < config.big_5_o_heritability:
-            # Inherit this trait (with slight variance)
-            takes_after = random.choice([self.father, self.mother])
-            openness_to_experience = random.normalvariate(
-                takes_after.openness_to_experience, config.big_5_heritability_sd
-            )
-        else:
-            # Generate from the population mean
-            openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        return openness_to_experience
-
-    def _init_big_5_c(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.game.config
-        if random.random() < config.big_5_c_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            conscientiousness = random.normalvariate(
-                takes_after.conscientiousness, config.big_5_heritability_sd
-            )
-        else:
-            conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        return conscientiousness
-
-    def _init_big_5_e(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.game.config
-        if random.random() < config.big_5_e_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            extroversion = random.normalvariate(
-                takes_after.extroversion, config.big_5_heritability_sd
-            )
-        else:
-            extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        return extroversion
-
-    def _init_big_5_a(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.game.config
-        if random.random() < config.big_5_a_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            agreeableness = random.normalvariate(
-                takes_after.agreeableness, config.big_5_heritability_sd
-            )
-        else:
-            agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        return agreeableness
-
-    def _init_big_5_n(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.game.config
-        if random.random() < config.big_5_n_heritability:
-            takes_after = random.choice([self.father, self.mother])
-            neuroticism = random.normalvariate(
-                takes_after.neuroticism, config.big_5_heritability_sd
-            )
-        else:
-            neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        return neuroticism
-
-    def _init_memory(self):
-        """Determine a person's base memory capability, given their parents'."""
-        config = self.game.config
-        if random.random() < config.memory_heritability:
-            takes_after = random.choice([self.mother, self.father])
-            memory = random.normalvariate(takes_after.memory, config.memory_heritability_sd)
-        else:
-            memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.male:  # Men have slightly worse memory (studies show)
-            memory -= config.memory_sex_diff
-        if memory > config.memory_cap:
-            memory = config.memory_cap
-        elif memory < config.memory_floor_at_birth:
-            memory = config.memory_floor_at_birth
-        return memory
 
     def _init_familial_attributes(self):
         """Populate lists representing this person's family members."""
@@ -686,27 +578,32 @@ class Person(object):
         one of the top three. TODO: Probabilistically select from all potential hires
         using the scores to derive likelihoods of selecting each.
         """
-        # If you or your spouse practice this occupation, DIY
-        if isinstance(self.occupation, occupation):
-            choice = self
-        elif self.spouse and isinstance(self.spouse.occupation, occupation):
-            choice = self.spouse
-        # Otherwise, pick from the various people in town who do practice this occupation
-        else:
-            potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
-            # Pick from top three
-            top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
-            if random.random() < 0.6:
-                choice = top_three_choices[0]
-            elif random.random() < 0.9:
-                choice = top_three_choices[1]
+        pool = self.city.workers_of_trade(occupation)
+        if pool:
+            # If you or your spouse practice this occupation, DIY
+            if isinstance(self.occupation, occupation):
+                choice = self
+            elif self.spouse and isinstance(self.spouse.occupation, occupation):
+                choice = self.spouse
+            # Otherwise, pick from the various people in town who do practice this occupation
             else:
-                choice = top_three_choices[2]
+                potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(pool=pool)
+                # Pick from top three
+                top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
+                if random.random() < 0.6:
+                    choice = top_three_choices[0]
+                elif random.random() < 0.9:
+                    choice = top_three_choices[1]
+                else:
+                    choice = top_three_choices[2]
+        else:
+            # This should only ever happen at the very beginning of a city's history where all
+            # business types haven't been built in town yet
+            choice = None
         return choice
 
-    def _rate_all_potential_contractors_of_certain_occupation(self, occupation):
+    def _rate_all_potential_contractors_of_certain_occupation(self, pool):
         """Score all potential hires of a certain occupation."""
-        pool = self.city.workers_of_trade(occupation)
         scores = {}
         for person in pool:
             my_score = self._rate_potential_contractor_of_certain_occupation(person=person)
@@ -800,14 +697,7 @@ class Person(object):
         return choice
 
     def _rate_all_vacant_homes_and_vacant_lots(self):
-        """Find a home to move into in a chosen neighborhood.
-
-        By this method, a person appraises every vacant home and lot in the city for
-        how much they would like to move or build there, given considerations to the people
-        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
-        a penalty that makes people less willing to build a home on a vacant lot than to move
-        into a vacant home.
-        """
+        """Rate all vacant homes and vacant lots."""
         scores = {}
         for home in self.city.vacant_homes:
             my_score = self._rate_potential_lot(lot=home.lot)
@@ -828,9 +718,13 @@ class Person(object):
         return scores
 
     def _rate_potential_lot(self, lot):
-        """Score the desirability of living at the location of a lot.
+        """Rate the desirability of living at the location of a lot.
 
-        TODO: Other considerations here.
+        By this method, a person appraises a vacant home or lot in the city for
+        how much they would like to move or build there, given considerations to the people
+        that live nearby it (this reasoning via self.score_potential_home_or_lot()). There is
+        a penalty that makes people less willing to build a home on a vacant lot than to move
+        into a vacant home.
         """
         config = self.game.config
         desire_to_live_near_family = self._determine_desire_to_move_near_family()
@@ -888,10 +782,21 @@ class PersonExNihilo(Person):
     children) may be generated for a person of this class.
     """
 
-    def __init__(self, game, job_opportunity_impetus, spouse_already_generated):
+    def __init__(self, game, job_opportunity_impetus, spouse_already_generated, this_person_is_the_founder=False):
         super(PersonExNihilo, self).__init__(game, birth=None)
+        # Potentially overwrite sex set by Person.__init__()
+        if spouse_already_generated:
+            self._override_sex(spouse=spouse_already_generated)
+            self._override_sexuality(spouse=spouse_already_generated)
         # Overwrite birth year set by Person.__init__()
-        self.birth_year = self._init_birth_year(job_level=job_opportunity_impetus.level)
+        if this_person_is_the_founder:  # The person who founds the city -- there are special requirements for them
+            self.game.founder = self
+            self.birth_year = self._init_birth_year_of_the_founder()
+        elif spouse_already_generated and spouse_already_generated is self.game.founder:
+            self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)
+        else:
+            job_level = self.game.config.job_levels[job_opportunity_impetus]
+            self.birth_year = self._init_birth_year(job_level=job_level)
         # Since they don't have a parent to name them, generate a name for this person (if
         # they get married outside the city, this will still potentially change, as normal)
         self.first_name, self.middle_name, self.last_name, self.suffix = (
@@ -899,12 +804,42 @@ class PersonExNihilo(Person):
         )
         self.maiden_name = self.last_name
         self.named_for = None
-        if not spouse_already_generated:
+        # If this person is being hired for a high job level, retcon that they have
+        # a college education -- do the same for the city founder
+        if job_opportunity_impetus and job_opportunity_impetus.job_level > 3:
+            self.college_graduate = True
+        elif this_person_is_the_founder:
+            self.college_graduate = True
+        # Potentially generate and retcon a family that this person will have
+        # had prior to moving into the city
+        if this_person_is_the_founder:
+            self._init_generate_the_founders_family()
+        elif not spouse_already_generated:
             chance_of_having_family = (
                 self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(age=self.age)
             )
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
+        # Finally, move this person (and family, if any) into the city
+        self._init_move_to_city(hiring_that_instigated_move=job_opportunity_impetus)
+
+    @staticmethod
+    def _override_sex(spouse):
+        """Assign the sex of this person to ensure compatibility with their spouse.."""
+        if spouse.attracted_to_men:
+            male, female = True, False
+        else:
+            male, female = False, True
+        return male, female
+
+    @staticmethod
+    def _override_sexuality(spouse):
+        """Assign the sex of this person to ensure compatibility with their spouse.."""
+        if spouse.male:
+            attracted_to_men, attracted_to_women = True, False
+        else:
+            attracted_to_men, attracted_to_women = False, True
+        return attracted_to_men, attracted_to_women
 
     def _init_name(self):
         """Generate a name for a primordial person who has no parents."""
@@ -918,76 +853,24 @@ class PersonExNihilo(Person):
         suffix = ''
         return first_name, middle_name, last_name, suffix
 
-    def _init_birth_year(self, job_level):
-        """Generate a birth year for this person that is consistent with the job level they/spouse will get."""
+    def _init_birth_year_of_the_founder(self):
+        """Generate a birth year for the founder of the city."""
         config = self.game.config
-        age_at_time_of_city_founding = config.function_to_determine_person_ex_nihilo_age_given_job_level(
-            job_level=job_level
-        )
-        birth_year = self.game.true_year - age_at_time_of_city_founding
+        age_at_current_year_of_sim = config.age_of_city_founder
+        birth_year = self.game.true_year - age_at_current_year_of_sim
         return birth_year
 
-    def _init_big_5_o(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
+    def _init_birth_year(self, job_level, founders_spouse=False):
+        """Generate a birth year for this person that is consistent with the job level they/spouse will get."""
         config = self.game.config
-        openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        return openness_to_experience
-
-    def _init_big_5_c(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.game.config
-        conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        return conscientiousness
-
-    def _init_big_5_e(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.game.config
-        extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        return extroversion
-
-    def _init_big_5_a(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.game.config
-        agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        return agreeableness
-
-    def _init_big_5_n(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.game.config
-        neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        return neuroticism
-
-    def _init_memory(self):
-        """Determine this person's base memory capability, which will deteriorate with age."""
-        config = self.game.config
-        memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.male:  # Men have slightly worse memory (studies show)
-            memory -= config.memory_sex_diff
-        if memory > config.memory_cap:
-            memory = config.memory_cap
-        elif memory < config.memory_floor:
-            memory = config.memory_floor
-        return memory
+        if not founders_spouse:
+            age_at_current_year_of_sim = config.function_to_determine_person_ex_nihilo_age_given_job_level(
+                job_level=job_level
+            )
+        else:
+            age_at_current_year_of_sim = config.age_of_city_founders_spouse
+        birth_year = self.game.true_year - age_at_current_year_of_sim
+        return birth_year
 
     def _init_familial_attributes(self):
         """Do nothing because a PersonExNihilo has no family at the time of being generated.."""
@@ -1001,15 +884,40 @@ class PersonExNihilo(Person):
         """Determine how much money this person has to start with."""
         return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
 
-    def _init_generate_family(self, job_opportunity_impetus):
-        """Generate a family that this person will take with them into the city."""
+    def _init_generate_the_founders_family(self):
+        """Generate and retcon a family that the founder will have prior to the city being founded.
+
+        This family will develop into the very rich family that Player 2 and his or her
+        cronies belong to.
+        """
+        config = self.game.config
+        # Force this person to have a ton of money
+        self.money = config.money_city_founder_starts_with
+        # Force heterosexuality and fertility -- we are rigging things so that a very large
+        # family develops as this person's progeny
+        self.infertile = False
+        if self.male:
+            self.attracted_to_women = True
+        else:
+            self.attracted_to_men = True
         spouse = PersonExNihilo(
-            game=self.game, job_opportunity_impetus=job_opportunity_impetus, spouse_already_generated=True
+            game=self.game, job_opportunity_impetus=None, spouse_already_generated=self
+        )
+        spouse.infertile = False
+        self.fall_in_love(spouse)
+        spouse.fall_in_love(self)
+        self._init_retcon_marriage(spouse=spouse)
+        self._init_retcon_births_of_children()
+
+    def _init_generate_family(self, job_opportunity_impetus):
+        """Generate and retcon a family that this person will take with them into the city."""
+        spouse = PersonExNihilo(
+            game=self.game, job_opportunity_impetus=job_opportunity_impetus, spouse_already_generated=self
         )
         self.fall_in_love(spouse)
         spouse.fall_in_love(self)
         self._init_retcon_marriage(spouse=spouse)
-        self._init_retcon_births_of_children(spouse=spouse)
+        self._init_retcon_births_of_children()
 
     def _init_retcon_marriage(self, spouse):
         """Jump back in time to instantiate a marriage that began outside the city."""
@@ -1023,8 +931,8 @@ class PersonExNihilo(Person):
         while (
             # Make sure spouses aren't too young for marriage and that marriage isn't slated
             # to happen after the city has been founded
-            marriage_date - self.birth_year < config.founding_father_age_at_marriage_floor or
-            marriage_date - spouse.birth_year < config.founding_mother_age_at_marriage_floor or
+            marriage_date - self.birth_year < config.person_ex_nihilo_age_at_marriage_floor or
+            marriage_date - spouse.birth_year < config.person_ex_nihilo_age_at_marriage_floor or
             marriage_date >= self.game.true_year
         ):
             marriage_date = self.birth_year + (
@@ -1035,7 +943,7 @@ class PersonExNihilo(Person):
         self.game.year = int(round(marriage_date))
         self.marry(spouse)
 
-    def _init_retcon_births_of_children(self, spouse):
+    def _init_retcon_births_of_children(self):
         """Simulate from marriage to the present day for children potentially being born."""
         config = self.game.config
         # Simulate sex (and thus potentially birth) in marriage thus far
@@ -1046,6 +954,8 @@ class PersonExNihilo(Person):
                     n_kids=len(self.marriage.children_produced)
                 )
             )
+            if self is self.game.founder:  # Try to force large family to develop
+                chance_they_are_trying_to_conceive_this_year += config.boost_to_the_founders_conception_chance
             if random.random() < chance_they_are_trying_to_conceive_this_year:
                 self.have_sex(partner=self.spouse, protection=False)
             else:
@@ -1053,4 +963,5 @@ class PersonExNihilo(Person):
 
     def _init_move_to_city(self, hiring_that_instigated_move):
         """Move into the city in which gameplay takes place."""
-        pass
+        new_home = self.secure_home()
+        self.move(new_home=new_home, reason=hiring_that_instigated_move)

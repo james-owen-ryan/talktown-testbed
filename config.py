@@ -11,12 +11,14 @@ class Config(object):
         """Construct a Config object."""
         self.n_buildings_per_block = 4
                 ## WORLD GEN ##
-        # Misc
-        self.year_city_gets_founded = 1909  # Year world gen begins
-        # City dimensions
-        self.city_width_in_blocks = 8
-        self.city_height_in_blocks = 8
-        self.city_downtown_blocks_displaced_from_center_max = 2
+        # City founder
+        self.year_city_gets_founded = 1960  # Year world gen begins
+        self.age_of_city_founder = 60
+        self.age_of_city_founders_spouse = 60
+        self.money_city_founder_starts_with = 100000
+        self.boost_to_the_founders_conception_chance = 0.2
+        # City establishment and early development
+        self.number_of_apartment_complexes_founder_builds_downtown = 3
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
@@ -82,6 +84,19 @@ class Config(object):
         # Misc
         self.age_people_start_working = 16
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
+        # Housing
+        self.number_of_apartment_units_per_complex = 8
+        # Companies deciding where to locate themselves
+        self.function_to_determine_company_preference_for_local_population = (
+            lambda secondary_pop, tertiary_pop: (secondary_pop * 5) + (tertiary_pop * 2)
+        )
+        self.function_to_determine_company_penalty_for_nearby_company_of_same_type = (
+            # This is jury-rigged so that being within a few blocks of another company of the
+            # same type will cancel out a relatively huge local population
+            lambda dist_to_nearest_company_of_same_type: min(
+                (((100-dist_to_nearest_company_of_same_type) ** 0.5) - 8) ** 10,
+                0)
+        )
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
@@ -218,7 +233,7 @@ class Config(object):
                 Doctor: 750,
                 Nurse: 300,
             },
-            BuildingConstruction: {
+            BusinessConstruction: {
                 Owner: 5000,
                 Architect: 2000,
                 ConstructionWorker: 400,
@@ -311,22 +326,3 @@ class Config(object):
         self.frequency_of_naming_after_mother = 0
         self.frequency_of_naming_after_grandmother = 5
         self.frequency_of_naming_after_greatgrandmother = 2
-
-        # Businesses  -- DELETE???
-        self.business_frequencies = self.set_frequency_of_each_business_type()
-
-    @staticmethod
-    def set_frequency_of_each_business_type():
-        """Sets the frequency of each business type (relative to one another)."""
-        business_frequency = {
-            "Supermarket": 8,
-            "Bank": 6,
-            "Hotel": 5,
-            "Barbershop": 5,
-            "Eyeglass Shop": 3,
-            "Tattoo Parlor": 3,
-            "LASIK": 2,
-            "Plastic Surgeon": 2,
-            "Tattoo Removal": 1,
-        }
-        return business_frequency

@@ -12,30 +12,100 @@ from event import Hiring
 class Landmark(object):
     """A landmark on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Landmark object."""
-        self.city = tract.city
+        self.city = city
         self.city.companies.add(self)
         self.founded = self.city.game.year
-        self.tract = tract
+        self.lot = self._init_choose_vacant_tract()  # We call this lot to make all get_dist()-like methods work
         self.employees = set()
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
 
+    def _init_choose_vacant_tract(self):
+        """Choose a vacant tract on which to build the company building.
+
+        Currently, a landmark scores all the vacant tracts in town and then selects
+        one of the top three. TODO: Probabilistically select from all tracts using
+        the scores to derive likelihoods of selecting each.
+        """
+        tract_scores = self._rate_all_vacant_tracts()
+        if len(tract_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, tract_scores, key=tract_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
+        elif tract_scores:
+            choice = tract_scores[0]
+        else:
+            raise Exception("A company attempted to secure a lot in town when in fact none are vacant.")
+        return choice
+
+    def _rate_all_vacant_tracts(self):
+        """Rate all vacant tracts for the desirability of their locations.
+        """
+        scores = {}
+        for tract in self.city.vacant_tracts:
+            scores[tract] = self._rate_potential_tract(tract=tract)
+        return scores
+
+    def _rate_potential_tract(self, tract):
+        """Rate a vacant tract for the desirability of its location.
+
+        By this method, a landmark appraises a vacant tract in the city for how much they
+        would like to build there, given considerations to its proximity to downtown,
+        proximity to other landmarks of the same type, and to the number of people living
+        near the tract.
+        """
+        config = self.city.game.config
+        score = 0
+        # Increase score for population surrounding this tract -- secondary population is the
+        # total population of this tract's neighboring tracts; tertiary population is the
+        # total population of this tract's neighboring tracts and those tracts' neighboring tracts
+        score += config.function_to_determine_company_preference_for_local_population(
+            secondary_pop=tract.secondary_population, tertiary_pop=tract.tertiary_population
+        )
+        # Decrease score for being near to another landmark of this same type
+        dist_to_nearest_company_of_same_type = (
+            tract.dist_to_nearest_company_of_type(company_type=self.__class__)
+        )
+        if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
+            score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
+                dist_to_nearest_company_of_same_type=dist_to_nearest_company_of_same_type
+            )
+        # As an emergency criterion for the case where there are no people or companies in the town
+        # yet, rate lots according to their distance from downtown
+        score -= tract.dist_from_downtown
+        return score
+
     def _init_get_named(self):
         """Get named by the city's mayor."""
-        pass
+        return 'lol {}'.format(self.__class__.__name__)
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.tract.house_number
-        street = str(self.tract.street)
+        house_number = self.lot.house_number
+        street = str(self.lot.street)
         return "{} {}".format(house_number, street)
 
     def _init_hire_initial_employees(self):
         """Fill all the positions that are vacant at the time of this company forming."""
         for vacant_position in self.city.game.config.initial_job_vacancies:
             self.hire(occupation=vacant_position)
+
+    @property
+    def residents(self):
+        """Return the employees that work here.
+
+         This is meant to facilitate a Lot reasoning over its population and the population
+         of its local area. This reasoning is needed so that developers can decide where to
+         build businesses.
+         """
+        return self.employees
 
     def hire(self, occupation):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
@@ -44,11 +114,11 @@ class Landmark(object):
             candidate_scores = self._rate_all_job_candidates(candidates=job_candidates_in_town)
             selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
         else:
-            selected_candidate = self._find_candidate_from_outside_the_city()
+            selected_candidate = self._find_candidate_from_outside_the_city(occupation=occupation)
         Hiring(subject=selected_candidate, company=self, occupation=occupation)
 
     @staticmethod
-    def _select_candidate(self, candidate_scores):
+    def _select_candidate(candidate_scores):
         """Select a person to serve in a certain occupational capacity."""
         # Pick from top three
         top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
@@ -60,19 +130,11 @@ class Landmark(object):
             chosen_candidate = top_three_choices[2]
         return chosen_candidate
 
-    def _find_candidate_from_outside_the_city(self):
+    def _find_candidate_from_outside_the_city(self, occupation):
         """Generate a PersonExNihilo to move into the city for this job."""
-        config = self.city.game.config
-        age_of_this_person = random.normalvariate(
-            config.generated_job_candidate_from_outside_city_age_mean,
-            config.generated_job_candidate_from_outside_city_age_sd
+        candidate = PersonExNihilo(
+            game=self.city.game, job_opportunity_impetus=occupation, spouse_already_generated=None
         )
-        if age_of_this_person < config.generated_job_candidate_from_outside_city_age_floor:
-            age_of_this_person = config.generated_job_candidate_from_outside_city_age_floor
-        elif age_of_this_person > config.generated_job_candidate_from_outside_city_age_cap:
-            age_of_this_person = config.generated_job_candidate_from_outside_city_age_cap
-        birth_year_of_this_person = self.city.game.year-age_of_this_person
-        candidate = PersonExNihilo(game=self.city.game, birth_year=birth_year_of_this_person)
         return candidate
 
     def _rate_all_job_candidates(self, candidates):
@@ -122,9 +184,9 @@ class Landmark(object):
 class Cemetery(Landmark):
     """A cemetery on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Cemetery object."""
-        super(Cemetery, self).__init__(tract)
+        super(Cemetery, self).__init__(city)
         self.plots = {}
 
     def inter_person(self, person):
@@ -137,6 +199,6 @@ class Cemetery(Landmark):
 class Park(Landmark):
     """A park on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Park object."""
-        super(Park, self).__init__(tract)
+        super(Park, self).__init__(city)
