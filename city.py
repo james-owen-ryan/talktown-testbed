@@ -35,6 +35,11 @@ class City(object):
             Tract(block=meaningless_block, house_number=999)
 
     @property
+    def population(self):
+        """Return the number of residents living in the city."""
+        return len(self.residents)
+
+    @property
     def vacant_lots(self):
         """Return all vacant lots in the city."""
         vacant_lots = (lot for lot in self.lots if not lot.building)
