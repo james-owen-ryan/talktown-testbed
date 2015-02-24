@@ -1,5 +1,4 @@
 import heapq
-from config import Config
 from occupation import *
 from person import Person, PersonExNihilo
 from residence import *
@@ -131,6 +130,20 @@ class Business(object):
             selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
         else:
             selected_candidate = self._find_candidate_from_outside_the_city(occupation=occupation)
+        # Instantiate the new occupation -- this means that the subject may
+        # momentarily have two occupations simultaneously
+        Occupation(person=selected_candidate, company=self)
+        # Now terminate the person's former occupation, if any (which may cause
+        # a hiring chain and this person's former position goes vacant and is filled,
+        # and so forth); this has to happen after the new occupation is instantiated, or
+        # else they may be hired to fill their own vacated position, which will cause problems
+        # [Actually, this currently wouldn't happen, because lateral job movement is not
+        # possible given how companies assemble job candidates, but it still makes more sense
+        # to have this person put in their new position *before* the chain sets off, because it
+        # better represents what really is a domino-effect situation)
+        if selected_candidate.occupation:
+            selected_candidate.occupation.terminate()
+        # Now instantiate a Hiring object to hold data about the hiring
         Hiring(subject=selected_candidate, company=self, occupation=occupation)
 
     @staticmethod
