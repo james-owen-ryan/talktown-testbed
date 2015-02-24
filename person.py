@@ -135,6 +135,8 @@ class Person(object):
         self.occupations = []
         self.former_contractors = set()
         self.retired = False
+        # Prepare attributes pertaining to education
+        self.college_graduate = False
         # Prepare misc attributes that get set by other methods
         self.home = None
 
@@ -793,7 +795,8 @@ class PersonExNihilo(Person):
         elif spouse_already_generated and spouse_already_generated is self.game.founder:
             self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)
         else:
-            self.birth_year = self._init_birth_year(job_level=job_opportunity_impetus.level)
+            job_level = self.game.config.job_levels[job_opportunity_impetus]
+            self.birth_year = self._init_birth_year(job_level=job_level)
         # Since they don't have a parent to name them, generate a name for this person (if
         # they get married outside the city, this will still potentially change, as normal)
         self.first_name, self.middle_name, self.last_name, self.suffix = (
@@ -801,6 +804,12 @@ class PersonExNihilo(Person):
         )
         self.maiden_name = self.last_name
         self.named_for = None
+        # If this person is being hired for a high job level, retcon that they have
+        # a college education -- do the same for the city founder
+        if job_opportunity_impetus and job_opportunity_impetus.job_level > 3:
+            self.college_graduate = True
+        elif this_person_is_the_founder:
+            self.college_graduate = True
         # Potentially generate and retcon a family that this person will have
         # had prior to moving into the city
         if this_person_is_the_founder:
