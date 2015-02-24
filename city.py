@@ -20,11 +20,19 @@ class City(object):
         self.companies = set()
         self.lots = set()
         self.tracts = set()
+        self.dwelling_places = set()  # Both houses and apartment units (not complexes)
 
     @property
     def vacant_lots(self):
         """Return all vacant lots in the city."""
         vacant_lots = (lot for lot in self.lots if not lot.building)
+        return vacant_lots
+
+    @property
+    def vacant_homes(self):
+        """Return all vacant homes in the city."""
+        vacant_homes = (home for home in self.dwelling_places if not home.residents)
+        return vacant_homes
 
     @property
     def all_time_residents(self):
