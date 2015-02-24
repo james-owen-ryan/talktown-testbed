@@ -1,12 +1,8 @@
 import random
-from config import Config
-from corpora import Names
-from person import Person
-from city import Lot
-from business import *
-from residence import *
-from occupation import *
 from name import Name
+from person import Person
+from corpora import Names
+from residence import House
 
 
 class Adoption(object):
@@ -197,18 +193,18 @@ class Birth(object):
         # Pay owner of the hospital
         self.mother.pay(
             payee=self.hospital.owner,
-            amount=config.compensations[service_rendered][Owner]
+            amount=config.compensations[service_rendered][self.hospital.owner.occupation.__class__]
         )
         # Pay doctor
         self.mother.pay(
             payee=self.doctor,
-            amount=config.compensations[service_rendered][Doctor]
+            amount=config.compensations[service_rendered][self.doctor.occupation.__class__]
         )
         # Pay construction workers
         for nurse in self.hospital.nurses:
             self.mother.pay(
                 payee=nurse,
-                amount=config.compensations[service_rendered][Nurse]
+                amount=config.compensations[service_rendered][nurse.occupation.__class__]
             )
 
 
@@ -241,18 +237,18 @@ class BusinessConstruction(object):
         # Pay owner of the company
         self.subject.pay(
             payee=self.construction_firm.owner,
-            amount=config.compensations[service_rendered][Owner]
+            amount=config.compensations[service_rendered][self.construction_firm.owner.occupation.__class__]
         )
         # Pay architect
         self.subject.pay(
             payee=self.architect,
-            amount=config.compensations[service_rendered][Architect]
+            amount=config.compensations[service_rendered][self.architect.occupation.__class__]
         )
         # Pay construction workers
         for construction_worker in self.construction_firm.construction_workers:
             self.subject.pay(
                 payee=construction_worker,
-                amount=config.compensations[service_rendered][ConstructionWorker]
+                amount=config.compensations[service_rendered][construction_worker.occupation.__class__]
             )
 
 
@@ -311,7 +307,7 @@ class Death(object):
         # Pay mortician
         self.next_of_kin.pay(
             payee=self.mortician,
-            amount=config.compensations[service_rendered][Mortician]
+            amount=config.compensations[service_rendered][self.mortician.occupation.__class__]
         )
 
 
@@ -356,7 +352,6 @@ class Divorce(object):
             self._remunerate()
         else:
             self.law_firm = None
-
 
     def __str__(self):
         """Return string representation."""
@@ -486,8 +481,8 @@ class Divorce(object):
         config = self.subjects[0].game.config
         service_rendered = self.__class__
         # Pay owner of the law firm -- divorcees split the cost 50/50
-        amount_due_to_owner = config.compensations[service_rendered][Owner]
-        amount_due_to_lawyer = config.compensations[service_rendered][Lawyer]
+        amount_due_to_owner = config.compensations[service_rendered][self.law_firm.owner.occupation.__class__]
+        amount_due_to_lawyer = config.compensations[service_rendered][self.lawyer.occupation.__class__]
         for divorcee in self.subjects:
             divorcee.pay(
                 payee=self.law_firm.owner,
@@ -500,7 +495,10 @@ class Divorce(object):
 
 
 class Hiring(object):
-    """A hiring of a person by a company to serve in a specific occupational role."""
+    """A hiring of a person by a company to serve in a specific occupational role.
+
+    TODO: Add in data about who they beat out for the job.
+    """
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
@@ -510,23 +508,11 @@ class Hiring(object):
         self.old_occupation = subject.occupation
         self.occupation = occupation
         # Determine whether this was a promotion
-        if subject.occupation and subject.occupation.company is company:
+        if self.old_occupation and self.old_occupation.company is self.company:
             self.promotion = True
         else:
             self.promotion = False
-        # Instantiate the new occupation -- this means that the subject may
-        # momentarily have two occupations simultaneously
-        Occupation(person=subject, company=company, hiring=self)
-        # Now terminate the person's former occupation, if any (which may cause
-        # a hiring chain and this person's former position goes vacant and is filled,
-        # and so forth); this has to happen after the new occupation is instantiated, or
-        # else they may be hired to fill their own vacated position, which will cause problems
-        # [Actually, this currently wouldn't happen, because lateral job movement is not
-        # possible given how companies assemble job candidates, but it still makes more sense
-        # to have this person put in their new position *before* the chain sets off, because it
-        # better represents what really is a domino-effect situation)
-        if subject.occupation:
-            subject.occupation.terminate()
+        self.occupation.hiring = self
 
 
 class HomePurchase(object):
@@ -561,12 +547,12 @@ class HomePurchase(object):
         # Pay owner of the realty firm
         self.subjects[0].pay(
             payee=self.realty_firm.owner,
-            amount=config.compensations[service_rendered][Owner]
+            amount=config.compensations[service_rendered][self.realty_firm.owner.occupation.__class__]
         )
         # Pay realtor
         self.subjects[0].pay(
             payee=self.realtor,
-            amount=config.compensations[service_rendered][Realtor]
+            amount=config.compensations[service_rendered][self.realtor.occupation.__class__]
         )
 
 
@@ -589,23 +575,23 @@ class HouseConstruction(object):
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
-        config = self.clients[0].game.config
+        config = self.subjects[0].game.config
         service_rendered = self.__class__
         # Pay owner of the company
-        self.clients[0].pay(
+        self.subjects[0].pay(
             payee=self.construction_firm.owner,
-            amount=config.compensations[service_rendered][Owner]
+            amount=config.compensations[service_rendered][self.construction_firm.owner.occupation.__class__]
         )
         # Pay architect
-        self.clients[0].pay(
+        self.subjects[0].pay(
             payee=self.architect,
-            amount=config.compensations[service_rendered][Architect]
+            amount=config.compensations[service_rendered][self.architect.occupation.__class__]
         )
         # Pay construction workers
         for construction_worker in self.construction_firm.construction_workers:
-            self.clients[0].pay(
+            self.subjects[0].pay(
                 payee=construction_worker,
-                amount=config.compensations[service_rendered][ConstructionWorker]
+                amount=config.compensations[service_rendered][construction_worker.occupation.__class__]
             )
 
 
@@ -823,12 +809,12 @@ class NameChange(object):
         # Pay owner of the law firm
         self.subject.pay(
             payee=self.law_firm.owner,
-            amount=config.compensations[service_rendered][Owner]
+            amount=config.compensations[service_rendered][self.law_firm.owner.occupation.__class__]
         )
         # Pay lawyer
         self.subject.pay(
             payee=self.lawyer,
-            amount=config.compensations[service_rendered][Lawyer]
+            amount=config.compensations[service_rendered][self.lawyer.occupation.__class__]
         )
 
 
