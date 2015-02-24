@@ -36,6 +36,11 @@ class Business(object):
         one of the top three. TODO: Probabilistically select from all lots using
         the scores to derive likelihoods of selecting each.
         """
+        assert self.city.vacant_lots, (
+            "{} is attempting to found a company, but there's no vacant lots in {}".format(
+                self.owner.name, self.city.name
+            )
+        )
         lot_scores = self._rate_all_vacant_lots()
         if len(lot_scores) >= 3:
             # Pick from top three
@@ -194,14 +199,12 @@ class Business(object):
 class ApartmentComplex(Business):
     """An apartment complex."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an ApartmentComplex object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(ApartmentComplex, self).__init__(lot, construction)
+        super(ApartmentComplex, self).__init__(owner)
         self.units = set()
 
     @property
@@ -216,66 +219,56 @@ class ApartmentComplex(Business):
 class Bank(Business):
     """A bank."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a Bank object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Bank, self).__init__(lot, construction)
+        super(Bank, self).__init__(owner)
 
 
 class Barbershop(Business):
     """A barbershop."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a Barbershop object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Barbershop, self).__init__(lot, construction)
+        super(Barbershop, self).__init__(owner)
 
 
 class BusDepot(Business):
     """A bus depot."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a BusDepot object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(BusDepot, self).__init__(lot, construction)
+        super(BusDepot, self).__init__(owner)
 
 
 class CityHall(Business):
     """The city hall."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a CityHall object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(CityHall, self).__init__(lot, construction)
+        super(CityHall, self).__init__(owner)
 
 
 class ConstructionFirm(Business):
     """A construction firm."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an ConstructionFirm object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(ConstructionFirm, self).__init__(lot, construction)
+        super(ConstructionFirm, self).__init__(owner)
 
     @property
     def house_constructions(self):
@@ -299,40 +292,34 @@ class ConstructionFirm(Business):
 class OptometryClinic(Business):
     """An optometry clinic."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an OptometryClinic object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(OptometryClinic, self).__init__(lot, construction)
+        super(OptometryClinic, self).__init__(owner)
 
 
 class FireStation(Business):
     """A fire station."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an FireStation object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(FireStation, self).__init__(lot, construction)
+        super(FireStation, self).__init__(owner)
 
 
 class Hospital(Business):
     """A hospital."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an Hospital object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Hospital, self).__init__(lot, construction)
+        super(Hospital, self).__init__(owner)
 
     @property
     def baby_deliveries(self):
@@ -347,27 +334,23 @@ class Hospital(Business):
 class Hotel(Business):
     """A hotel."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a Hotel object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Hotel, self).__init__(lot, construction)
+        super(Hotel, self).__init__(owner)
 
 
 class LawFirm(Business):
     """A law firm."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a LawFirm object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(LawFirm, self).__init__(lot, construction)
+        super(LawFirm, self).__init__(owner)
 
     @property
     def filed_divorces(self):
@@ -382,48 +365,42 @@ class LawFirm(Business):
     def filed_name_changes(self):
         """Return all name changes filed through this law firm."""
         filed_name_changes = set()
-        for lawyer in self.lawyers | self.former_lawyers:
-            filed_name_changes |= lawyer.filed_name_changes
+        for employee in self.employees | self.former_employees:
+            filed_name_changes |= employee.filed_name_changes
         return filed_name_changes
 
 
 class PlasticSurgeryClinic(Business):
     """A plastic-surgery clinic."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a PlasticSurgeryClinic object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(PlasticSurgeryClinic, self).__init__(lot, construction)
+        super(PlasticSurgeryClinic, self).__init__(owner)
 
 
 class PoliceStation(Business):
     """A police station."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a PoliceStation object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(PoliceStation, self).__init__(lot, construction)
+        super(PoliceStation, self).__init__(owner)
 
 
 class RealtyFirm(Business):
     """A realty firm."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an RealtyFirm object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(RealtyFirm, self).__init__(lot, construction)
+        super(RealtyFirm, self).__init__(owner)
 
     @property
     def home_sales(self):
@@ -438,63 +415,53 @@ class RealtyFirm(Business):
 class Restaurant(Business):
     """A restaurant."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a Restaurant object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Restaurant, self).__init__(lot, construction)
+        super(Restaurant, self).__init__(owner)
 
 
 class Supermarket(Business):
     """A supermarket on a lot in a city."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize an Supermarket object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(Supermarket, self).__init__(lot, construction)
+        super(Supermarket, self).__init__(owner)
 
 
 class TattooParlor(Business):
     """A tattoo parlor."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a TattooParlor object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(TattooParlor, self).__init__(lot, construction)
+        super(TattooParlor, self).__init__(owner)
 
 
 class TaxiDepot(Business):
     """A taxi depot."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a TaxiDepot object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(TaxiDepot, self).__init__(lot, construction)
+        super(TaxiDepot, self).__init__(owner)
 
 
 class University(Business):
     """The local university."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a University object.
 
-        @param lot: A Lot object representing the lot this building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this building.
+        @param owner: The owner of this business.
         """
-        super(University, self).__init__(lot, construction)
+        super(University, self).__init__(owner)
