@@ -13,9 +13,9 @@ class Config(object):
         self.n_buildings_per_block = 4
                 ## WORLD GEN ##
         # City founder
-        self.year_city_gets_founded = 1960  # Year world gen begins
-        self.age_of_city_founder = 60
-        self.age_of_city_founders_spouse = 60
+        self.year_city_gets_founded = 1910  # Year world gen begins
+        self.age_of_city_founder = 30
+        self.age_of_city_founders_spouse = 30
         self.money_city_founder_starts_with = 100000
         self.boost_to_the_founders_conception_chance = 0.2
         # City establishment and early development
@@ -45,7 +45,7 @@ class Config(object):
         self.chance_person_falls_in_love_after_sex = 0.8
         self.chance_protection_does_not_work = 0.01
         # Pregnancy
-        self.function_to_determine_chance_of_conception = lambda female_age: min(
+        self.function_to_determine_chance_of_conception = lambda female_age: max(
             female_age/10000., (100 - ((female_age**1.98) / 20.)) / 100  # Decreases exponentially with age
         )
         # Death
@@ -282,7 +282,7 @@ class Config(object):
                 ## PEOPLE REPRESENTATION ##
         # People ex nihilo
         self.function_to_determine_person_ex_nihilo_age_given_job_level = (
-            lambda job_level: 18 + (random.randint(2, 5) * job_level)
+            lambda job_level: 18 + random.randint(2*job_level, 10*job_level)
         )
         self.function_to_determine_chance_person_ex_nihilo_starts_with_family = (
             lambda age: (age / 100.0) * 1.4
