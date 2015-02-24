@@ -213,38 +213,44 @@ class Birth(object):
 
 
 class BuildingConstruction(object):
-    """Construction of a building."""
+    """Construction of a business's building.
 
-    def __init__(self, subject, architect, lot, type_of_building):
+    This must be preceded by the business being founded -- the business makes the
+    call to instantiate one of these objects -- where in a HouseConstruction the
+    direction is opposite: a HouseConstruction object makes the call to instantiate
+    a House object.
+    """
+
+    def __init__(self, subject, business, architect):
         """Initialize a BuildingConstruction object."""
         self.year = subject.game.year
         self.subject = subject
-        self.construction_firm = architect.company
         self.architect = architect
-        self.builders = self.construction_firm.construction_workers
-        self.lot = lot
-        self.building = type_of_building(lot=lot, construction=self)
-        self._remunerate()
-        self.architect.building_constructions.append(self)
+        self.business = business
+        if self.architect:
+            self.construction_firm = architect.company
+            self.builders = self.construction_firm.construction_workers
+            self._remunerate()
+            self.architect.building_constructions.append(self)
         self.subject.building_commissions.append(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
-        config = self.client.game.config
+        config = self.subject.game.config
         service_rendered = self.__class__
         # Pay owner of the company
-        self.client.pay(
+        self.subject.pay(
             payee=self.construction_firm.owner,
             amount=config.compensations[service_rendered][Owner]
         )
         # Pay architect
-        self.client.pay(
+        self.subject.pay(
             payee=self.architect,
             amount=config.compensations[service_rendered][Architect]
         )
         # Pay construction workers
         for construction_worker in self.construction_firm.construction_workers:
-            self.client.pay(
+            self.subject.pay(
                 payee=construction_worker,
                 amount=config.compensations[service_rendered][ConstructionWorker]
             )
@@ -571,13 +577,13 @@ class HouseConstruction(object):
         """Initialize a HouseConstruction object."""
         self.year = subjects[0].game.year
         self.subjects = subjects
-        self.construction_firm = architect.company
         self.architect = architect
-        self.builders = self.construction_firm.construction_workers
-        self.lot = lot
         self.house = House(lot=lot, construction=self)
-        self._remunerate()
-        self.architect.house_constructions.append(self)
+        if self.architect:
+            self.construction_firm = architect.company
+            self.builders = self.construction_firm.construction_workers
+            self._remunerate()
+            self.architect.building_constructions.append(self)
         for subject in self.subjects:
             subject.building_commissions.append(self)
 
@@ -774,7 +780,7 @@ class Move(object):
         self.new_home = new_home
         self.old_home.move_outs.append(self)
         self.old_home.move_ins.append(self)
-        self.reason = reason  # Likely will point to a Marriage or Divorce object
+        self.reason = reason  # Will (likely) point to an Occupation object, or else a Marriage or Divorce object
         # Actually move the person
         subject.home = new_home
 

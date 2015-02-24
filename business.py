@@ -12,20 +12,18 @@ from person import Person, PersonExNihilo
 class Business(object):
     """A business in a city (representing both the notion of a company and its physical building)."""
 
-    def __init__(self, lot, construction):
+    def __init__(self, owner):
         """Initialize a Business object.
 
-        @param lot: A Lot object representing the lot this company's building is on.
-        @param construction: A BuildingConstruction object holding data about
-                             the construction of this company's building.
+        @param owner: The owner of this business.
         """
-        self.city = lot.city
+        self.city = owner.city
         self.city.companies.add(self)
+        self.owner = owner
         self.founded = self.city.game.year
         self.lot = self._init_choose_vacant_lot()
-        self.construction = construction
-        self.owner = construction.client
-        self.owner.building_commissions.append(self)
+        architect = self.owner.contract_person_of_certain_occupation(occupation=Architect)
+        self.construction = BuildingConstruction(subject=owner, business=self, architect=architect)
         self.employees = set()
         self.former_employees = set()
         self.name = self._init_get_named()
@@ -145,7 +143,7 @@ class Business(object):
     def _find_candidate_from_outside_the_city(self, occupation):
         """Generate a PersonExNihilo to move into the city for this job."""
         candidate = PersonExNihilo(
-            game=self.owner.game, job_opportunity_impetus=occupation, spouse_already_generated=False
+            game=self.owner.game, job_opportunity_impetus=occupation, spouse_already_generated=None
         )
         return candidate
 
