@@ -1,7 +1,7 @@
-from business import *
-from landmark import *
-from occupation import *
-from event import *
+#from business import *
+#from landmark import *
+#from occupation import *
+#from event import *
 
 
 class Config(object):

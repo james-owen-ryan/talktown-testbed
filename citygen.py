@@ -1,6 +1,6 @@
 import pyqtree
-import random
-#from city import *
+from random import gauss,randrange
+from city import *
 
 def clamp(val,minimum,maximum):
     return max(minimum,min(val,maximum))
@@ -10,14 +10,14 @@ size = 16
 
 lociLocations = []
 for ii in range(loci):
-    lociLocations.append([random.gauss(size/2.0,size/6.0), random.gauss(size/2.0,size/6.0)])
+    lociLocations.append([gauss(size/2.0,size/6.0), gauss(size/2.0,size/6.0)])
 
     
 tree = pyqtree.Index(bbox=[0,0,16,16])
 
 for ii in range(samples):
-    center = lociLocations[random.randrange(len(lociLocations))]
-    point = [clamp(random.gauss(center[0],size/6.0),0,size-1),clamp(random.gauss(center[1],size/6.0),0,size-1)]
+    center = lociLocations[randrange(len(lociLocations))]
+    point = [clamp(gauss(center[0],size/6.0),0,size-1),clamp(gauss(center[1],size/6.0),0,size-1)]
     point.append(point[0]+1)
     point.append(point[1]+1)
     #print(point)
@@ -42,7 +42,7 @@ def traverseTree(node):
             lots.append((w+0.5,xx+0.5))
             lots.append((e-0.5,xx+0.5))
         if (node.width > 2):
-            tracts.append([w+1,n+1,width-2])
+            tracts.append([w+1,n+1,node.width-2])
         nsstreets[ (w,n)] = (w,s)
         nsstreets[ (e,n)] = (e,s)
         ewstreets[ (w,n)] = (e,n)
