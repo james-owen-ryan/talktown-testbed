@@ -577,27 +577,32 @@ class Person(object):
         one of the top three. TODO: Probabilistically select from all potential hires
         using the scores to derive likelihoods of selecting each.
         """
-        # If you or your spouse practice this occupation, DIY
-        if isinstance(self.occupation, occupation):
-            choice = self
-        elif self.spouse and isinstance(self.spouse.occupation, occupation):
-            choice = self.spouse
-        # Otherwise, pick from the various people in town who do practice this occupation
-        else:
-            potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(occupation=occupation)
-            # Pick from top three
-            top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
-            if random.random() < 0.6:
-                choice = top_three_choices[0]
-            elif random.random() < 0.9:
-                choice = top_three_choices[1]
+        pool = self.city.workers_of_trade(occupation)
+        if pool:
+            # If you or your spouse practice this occupation, DIY
+            if isinstance(self.occupation, occupation):
+                choice = self
+            elif self.spouse and isinstance(self.spouse.occupation, occupation):
+                choice = self.spouse
+            # Otherwise, pick from the various people in town who do practice this occupation
             else:
-                choice = top_three_choices[2]
+                potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(pool=pool)
+                # Pick from top three
+                top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
+                if random.random() < 0.6:
+                    choice = top_three_choices[0]
+                elif random.random() < 0.9:
+                    choice = top_three_choices[1]
+                else:
+                    choice = top_three_choices[2]
+        else:
+            # This should only ever happen at the very beginning of a city's history where all
+            # business types haven't been built in town yet
+            choice = None
         return choice
 
-    def _rate_all_potential_contractors_of_certain_occupation(self, occupation):
+    def _rate_all_potential_contractors_of_certain_occupation(self, pool):
         """Score all potential hires of a certain occupation."""
-        pool = self.city.workers_of_trade(occupation)
         scores = {}
         for person in pool:
             my_score = self._rate_potential_contractor_of_certain_occupation(person=person)
@@ -797,6 +802,8 @@ class PersonExNihilo(Person):
         )
         self.maiden_name = self.last_name
         self.named_for = None
+        # Potentially generate and retcon a family that this person will have
+        # had prior to moving into the city
         if this_person_is_the_founder:
             self._init_generate_the_founders_family()
         elif not spouse_already_generated:
@@ -805,6 +812,8 @@ class PersonExNihilo(Person):
             )
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
+        # Finally, move this person (and family, if any) into the city
+        self._init_move_to_city(hiring_that_instigated_move=job_opportunity_impetus)
 
     @staticmethod
     def _override_sex(spouse):
@@ -946,4 +955,5 @@ class PersonExNihilo(Person):
 
     def _init_move_to_city(self, hiring_that_instigated_move):
         """Move into the city in which gameplay takes place."""
-        pass
+        new_home = self.secure_home()
+        self.move(new_home=new_home, reason=hiring_that_instigated_move)
