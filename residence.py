@@ -41,16 +41,23 @@ class DwellingPlace(object):
 class Apartment(DwellingPlace):
     """An individual apartment unit in an apartment building in a city."""
 
-    def __init__(self, apartment_complex, lot):
+    def __init__(self, apartment_complex, lot, unit_number):
         super(Apartment, self).__init__(lot, owners=(apartment_complex.subject,))
         self.complex = apartment_complex
+        self.unit_number = unit_number
+
+    def _init_generate_address(self):
+        """Generate an address, given the lot building is on."""
+        house_number = self.lot.house_number
+        street = str(self.lot.street)
+        return "{} {} (Unit #{})".format(house_number, street, self.unit_number)
 
 
 class House(DwellingPlace):
     """A house in a city.
 
     @param lot: A Lot object representing the lot this building is on.
-    @param construction: A BuildingConstruction object holding data about
+    @param construction: A BusinessConstruction object holding data about
                          the construction of this building.
     """
 
