@@ -59,8 +59,6 @@ class Cashier(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Cashier, self).__init__(person=person, company=company)
 
@@ -73,8 +71,6 @@ class Janitor(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Janitor, self).__init__(person=person, company=company)
 
@@ -87,8 +83,6 @@ class Manager(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Manager, self).__init__(person=person, company=company)
 
@@ -101,8 +95,6 @@ class Secretary(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Secretary, self).__init__(person=person, company=company)
 
@@ -115,8 +107,6 @@ class Owner(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Owner, self).__init__(person=person, company=company)
 
@@ -134,8 +124,6 @@ class Groundskeeper(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Groundskeeper, self).__init__(person=person, company=company)
 
@@ -148,8 +136,6 @@ class Nurse(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Nurse, self).__init__(person=person, company=company)
 
@@ -167,8 +153,6 @@ class Architect(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Architect, self).__init__(person=person, company=company)
         # Work accomplishments
@@ -194,8 +178,6 @@ class BankTeller(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(BankTeller, self).__init__(person=person, company=company)
 
@@ -208,8 +190,6 @@ class BusDriver(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(BusDriver, self).__init__(person=person, company=company)
 
@@ -222,8 +202,6 @@ class Concierge(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Concierge, self).__init__(person=person, company=company)
 
@@ -236,8 +214,6 @@ class ConstructionWorker(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(ConstructionWorker, self).__init__(person=person, company=company)
 
@@ -250,8 +226,6 @@ class Doctor(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Doctor, self).__init__(person=person, company=company)
         # Work accomplishments
@@ -270,8 +244,6 @@ class FireChief(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(FireChief, self).__init__(person=person, company=company)
 
@@ -284,8 +256,6 @@ class Firefighter(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Firefighter, self).__init__(person=person, company=company)
 
@@ -298,8 +268,6 @@ class HairStylist(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(HairStylist, self).__init__(person=person, company=company)
 
@@ -312,8 +280,6 @@ class HotelMaid(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(HotelMaid, self).__init__(person=person, company=company)
 
@@ -326,8 +292,6 @@ class Lawyer(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Lawyer, self).__init__(person=person, company=company)
         # Work accomplishments
@@ -351,8 +315,6 @@ class Mayor(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Mayor, self).__init__(person=person, company=company)
 
@@ -365,8 +327,6 @@ class Mortician(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Mortician, self).__init__(person=person, company=company)
         # Work accomplishments
@@ -385,8 +345,6 @@ class Optometrist(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Optometrist, self).__init__(person=person, company=company)
 
@@ -399,8 +357,6 @@ class PlasticSurgeon(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(PlasticSurgeon, self).__init__(person=person, company=company)
 
@@ -413,8 +369,6 @@ class PoliceChief(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(PoliceChief, self).__init__(person=person, company=company)
 
@@ -427,8 +381,6 @@ class PoliceOfficer(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(PoliceOfficer, self).__init__(person=person, company=company)
 
@@ -441,8 +393,6 @@ class Professor(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Professor, self).__init__(person=person, company=company)
 
@@ -455,8 +405,6 @@ class Realtor(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Realtor, self).__init__(person=person, company=company)
         # Work accomplishments
@@ -476,8 +424,6 @@ class TattooArtist(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(TattooArtist, self).__init__(person=person, company=company)
 
@@ -490,8 +436,6 @@ class TaxiDriver(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(TaxiDriver, self).__init__(person=person, company=company)
 
@@ -504,7 +448,5 @@ class Waiter(Occupation):
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
-        @param hiring: The Hiring object that constructed this object and holds metadata about
-                       the person's hiring into this occupation at this company.
         """
         super(Waiter, self).__init__(person=person, company=company)
