@@ -40,7 +40,7 @@ class Person(object):
         # Set biological characteristics
         self.infertile = self._init_fertility(male=self.male, config=self.game.config)
         self.attracted_to_men, self.attracted_to_women = (
-            self._init_sexuality(male=self.male, config=self.game.config)
+            self._init_sexuality()
         )
         # Set personality
         self.personality = Personality(subject=self)
@@ -606,12 +606,7 @@ class Person(object):
         """Score all potential hires of a certain occupation."""
         scores = {}
         for person in pool:
-            my_score = self._rate_potential_contractor_of_certain_occupation(person=person)
-            if self.spouse:
-                spouse_score = self.spouse._rate_potential_contractor_of_certain_occupation(person=person)
-            else:
-                spouse_score = 0
-            scores[person] = my_score + spouse_score
+            scores[person] = self._rate_potential_contractor_of_certain_occupation(person=person)
         return scores
 
     def _rate_potential_contractor_of_certain_occupation(self, person):
@@ -621,16 +616,21 @@ class Person(object):
         """
         score = 0
         # Rate according to social reasons
-        if person in self.immediate_family:
-            score += self.game.config.preference_to_contract_immediate_family
-        elif person in self.extended_family:  # elif because immediate family is subset of extended family
-            score += self.game.config.preference_to_contract_extended_family
-        if person in self.friends:
-            score += self.game.config.preference_to_contract_friend
-        elif person in self.known_people:
-            score += self.game.config.preference_to_contract_known_person
-        if person in self.former_contractors:
-            score += self.game.config.preference_to_contract_former_contract
+        if self.spouse:
+            people_involved_in_this_decision = (self, self.spouse)
+        else:
+            people_involved_in_this_decision = (self,)
+        for decision_maker in people_involved_in_this_decision:
+            if person in decision_maker.immediate_family:
+                score += decision_maker.game.config.preference_to_contract_immediate_family
+            elif person in decision_maker.extended_family:  # elif because immediate family is subset of extended family
+                score += decision_maker.game.config.preference_to_contract_extended_family
+            if person in decision_maker.friends:
+                score += decision_maker.game.config.preference_to_contract_friend
+            elif person in decision_maker.known_people:
+                score += decision_maker.game.config.preference_to_contract_known_person
+            if person in decision_maker.former_contractors:
+                score += decision_maker.game.config.preference_to_contract_former_contract
         # Multiply score according to this person's experience in this occupation
         score *= person.game.config.function_to_derive_score_multiplier_from_years_experience(
             years_experience=person.occupation.years_experience
