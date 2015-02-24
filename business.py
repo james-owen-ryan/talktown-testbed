@@ -206,13 +206,17 @@ class ApartmentComplex(Business):
         @param owner: The owner of this business.
         """
         super(ApartmentComplex, self).__init__(owner)
-        self.units = set()
+        self.units = self._init_apartment_units()
 
     def _init_apartment_units(self):
         """Instantiate objects for the individual units in this apartment complex."""
+        apartment_units = []
         for i in xrange(len(self.owner.game.config.number_of_apartment_units_per_complex)):
             unit_number = i + 1
-            Apartment(apartment_complex=self, lot=self.lot, unit_number=unit_number)
+            apartment_units.append(
+                Apartment(apartment_complex=self, lot=self.lot, unit_number=unit_number)
+            )
+        return apartment_units
 
     @property
     def residents(self):
