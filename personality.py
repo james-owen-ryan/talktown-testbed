@@ -52,7 +52,7 @@ class Personality(object):
             # Inherit this trait (with slight variance)
             takes_after = random.choice([self.subject.father, self.subject.mother])
             openness_to_experience = random.normalvariate(
-                takes_after.openness_to_experience, config.big_5_heritability_sd
+                takes_after.personality.openness_to_experience, config.big_5_heritability_sd
             )
         else:
             takes_after = None
@@ -71,7 +71,7 @@ class Personality(object):
         if random.random() < config.big_5_c_heritability:
             takes_after = random.choice([self.subject.father, self.subject.mother])
             conscientiousness = random.normalvariate(
-                takes_after.conscientiousness, config.big_5_heritability_sd
+                takes_after.personality.conscientiousness, config.big_5_heritability_sd
             )
         else:
             takes_after = None
@@ -89,7 +89,7 @@ class Personality(object):
         if random.random() < config.big_5_e_heritability:
             takes_after = random.choice([self.subject.father, self.subject.mother])
             extroversion = random.normalvariate(
-                takes_after.extroversion, config.big_5_heritability_sd
+                takes_after.personality.extroversion, config.big_5_heritability_sd
             )
         else:
             takes_after = None
@@ -107,7 +107,7 @@ class Personality(object):
         if random.random() < config.big_5_a_heritability:
             takes_after = random.choice([self.subject.father, self.subject.mother])
             agreeableness = random.normalvariate(
-                takes_after.agreeableness, config.big_5_heritability_sd
+                takes_after.personality.agreeableness, config.big_5_heritability_sd
             )
         else:
             takes_after = None
@@ -125,7 +125,7 @@ class Personality(object):
         if random.random() < config.big_5_n_heritability:
             takes_after = random.choice([self.subject.father, self.subject.mother])
             neuroticism = random.normalvariate(
-                takes_after.neuroticism, config.big_5_heritability_sd
+                takes_after.personality.neuroticism, config.big_5_heritability_sd
             )
         else:
             takes_after = None

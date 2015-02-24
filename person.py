@@ -15,9 +15,11 @@ class Person(object):
         """Initialize a Person object."""
         # Set location and gameplay instance
         self.game = game
+        self.birth = birth
         if birth:
             self.city = self.birth.city
-            self.city.residents.add(self)
+            if self.city:
+                self.city.residents.add(self)
             # Set parents
             self.biological_mother = birth.biological_mother
             self.mother = birth.mother
@@ -25,9 +27,8 @@ class Person(object):
             self.father = birth.father
             # Set year of birth
             self.birth_year = birth.year
-        else:
+        else:  # PersonExNihilo
             self.city = None
-            # PersonExNihilo
             self.biological_mother = None
             self.mother = None
             self.biological_father = None
@@ -220,7 +221,7 @@ class Person(object):
 
     def _init_biological_immediate_family(self):
         """Populate lists representing this person's immediate."""
-        self.bio_parents = self.biological_mother, self.biological_father,
+        self.bio_parents = {self.biological_mother, self.biological_father}
         self.bio_grandparents = self.biological_father.parents | self.biological_mother.parents
         self.bio_siblings = self.biological_father.kids | self.biological_mother.kids
         self.bio_full_siblings = self.biological_father.kids & self.biological_mother.kids
@@ -366,7 +367,7 @@ class Person(object):
 
         The @property decorator is used so that this attribute can be dynamic to adoption.
         """
-        return self.mother, self.father,
+        return {parent for parent in (self.mother, self.father) if parent}
 
     @property
     def next_of_kin(self):
@@ -447,7 +448,7 @@ class Person(object):
             nuclear_family.add(self.spouse)
         for kid in self.spouse.kids & self.kids if self.spouse else self.kids:
             if kid.home is self.home:
-                nuclear_family |= kid
+                nuclear_family.add(kid)
         return nuclear_family
 
     @property
@@ -537,12 +538,12 @@ class Person(object):
         config = self.game.config
         self.sexual_partners.add(partner)
         partner.sexual_partners.add(self)
-        if random.random() > config.chance_person_falls_in_love_after_sex:
+        if random.random() < config.chance_person_falls_in_love_after_sex:
             self.fall_in_love(person=partner)
-        if random.random() > config.chance_person_falls_in_love_after_sex:
+        if random.random() < config.chance_person_falls_in_love_after_sex:
             partner.fall_in_love(person=self)
         if self.male != partner.male and not self.pregnant and not partner.pregnant:
-            if not protection or random.random() < config.chance_protection_does_not_work:
+            if (not protection) or random.random() < config.chance_protection_does_not_work:
                 self._determine_whether_pregnant(partner=partner)
 
     def _determine_whether_pregnant(self, partner):
@@ -576,7 +577,10 @@ class Person(object):
     def give_birth(self):
         """Select a doctor and go to the hospital to give birth."""
         doctor = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Doctor)
-        doctor.deliver_baby(mother=self)
+        if doctor:
+            doctor.occupation.deliver_baby(mother=self)
+        else:
+            event.Birth(mother=self, doctor=None)
 
     def die(self, cause_of_death):
         """Die and get interred at the local cemetery."""
@@ -969,18 +973,15 @@ class PersonExNihilo(Person):
                 config.person_ex_nihilo_age_at_marriage_mean, config.person_ex_nihilo_age_at_marriage_sd
             )
         )
-        while (
+        if (
             # Make sure spouses aren't too young for marriage and that marriage isn't slated
             # to happen after the city has been founded
             marriage_date - self.birth_year < config.person_ex_nihilo_age_at_marriage_floor or
             marriage_date - spouse.birth_year < config.person_ex_nihilo_age_at_marriage_floor or
             marriage_date >= self.game.true_year
         ):
-            marriage_date = self.birth_year + (
-                random.normalvariate(
-                    config.person_ex_nihilo_age_at_marriage_mean, config.person_ex_nihilo_age_at_marriage_sd
-                )
-            )
+            # If so, don't bother regenerating -- just set marriage year to last year and move on
+            marriage_date = self.game.true_year - 1
         self.game.year = int(round(marriage_date))
         self.marry(spouse)
 
@@ -989,6 +990,11 @@ class PersonExNihilo(Person):
         config = self.game.config
         # Simulate sex (and thus potentially birth) in marriage thus far
         for year in xrange(self.marriage.year, self.game.true_year+1):
+            # If someone is pregnant and due this year, have them give birth
+            if self.pregnant or self.spouse.pregnant:
+                pregnant_one = self if self.pregnant else self.spouse
+                if pregnant_one.conception_date < year:
+                    pregnant_one.give_birth()
             self.game.year = year
             chance_they_are_trying_to_conceive_this_year = (
                 config.function_to_determine_chance_married_couple_are_trying_to_conceive(

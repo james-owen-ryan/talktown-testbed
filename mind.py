@@ -17,7 +17,7 @@ class Mind(object):
         config = self.subject.game.config
         if random.random() < config.memory_heritability:
             takes_after = random.choice([self.subject.mother, self.subject.father])
-            memory = random.normalvariate(takes_after.memory, config.memory_heritability_sd)
+            memory = random.normalvariate(takes_after.mind.memory, config.memory_heritability_sd)
         else:
             takes_after = None
             memory = random.normalvariate(config.memory_mean, config.memory_sd)
