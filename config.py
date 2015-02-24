@@ -11,8 +11,12 @@ class Config(object):
         """Construct a Config object."""
         self.n_buildings_per_block = 4
                 ## WORLD GEN ##
-        # Misc
-        self.year_city_gets_founded = 1909  # Year world gen begins
+        # City founder
+        self.year_city_gets_founded = 1960  # Year world gen begins
+        self.age_of_city_founder = 60
+        self.age_of_city_founders_spouse = 60
+        self.money_city_founder_starts_with = 100000
+        self.boost_to_the_founders_conception_chance = 0.2
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
