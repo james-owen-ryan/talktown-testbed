@@ -182,14 +182,17 @@ class Business(object):
     @staticmethod
     def _select_candidate(candidate_scores):
         """Select a person to serve in a certain occupational capacity."""
-        # Pick from top three
-        top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
-        if random.random() < 0.6:
-            chosen_candidate = top_three_choices[0]
-        elif random.random() < 0.9:
-            chosen_candidate = top_three_choices[1]
+        if len(candidate_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, candidate_scores, key=candidate_scores.get)
+            if random.random() < 0.6:
+                chosen_candidate = top_three_choices[0]
+            elif random.random() < 0.9:
+                chosen_candidate = top_three_choices[1]
+            else:
+                chosen_candidate = top_three_choices[2]
         else:
-            chosen_candidate = top_three_choices[2]
+            chosen_candidate = max(candidate_scores)
         return chosen_candidate
 
     def _find_candidate_from_outside_the_city(self, occupation_of_need):

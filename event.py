@@ -38,7 +38,7 @@ class Birth(object):
             self.mother.marriage.children_produced.add(self.subject)
         self.doctor = doctor
         self._name_baby()
-        if self.city:  # There won't be a doctor if the birth happened outside the city
+        if self.doctor:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
             self.nurses = {
                 position for position in self.hospital.employees if
@@ -790,6 +790,8 @@ class Move(object):
             person.home = new_home
             new_home.residents.add(person)
             person.moves.append(self)
+            person.city = person.game.city
+            person.game.city.residents.add(person)
 
 
 class NameChange(object):

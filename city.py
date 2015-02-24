@@ -35,6 +35,11 @@ class City(object):
             Tract(block=meaningless_block, house_number=999)
 
     @property
+    def pop(self):
+        """Return the number of residents living in the city."""
+        return len(self.residents)
+
+    @property
     def population(self):
         """Return the number of residents living in the city."""
         return len(self.residents)

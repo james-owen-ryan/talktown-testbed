@@ -21,7 +21,6 @@ class Game(object):
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
         # Generate a city plan
-        # self.city = citygen.generate_city_plan(game=self)  # Placeholder
         self.city = City(game=self)  # TEMP for testing only
         # Generate a city founder -- this is a very rich person who will construct the
         # infrastructure on which the city gets built; this person will also serve as
@@ -33,6 +32,9 @@ class Game(object):
         # Have that city founder establish a construction form in the limits of the new
         # city plan -- this firm will shortly construct all the major buildings in town
         ConstructionFirm(owner=self.founder)
+        # Now that there is a construction firm in town, the founder and family can
+        # move into town
+        self.founder.move_into_the_city(hiring_that_instigated_move=None)
         # Have the city founder build several apartment complexes downtown -- first, however,
         # build a realty firm so that these apartment units can be sold
         RealtyFirm(owner=self.founder.spouse)
