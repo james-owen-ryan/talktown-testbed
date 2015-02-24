@@ -1,8 +1,9 @@
 from random import random
-from business import *
-from landmark import *
-from residence import *
-from occupation import *
+#from business import *
+#from residence import *
+#from occupation import *
+# from landmark import *
+
 from corpora import Names
 from config import Config
 
@@ -60,7 +61,7 @@ class City(object):
 class Street(object):
     """A street in a city."""
 
-    def __init__(self, city, number, direction):
+    def __init__(self, city, number, direction,startingBlock,endingBlock):
         """Initialize a Street object."""
         self.game = city.game
         self.city = city
@@ -68,6 +69,8 @@ class Street(object):
         self.number = number
         self.direction = direction  # Direction relative to the center of the city
         self.name = self.generate_name(number, direction)
+        self.startingBlock = startingBlock
+        self.endingBlock = endingBlock
 
     @staticmethod
     def generate_name(number, direction):

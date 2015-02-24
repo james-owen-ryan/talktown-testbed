@@ -1,7 +1,6 @@
 import pyqtree
-import random
+from random import gauss,randrange
 from city import *
-
 
 # It would be great if this script could be wrapped up in a single function that returns
 # an instantiated city with all its component objects instantiated and attributed. E.g.:
@@ -19,14 +18,14 @@ size = 16
 
 lociLocations = []
 for ii in range(loci):
-    lociLocations.append([random.gauss(size/2.0,size/6.0), random.gauss(size/2.0,size/6.0)])
+    lociLocations.append([gauss(size/2.0,size/6.0), gauss(size/2.0,size/6.0)])
 
     
 tree = pyqtree.Index(bbox=[0,0,16,16])
 
 for ii in range(samples):
-    center = lociLocations[random.randrange(len(lociLocations))]
-    point = [clamp(random.gauss(center[0],size/6.0),0,size-1),clamp(random.gauss(center[1],size/6.0),0,size-1)]
+    center = lociLocations[randrange(len(lociLocations))]
+    point = [clamp(gauss(center[0],size/6.0),0,size-1),clamp(gauss(center[1],size/6.0),0,size-1)]
     point.append(point[0]+1)
     point.append(point[1]+1)
     #print(point)
