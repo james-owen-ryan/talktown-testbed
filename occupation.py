@@ -54,7 +54,7 @@ class Occupation(object):
 class Cashier(Occupation):
     """A cashier at a business."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Cashier object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -62,13 +62,13 @@ class Cashier(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Cashier, self).__init__(person=person, company=company, hiring=hiring)
+        super(Cashier, self).__init__(person=person, company=company)
 
 
 class Janitor(Occupation):
     """A janitor at a business."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Janitor object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -76,13 +76,13 @@ class Janitor(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Janitor, self).__init__(person=person, company=company, hiring=hiring)
+        super(Janitor, self).__init__(person=person, company=company)
 
 
 class Manager(Occupation):
     """A manager at a business."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Owner object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -90,13 +90,13 @@ class Manager(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Manager, self).__init__(person=person, company=company, hiring=hiring)
+        super(Manager, self).__init__(person=person, company=company)
 
 
 class Secretary(Occupation):
     """A secretary at a business."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Secretary object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -104,13 +104,13 @@ class Secretary(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Secretary, self).__init__(person=person, company=company, hiring=hiring)
+        super(Secretary, self).__init__(person=person, company=company)
 
 
 class Owner(Occupation):
     """An owner of a business."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Owner object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -118,7 +118,7 @@ class Owner(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Owner, self).__init__(person=person, company=company, hiring=hiring)
+        super(Owner, self).__init__(person=person, company=company)
 
 
 ##################################
@@ -129,7 +129,7 @@ class Owner(Occupation):
 class Groundskeeper(Occupation):
     """A mortician at a cemetery or park."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Mortician object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -137,13 +137,13 @@ class Groundskeeper(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Groundskeeper, self).__init__(person=person, company=company, hiring=hiring)
+        super(Groundskeeper, self).__init__(person=person, company=company)
 
 
 class Nurse(Occupation):
     """A nurse at a hospital or optometry clinic or plastic-surgery clinic."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Nurse object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -151,7 +151,7 @@ class Nurse(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Nurse, self).__init__(person=person, company=company, hiring=hiring)
+        super(Nurse, self).__init__(person=person, company=company)
 
 
 ##################################
@@ -162,7 +162,7 @@ class Nurse(Occupation):
 class Architect(Occupation):
     """An architect at a construction firm."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Architect object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -170,17 +170,15 @@ class Architect(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Architect, self).__init__(person=person, company=company, hiring=hiring)
+        super(Architect, self).__init__(person=person, company=company)
         # Work accomplishments
         self.building_constructions = []
         self.house_constructions = []
 
-    def construct_building(self, client, lot, type_of_building):
+    def construct_building(self, client, business):
         """Return a constructed building."""
-        construction = BusinessConstruction(
-            subject=client, architect=self, lot=lot, type_of_business=type_of_building
-        )
-        return construction.building
+        construction = BusinessConstruction(subject=client, business=business, architect=self)
+        return construction
 
     def construct_house(self, clients, lot):
         """Return a constructed building."""
@@ -191,7 +189,7 @@ class Architect(Occupation):
 class BankTeller(Occupation):
     """A bank teller at a bank."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a BankTeller object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -199,13 +197,13 @@ class BankTeller(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(BankTeller, self).__init__(person=person, company=company, hiring=hiring)
+        super(BankTeller, self).__init__(person=person, company=company)
 
 
 class BusDriver(Occupation):
     """A bus driver at a bus depot."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a BusDriver object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -213,13 +211,13 @@ class BusDriver(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(BusDriver, self).__init__(person=person, company=company, hiring=hiring)
+        super(BusDriver, self).__init__(person=person, company=company)
 
 
 class Concierge(Occupation):
     """A concierge at a hotel."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Concierge object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -227,13 +225,13 @@ class Concierge(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Concierge, self).__init__(person=person, company=company, hiring=hiring)
+        super(Concierge, self).__init__(person=person, company=company)
 
 
 class ConstructionWorker(Occupation):
     """A construction worker at a construction firm."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a ConstructionWorker object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -241,13 +239,13 @@ class ConstructionWorker(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(ConstructionWorker, self).__init__(person=person, company=company, hiring=hiring)
+        super(ConstructionWorker, self).__init__(person=person, company=company)
 
 
 class Doctor(Occupation):
     """A doctor at a hospital."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Doctor object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -255,7 +253,7 @@ class Doctor(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Doctor, self).__init__(person=person, company=company, hiring=hiring)
+        super(Doctor, self).__init__(person=person, company=company)
         # Work accomplishments
         self.baby_deliveries = []
 
@@ -267,7 +265,7 @@ class Doctor(Occupation):
 class FireChief(Occupation):
     """A fire chief at a fire station."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a FireChief object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -275,13 +273,13 @@ class FireChief(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(FireChief, self).__init__(person=person, company=company, hiring=hiring)
+        super(FireChief, self).__init__(person=person, company=company)
 
 
 class Firefighter(Occupation):
     """A firefighter at a fire station."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Firefighter object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -289,13 +287,13 @@ class Firefighter(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Firefighter, self).__init__(person=person, company=company, hiring=hiring)
+        super(Firefighter, self).__init__(person=person, company=company)
 
 
 class HairStylist(Occupation):
     """A hair stylist at a barbershop."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a HairStylist object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -303,13 +301,13 @@ class HairStylist(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(HairStylist, self).__init__(person=person, company=company, hiring=hiring)
+        super(HairStylist, self).__init__(person=person, company=company)
 
 
 class HotelMaid(Occupation):
     """A hotel maid at a hotel."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a HotelMaid object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -317,13 +315,13 @@ class HotelMaid(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(HotelMaid, self).__init__(person=person, company=company, hiring=hiring)
+        super(HotelMaid, self).__init__(person=person, company=company)
 
 
 class Lawyer(Occupation):
     """A lawyer at a law firm."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Lawyer object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -331,7 +329,7 @@ class Lawyer(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Lawyer, self).__init__(person=person, company=company, hiring=hiring)
+        super(Lawyer, self).__init__(person=person, company=company)
         # Work accomplishments
         self.filed_divorces = []
         self.filed_name_changes = []
@@ -348,7 +346,7 @@ class Lawyer(Occupation):
 class Mayor(Occupation):
     """A mayor at the city hall."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Mayor object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -356,13 +354,13 @@ class Mayor(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Mayor, self).__init__(person=person, company=company, hiring=hiring)
+        super(Mayor, self).__init__(person=person, company=company)
 
 
 class Mortician(Occupation):
     """A mortician at a cemetery."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Mortician object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -370,7 +368,7 @@ class Mortician(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Mortician, self).__init__(person=person, company=company, hiring=hiring)
+        super(Mortician, self).__init__(person=person, company=company)
         # Work accomplishments
         self.body_interments = []
 
@@ -382,7 +380,7 @@ class Mortician(Occupation):
 class Optometrist(Occupation):
     """An optometrist at an optometry clinic."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Optometrist object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -390,13 +388,13 @@ class Optometrist(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Optometrist, self).__init__(person=person, company=company, hiring=hiring)
+        super(Optometrist, self).__init__(person=person, company=company)
 
 
 class PlasticSurgeon(Occupation):
     """A plastic surgeon at a plastic-surgery clinic."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a PlasticSurgeon object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -404,13 +402,13 @@ class PlasticSurgeon(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(PlasticSurgeon, self).__init__(person=person, company=company, hiring=hiring)
+        super(PlasticSurgeon, self).__init__(person=person, company=company)
 
 
 class PoliceChief(Occupation):
     """A police chief at a police station."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a PoliceChief object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -418,13 +416,13 @@ class PoliceChief(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(PoliceChief, self).__init__(person=person, company=company, hiring=hiring)
+        super(PoliceChief, self).__init__(person=person, company=company)
 
 
 class PoliceOfficer(Occupation):
     """A police officer at a police station."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a PoliceOfficer object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -432,13 +430,13 @@ class PoliceOfficer(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(PoliceOfficer, self).__init__(person=person, company=company, hiring=hiring)
+        super(PoliceOfficer, self).__init__(person=person, company=company)
 
 
 class Professor(Occupation):
     """A professor at the university."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Professor object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -446,13 +444,13 @@ class Professor(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Professor, self).__init__(person=person, company=company, hiring=hiring)
+        super(Professor, self).__init__(person=person, company=company)
 
 
 class Realtor(Occupation):
     """A realtor at a realty firm."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize an Realtor object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -460,7 +458,7 @@ class Realtor(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Realtor, self).__init__(person=person, company=company, hiring=hiring)
+        super(Realtor, self).__init__(person=person, company=company)
         # Work accomplishments
         self.home_sales = []
 
@@ -473,7 +471,7 @@ class Realtor(Occupation):
 class TattooArtist(Occupation):
     """A tattoo artist at a tattoo parlor."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a TattooArtist object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -481,13 +479,13 @@ class TattooArtist(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(TattooArtist, self).__init__(person=person, company=company, hiring=hiring)
+        super(TattooArtist, self).__init__(person=person, company=company)
 
 
 class TaxiDriver(Occupation):
     """A taxi driver at a taxi depot."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a TaxiDriver object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -495,13 +493,13 @@ class TaxiDriver(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(TaxiDriver, self).__init__(person=person, company=company, hiring=hiring)
+        super(TaxiDriver, self).__init__(person=person, company=company)
 
 
 class Waiter(Occupation):
     """A waiter at a restaurant."""
 
-    def __init__(self, person, company, hiring):
+    def __init__(self, person, company):
         """Initialize a Waiter object.
 
         @param person: The Person object for the person whose occupation this is.
@@ -509,4 +507,4 @@ class Waiter(Occupation):
         @param hiring: The Hiring object that constructed this object and holds metadata about
                        the person's hiring into this occupation at this company.
         """
-        super(Waiter, self).__init__(person=person, company=company, hiring=hiring)
+        super(Waiter, self).__init__(person=person, company=company)
