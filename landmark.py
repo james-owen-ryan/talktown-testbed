@@ -12,12 +12,12 @@ from event import Hiring
 class Landmark(object):
     """A landmark on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Landmark object."""
-        self.city = tract.city
+        self.city = city
         self.city.companies.add(self)
         self.founded = self.city.game.year
-        self.lot = tract  # We call this lot to make all get_dist()-like methods work
+        self.lot = self._init_choose_vacant_tract()  # We call this lot to make all get_dist()-like methods work
         self.employees = set()
         self.name = self._init_get_named()
         self.address = self._init_generate_address()
@@ -84,7 +84,7 @@ class Landmark(object):
 
     def _init_get_named(self):
         """Get named by the city's mayor."""
-        pass
+        return 'lol {}'.format(self.__class__.__name__)
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
@@ -133,7 +133,7 @@ class Landmark(object):
     def _find_candidate_from_outside_the_city(self, occupation):
         """Generate a PersonExNihilo to move into the city for this job."""
         candidate = PersonExNihilo(
-            game=self.city.game, job_opportunity_impetus=occupation, spouse_already_generated=False
+            game=self.city.game, job_opportunity_impetus=occupation, spouse_already_generated=None
         )
         return candidate
 
@@ -184,9 +184,9 @@ class Landmark(object):
 class Cemetery(Landmark):
     """A cemetery on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Cemetery object."""
-        super(Cemetery, self).__init__(tract)
+        super(Cemetery, self).__init__(city)
         self.plots = {}
 
     def inter_person(self, person):
@@ -199,6 +199,6 @@ class Cemetery(Landmark):
 class Park(Landmark):
     """A park on a tract in a city."""
 
-    def __init__(self, tract):
+    def __init__(self, city):
         """Initialize a Park object."""
-        super(Park, self).__init__(tract)
+        super(Park, self).__init__(city)
