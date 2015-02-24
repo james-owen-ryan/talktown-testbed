@@ -1,5 +1,4 @@
-from config import Config
-from event import HomePurchase
+# from event import HomePurchase
 
 
 class DwellingPlace(object):

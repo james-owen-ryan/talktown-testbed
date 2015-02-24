@@ -5,7 +5,6 @@ from random import random
 # from landmark import *
 
 from corpora import Names
-from config import Config
 
 
 class City(object):
@@ -20,8 +19,17 @@ class City(object):
         self.deceased = set()  # People who died in in the city
         self.companies = set()
         self.lots = set()
+        self.temp_init_lots_and_tracts_for_testing()
         self.tracts = set()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
+
+    def temp_init_lots_and_tracts_for_testing(self):
+        for i in xrange(64):
+            meaningless_block = Block(x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=i)
+            Lot(block=meaningless_block, house_number=999)
+        for j in xrange(2):
+            meaningless_block = Block(x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=j+64)
+            Tract(block=meaningless_block, house_number=999)
 
     @property
     def vacant_lots(self):
@@ -162,7 +170,8 @@ class Lot(object):
         self.building = None  # Will always be None for Tract
         self.landmark = None  # Will always be None for Lot
         self._init_add_to_city_plan()
-        self.neighboring_lots = self._init_get_neighboring_lots()
+        # This actually has to be done after all lots have been instantiated
+        # self.neighboring_lots = self._init_get_neighboring_lots()
 
     def _init_add_to_city_plan(self):
         """Add self to the city plan."""
@@ -170,7 +179,7 @@ class Lot(object):
 
     def _init_get_neighboring_lots(self):
         """Collect all lots that neighbor this lot."""
-        neighboring_lots = set()
+        neighboring_lots = [l for l in self.city.lots if self.get_dist_to(l) < 5]  # TEMP for testing
         return neighboring_lots
 
     @property
@@ -208,7 +217,7 @@ class Lot(object):
 
     def get_dist_to(self, lot_or_tract):
         """Return the Manhattan distance between this lot and some lot or tract."""
-        dist = -1
+        dist = abs(self.block.number - lot_or_tract.block.number)  # TEMP for testing
         return dist
 
     def dist_to_nearest_company_of_type(self, company_type):

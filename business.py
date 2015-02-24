@@ -23,7 +23,7 @@ class Business(object):
         self.founded = self.city.game.year
         self.lot = self._init_choose_vacant_lot()
         architect = self.owner.contract_person_of_certain_occupation(occupation=Architect)
-        self.construction = BusinessConstruction(subject=owner, business=self, architect=architect)
+        self.construction = architect.construct_building(client=self.owner, business=self)
         self.employees = set()
         self.former_employees = set()
         self.name = self._init_get_named()
