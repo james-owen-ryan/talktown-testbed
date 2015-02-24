@@ -11,7 +11,6 @@ class DwellingPlace(object):
         """
         self.city = lot.city
         self.lot = lot
-        self.lot.building = self
         self._init_get_named()
         self.address = self._init_generate_address()
         self.owners = set()  # Gets set via self._init_ownership()
@@ -68,3 +67,4 @@ class House(DwellingPlace):
     def __init__(self, lot, construction):
         super(House, self).__init__(lot, owners=construction.subjects)
         self.construction = construction
+        self.lot.building = self
