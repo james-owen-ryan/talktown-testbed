@@ -25,8 +25,8 @@ class Occupation(object):
         # Set job level of this occupation
         self.level = person.game.config.job_levels[self.__class__]
         # Set industry and what industry a potential applicant must come from to be hired for this occupation
-        self.industry = 'General'
-        self.prerequisite_industry = None
+        self.industry = person.game.config.industries[self.__class__]
+        self.prerequisite_industry = person.game.config.prerequisite_industries[self.__class__]
 
     @property
     def years_experience(self):
@@ -180,8 +180,8 @@ class Architect(Occupation):
 
     def construct_building(self, client, lot, type_of_building):
         """Return a constructed building."""
-        construction = BuildingConstruction(
-            subject=client, architect=self, lot=lot, type_of_building=type_of_building
+        construction = BusinessConstruction(
+            subject=client, architect=self, lot=lot, type_of_business=type_of_building
         )
         return construction.building
 

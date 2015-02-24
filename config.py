@@ -17,6 +17,8 @@ class Config(object):
         self.age_of_city_founders_spouse = 60
         self.money_city_founder_starts_with = 100000
         self.boost_to_the_founders_conception_chance = 0.2
+        # City establishment and early development
+        self.number_of_apartment_complexes_founder_builds_downtown = 3
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
@@ -82,6 +84,8 @@ class Config(object):
         # Misc
         self.age_people_start_working = 16
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
+        # Housing
+        self.number_of_apartment_units_per_complex = 8
         # Companies deciding where to locate themselves
         self.function_to_determine_company_preference_for_local_population = (
             lambda secondary_pop, tertiary_pop: (secondary_pop * 5) + (tertiary_pop * 2)
@@ -229,7 +233,7 @@ class Config(object):
                 Doctor: 750,
                 Nurse: 300,
             },
-            BuildingConstruction: {
+            BusinessConstruction: {
                 Owner: 5000,
                 Architect: 2000,
                 ConstructionWorker: 400,

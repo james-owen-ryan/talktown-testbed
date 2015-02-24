@@ -97,7 +97,7 @@ class Business(object):
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
+        return 'lol {}'.format(self.__class__.__name__)  # Placeholder obviously
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
@@ -190,11 +190,29 @@ class Business(object):
         # Consider people that work elsewhere in the city
         for company in self.city.companies-self:
             for employee in company.employees:
-                if employee.occupation.level < occupation.level:
+                if self._check_if_person_is_qualified_for_the_position(candidate=employee, occupation=occupation):
                     candidates.add(employee)
         # Consider unemployed (mostly young) people
         candidates |= self.city.unemployed
         return candidates
+
+    def _check_if_person_is_qualified_for_the_position(self, candidate, occupation):
+        """Check if the job candidate is qualified for the position you are hiring for."""
+        qualified = False
+        # Make sure they are overqualified
+        if candidate.occupation.level < occupation.level:
+            # Make sure they have experience in the right industry, if that's
+            # a requirement of this occupation
+            prerequisite_industry = self.city.game.config.prerequisite_industries[occupation]
+            if prerequisite_industry:
+                if self.city.game.config.prerequisite_industries[occupation] == 'Student':
+                    if candidate.college_graduate:
+                        qualified = True
+                elif any(o for o in candidate.occupations if o.industry == prerequisite_industry):
+                    qualified = True
+            else:
+                qualified = True
+        return qualified
 
 
 class ApartmentComplex(Business):
