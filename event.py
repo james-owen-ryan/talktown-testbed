@@ -44,7 +44,7 @@ class Birth(object):
                 position for position in self.hospital.employees if
                 position.__class__.__name__ == 'Nurse'
             }
-            self.doctor.baby_deliveries.append(self)
+            self.doctor.baby_deliveries.add(self)
             self._remunerate()
         else:
             self.hospital = None
@@ -235,11 +235,11 @@ class BusinessConstruction(object):
                 position.__class__.__name__ == 'ConstructionWorker'
             }
             self._remunerate()
-            self.architect.building_constructions.append(self)
+            self.architect.building_constructions.add(self)
         else:
             self.construction_firm = None
             self.builders = set()
-        self.subject.building_commissions.append(self)
+        self.subject.building_commissions.add(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -284,7 +284,7 @@ class Death(object):
             # this to be consistent with other event classes
             self._remunerate()
             self.cemetery_plot = self._inter_the_body()
-            self.mortician.bodies_interred.append(self)
+            self.mortician.bodies_interred.add(self)
         else:
             self.cemetery_plot = None
 
@@ -358,7 +358,7 @@ class Divorce(object):
             # Divorce isn't currently possible outside a city, but still
             # doing this to be consistent with other event classes
             self.law_firm = lawyer.company
-            self.lawyer.divorces_filed.append(self)
+            self.lawyer.divorces_filed.add(self)
             self._decide_and_enact_new_living_arrangements()
             self._remunerate()
         else:
@@ -541,13 +541,13 @@ class HomePurchase(object):
         if realtor:
             self.realty_firm = realtor.company
             self._remunerate()
-            self.realtor.home_sales.append(self)
+            self.realtor.home_sales.add(self)
         else:  # No realtor when setting initial owners as people who built the home
             self.realty_firm = None
 
     def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
-        self.home.former_owners |= self.home.owners
+        self.home.former_owners |= set(self.home.owners)
         self.home.owners = self.subjects
         self.home.transactions.append(self)
 
@@ -583,12 +583,12 @@ class HouseConstruction(object):
                 position.__class__.__name__ == 'ConstructionWorker'
             }
             self._remunerate()
-            self.architect.building_constructions.append(self)
+            self.architect.building_constructions.add(self)
         else:
             self.construction_firm = None
             self.builders = set()
         for subject in self.subjects:
-            subject.building_commissions.append(self)
+            subject.building_commissions.add(self)
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -788,6 +788,8 @@ class Move(object):
         # Actually move the person(s)
         for person in self.subjects:
             person.home = new_home
+            new_home.residents.add(person)
+            person.moves.append(self)
 
 
 class NameChange(object):
@@ -811,7 +813,7 @@ class NameChange(object):
         subject.name_changes.append(self)
         if self.city:
             self.law_firm = lawyer
-            self.lawyer.filed_name_changes.append(self)
+            self.lawyer.filed_name_changes.add(self)
         else:
             self.law_firm = None
 

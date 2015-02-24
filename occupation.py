@@ -158,8 +158,8 @@ class Architect(Occupation):
         """
         super(Architect, self).__init__(person=person, company=company)
         # Work accomplishments
-        self.building_constructions = []
-        self.house_constructions = []
+        self.building_constructions = set()
+        self.house_constructions = set()
 
     def construct_building(self, client, business):
         """Return a constructed building."""
@@ -231,7 +231,7 @@ class Doctor(Occupation):
         """
         super(Doctor, self).__init__(person=person, company=company)
         # Work accomplishments
-        self.baby_deliveries = []
+        self.baby_deliveries = set()
 
     def deliver_baby(self, mother):
         """Instantiate a new Birth object."""
@@ -297,8 +297,8 @@ class Lawyer(Occupation):
         """
         super(Lawyer, self).__init__(person=person, company=company)
         # Work accomplishments
-        self.filed_divorces = []
-        self.filed_name_changes = []
+        self.filed_divorces = set()
+        self.filed_name_changes = set()
 
     def file_divorce(self, clients):
         """File a name change on behalf of person."""
@@ -332,7 +332,7 @@ class Mortician(Occupation):
         """
         super(Mortician, self).__init__(person=person, company=company)
         # Work accomplishments
-        self.body_interments = []
+        self.body_interments = set()
 
     def inter_body(self, deceased, cause_of_death):
         """Inter a body in a cemetery."""
@@ -410,7 +410,7 @@ class Realtor(Occupation):
         """
         super(Realtor, self).__init__(person=person, company=company)
         # Work accomplishments
-        self.home_sales = []
+        self.home_sales = set()
 
     def sell_home(self, clients, home):
         """Return a sold home."""

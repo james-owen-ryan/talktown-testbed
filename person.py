@@ -128,7 +128,7 @@ class Person(object):
         self.divorces = []
         self.moves = []  # From one home to another
         self.name_changes = []
-        self.building_commissions = []  # Constructions of houses or buildings that they commissioned
+        self.building_commissions = set() # Constructions of houses or buildings that they commissioned
         self.departure = None  # Leaving the city, i.e., leaving the simulation
         self.death = None
         # Set and prepare attributes pertaining to business affairs
