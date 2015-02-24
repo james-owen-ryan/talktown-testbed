@@ -37,7 +37,6 @@ class Person(object):
         # Set misc attributes
         self.alive = True
         self.death_year = None
-        self.is_the_founder = True  # The single person who founds the city
         # Set biological characteristics
         self.infertile = self._init_fertility(male=self.male, config=self.game.config)
         self.attracted_to_men, self.attracted_to_women = (
@@ -789,9 +788,9 @@ class PersonExNihilo(Person):
             self._override_sexuality(spouse=spouse_already_generated)
         # Overwrite birth year set by Person.__init__()
         if this_person_is_the_founder:  # The person who founds the city -- there are special requirements for them
-            self.is_the_founder = True
+            self.game.founder = self
             self.birth_year = self._init_birth_year_of_the_founder()
-        elif spouse_already_generated and spouse_already_generated.is_the_founder:
+        elif spouse_already_generated and spouse_already_generated is self.game.founder:
             self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)
         else:
             self.birth_year = self._init_birth_year(job_level=job_opportunity_impetus.level)
@@ -946,7 +945,7 @@ class PersonExNihilo(Person):
                     n_kids=len(self.marriage.children_produced)
                 )
             )
-            if self.is_the_founder:  # Try to force large family to develop
+            if self is self.game.founder:  # Try to force large family to develop
                 chance_they_are_trying_to_conceive_this_year += config.boost_to_the_founders_conception_chance
             if random.random() < chance_they_are_trying_to_conceive_this_year:
                 self.have_sex(partner=self.spouse, protection=False)
