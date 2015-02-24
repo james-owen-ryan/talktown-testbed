@@ -1,6 +1,8 @@
 from occupation import *
 # from landmark import *
 # from event import *
+from business import *
+from landmark import *
 
 
 class Config(object):
@@ -111,8 +113,10 @@ class Config(object):
             BusDepot: (BusDriver, BusDriver, Manager),
             CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
             ConstructionFirm: (
-                Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
-                ConstructionWorker, Architect
+                # Order matters for this one -- architect must come first to build the others'
+                # houses!
+                Architect, Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
+                ConstructionWorker
             ),
             OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
             FireStation: (Secretary, Firefighter, Firefighter, FireChief),
@@ -158,6 +162,7 @@ class Config(object):
             Optometrist: 'Medical',
             PlasticSurgeon: 'Medical',
             Lawyer: 'Law',
+            Professor: 'Academia',
             Owner: None,
             Mayor: 'Politics',
         }
@@ -190,6 +195,7 @@ class Config(object):
             Optometrist: 'Student',
             PlasticSurgeon: 'Student',
             Lawyer: 'Student',
+            Professor: 'Student',
             Owner: None,
             Mayor: None,
         }

@@ -15,9 +15,9 @@ class Adoption(object):
         @param adoptive_parents: The adoptive parent(s).
         """
         self.year = subject.year
+        self.city = adoptive_parents[0].city  # May be None if parents not in the city yet
         self.subject = subject
         self.adoptive_parents = adoptive_parents
-        self.city = self.adoptive_parents[0].city  # May be None if parents not in the city yet
 
 
 class Birth(object):
@@ -40,10 +40,15 @@ class Birth(object):
         self._name_baby()
         if self.city:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
+            self.nurses = {
+                position for position in self.hospital.employees if
+                position.__class__.__name__ == 'Nurse'
+            }
             self.doctor.baby_deliveries.append(self)
             self._remunerate()
         else:
             self.hospital = None
+            self.nurses = set()
 
     def _update_mother_attributes(self):
         """Update attributes of the mother that are affected by this birth."""
@@ -192,19 +197,19 @@ class Birth(object):
         service_rendered = self.__class__
         # Pay owner of the hospital
         self.mother.pay(
-            payee=self.hospital.owner,
-            amount=config.compensations[service_rendered][self.hospital.owner.occupation.__class__]
+            payee=self.hospital.owner.person,
+            amount=config.compensations[service_rendered][self.hospital.owner.__class__]
         )
         # Pay doctor
         self.mother.pay(
-            payee=self.doctor,
-            amount=config.compensations[service_rendered][self.doctor.occupation.__class__]
+            payee=self.doctor.person,
+            amount=config.compensations[service_rendered][self.doctor.__class__]
         )
-        # Pay construction workers
-        for nurse in self.hospital.nurses:
+        # Pay nurses
+        for nurse in self.nurses:
             self.mother.pay(
-                payee=nurse,
-                amount=config.compensations[service_rendered][nurse.occupation.__class__]
+                payee=nurse.person,
+                amount=config.compensations[service_rendered][nurse.__class__]
             )
 
 
@@ -225,9 +230,15 @@ class BusinessConstruction(object):
         self.business = business
         if self.architect:
             self.construction_firm = architect.company
-            self.builders = self.construction_firm.construction_workers
+            self.builders = {
+                position for position in self.construction_firm.employees if
+                position.__class__.__name__ == 'ConstructionWorker'
+            }
             self._remunerate()
             self.architect.building_constructions.append(self)
+        else:
+            self.construction_firm = None
+            self.builders = set()
         self.subject.building_commissions.append(self)
 
     def _remunerate(self):
@@ -236,19 +247,19 @@ class BusinessConstruction(object):
         service_rendered = self.__class__
         # Pay owner of the company
         self.subject.pay(
-            payee=self.construction_firm.owner,
-            amount=config.compensations[service_rendered][self.construction_firm.owner.occupation.__class__]
+            payee=self.construction_firm.owner.person,
+            amount=config.compensations[service_rendered][self.construction_firm.owner.__class__]
         )
         # Pay architect
         self.subject.pay(
-            payee=self.architect,
-            amount=config.compensations[service_rendered][self.architect.occupation.__class__]
+            payee=self.architect.person,
+            amount=config.compensations[service_rendered][self.architect.__class__]
         )
         # Pay construction workers
-        for construction_worker in self.construction_firm.construction_workers:
+        for construction_worker in self.builders:
             self.subject.pay(
-                payee=construction_worker,
-                amount=config.compensations[service_rendered][construction_worker.occupation.__class__]
+                payee=construction_worker.person,
+                amount=config.compensations[service_rendered][construction_worker.__class__]
             )
 
 
@@ -257,8 +268,8 @@ class Death(object):
 
     def __init__(self, subject, mortician, cause_of_death):
         """Initialize a Death object."""
-        self.year = self.subject.game.year
-        self.city = self.subject.city
+        self.year = subject.game.year
+        self.city = subject.city
         self.subject = self.subject
         self.cause = cause_of_death
         self.mortician = mortician
@@ -306,8 +317,8 @@ class Death(object):
         service_rendered = self.__class__
         # Pay mortician
         self.next_of_kin.pay(
-            payee=self.mortician,
-            amount=config.compensations[service_rendered][self.mortician.occupation.__class__]
+            payee=self.mortician.person,
+            amount=config.compensations[service_rendered][self.mortician.__class__]
         )
 
 
@@ -334,8 +345,8 @@ class Divorce(object):
 
     def __init__(self, subjects, lawyer):
         """Initialize a divorce object."""
-        self.year = self.subjects[0].game.year
-        self.city = self.subjects[0].city
+        self.year = subjects[0].game.year
+        self.city = subjects[0].city
         self.subjects = subjects
         self.lawyer = lawyer
         self.marriage = subjects[0].marriage
@@ -481,15 +492,15 @@ class Divorce(object):
         config = self.subjects[0].game.config
         service_rendered = self.__class__
         # Pay owner of the law firm -- divorcees split the cost 50/50
-        amount_due_to_owner = config.compensations[service_rendered][self.law_firm.owner.occupation.__class__]
-        amount_due_to_lawyer = config.compensations[service_rendered][self.lawyer.occupation.__class__]
+        amount_due_to_owner = config.compensations[service_rendered][self.law_firm.owner.__class__]
+        amount_due_to_lawyer = config.compensations[service_rendered][self.lawyer.__class__]
         for divorcee in self.subjects:
             divorcee.pay(
-                payee=self.law_firm.owner,
+                payee=self.law_firm.owner.person,
                 amount=amount_due_to_owner/2
             )
             divorcee.pay(
-                payee=self.lawyer,
+                payee=self.lawyer.person,
                 amount=amount_due_to_lawyer/2
             )
 
@@ -502,7 +513,7 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
-        self.year = self.subject.city.game.year
+        self.year = subject.game.year
         self.subject = subject
         self.company = company
         self.old_occupation = subject.occupation
@@ -546,13 +557,13 @@ class HomePurchase(object):
         service_rendered = self.__class__
         # Pay owner of the realty firm
         self.subjects[0].pay(
-            payee=self.realty_firm.owner,
-            amount=config.compensations[service_rendered][self.realty_firm.owner.occupation.__class__]
+            payee=self.realty_firm.owner.person,
+            amount=config.compensations[service_rendered][self.realty_firm.owner.__class__]
         )
         # Pay realtor
         self.subjects[0].pay(
-            payee=self.realtor,
-            amount=config.compensations[service_rendered][self.realtor.occupation.__class__]
+            payee=self.realtor.person,
+            amount=config.compensations[service_rendered][self.realtor.__class__]
         )
 
 
@@ -567,9 +578,15 @@ class HouseConstruction(object):
         self.house = House(lot=lot, construction=self)
         if self.architect:
             self.construction_firm = architect.company
-            self.builders = self.construction_firm.construction_workers
+            self.builders = {
+                position for position in self.construction_firm.employees if
+                position.__class__.__name__ == 'ConstructionWorker'
+            }
             self._remunerate()
             self.architect.building_constructions.append(self)
+        else:
+            self.construction_firm = None
+            self.builders = set()
         for subject in self.subjects:
             subject.building_commissions.append(self)
 
@@ -579,19 +596,19 @@ class HouseConstruction(object):
         service_rendered = self.__class__
         # Pay owner of the company
         self.subjects[0].pay(
-            payee=self.construction_firm.owner,
-            amount=config.compensations[service_rendered][self.construction_firm.owner.occupation.__class__]
+            payee=self.construction_firm.owner.person,
+            amount=config.compensations[service_rendered][self.construction_firm.owner.__class__]
         )
         # Pay architect
         self.subjects[0].pay(
-            payee=self.architect,
-            amount=config.compensations[service_rendered][self.architect.occupation.__class__]
+            payee=self.architect.person,
+            amount=config.compensations[service_rendered][self.architect.__class__]
         )
         # Pay construction workers
-        for construction_worker in self.construction_firm.construction_workers:
+        for construction_worker in self.builders:
             self.subjects[0].pay(
-                payee=construction_worker,
-                amount=config.compensations[service_rendered][construction_worker.occupation.__class__]
+                payee=construction_worker.person,
+                amount=config.compensations[service_rendered][construction_worker.__class__]
             )
 
 
@@ -600,8 +617,8 @@ class Marriage(object):
 
     def __init__(self, subjects):
         """Initialize a Marriage object."""
-        self.year = self.subjects[0].game.year
-        self.city = self.subjects[0].city
+        self.year = subjects[0].game.year
+        self.city = subjects[0].city
         self.subjects = subjects
         self.names_at_time_of_marriage = (self.subjects[0].name, self.subjects[1].name)
         self.name_changes = []  # Gets set by NameChange object, as appropriate
@@ -758,17 +775,19 @@ class Marriage(object):
 class Move(object):
     """A move from one home into another, or from no home to a home."""
 
-    def __init__(self, subject, new_home, reason):
+    def __init__(self, subjects, new_home, reason):
         """Initialize a Move object."""
-        self.year = self.subject.city.game.year
-        self.subject = subject
-        self.old_home = subject.home  # May be None if newborn or person moved from outside the city
+        self.year = subjects[0].game.year
+        self.subjects = subjects
+        self.old_home = self.subjects[0].home  # May be None if newborn or person moved from outside the city
         self.new_home = new_home
-        self.old_home.move_outs.append(self)
-        self.old_home.move_ins.append(self)
+        if self.old_home:
+            self.old_home.move_outs.append(self)
+        self.new_home.move_ins.append(self)
         self.reason = reason  # Will (likely) point to an Occupation object, or else a Marriage or Divorce object
-        # Actually move the person
-        subject.home = new_home
+        # Actually move the person(s)
+        for person in self.subjects:
+            person.home = new_home
 
 
 class NameChange(object):
@@ -808,13 +827,13 @@ class NameChange(object):
         service_rendered = self.__class__
         # Pay owner of the law firm
         self.subject.pay(
-            payee=self.law_firm.owner,
-            amount=config.compensations[service_rendered][self.law_firm.owner.occupation.__class__]
+            payee=self.law_firm.owner.person,
+            amount=config.compensations[service_rendered][self.law_firm.owner.__class__]
         )
         # Pay lawyer
         self.subject.pay(
-            payee=self.lawyer,
-            amount=config.compensations[service_rendered][self.lawyer.occupation.__class__]
+            payee=self.lawyer.person,
+            amount=config.compensations[service_rendered][self.lawyer.__class__]
         )
 
 

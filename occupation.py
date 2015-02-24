@@ -17,8 +17,9 @@ class Occupation(object):
         self.hiring = None  # event.Hiring object holding data about the hiring; gets set by that object's __init__()
         self.end_date = None  # Changed by self.terminate
         self.terminus = None  # Changed by self.terminate
-        self.person.occupation = self
-        self.person.occupations.add(self)
+        # Note: self.person.occupation gets set by Business.hire(), because there's
+        # a really tricky pipeline that has to be maintained
+        self.person.occupations.append(self)
         # Set job level of this occupation
         self.level = person.game.config.job_levels[self.__class__]
         # Set industry and what industry a potential applicant must come from to be hired for this occupation
@@ -34,8 +35,9 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
-        self.company.employees.remove(self)
-        self.company.former_employees.add(self)
+        if not isinstance(reason, Hiring) and reason.promotion:
+            self.company.employees.remove(self)
+            self.company.former_employees.add(self)
         # If the person hasn't already been hired to a new position, set their
         # occupation attribute to None
         if self.person.occupation is self:
@@ -43,7 +45,7 @@ class Occupation(object):
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
         position_that_is_now_vacant = self.__class__
-        self.company.hire(occupation=position_that_is_now_vacant)
+        self.company.hire(occupation_of_need=position_that_is_now_vacant)
 
 
 ##################################

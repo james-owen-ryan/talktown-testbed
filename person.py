@@ -1,10 +1,11 @@
 import random
 import heapq
 from corpora import Names
-from event import *
+import event
 from name import Name
 from personality import Personality
 from mind import Mind
+import occupation
 
 
 class Person(object):
@@ -16,6 +17,7 @@ class Person(object):
         self.game = game
         if birth:
             self.city = self.birth.city
+            self.city.residents.add(self)
             # Set parents
             self.biological_mother = birth.biological_mother
             self.mother = birth.mother
@@ -137,6 +139,8 @@ class Person(object):
         self.retired = False
         # Prepare attributes pertaining to education
         self.college_graduate = False
+        # Prepare attributes pertaining to dynamic emotional considerations
+        self.grieving = False  # After spouse dies
         # Prepare misc attributes that get set by other methods
         self.home = None
 
@@ -395,9 +399,14 @@ class Person(object):
     @property
     def full_name(self):
         """Return a person's full name."""
-        full_name = "{} {} {} {}".format(
-            self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
-        )
+        if self.suffix:
+            full_name = "{} {} {} {}".format(
+                self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
+            )
+        else:
+            full_name = "{} {} {}".format(
+                self.first_name.rep, self.middle_name.rep, self.last_name.rep
+            )
         return full_name
 
     @property
@@ -407,22 +416,39 @@ class Person(object):
         This is used to determine whether a child has the same full name as their parent,
         which would necessitate them getting a suffix of their own to disambiguate.
         """
-        full_name = "{} {} {} {}".format(
-            self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
+        full_name = "{} {} {}".format(
+            self.first_name.rep, self.middle_name.rep, self.last_name.rep
         )
         return full_name
 
     @property
     def name(self):
         """Return a person's name."""
-        name = "{} {} {}".format(self.first_name.rep, self.last_name.rep, self.suffix.rep)
+        if self.suffix:
+            name = "{} {} {}".format(self.first_name.rep, self.last_name.rep, self.suffix)
+        else:
+            name = "{} {}".format(self.first_name.rep, self.last_name.rep)
         return name
 
     @property
     def nametag(self):
         """Return a person's name, appended with their tag, if any."""
-        nametag = "{} {}".format(self.name, self.tag)
+        if self.tag:
+            nametag = "{} {}".format(self.name, self.tag)
+        else:
+            nametag = self.name
         return nametag
+
+    @property
+    def nuclear_family(self):
+        """Return this person's nuclear family."""
+        nuclear_family = {self}
+        if self.spouse:
+            nuclear_family.add(self.spouse)
+        for kid in self.spouse.kids & self.kids if self.spouse else self.kids:
+            if kid.home is self.home:
+                nuclear_family |= kid
+        return nuclear_family
 
     @property
     def queer(self):
@@ -492,8 +518,11 @@ class Person(object):
 
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
-        lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
-        lawyer.file_name_change(person=self, new_last_name=new_last_name, reason=reason)
+        lawyer = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Lawyer)
+        if lawyer:
+            lawyer.occupation.file_name_change(person=self, new_last_name=new_last_name, reason=reason)
+        else:
+            event.NameChange(subject=self, new_last_name=new_last_name, reason=reason, lawyer=None)
 
     def fall_in_love(self, person):
         """Fall in love with person."""
@@ -525,14 +554,13 @@ class Person(object):
             female_age=female_partner.age
         )
         if random.random() < chance_of_conception:
-            female_partner.pregnant = True
             female_partner.impregnated_by = self if female_partner is partner else partner
             female_partner.conception_date = self.game.year
 
     def marry(self, partner):
         """Marry partner."""
         assert(self.present and partner.present), "{} tried to marry {}, but one of them is dead or departed."
-        Marriage(subjects=(self, partner))
+        event.Marriage(subjects=(self, partner))
 
     def divorce(self, partner):
         """Divorce partner."""
@@ -542,22 +570,22 @@ class Person(object):
         )
         # The soon-to-be divorcees will decide together which lawyer to hire, because they are
         # technically still married (and spouses are considered as part of this method call)
-        lawyer = self.contract_person_of_certain_occupation(occupation=Lawyer)
-        lawyer.file_divorce(clients=(self, partner,))
+        lawyer = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Lawyer)
+        lawyer.occupation.file_divorce(clients=(self, partner,))
 
     def give_birth(self):
         """Select a doctor and go to the hospital to give birth."""
-        doctor = self.contract_person_of_certain_occupation(occupation=Doctor)
+        doctor = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Doctor)
         doctor.deliver_baby(mother=self)
 
     def die(self, cause_of_death):
         """Die and get interred at the local cemetery."""
-        mortician = self.next_of_kin.contract_person_of_certain_occupation(occupation=Mortician)
-        mortician.inter_body(deceased=self, cause_of_death=cause_of_death)
+        mortician = self.next_of_kin.contract_person_of_certain_occupation(occupation_in_question=occupation.Mortician)
+        mortician.occupation.inter_body(deceased=self, cause_of_death=cause_of_death)
 
     def move(self, new_home, reason):
         """Move to an apartment or home."""
-        Move(subject=self, new_home=new_home, reason=reason)
+        event.Move(subjects=tuple(self.nuclear_family), new_home=new_home, reason=reason)
 
     def pay(self, payee, amount):
         """Pay someone (for services rendered)."""
@@ -569,33 +597,39 @@ class Person(object):
 
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
-        Departure(subject=self)
+        event.Departure(subject=self)
 
-    def contract_person_of_certain_occupation(self, occupation):
+    def contract_person_of_certain_occupation(self, occupation_in_question):
         """Find a person of a certain occupation.
 
         Currently, a person scores all the potential hires in town and then selects
         one of the top three. TODO: Probabilistically select from all potential hires
         using the scores to derive likelihoods of selecting each.
         """
-        pool = self.city.workers_of_trade(occupation)
+        if self.city:
+            pool = list(self.city.workers_of_trade(occupation_in_question))
+        else:  # PersonExNihilo who backstory is currently being retconned
+            pool = []
         if pool:
             # If you or your spouse practice this occupation, DIY
-            if isinstance(self.occupation, occupation):
+            if isinstance(self.occupation, occupation_in_question):
                 choice = self
-            elif self.spouse and isinstance(self.spouse.occupation, occupation):
+            elif self.spouse and isinstance(self.spouse.occupation, occupation_in_question):
                 choice = self.spouse
             # Otherwise, pick from the various people in town who do practice this occupation
             else:
                 potential_hire_scores = self._rate_all_potential_contractors_of_certain_occupation(pool=pool)
-                # Pick from top three
-                top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
-                if random.random() < 0.6:
-                    choice = top_three_choices[0]
-                elif random.random() < 0.9:
-                    choice = top_three_choices[1]
+                if len(potential_hire_scores) >= 3:
+                    # Pick from top three
+                    top_three_choices = heapq.nlargest(3, potential_hire_scores, key=potential_hire_scores.get)
+                    if random.random() < 0.6:
+                        choice = top_three_choices[0]
+                    elif random.random() < 0.9:
+                        choice = top_three_choices[1]
+                    else:
+                        choice = top_three_choices[2]
                 else:
-                    choice = top_three_choices[2]
+                    choice = max(potential_hire_scores)
         else:
             # This should only ever happen at the very beginning of a city's history where all
             # business types haven't been built in town yet
@@ -632,10 +666,14 @@ class Person(object):
             if person in decision_maker.former_contractors:
                 score += decision_maker.game.config.preference_to_contract_former_contract
         # Multiply score according to this person's experience in this occupation
-        score *= person.game.config.function_to_derive_score_multiplier_from_years_experience(
+        score *= person.game.config.function_to_derive_score_multiplier_bonus_for_experience(
             years_experience=person.occupation.years_experience
         )
         return score
+
+    def purchase_home(self, purchasers, home):
+        # TEMP THING DUE TO CIRCULAR DEPENDENCY -- SEE RESIDENCE.PY
+        event.HomePurchase(subjects=purchasers, home=home, realtor=None)
 
     def secure_home(self):
         """Find a home to move into.
@@ -645,33 +683,35 @@ class Person(object):
         """
         chosen_home_or_lot = self._choose_vacant_home_or_vacant_lot()
         if chosen_home_or_lot:
-            if isinstance(chosen_home_or_lot, Lot):
+            if chosen_home_or_lot in self.city.vacant_lots:
                 # A vacant lot was chosen, so build
                 home_to_move_into = self._commission_construction_of_a_house(lot=chosen_home_or_lot)
-            else:
+            elif chosen_home_or_lot in self.city.vacant_homes:
                 # A vacant home was chosen
                 home_to_move_into = self._purchase_home(home=chosen_home_or_lot)
+            else:
+                raise Exception("A person is attempting to secure a lot or home that is not known to be vacant.")
         else:
             home_to_move_into = None  # The city is full; this will spark a departure
         return home_to_move_into
 
     def _commission_construction_of_a_house(self, lot):
         """Build a house to move into."""
-        architect = self.contract_person_of_certain_occupation(occupation=Architect)
+        architect = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Architect)
         if self.spouse:
-            clients = {self, self.spouse}
+            clients = (self, self.spouse,)
         else:
-            clients = {self}
-        return architect.construct_house(clients=clients, lot=lot)
+            clients = (self,)
+        return architect.occupation.construct_house(clients=clients, lot=lot)
 
     def _purchase_home(self, home):
         """Purchase a house or apartment unit, with the help of a realtor."""
-        realtor = self.contract_person_of_certain_occupation(occupation=Realtor)
+        realtor = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Realtor)
         if self.spouse:
-            clients = {self, self.spouse}
+            clients = (self, self.spouse,)
         else:
-            clients = {self}
-        return realtor.sell_home(clients=clients, home=home)
+            clients = (self,)
+        return realtor.occupation.sell_home(clients=clients, home=home)
 
     def _choose_vacant_home_or_vacant_lot(self):
         """Choose a vacant home to move into or a vacant lot to build on.
@@ -700,16 +740,16 @@ class Person(object):
         """Rate all vacant homes and vacant lots."""
         scores = {}
         for home in self.city.vacant_homes:
-            my_score = self._rate_potential_lot(lot=home.lot)
+            my_score = self.rate_potential_lot(lot=home.lot)
             if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=home)
+                spouse_score = self.spouse.rate_potential_lot(lot=home.lot)
             else:
                 spouse_score = 0
             scores[home] = my_score + spouse_score
         for lot in self.city.vacant_lots:
-            my_score = self._rate_potential_lot(lot=lot)
+            my_score = self.rate_potential_lot(lot=lot)
             if self.spouse:
-                spouse_score = self.spouse.score_potential_home_or_lot(home_or_lot=lot)
+                spouse_score = self.spouse.rate_potential_lot(lot=lot)
             else:
                 spouse_score = 0
             scores[lot] = (
@@ -717,7 +757,7 @@ class Person(object):
             )
         return scores
 
-    def _rate_potential_lot(self, lot):
+    def rate_potential_lot(self, lot):
         """Rate the desirability of living at the location of a lot.
 
         By this method, a person appraises a vacant home or lot in the city for
@@ -737,16 +777,16 @@ class Person(object):
         for relative in relatives_in_town:
             relation_to_me = self.relation_to_me(person=relative)
             pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
-            dist = relative.home.lot.get_dist_to(lot=lot) + 1.0  # To avoid ZeroDivisionError
+            dist = relative.home.lot.get_dist_to(lot_or_tract=lot) + 1.0  # To avoid ZeroDivisionError
             score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
         # Score for proximity to friends (only positively)
         for friend in self.friends:
-            dist = friend.home.lot.get_dist_to(lot=lot) + 1.0
+            dist = friend.home.lot.get_dist_to(lot_or_tract=lot) + 1.0
             score += config.pull_to_live_near_a_friend / dist
         # Score for proximity to workplace (only positively) -- will be only criterion for person
         # who is new to the city (and thus knows no one there yet)
         if self.occupation:
-            dist = self.occupation.company.lot.get_dist_to(lot=lot) + 1.0
+            dist = self.occupation.company.lot.get_dist_to(lot_or_tract=lot) + 1.0
             score += config.pull_to_live_near_workplace / dist
         return score
 
@@ -759,8 +799,8 @@ class Person(object):
         config = self.game.config
         # People with personality C-, O+ most likely to leave home (source [1])
         base_desire_to_live_near_family = config.desire_to_live_near_family_base
-        desire_to_live_near_family = self.big_5_c
-        desire_to_live_away_from_family = self.big_5_o
+        desire_to_live_near_family = self.personality.conscientiousness
+        desire_to_live_away_from_family = self.personality.openness_to_experience
         final_desire_to_live_near_family = (
             base_desire_to_live_near_family + desire_to_live_near_family - desire_to_live_away_from_family
         )
@@ -806,7 +846,7 @@ class PersonExNihilo(Person):
         self.named_for = None
         # If this person is being hired for a high job level, retcon that they have
         # a college education -- do the same for the city founder
-        if job_opportunity_impetus and job_opportunity_impetus.job_level > 3:
+        if job_opportunity_impetus and self.game.config.job_levels[job_opportunity_impetus] > 3:
             self.college_graduate = True
         elif this_person_is_the_founder:
             self.college_graduate = True
@@ -821,7 +861,8 @@ class PersonExNihilo(Person):
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
         # Finally, move this person (and family, if any) into the city
-        self._init_move_to_city(hiring_that_instigated_move=job_opportunity_impetus)
+        # if not this_person_is_the_founder and not spouse_already_generated:
+        #     self.move_into_the_city(hiring_that_instigated_move=job_opportunity_impetus)
 
     @staticmethod
     def _override_sex(spouse):
@@ -961,7 +1002,9 @@ class PersonExNihilo(Person):
             else:
                 self.have_sex(partner=self.spouse, protection=True)
 
-    def _init_move_to_city(self, hiring_that_instigated_move):
+    def move_into_the_city(self, hiring_that_instigated_move):
         """Move into the city in which gameplay takes place."""
+        self.city = self.game.city
+        self.city.residents.add(self)
         new_home = self.secure_home()
         self.move(new_home=new_home, reason=hiring_that_instigated_move)
