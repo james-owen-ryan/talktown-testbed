@@ -199,11 +199,6 @@ class Birth(object):
         """Have parents pay hospital for services rendered."""
         config = self.mother.game.config
         service_rendered = self.__class__
-        # Pay owner of the hospital
-        self.mother.pay(
-            payee=self.hospital.owner.person,
-            amount=config.compensations[service_rendered][self.hospital.owner.__class__]
-        )
         # Pay doctor
         self.mother.pay(
             payee=self.doctor.person,
