@@ -2,7 +2,6 @@ from config import Config
 # import citygen
 from person import *
 from business import *
-from landmark import *
 from city import *
 
 
@@ -29,6 +28,8 @@ class Game(object):
         self.founder = self._produce_city_founder()
         # Placeholder until you set up how the founder moves into the city
         self.founder.city = self.founder.spouse.city = self.city
+        # Make the city founder mayor de facto
+        self.city.mayor = self.founder
         # Have that city founder establish a construction form in the limits of the new
         # city plan -- this firm will shortly construct all the major buildings in town
         ConstructionFirm(owner=self.founder)

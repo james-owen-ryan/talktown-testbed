@@ -17,21 +17,29 @@ class Business(object):
 
         @param owner: The owner of this business.
         """
+        config = owner.city.game.config
         self.city = owner.city
         self.city.companies.add(self)
         self.founded = self.city.game.year
         self.lot = self._init_choose_vacant_lot()
-        self.lot.building = self
+        if self.__class__ in config.companies_that_get_established_on_tracts:
+            self.lot.landmark = self
+        else:
+            self.lot.building = self
         # First, hire employees -- this is done first because the first-ever business, a
         # construction firm started by the city founder, will need to hire the city's
         # first architect before it can construct its own building
         self.employees = set()
         self.former_employees = set()
-        self.owner = self._init_set_and_get_owner_occupation(owner=owner)
+        if self.__class__ in config.public_companies:  # Hospital, police station, fire station, etc.
+            self.owner = None
+        else:
+            self.owner = self._init_set_and_get_owner_occupation(owner=owner)
         self.name = self._init_get_named()
         self._init_hire_initial_employees()
-        architect = self.owner.person.contract_person_of_certain_occupation(occupation_in_question=Architect)
-        self.construction = architect.occupation.construct_building(client=self.owner.person, business=self)
+        if self.__class__ not in config.companies_that_get_established_on_tracts:
+            architect = owner.contract_person_of_certain_occupation(occupation_in_question=Architect)
+            self.construction = architect.occupation.construct_building(client=owner, business=self)
         self.address = self._init_generate_address()
 
     def _init_set_and_get_owner_occupation(self, owner):
@@ -39,19 +47,18 @@ class Business(object):
         # The order really matters here -- see hire() below
         new_position = Owner(person=owner, company=self)
         hiring = Hiring(subject=owner, company=self, occupation=Owner)
-        if owner.occupation:
-            if owner is not self.city.game.founder:
-                # The city founder is the owner of the construction firm -- not the owner
-                # hospital, police station, etc.
-                owner.occupation.terminate(reason=hiring)
+        if owner.occupation and owner is not self.city.game.founder:
+            # The city founder will have multiple occupations, in the sense that they will
+            # also own multiple apartment complexes, but they will only be attributed as
+            # their occupation being owner of the construction firm
+            owner.occupation.terminate(reason=hiring)
         owner.occupation = new_position
-        # UNCOMMENT AND DO SOMETHING HERE ONCE YOU FIGURE OUT HOW THE CITY FOUNDER WILL
-        # MOVE TO TOWN -- MAYBE HAVE THE CITY FOUNDER BE THE COMPANY'S OWN ARCHITECT?
-        # # Lastly, if the person was hired from outside the city, have them move to it
-        # if selected_candidate.city is not self.city:
-        #     selected_candidate.move_into_the_city(hiring_that_instigated_move=hiring)
+        # Lastly, if the person was hired from outside the city, have them move to it --
+        # don't do this for the city founder though, who must hold off on moving here until
+        # an architect already has
+        if owner.city is not self.city and owner is not self.city.game.founder:
+            owner.move_into_the_city(hiring_that_instigated_move=hiring)
         return owner.occupation
-
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
@@ -69,9 +76,13 @@ class Business(object):
         one of the top three. TODO: Probabilistically select from all lots using
         the scores to derive likelihoods of selecting each.
         """
-        assert self.city.vacant_lots, (
-            "{} is attempting to found a company, but there's no vacant lots in {}".format(
-                self.owner.person.name, self.city.name
+        if self.__class__ in self.city.game.config.companies_that_get_established_on_tracts:
+            vacant_lots_or_tracts = self.city.vacant_tracts
+        else:
+            vacant_lots_or_tracts = self.city.vacant_lots
+        assert vacant_lots_or_tracts, (
+            "{} is attempting to found a {}, but there's no vacant lots/tracts in {}".format(
+                self.owner.person.name, self.__class__.__name__, self.city.name
             )
         )
         lot_scores = self._rate_all_vacant_lots()
@@ -93,8 +104,12 @@ class Business(object):
     def _rate_all_vacant_lots(self):
         """Rate all vacant lots for the desirability of their locations.
         """
+        if self.__class__ in self.city.game.config.companies_that_get_established_on_tracts:
+            vacant_lots_or_tracts = self.city.vacant_tracts
+        else:
+            vacant_lots_or_tracts = self.city.vacant_lots
         scores = {}
-        for lot in self.city.vacant_lots:
+        for lot in vacant_lots_or_tracts:
             scores[lot] = self._rate_potential_lot(lot=lot)
         return scores
 
@@ -198,7 +213,7 @@ class Business(object):
     def _find_candidate_from_outside_the_city(self, occupation_of_need):
         """Generate a PersonExNihilo to move into the city for this job."""
         candidate = PersonExNihilo(
-            game=self.owner.person.game, job_opportunity_impetus=occupation_of_need, spouse_already_generated=None
+            game=self.city.game, job_opportunity_impetus=occupation_of_need, spouse_already_generated=None
         )
         return candidate
 
@@ -212,16 +227,17 @@ class Business(object):
     def _rate_job_candidate(self, person):
         """Rate a job candidate, given an open position and owner biases."""
         config = self.city.game.config
+        decision_maker = self.owner.person if self.owner else self.city.mayor
         score = 0
         if person in self.employees:
             score += config.preference_to_hire_from_within_company
-        if person in self.owner.person.immediate_family:
+        if person in decision_maker.immediate_family:
             score += config.preference_to_hire_immediate_family
-        elif person in self.owner.person.extended_family:  # elif because immediate family is subset of extended family
+        elif person in decision_maker.extended_family:
             score += config.preference_to_hire_extended_family
-        if person in self.owner.person.friends:
+        if person in decision_maker.friends:
             score += config.preference_to_hire_friend
-        elif person in self.owner.person.known_people:
+        elif person in decision_maker.known_people:
             score += config.preference_to_hire_known_person
         if person.occupation:
             score *= person.occupation.level
@@ -231,7 +247,6 @@ class Business(object):
 
     def _assemble_job_candidates(self, occupation_of_need):
         """Assemble a group of job candidates for an open position."""
-        config = self.city.game.config
         candidates = set()
         # Consider people that already work in this city -- this will subsume
         # reasoning over people that could be promoted from within this company
@@ -336,6 +351,21 @@ class BusDepot(Business):
         super(BusDepot, self).__init__(owner)
 
 
+class Cemetery(Business):
+    """A cemetery on a tract in a city."""
+
+    def __init__(self, owner):
+        """Initialize a Cemetery object."""
+        super(Cemetery, self).__init__(owner)
+        self.plots = {}
+
+    def inter_person(self, person):
+        """Inter a new person by assigning them a plot in the graveyard."""
+        new_plot_number = max(self.plots) + 1
+        self.plots[new_plot_number] = person
+        return new_plot_number
+
+
 class CityHall(Business):
     """The city hall."""
 
@@ -345,12 +375,6 @@ class CityHall(Business):
         @param owner: The owner of this business.
         """
         super(CityHall, self).__init__(owner)
-        self._init_make_city_founder_mayor_de_facto()
-
-    def _init_make_city_founder_mayor_de_facto(self):
-        """Make the city founder mayor."""
-        mayor = self.city.game.founder
-        self.city.mayor = mayor
 
 
 class ConstructionFirm(Business):
@@ -461,6 +485,14 @@ class LawFirm(Business):
         for employee in self.employees | self.former_employees:
             filed_name_changes |= employee.filed_name_changes
         return filed_name_changes
+
+
+class Park(Business):
+    """A park on a tract in a city."""
+
+    def __init__(self, owner):
+        """Initialize a Park object."""
+        super(Park, self).__init__(owner)
 
 
 class PlasticSurgeryClinic(Business):

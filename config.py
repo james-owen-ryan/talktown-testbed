@@ -1,8 +1,6 @@
 from occupation import *
-# from landmark import *
 # from event import *
 from business import *
-from landmark import *
 
 
 class Config(object):
@@ -98,6 +96,10 @@ class Config(object):
                 (((100-dist_to_nearest_company_of_same_type) ** 0.5) - 8) ** 10,
                 0)
         )
+        # Company types that are public resources, i.e., not privately owned
+        self.public_companies = (CityHall, FireStation, Hospital, PoliceStation, University, Cemetery, Park)
+        # Company types that get established on tracts, not on lots
+        self.companies_that_get_established_on_tracts = (Cemetery, Park)
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
