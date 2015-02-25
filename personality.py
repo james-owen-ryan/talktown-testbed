@@ -50,7 +50,7 @@ class Personality(object):
         config = self.subject.game.config
         if random.random() < config.big_5_o_heritability:
             # Inherit this trait (with slight variance)
-            takes_after = random.choice([self.subject.father, self.subject.mother])
+            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
             openness_to_experience = random.normalvariate(
                 takes_after.personality.openness_to_experience, config.big_5_heritability_sd
             )
@@ -69,7 +69,7 @@ class Personality(object):
         """Initialize a value for the Big Five personality trait 'conscientiousness'."""
         config = self.subject.game.config
         if random.random() < config.big_5_c_heritability:
-            takes_after = random.choice([self.subject.father, self.subject.mother])
+            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
             conscientiousness = random.normalvariate(
                 takes_after.personality.conscientiousness, config.big_5_heritability_sd
             )
@@ -87,7 +87,7 @@ class Personality(object):
         """Initialize a value for the Big Five personality trait 'extroversion'."""
         config = self.subject.game.config
         if random.random() < config.big_5_e_heritability:
-            takes_after = random.choice([self.subject.father, self.subject.mother])
+            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
             extroversion = random.normalvariate(
                 takes_after.personality.extroversion, config.big_5_heritability_sd
             )
@@ -105,7 +105,7 @@ class Personality(object):
         """Initialize a value for the Big Five personality trait 'agreeableness'."""
         config = self.subject.game.config
         if random.random() < config.big_5_a_heritability:
-            takes_after = random.choice([self.subject.father, self.subject.mother])
+            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
             agreeableness = random.normalvariate(
                 takes_after.personality.agreeableness, config.big_5_heritability_sd
             )
@@ -123,7 +123,7 @@ class Personality(object):
         """Initialize a value for the Big Five personality trait 'neuroticism'."""
         config = self.subject.game.config
         if random.random() < config.big_5_n_heritability:
-            takes_after = random.choice([self.subject.father, self.subject.mother])
+            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
             neuroticism = random.normalvariate(
                 takes_after.personality.neuroticism, config.big_5_heritability_sd
             )
