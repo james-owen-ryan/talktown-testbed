@@ -1,5 +1,5 @@
-from event import *
 
+from event import *
 
 class Occupation(object):
     """An occupation at a business in a city."""

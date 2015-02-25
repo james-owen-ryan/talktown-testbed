@@ -1,3 +1,4 @@
+
 from occupation import *
 # from event import *
 from business import *
@@ -8,8 +9,13 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-        self.n_buildings_per_block = 4
+        self.n_buildings_per_block = 2
                 ## WORLD GEN ##
+                
+        # City generation
+        self.loci = 3
+        self.samples = 32
+        self.size = 16
         # City founder
         self.year_city_gets_founded = 1910  # Year world gen begins
         self.age_of_city_founder = 30
@@ -202,71 +208,71 @@ class Config(object):
             Mayor: None,
         }
         # Job levels of various occupations (indexed by their class names)
-        self.job_levels = {
-            Cashier: 1,
-            Janitor: 1,
-            HotelMaid: 1,
-            Waiter: 1,
-            Secretary: 1,
-            Groundskeeper: 1,
-            BankTeller: 2,
-            Concierge: 2,
-            HairStylist: 2,
-            ConstructionWorker: 2,
-            Firefighter: 2,
-            PoliceOfficer: 2,
-            TaxiDriver: 2,
-            BusDriver: 2,
-            Nurse: 2,
-            TattooArtist: 2,
-            Manager: 3,
-            FireChief: 3,
-            PoliceChief: 3,
-            Realtor: 3,
-            Mortician: 3,
-            Doctor: 4,
-            Architect: 4,
-            Optometrist: 4,
-            PlasticSurgeon: 4,
-            Lawyer: 4,
-            Professor: 4,
-            Owner: 5,
-            Mayor: 5,
-        }
+        # self.job_levels = {
+            # Cashier: 1,
+            # Janitor: 1,
+            # HotelMaid: 1,
+            # Waiter: 1,
+            # Secretary: 1,
+            # Groundskeeper: 1,
+            # BankTeller: 2,
+            # Concierge: 2,
+            # HairStylist: 2,
+            # ConstructionWorker: 2,
+            # Firefighter: 2,
+            # PoliceOfficer: 2,
+            # TaxiDriver: 2,
+            # BusDriver: 2,
+            # Nurse: 2,
+            # TattooArtist: 2,
+            # Manager: 3,
+            # FireChief: 3,
+            # PoliceChief: 3,
+            # Realtor: 3,
+            # Mortician: 3,
+            # Doctor: 4,
+            # Architect: 4,
+            # Optometrist: 4,
+            # PlasticSurgeon: 4,
+            # Lawyer: 4,
+            # Professor: 4,
+            # Owner: 5,
+            # Mayor: 5,
+        # }
         # Compensation for various occupations
-        self.compensations = {
-            Birth: {
-                Owner: 500,
-                Doctor: 750,
-                Nurse: 300,
-            },
-            BusinessConstruction: {
-                Owner: 5000,
-                Architect: 2000,
-                ConstructionWorker: 400,
-            },
-            Death: {
-                Mortician: 1000,
-                # [Cemetery doesn't have an owner]
-            },
-            Divorce: {
-                Lawyer: 1000,
-                Owner: 500,
-            },
-            HouseConstruction: {
-                Owner: 2500,
-                Architect: 1000,
-                ConstructionWorker: 200,
-            },
-            HomePurchase: {
-                Owner: 2000,
-                Realtor: 600,
-            },
-            NameChange: {
-                Owner: 200,
-                Lawyer: 200,
-            },
-        }
+        # self.compensations = {
+            # Birth: {
+                # Owner: 500,
+                # Doctor: 750,
+                # Nurse: 300,
+            # },
+            # BusinessConstruction: {
+                # Owner: 5000,
+                # Architect: 2000,
+                # ConstructionWorker: 400,
+            # },
+            # Death: {
+                # Mortician: 1000,
+            #    [Cemetery doesn't have an owner]
+            # },
+            # Divorce: {
+                # Lawyer: 1000,
+                # Owner: 500,
+            # },
+            # HouseConstruction: {
+                # Owner: 2500,
+                # Architect: 1000,
+                # ConstructionWorker: 200,
+            # },
+            # HomePurchase: {
+                # Owner: 2000,
+                # Realtor: 600,
+            # },
+            # NameChange: {
+                # Owner: 200,
+                # Lawyer: 200,
+            # },
+        # }
         self.compensation_upon_building_construction_for_construction_firm_owner = 5000
         self.compensation_upon_building_construction_for_architect = 2000
         self.compensation_upon_building_construction_for_construction_worker = 400
