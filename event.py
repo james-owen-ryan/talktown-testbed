@@ -229,10 +229,10 @@ class BusinessConstruction(object):
         self.business = business
         if self.architect:
             self.construction_firm = architect.company
-            self.builders = {
+            self.builders = set([
                 position for position in self.construction_firm.employees if
                 position.__class__.__name__ == 'ConstructionWorker'
-            }
+            ])
             self._remunerate()
             self.architect.building_constructions.add(self)
         else:
