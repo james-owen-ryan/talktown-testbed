@@ -794,9 +794,15 @@ class Move(object):
         self.reason = reason  # Will (likely) point to an Occupation object, or else a Marriage or Divorce object
         # Actually move the person(s)
         for person in self.subjects:
+            # Move out of old home, if any
+            if person.home:
+                person.home.residents.remove(person)
+                person.home.former_residents.add(person)
+            # Move into new home
             person.home = new_home
             new_home.residents.add(person)
             person.moves.append(self)
+            # Add yourself to city residents, if you moved from outside the city
             person.city = person.game.city
             person.game.city.residents.add(person)
 
