@@ -1,6 +1,6 @@
 #from business import *
 #from landmark import *
-#from occupation import *
+#import occupation
 #from event import *
 
 
@@ -9,8 +9,13 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-        self.n_buildings_per_block = 4
+        self.n_buildings_per_block = 2
                 ## WORLD GEN ##
+                
+        # City generation
+        self.loci = 3
+        self.samples = 32
+        self.size = 16
         # City founder
         self.year_city_gets_founded = 1960  # Year world gen begins
         self.age_of_city_founder = 60
@@ -105,161 +110,161 @@ class Config(object):
         self.preference_to_hire_known_person = 0.5
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
         # Initial vacant positions for each business type
-        self.initial_job_vacancies = {
-            ApartmentComplex: (Janitor, Janitor, Manager),
-            Bank: (Janitor, BankTeller, BankTeller, Manager),
-            Barbershop: (Cashier, HairStylist, HairStylist, Manager),
-            BusDepot: (BusDriver, BusDriver, Manager),
-            CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
-            ConstructionFirm: (
-                Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
-                ConstructionWorker, Architect
-            ),
-            OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
-            FireStation: (Secretary, Firefighter, Firefighter, FireChief),
-            Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
-            Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
-            LawFirm: (Secretary, Lawyer, Lawyer),
-            PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
-            PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
-            RealtyFirm: (Secretary, Realtor, Realtor),
-            Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
-            TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
-            University: (Professor, Professor),
-            Cemetery: (Groundskeeper, Groundskeeper, Mortician),
-            Park: (Groundskeeper, Groundskeeper, Manager),
-        }
+        # self.initial_job_vacancies = {
+            # ApartmentComplex: (Janitor, Janitor, Manager),
+            # Bank: (Janitor, BankTeller, BankTeller, Manager),
+            # Barbershop: (Cashier, HairStylist, HairStylist, Manager),
+            # BusDepot: (BusDriver, BusDriver, Manager),
+            # CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
+            # ConstructionFirm: (
+                # Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
+                # ConstructionWorker, Architect
+            # ),
+            # OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
+            # FireStation: (Secretary, Firefighter, Firefighter, FireChief),
+            # Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
+            # Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
+            # LawFirm: (Secretary, Lawyer, Lawyer),
+            # PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+            # PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
+            # RealtyFirm: (Secretary, Realtor, Realtor),
+            # Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            # Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            # TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
+            # TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
+            # University: (Professor, Professor),
+            # Cemetery: (Groundskeeper, Groundskeeper, Mortician),
+            # Park: (Groundskeeper, Groundskeeper, Manager),
+        # }
         # Industries of various occupations (indexed by their class names)
-        self.industries = {
-            Cashier: None,
-            Janitor: None,
-            HotelMaid: 'Hospitality',
-            Waiter: 'Hospitality',
-            Secretary: None,
-            Groundskeeper: 'Parks',
-            BankTeller: 'Finance',
-            Concierge: 'Hospitality',
-            HairStylist: 'Cosmetic',
-            ConstructionWorker: 'Construction',
-            Firefighter: 'Fire',
-            PoliceOfficer: 'Police',
-            TaxiDriver: 'Transportation',
-            BusDriver: 'Transportation',
-            Nurse: 'Medical',
-            TattooArtist: 'Cosmetic',
-            Manager: None,
-            FireChief: 'Fire',
-            PoliceChief: 'Police',
-            Realtor: 'Realty',
-            Mortician: 'Medical',
-            Doctor: 'Medical',
-            Architect: 'Construction',
-            Optometrist: 'Medical',
-            PlasticSurgeon: 'Medical',
-            Lawyer: 'Law',
-            Owner: None,
-            Mayor: 'Politics',
-        }
+        # self.industries = {
+            # Cashier: None,
+            # Janitor: None,
+            # HotelMaid: 'Hospitality',
+            # Waiter: 'Hospitality',
+            # Secretary: None,
+            # Groundskeeper: 'Parks',
+            # BankTeller: 'Finance',
+            # Concierge: 'Hospitality',
+            # HairStylist: 'Cosmetic',
+            # ConstructionWorker: 'Construction',
+            # Firefighter: 'Fire',
+            # PoliceOfficer: 'Police',
+            # TaxiDriver: 'Transportation',
+            # BusDriver: 'Transportation',
+            # Nurse: 'Medical',
+            # TattooArtist: 'Cosmetic',
+            # Manager: None,
+            # FireChief: 'Fire',
+            # PoliceChief: 'Police',
+            # Realtor: 'Realty',
+            # Mortician: 'Medical',
+            # Doctor: 'Medical',
+            # Architect: 'Construction',
+            # Optometrist: 'Medical',
+            # PlasticSurgeon: 'Medical',
+            # Lawyer: 'Law',
+            # Owner: None,
+            # Mayor: 'Politics',
+        # }
         # Prerequisite industries for which experience is required to get hired
         # for various occupations
-        self.prerequisite_industries = {
-            Cashier: None,
-            Janitor: None,
-            HotelMaid: None,
-            Waiter: None,
-            Secretary: None,
-            Groundskeeper: None,
-            BankTeller: None,
-            Concierge: None,
-            HairStylist: None,
-            ConstructionWorker: None,
-            Firefighter: None,
-            PoliceOfficer: None,
-            TaxiDriver: None,
-            BusDriver: None,
-            Nurse: None,
-            TattooArtist: None,
-            Manager: 'Self',  # Must have worked in the industry for which you will manage
-            FireChief: 'Fire',
-            PoliceChief: 'Police',
-            Realtor: None,
-            Mortician: None,
-            Doctor: 'Student',  # Requires graduation from college
-            Architect: 'Student',
-            Optometrist: 'Student',
-            PlasticSurgeon: 'Student',
-            Lawyer: 'Student',
-            Owner: None,
-            Mayor: None,
-        }
+        # self.prerequisite_industries = {
+            # Cashier: None,
+            # Janitor: None,
+            # HotelMaid: None,
+            # Waiter: None,
+            # Secretary: None,
+            # Groundskeeper: None,
+            # BankTeller: None,
+            # Concierge: None,
+            # HairStylist: None,
+            # ConstructionWorker: None,
+            # Firefighter: None,
+            # PoliceOfficer: None,
+            # TaxiDriver: None,
+            # BusDriver: None,
+            # Nurse: None,
+            # TattooArtist: None,
+            # Manager: 'Self',  # Must have worked in the industry for which you will manage
+            # FireChief: 'Fire',
+            # PoliceChief: 'Police',
+            # Realtor: None,
+            # Mortician: None,
+            # Doctor: 'Student',  # Requires graduation from college
+            # Architect: 'Student',
+            # Optometrist: 'Student',
+            # PlasticSurgeon: 'Student',
+            # Lawyer: 'Student',
+            # Owner: None,
+            # Mayor: None,
+        # }
         # Job levels of various occupations (indexed by their class names)
-        self.job_levels = {
-            Cashier: 1,
-            Janitor: 1,
-            HotelMaid: 1,
-            Waiter: 1,
-            Secretary: 1,
-            Groundskeeper: 1,
-            BankTeller: 2,
-            Concierge: 2,
-            HairStylist: 2,
-            ConstructionWorker: 2,
-            Firefighter: 2,
-            PoliceOfficer: 2,
-            TaxiDriver: 2,
-            BusDriver: 2,
-            Nurse: 2,
-            TattooArtist: 2,
-            Manager: 3,
-            FireChief: 3,
-            PoliceChief: 3,
-            Realtor: 3,
-            Mortician: 3,
-            Doctor: 4,
-            Architect: 4,
-            Optometrist: 4,
-            PlasticSurgeon: 4,
-            Lawyer: 4,
-            Professor: 4,
-            Owner: 5,
-            Mayor: 5,
-        }
+        # self.job_levels = {
+            # Cashier: 1,
+            # Janitor: 1,
+            # HotelMaid: 1,
+            # Waiter: 1,
+            # Secretary: 1,
+            # Groundskeeper: 1,
+            # BankTeller: 2,
+            # Concierge: 2,
+            # HairStylist: 2,
+            # ConstructionWorker: 2,
+            # Firefighter: 2,
+            # PoliceOfficer: 2,
+            # TaxiDriver: 2,
+            # BusDriver: 2,
+            # Nurse: 2,
+            # TattooArtist: 2,
+            # Manager: 3,
+            # FireChief: 3,
+            # PoliceChief: 3,
+            # Realtor: 3,
+            # Mortician: 3,
+            # Doctor: 4,
+            # Architect: 4,
+            # Optometrist: 4,
+            # PlasticSurgeon: 4,
+            # Lawyer: 4,
+            # Professor: 4,
+            # Owner: 5,
+            # Mayor: 5,
+        # }
         # Compensation for various occupations
-        self.compensations = {
-            Birth: {
-                Owner: 500,
-                Doctor: 750,
-                Nurse: 300,
-            },
-            BusinessConstruction: {
-                Owner: 5000,
-                Architect: 2000,
-                ConstructionWorker: 400,
-            },
-            Death: {
-                Mortician: 1000,
-                # [Cemetery doesn't have an owner]
-            },
-            Divorce: {
-                Lawyer: 1000,
-                Owner: 500,
-            },
-            HouseConstruction: {
-                Owner: 2500,
-                Architect: 1000,
-                ConstructionWorker: 200,
-            },
-            HomePurchase: {
-                Owner: 2000,
-                Realtor: 600,
-            },
-            NameChange: {
-                Owner: 200,
-                Lawyer: 200,
-            },
-        }
+        # self.compensations = {
+            # Birth: {
+                # Owner: 500,
+                # Doctor: 750,
+                # Nurse: 300,
+            # },
+            # BusinessConstruction: {
+                # Owner: 5000,
+                # Architect: 2000,
+                # ConstructionWorker: 400,
+            # },
+            # Death: {
+                # Mortician: 1000,
+            #    [Cemetery doesn't have an owner]
+            # },
+            # Divorce: {
+                # Lawyer: 1000,
+                # Owner: 500,
+            # },
+            # HouseConstruction: {
+                # Owner: 2500,
+                # Architect: 1000,
+                # ConstructionWorker: 200,
+            # },
+            # HomePurchase: {
+                # Owner: 2000,
+                # Realtor: 600,
+            # },
+            # NameChange: {
+                # Owner: 200,
+                # Lawyer: 200,
+            # },
+        # }
         self.compensation_upon_building_construction_for_construction_firm_owner = 5000
         self.compensation_upon_building_construction_for_architect = 2000
         self.compensation_upon_building_construction_for_construction_worker = 400

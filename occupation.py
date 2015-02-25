@@ -1,4 +1,4 @@
-from event import *
+import event
 from config import Config
 
 
