@@ -402,11 +402,11 @@ class Person(object):
         """Return a person's full name."""
         if self.suffix:
             full_name = "{} {} {} {}".format(
-                self.first_name.rep, self.middle_name.rep, self.last_name.rep, self.suffix
+                self.first_name, self.middle_name, self.last_name, self.suffix
             )
         else:
             full_name = "{} {} {}".format(
-                self.first_name.rep, self.middle_name.rep, self.last_name.rep
+                self.first_name, self.middle_name, self.last_name
             )
         return full_name
 
@@ -418,7 +418,7 @@ class Person(object):
         which would necessitate them getting a suffix of their own to disambiguate.
         """
         full_name = "{} {} {}".format(
-            self.first_name.rep, self.middle_name.rep, self.last_name.rep
+            self.first_name, self.middle_name, self.last_name
         )
         return full_name
 
@@ -426,9 +426,9 @@ class Person(object):
     def name(self):
         """Return a person's name."""
         if self.suffix:
-            name = "{} {} {}".format(self.first_name.rep, self.last_name.rep, self.suffix)
+            name = "{} {} {}".format(self.first_name, self.last_name, self.suffix)
         else:
-            name = "{} {}".format(self.first_name.rep, self.last_name.rep)
+            name = "{} {}".format(self.first_name, self.last_name)
         return name
 
     @property
@@ -889,12 +889,12 @@ class PersonExNihilo(Person):
     def _init_name(self):
         """Generate a name for a primordial person who has no parents."""
         if self.male:
-            first_name = Name(rep=Names.a_masculine_name(), progenitor=self, conceived_by=None)
-            middle_name = Name(rep=Names.a_masculine_name(), progenitor=self, conceived_by=None)
+            first_name = Name(value=Names.a_masculine_name(), progenitor=self, conceived_by=(), derived_from=())
+            middle_name = Name(value=Names.a_masculine_name(), progenitor=self, conceived_by=(), derived_from=())
         else:
-            first_name = Name(rep=Names.a_feminine_name(), progenitor=self, conceived_by=None)
-            middle_name = Name(rep=Names.a_feminine_name(), progenitor=self, conceived_by=None)
-        last_name = Name(rep=Names.any_surname(), progenitor=self, conceived_by=None)
+            first_name = Name(value=Names.a_feminine_name(), progenitor=self, conceived_by=(), derived_from=())
+            middle_name = Name(value=Names.a_feminine_name(), progenitor=self, conceived_by=(), derived_from=())
+        last_name = Name(value=Names.any_surname(), progenitor=self, conceived_by=(), derived_from=())
         suffix = ''
         return first_name, middle_name, last_name, suffix
 

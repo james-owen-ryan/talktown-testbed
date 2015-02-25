@@ -23,7 +23,7 @@ class Config(object):
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
-        self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.02
+        self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
         self.chance_a_newlywed_keeps_former_love_interest = 0.01
         self.chance_stepchildren_take_stepparent_name = 0.3
         self.age_after_which_stepchildren_will_not_take_stepparent_name = 6

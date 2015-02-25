@@ -52,7 +52,6 @@ class Birth(object):
 
     def _update_mother_attributes(self):
         """Update attributes of the mother that are affected by this birth."""
-        self.mother.pregnant = False
         self.mother.conception_date = None
         self.mother.impregnated_by = None
 
@@ -82,6 +81,7 @@ class Birth(object):
             self.subject.suffix = ''
             self.subject.named_for = first_name_namegiver, middle_name_namegiver,
         self.subject.last_name = self._decide_last_name()
+        self.subject.maiden_name = self.subject.last_name
 
     def _decide_last_name(self):
         """Return what will be the baby's last name."""
@@ -97,19 +97,19 @@ class Birth(object):
     def _get_hyphenated_last_name(self):
         """Get a hyphenated last name for the child, if the parents have decided to attribute one."""
         hyphenated_last_name = "{}-{}".format(
-            self.mother.last_name.rep
+            self.father.last_name, self.mother.last_name
         )
         # Check if this child will be the progenitor of this hyphenated surname, i.e.,
         # whether an older sibling has already been given it
-        if any(k for k in self.mother.marriage.children_produced if k.maiden_name.rep == hyphenated_last_name):
+        if any(k for k in self.mother.marriage.children_produced if k.maiden_name == hyphenated_last_name):
             older_sibling_with_hyphenated_surname = next(
-                k for k in self.mother.marriage.children_produced if k.maiden_name.rep == hyphenated_last_name
+                k for k in self.mother.marriage.children_produced if k.maiden_name == hyphenated_last_name
             )
             hyphenated_surname_object = older_sibling_with_hyphenated_surname.maiden_name
         else:
             # Instantiate a new Name object with this child as the progenitor
             hyphenated_surname_object = Name(
-                rep=hyphenated_last_name, progenitor=self.subject, conceived_by=self.subject.parents,
+                hyphenated_last_name, progenitor=self.subject, conceived_by=self.subject.parents,
                 derived_from=(self.mother.last_name, self.father.last_name,)
             )
         return hyphenated_surname_object
@@ -117,25 +117,29 @@ class Birth(object):
     def _decide_first_name(self, potential_namegivers):
         """Return what will be the baby's first name."""
         config = self.subject.game.config
-        if random.random() < config.chance_child_inherits_first_name:
+        if potential_namegivers and random.random() < config.chance_child_inherits_first_name:
             first_name_namegiver = random.choice(potential_namegivers)
             first_name = first_name_namegiver.first_name
         else:
             first_name_namegiver = None
             first_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
-            first_name = Name(rep=first_name_rep, progenitor=self.subject, conceived_by=self.subject.parents)
+            first_name = Name(
+                value=first_name_rep, progenitor=self.subject, conceived_by=self.subject.parents, derived_from=()
+            )
         return first_name, first_name_namegiver
 
     def _decide_middle_name(self, potential_namegivers):
         """Return what will be the baby's first name."""
         config = self.subject.game.config
-        if random.random() < config.chance_child_inherits_middle_name:
+        if potential_namegivers and random.random() < config.chance_child_inherits_middle_name:
             middle_name_namegiver = random.choice(potential_namegivers)
             middle_name = middle_name_namegiver.first_name
         else:
             middle_name_namegiver = None
             middle_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
-            middle_name = Name(rep=middle_name_rep, progenitor=self.subject, conceived_by=self.subject.parents)
+            middle_name = Name(
+                value=middle_name_rep, progenitor=self.subject, conceived_by=self.subject.parents, derived_from=()
+            )
         return middle_name, middle_name_namegiver
 
     def _get_potential_male_namegivers(self):
@@ -762,11 +766,14 @@ class Marriage(object):
 
         TODO: Have this be affected by newlywed personalities.
         """
-        config = self.subjects[0].game.config
-        if any(s for s in self.subjects if s.last_name.hyphenated):
-            choice = False
-        elif random.random() < config.chance_newlyweds_decide_children_will_get_hyphenated_surname:
-            choice = True
+        if self.subjects[0].last_name != self.subjects[1].last_name:  # First, make sure they have different surnames
+            config = self.subjects[0].game.config
+            if any(s for s in self.subjects if s.last_name.hyphenated):
+                choice = False
+            elif random.random() < config.chance_newlyweds_decide_children_will_get_hyphenated_surname:
+                choice = True
+            else:
+                choice = False
         else:
             choice = False
         return choice
