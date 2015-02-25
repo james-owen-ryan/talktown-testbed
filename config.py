@@ -1,7 +1,7 @@
-#from business import *
-#from landmark import *
-#import occupation
-#from event import *
+
+from occupation import *
+# from event import *
+from business import *
 
 
 class Config(object):
@@ -17,9 +17,9 @@ class Config(object):
         self.samples = 32
         self.size = 16
         # City founder
-        self.year_city_gets_founded = 1960  # Year world gen begins
-        self.age_of_city_founder = 60
-        self.age_of_city_founders_spouse = 60
+        self.year_city_gets_founded = 1910  # Year world gen begins
+        self.age_of_city_founder = 30
+        self.age_of_city_founders_spouse = 30
         self.money_city_founder_starts_with = 100000
         self.boost_to_the_founders_conception_chance = 0.2
         # City establishment and early development
@@ -27,7 +27,7 @@ class Config(object):
                 ## FULL SIMULATION ##
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
-        self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.02
+        self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
         self.chance_a_newlywed_keeps_former_love_interest = 0.01
         self.chance_stepchildren_take_stepparent_name = 0.3
         self.age_after_which_stepchildren_will_not_take_stepparent_name = 6
@@ -49,7 +49,7 @@ class Config(object):
         self.chance_person_falls_in_love_after_sex = 0.8
         self.chance_protection_does_not_work = 0.01
         # Pregnancy
-        self.function_to_determine_chance_of_conception = lambda female_age: min(
+        self.function_to_determine_chance_of_conception = lambda female_age: max(
             female_age/10000., (100 - ((female_age**1.98) / 20.)) / 100  # Decreases exponentially with age
         )
         # Death
@@ -102,6 +102,10 @@ class Config(object):
                 (((100-dist_to_nearest_company_of_same_type) ** 0.5) - 8) ** 10,
                 0)
         )
+        # Company types that are public resources, i.e., not privately owned
+        self.public_companies = (CityHall, FireStation, Hospital, PoliceStation, University, Cemetery, Park)
+        # Company types that get established on tracts, not on lots
+        self.companies_that_get_established_on_tracts = (Cemetery, Park)
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
@@ -110,95 +114,99 @@ class Config(object):
         self.preference_to_hire_known_person = 0.5
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
         # Initial vacant positions for each business type
-        # self.initial_job_vacancies = {
-            # ApartmentComplex: (Janitor, Janitor, Manager),
-            # Bank: (Janitor, BankTeller, BankTeller, Manager),
-            # Barbershop: (Cashier, HairStylist, HairStylist, Manager),
-            # BusDepot: (BusDriver, BusDriver, Manager),
-            # CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
-            # ConstructionFirm: (
-                # Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
-                # ConstructionWorker, Architect
-            # ),
-            # OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
-            # FireStation: (Secretary, Firefighter, Firefighter, FireChief),
-            # Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
-            # Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
-            # LawFirm: (Secretary, Lawyer, Lawyer),
-            # PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
-            # PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
-            # RealtyFirm: (Secretary, Realtor, Realtor),
-            # Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            # Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            # TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
-            # TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
-            # University: (Professor, Professor),
-            # Cemetery: (Groundskeeper, Groundskeeper, Mortician),
-            # Park: (Groundskeeper, Groundskeeper, Manager),
-        # }
+        self.initial_job_vacancies = {
+            ApartmentComplex: (Janitor, Janitor, Manager),
+            Bank: (Janitor, BankTeller, BankTeller, Manager),
+            Barbershop: (Cashier, HairStylist, HairStylist, Manager),
+            BusDepot: (BusDriver, BusDriver, Manager),
+            CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
+            ConstructionFirm: (
+                # Order matters for this one -- architect must come first to build the others'
+                # houses!
+                Architect, Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
+                ConstructionWorker
+            ),
+            OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
+            FireStation: (Secretary, Firefighter, Firefighter, FireChief),
+            Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
+            Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
+            LawFirm: (Secretary, Lawyer, Lawyer),
+            PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+            PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
+            RealtyFirm: (Secretary, Realtor, Realtor),
+            Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
+            TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
+            TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
+            University: (Professor, Professor),
+            Cemetery: (Groundskeeper, Groundskeeper, Mortician),
+            Park: (Groundskeeper, Groundskeeper, Manager),
+        }
         # Industries of various occupations (indexed by their class names)
-        # self.industries = {
-            # Cashier: None,
-            # Janitor: None,
-            # HotelMaid: 'Hospitality',
-            # Waiter: 'Hospitality',
-            # Secretary: None,
-            # Groundskeeper: 'Parks',
-            # BankTeller: 'Finance',
-            # Concierge: 'Hospitality',
-            # HairStylist: 'Cosmetic',
-            # ConstructionWorker: 'Construction',
-            # Firefighter: 'Fire',
-            # PoliceOfficer: 'Police',
-            # TaxiDriver: 'Transportation',
-            # BusDriver: 'Transportation',
-            # Nurse: 'Medical',
-            # TattooArtist: 'Cosmetic',
-            # Manager: None,
-            # FireChief: 'Fire',
-            # PoliceChief: 'Police',
-            # Realtor: 'Realty',
-            # Mortician: 'Medical',
-            # Doctor: 'Medical',
-            # Architect: 'Construction',
-            # Optometrist: 'Medical',
-            # PlasticSurgeon: 'Medical',
-            # Lawyer: 'Law',
-            # Owner: None,
-            # Mayor: 'Politics',
-        # }
+        self.industries = {
+            Cashier: None,
+            Janitor: None,
+            HotelMaid: 'Hospitality',
+            Waiter: 'Hospitality',
+            Secretary: None,
+            Groundskeeper: 'Parks',
+            BankTeller: 'Finance',
+            Concierge: 'Hospitality',
+            HairStylist: 'Cosmetic',
+            ConstructionWorker: 'Construction',
+            Firefighter: 'Fire',
+            PoliceOfficer: 'Police',
+            TaxiDriver: 'Transportation',
+            BusDriver: 'Transportation',
+            Nurse: 'Medical',
+            TattooArtist: 'Cosmetic',
+            Manager: None,
+            FireChief: 'Fire',
+            PoliceChief: 'Police',
+            Realtor: 'Realty',
+            Mortician: 'Medical',
+            Doctor: 'Medical',
+            Architect: 'Construction',
+            Optometrist: 'Medical',
+            PlasticSurgeon: 'Medical',
+            Lawyer: 'Law',
+            Professor: 'Academia',
+            Owner: None,
+            Mayor: 'Politics',
+        }
         # Prerequisite industries for which experience is required to get hired
         # for various occupations
-        # self.prerequisite_industries = {
-            # Cashier: None,
-            # Janitor: None,
-            # HotelMaid: None,
-            # Waiter: None,
-            # Secretary: None,
-            # Groundskeeper: None,
-            # BankTeller: None,
-            # Concierge: None,
-            # HairStylist: None,
-            # ConstructionWorker: None,
-            # Firefighter: None,
-            # PoliceOfficer: None,
-            # TaxiDriver: None,
-            # BusDriver: None,
-            # Nurse: None,
-            # TattooArtist: None,
-            # Manager: 'Self',  # Must have worked in the industry for which you will manage
-            # FireChief: 'Fire',
-            # PoliceChief: 'Police',
-            # Realtor: None,
-            # Mortician: None,
-            # Doctor: 'Student',  # Requires graduation from college
-            # Architect: 'Student',
-            # Optometrist: 'Student',
-            # PlasticSurgeon: 'Student',
-            # Lawyer: 'Student',
-            # Owner: None,
-            # Mayor: None,
-        # }
+        self.prerequisite_industries = {
+            Cashier: None,
+            Janitor: None,
+            HotelMaid: None,
+            Waiter: None,
+            Secretary: None,
+            Groundskeeper: None,
+            BankTeller: None,
+            Concierge: None,
+            HairStylist: None,
+            ConstructionWorker: None,
+            Firefighter: None,
+            PoliceOfficer: None,
+            TaxiDriver: None,
+            BusDriver: None,
+            Nurse: None,
+            TattooArtist: None,
+            Manager: 'Self',  # Must have worked in the industry for which you will manage
+            FireChief: 'Fire',
+            PoliceChief: 'Police',
+            Realtor: None,
+            Mortician: None,
+            Doctor: 'Student',  # Requires graduation from college
+            Architect: 'Student',
+            Optometrist: 'Student',
+            PlasticSurgeon: 'Student',
+            Lawyer: 'Student',
+            Professor: 'Student',
+            Owner: None,
+            Mayor: None,
+        }
         # Job levels of various occupations (indexed by their class names)
         # self.job_levels = {
             # Cashier: 1,
@@ -282,7 +290,7 @@ class Config(object):
                 ## PEOPLE REPRESENTATION ##
         # People ex nihilo
         self.function_to_determine_person_ex_nihilo_age_given_job_level = (
-            lambda job_level: 18 + (random.randint(2, 5) * job_level)
+            lambda job_level: 18 + random.randint(2*job_level, 10*job_level)
         )
         self.function_to_determine_chance_person_ex_nihilo_starts_with_family = (
             lambda age: (age / 100.0) * 1.4

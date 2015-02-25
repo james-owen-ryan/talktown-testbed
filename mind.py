@@ -8,16 +8,16 @@ class Mind(object):
         """Initialize a Mind object."""
         self.subject = subject
         if self.subject.mother:  # Person object
-            self.memory = self._init_ex_nihilo_memory()
-        else:  # PersonExNihilo object
             self.memory = self._init_memory()
+        else:  # PersonExNihilo object
+            self.memory = self._init_ex_nihilo_memory()
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
         config = self.subject.game.config
         if random.random() < config.memory_heritability:
             takes_after = random.choice([self.subject.mother, self.subject.father])
-            memory = random.normalvariate(takes_after.memory, config.memory_heritability_sd)
+            memory = random.normalvariate(takes_after.mind.memory, config.memory_heritability_sd)
         else:
             takes_after = None
             memory = random.normalvariate(config.memory_mean, config.memory_sd)

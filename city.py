@@ -38,6 +38,9 @@ class City(object):
         self.companies = set()
         self.lots = set()
         self.tracts = set()
+        self.temp_init_lots_and_tracts_for_testing()
+        for lot in self.lots | self.tracts:
+            lot._init_get_neighboring_lots()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
         self.streets = set()
         self.blocks = set()
@@ -251,12 +254,37 @@ class City(object):
                     Blocks[(conn[0],conn[1],'NS')].addNeighbor(Blocks[(neighbor[0],neighbor[1],'NS')])
         for block in Blocks:
             self.blocks.add(block)
+        self.mayor = None  # Currently being set to city founder by CityHall.__init__()
+
+    def temp_init_lots_and_tracts_for_testing(self):
+        for i in xrange(256):
+            meaningless_block = Block(city=self, x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=i)
+            Lot(block=meaningless_block, house_number=999)
+        for j in xrange(6):
+            meaningless_block = Block(city=self, x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=j+256)
+            Tract(block=meaningless_block, house_number=999)
+
+    @property
+    def pop(self):
+        """Return the number of residents living in the city."""
+        return len(self.residents)
+
+    @property
+    def population(self):
+        """Return the number of residents living in the city."""
+        return len(self.residents)
 
     @property
     def vacant_lots(self):
         """Return all vacant lots in the city."""
         vacant_lots = (lot for lot in self.lots if not lot.building)
         return vacant_lots
+
+    @property
+    def vacant_tracts(self):
+        """Return all vacant tracts in the city."""
+        vacant_tracts = (tract for tract in self.tracts if not tract.landmark)
+        return vacant_tracts
 
     @property
     def vacant_homes(self):
@@ -365,7 +393,6 @@ class Block(object):
     def __str__(self):
         """Return string representation."""
         return "{} block of {}".format(self.number, str(self.street))
-    
     @property
     def buildings(self):
         """Return all the buildings on this block."""
@@ -417,13 +444,17 @@ class Lot(object):
 
     def _init_get_neighboring_lots(self):
         """Collect all lots that neighbor this lot."""
-        neighboring_lots = set()
-        return neighboring_lots
+        self.neighboring_lots = set([l for l in self.city.lots if self.get_dist_to(l) < 5])  # TEMP for testing
+        # return neighboring_lots
 
     @property
     def population(self):
         """Return the number of people living/working on the lot."""
-        return len(self.building.residents)
+        if self.building:
+            population = len(self.building.residents)
+        else:
+            population = 0
+        return population
 
     @property
     def secondary_population(self):
@@ -440,29 +471,37 @@ class Lot(object):
         tertiary_population = 0
         for lot in {self} | self.neighboring_lots:
             if lot not in lots_already_considered:
-                lots_already_considered |= lot
+                lots_already_considered.add(lot)
                 tertiary_population += lot.population
                 for neighbor_to_that_lot in lot.neighboring_lots:
                     if neighbor_to_that_lot not in lots_already_considered:
+                        lots_already_considered.add(neighbor_to_that_lot)
                         tertiary_population += lot.population
         return tertiary_population
 
     @property
     def dist_from_downtown(self):
         """Return the Manhattan distance between this lot and the center of downtown."""
-        dist = -1
+        dist = 5
         return dist
 
     def get_dist_to(self, lot_or_tract):
         """Return the Manhattan distance between this lot and some lot or tract."""
-        dist = -1
+        dist = min(50, abs(self.block.number - lot_or_tract.block.number))  # TEMP for testing
         return dist
 
-    def dist_to_nearest_company_of_type(self, company_type):
-        """Return the Manhattan distance between this lot and the nearest company of the given type."""
-        distances = (
+    def dist_to_nearest_company_of_type(self, company_type, exclusion):
+        """Return the Manhattan distance between this lot and the nearest company of the given type.
+
+        @param company_type: The Class representing the type of company in question.
+        @param exclusion: A company who is being excluded from this determination because they
+                          are the ones making the call to this method, as they try to decide where
+                          to put their lot.
+        """
+        distances = [
             self.get_dist_to(company.lot) for company in self.city.companies if isinstance(company, company_type)
-        )
+            and company is not exclusion
+        ]
         if distances:
             return min(distances)
         else:
