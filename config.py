@@ -313,20 +313,41 @@ class Config(object):
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
         # Personality (Big Five source is [0])
-        self.big_5_floor = -1.0
-        self.big_5_cap = 1.0
-        self.big_5_sd = 0.35
-        self.big_5_o_mean = 0.375
-        self.big_5_c_mean = 0.25
-        self.big_5_e_mean = 0.15
-        self.big_5_a_mean = 0.35
-        self.big_5_n_mean = 0.0
-        self.big_5_o_heritability = 0.57
-        self.big_5_c_heritability = 0.54
-        self.big_5_e_heritability = 0.49
-        self.big_5_a_heritability = 0.48
-        self.big_5_n_heritability = 0.42
-        self.big_5_heritability_sd = 0.05
+        self.big_five_floor = -1.0
+        self.big_five_cap = 1.0
+        self.big_five_heritability_chance = {
+            'openness': 0.57,
+            'conscientiousness': 0.54,
+            'extroversion': 0.49,
+            'agreeableness': 0.48,
+            'neuroticism': 0.42
+        }
+        self.big_five_mean = {
+            # These represent population means for these five traits
+            'openness': 0.375,
+            'conscientiousness': 0.25,
+            'extroversion': 0.15,
+            'agreeableness': 0.35,
+            'neuroticism': 0.0
+        }
+        self.big_five_sd = {
+            # A person's value for a trait is generated from a normal distribution
+            # around the trait's mean, with the value listed here as standard deviation
+            'openness': 0.35,
+            'conscientiousness': 0.35,
+            'extroversion': 0.35,
+            'agreeableness': 0.35,
+            'neuroticism': 0.35
+        }
+        self.big_five_inheritance_sd = {
+            # Person will inherit a parent's trait, but with some variance
+            # according to this standard deviation
+            'openness': 0.05,
+            'conscientiousness': 0.05,
+            'extroversion': 0.05,
+            'agreeableness': 0.05,
+            'neuroticism': 0.05
+        }
         # Face
         self.chance_eyebrows_are_same_color_as_hair = 0.8
         self.child_skin_color_given_parents = {

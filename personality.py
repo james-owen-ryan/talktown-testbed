@@ -4,21 +4,14 @@ import random
 class Personality(object):
     """A person's personality."""
 
-    def __init__(self, subject):
+    def __init__(self, person):
         """Initialize a Personality object."""
-        self.subject = subject
-        if self.subject.mother:  # Person object
-            self.openness_to_experience = self._init_openness_to_experience()
-            self.conscientiousness = self._init_conscientiousness()
-            self.extroversion = self._init_extroversion()
-            self.agreeableness = self._init_agreeableness()
-            self.neuroticism = self._init_neuroticism()
-        else:  # PersonExNihilo object
-            self.openness_to_experience = self._init_ex_nihilo_openness_to_experience()
-            self.conscientiousness = self._init_ex_nihilo_conscientiousness()
-            self.extroversion = self._init_ex_nihilo_extroversion()
-            self.agreeableness = self._init_ex_nihilo_agreeableness()
-            self.neuroticism = self._init_ex_nihilo_neuroticism()
+        self.person = person
+        self.openness_to_experience = self._determine_personality_feature(feature_type="openness")
+        self.conscientiousness = self._determine_personality_feature(feature_type="conscientiousness")
+        self.extroversion = self._determine_personality_feature(feature_type="extroversion")
+        self.agreeableness = self._determine_personality_feature(feature_type="agreeableness")
+        self.neuroticism = self._determine_personality_feature(feature_type="neuroticism")
 
     @property
     def o(self):
@@ -45,152 +38,44 @@ class Personality(object):
         """Return this person's neuroticism."""
         return self.neuroticism
 
-    def _init_openness_to_experience(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
-        config = self.subject.game.config
-        if random.random() < config.big_5_o_heritability:
+    def _determine_personality_feature(self, feature_type):
+        """Determine a value for a Big Five personality trait."""
+        config = self.person.game.config
+        feature_will_get_inherited = (
+            self.person.biological_mother and
+            random.random() < config.big_five_heritability_chance[feature_type]
+        )
+        if feature_will_get_inherited:
             # Inherit this trait (with slight variance)
-            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
-            openness_to_experience = random.normalvariate(
-                takes_after.personality.openness_to_experience, config.big_5_heritability_sd
+            takes_after = random.choice([self.person.biological_father, self.person.biological_mother])
+            feature_value = random.normalvariate(
+                self._get_a_persons_feature_of_type(person=takes_after, feature_type=feature_type),
+                config.big_five_inheritance_sd[feature_type]
             )
         else:
             takes_after = None
             # Generate from the population mean
-            openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        feature_object = Feature(value=openness_to_experience, inherited_from=takes_after)
-        return feature_object
-
-    def _init_conscientiousness(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.subject.game.config
-        if random.random() < config.big_5_c_heritability:
-            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
-            conscientiousness = random.normalvariate(
-                takes_after.personality.conscientiousness, config.big_5_heritability_sd
+            feature_value = random.normalvariate(
+                config.big_five_mean[feature_type], config.big_five_sd[feature_type]
             )
-        else:
-            takes_after = None
-            conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        feature_object = Feature(value=conscientiousness, inherited_from=takes_after)
+        if feature_value < config.big_five_floor:
+            feature_value = config.big_five_floor
+        elif feature_value > config.big_five_cap:
+            feature_value = config.big_five_cap
+        feature_object = Feature(value=feature_value, inherited_from=takes_after)
         return feature_object
 
-    def _init_extroversion(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.subject.game.config
-        if random.random() < config.big_5_e_heritability:
-            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
-            extroversion = random.normalvariate(
-                takes_after.personality.extroversion, config.big_5_heritability_sd
-            )
-        else:
-            takes_after = None
-            extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        feature_object = Feature(value=extroversion, inherited_from=takes_after)
-        return feature_object
-
-    def _init_agreeableness(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.subject.game.config
-        if random.random() < config.big_5_a_heritability:
-            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
-            agreeableness = random.normalvariate(
-                takes_after.personality.agreeableness, config.big_5_heritability_sd
-            )
-        else:
-            takes_after = None
-            agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        feature_object = Feature(value=agreeableness, inherited_from=takes_after)
-        return feature_object
-
-    def _init_neuroticism(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.subject.game.config
-        if random.random() < config.big_5_n_heritability:
-            takes_after = random.choice([self.subject.biological_father, self.subject.biological_mother])
-            neuroticism = random.normalvariate(
-                takes_after.personality.neuroticism, config.big_5_heritability_sd
-            )
-        else:
-            takes_after = None
-            neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        feature_object = Feature(value=neuroticism, inherited_from=takes_after)
-        return feature_object
-
-    def _init_ex_nihilo_openness_to_experience(self):
-        """Initialize a value for the Big Five personality trait 'openness to experience'."""
-        config = self.subject.game.config
-        openness_to_experience = random.normalvariate(config.big_5_o_mean, config.big_5_sd)
-        if openness_to_experience < config.big_5_floor:
-            openness_to_experience = -1.0
-        elif openness_to_experience > config.big_5_cap:
-            openness_to_experience = 1.0
-        feature_object = Feature(value=openness_to_experience, inherited_from=None)
-        return feature_object
-
-    def _init_ex_nihilo_conscientiousness(self):
-        """Initialize a value for the Big Five personality trait 'conscientiousness'."""
-        config = self.subject.game.config
-        conscientiousness = random.normalvariate(config.big_5_c_mean, config.big_5_sd)
-        if conscientiousness < config.big_5_floor:
-            conscientiousness = -1.0
-        elif conscientiousness > config.big_5_cap:
-            conscientiousness = 1.0
-        feature_object = Feature(value=conscientiousness, inherited_from=None)
-        return feature_object
-
-    def _init_ex_nihilo_extroversion(self):
-        """Initialize a value for the Big Five personality trait 'extroversion'."""
-        config = self.subject.game.config
-        extroversion = random.normalvariate(config.big_5_e_mean, config.big_5_sd)
-        if extroversion < config.big_5_floor:
-            extroversion = -1.0
-        elif extroversion > config.big_5_cap:
-            extroversion = 1.0
-        feature_object = Feature(value=extroversion, inherited_from=None)
-        return feature_object
-
-    def _init_ex_nihilo_agreeableness(self):
-        """Initialize a value for the Big Five personality trait 'agreeableness'."""
-        config = self.subject.game.config
-        agreeableness = random.normalvariate(config.big_5_a_mean, config.big_5_sd)
-        if agreeableness < config.big_5_floor:
-            agreeableness = -1.0
-        elif agreeableness > config.big_5_cap:
-            agreeableness = 1.0
-        feature_object = Feature(value=agreeableness, inherited_from=None)
-        return feature_object
-
-    def _init_ex_nihilo_neuroticism(self):
-        """Initialize a value for the Big Five personality trait 'neuroticism'."""
-        config = self.subject.game.config
-        neuroticism = random.normalvariate(config.big_5_n_mean, config.big_5_sd)
-        if neuroticism < config.big_5_floor:
-            neuroticism = -1.0
-        elif neuroticism > config.big_5_cap:
-            neuroticism = 1.0
-        feature_object = Feature(value=neuroticism, inherited_from=None)
-        return feature_object
+    @staticmethod
+    def _get_a_persons_feature_of_type(person, feature_type):
+        """Return this person's value for the given personality feature."""
+        features = {
+            "openness": person.personality.openness_to_experience,
+            "conscientiousness": person.personality.conscientiousness,
+            "extroversion": person.personality.extroversion,
+            "agreeableness": person.personality.agreeableness,
+            "neuroticism": person.personality.neuroticism,
+        }
+        return features[feature_type]
 
 
 class Feature(float):

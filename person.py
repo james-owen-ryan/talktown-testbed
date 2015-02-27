@@ -49,7 +49,7 @@ class Person(object):
         # Set face
         self.face = Face(person=self)
         # Set personality
-        self.personality = Personality(subject=self)
+        self.personality = Personality(person=self)
         # Set mental attributes (just memory currently)
         self.mind = Mind(subject=self)
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
@@ -132,7 +132,7 @@ class Person(object):
         self.divorces = []
         self.moves = []  # From one home to another
         self.name_changes = []
-        self.building_commissions = set() # Constructions of houses or buildings that they commissioned
+        self.building_commissions = set()  # Constructions of houses or buildings that they commissioned
         self.departure = None  # Leaving the city, i.e., leaving the simulation
         self.death = None
         # Set and prepare attributes pertaining to business affairs
@@ -679,7 +679,7 @@ class Person(object):
         return score
 
     def purchase_home(self, purchasers, home):
-        # TEMP THING DUE TO CIRCULAR DEPENDENCY -- SEE RESIDENCE.PY
+        # TEMP THING DUE TO CIRCULAR DEPENDENCY -- SEE RESIDENCE.PY -- TODO
         event.HomePurchase(subjects=purchasers, home=home, realtor=None)
 
     def secure_home(self):
