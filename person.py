@@ -221,7 +221,7 @@ class Person(object):
 
     def _init_biological_immediate_family(self):
         """Populate lists representing this person's immediate."""
-        self.bio_parents = {self.biological_mother, self.biological_father}
+        self.bio_parents = set([self.biological_mother, self.biological_father])
         self.bio_grandparents = self.biological_father.parents | self.biological_mother.parents
         self.bio_siblings = self.biological_father.kids | self.biological_mother.kids
         self.bio_full_siblings = self.biological_father.kids & self.biological_mother.kids
@@ -367,7 +367,7 @@ class Person(object):
 
         The @property decorator is used so that this attribute can be dynamic to adoption.
         """
-        return {parent for parent in (self.mother, self.father) if parent}
+        return set([parent for parent in (self.mother, self.father) if parent])
 
     @property
     def next_of_kin(self):
@@ -443,7 +443,7 @@ class Person(object):
     @property
     def nuclear_family(self):
         """Return this person's nuclear family."""
-        nuclear_family = {self}
+        nuclear_family = set([self])
         if self.spouse:
             nuclear_family.add(self.spouse)
         for kid in self.spouse.kids & self.kids if self.spouse else self.kids:
@@ -774,9 +774,9 @@ class Person(object):
         desire_to_live_near_family = self._determine_desire_to_move_near_family()
         # Score home for its proximity to family (either positively or negatively, depending); only
         # consider family members that are alive, in town, and not living with you already (i.e., kids)
-        relatives_in_town = {
+        relatives_in_town =  set([
             f for f in self.extended_family if f.present and f.home is not self.home
-        }
+        ])
         score = 0
         for relative in relatives_in_town:
             relation_to_me = self.relation_to_me(person=relative)

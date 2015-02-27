@@ -1,4 +1,3 @@
-
 from event import *
 
 class Occupation(object):

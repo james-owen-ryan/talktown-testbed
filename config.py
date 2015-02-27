@@ -1,6 +1,6 @@
 
 from occupation import *
-# from event import *
+from event import *
 from business import *
 
 

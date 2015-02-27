@@ -40,10 +40,10 @@ class Birth(object):
         self._name_baby()
         if self.doctor:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
-            self.nurses = {
+            self.nurses =  set([
                 position for position in self.hospital.employees if
                 position.__class__.__name__ == 'Nurse'
-            }
+            ])
             self.doctor.baby_deliveries.add(self)
             self._remunerate()
         else:
@@ -229,10 +229,10 @@ class BusinessConstruction(object):
         self.business = business
         if self.architect:
             self.construction_firm = architect.company
-            self.builders = {
+            self.builders = set([
                 position for position in self.construction_firm.employees if
                 position.__class__.__name__ == 'ConstructionWorker'
-            }
+            ])
             self._remunerate()
             self.architect.building_constructions.add(self)
         else:
@@ -424,7 +424,7 @@ class Divorce(object):
         """Handle the full pipeline from discussion to one spouse (and possibly kids) moving out."""
         spouse_who_will_move_out = self._decide_who_will_move_out()
         kids_who_will_move_out_also = self._decide_which_kids_will_move_out()
-        family_members_who_will_move = {spouse_who_will_move_out} | kids_who_will_move_out_also
+        family_members_who_will_move = set([spouse_who_will_move_out]) | kids_who_will_move_out_also
         home_spouse_will_move_to = self._decide_where_spouse_moving_out_will_live(
             spouse_who_will_move=spouse_who_will_move_out
         )
@@ -577,10 +577,10 @@ class HouseConstruction(object):
         self.house = House(lot=lot, construction=self)
         if self.architect:
             self.construction_firm = architect.company
-            self.builders = {
+            self.builders = set([
                 position for position in self.construction_firm.employees if
                 position.__class__.__name__ == 'ConstructionWorker'
-            }
+            ])
             self._remunerate()
             self.architect.building_constructions.add(self)
         else:
