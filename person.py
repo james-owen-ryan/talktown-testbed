@@ -127,9 +127,11 @@ class Person(object):
         self.conception_date = None  # Year of conception
         # Prepare attributes representing events in this person's life
         self.birth = birth
+        self.adoption = None
         self.marriage = None
         self.marriages = []
         self.divorces = []
+        self.adoptions = []
         self.moves = []  # From one home to another
         self.name_changes = []
         self.building_commissions = set()  # Constructions of houses or buildings that they commissioned
@@ -339,6 +341,49 @@ class Person(object):
         return 0
 
     @property
+    def full_name(self):
+        """Return a person's full name."""
+        if self.suffix:
+            full_name = "{} {} {} {}".format(
+                self.first_name, self.middle_name, self.last_name, self.suffix
+            )
+        else:
+            full_name = "{} {} {}".format(
+                self.first_name, self.middle_name, self.last_name
+            )
+        return full_name
+
+    @property
+    def full_name_without_suffix(self):
+        """Return a person's full name sans suffix.
+
+        This is used to determine whether a child has the same full name as their parent,
+        which would necessitate them getting a suffix of their own to disambiguate.
+        """
+        full_name = "{} {} {}".format(
+            self.first_name, self.middle_name, self.last_name
+        )
+        return full_name
+
+    @property
+    def name(self):
+        """Return a person's name."""
+        if self.suffix:
+            name = "{} {} {}".format(self.first_name, self.last_name, self.suffix)
+        else:
+            name = "{} {}".format(self.first_name, self.last_name)
+        return name
+
+    @property
+    def nametag(self):
+        """Return a person's name, appended with their tag, if any."""
+        if self.tag:
+            nametag = "{} {}".format(self.name, self.tag)
+        else:
+            nametag = self.name
+        return nametag
+
+    @property
     def age(self):
         """Return whether this person is at least 18 years old."""
         return self.game.year - self.birth_year
@@ -355,6 +400,19 @@ class Person(object):
             return True
         else:
             return False
+
+    @property
+    def queer(self):
+        """Return whether this person is not heterosexual."""
+        if self.male and self.attracted_to_men:
+            queer = True
+        elif self.female and self.attracted_to_women:
+            queer = True
+        elif not self.attracted_to_men and not self.attracted_to_women:
+            queer = True
+        else:
+            queer = False
+        return queer
 
     @property
     def present(self):
@@ -401,49 +459,6 @@ class Person(object):
         return next_of_kin
 
     @property
-    def full_name(self):
-        """Return a person's full name."""
-        if self.suffix:
-            full_name = "{} {} {} {}".format(
-                self.first_name, self.middle_name, self.last_name, self.suffix
-            )
-        else:
-            full_name = "{} {} {}".format(
-                self.first_name, self.middle_name, self.last_name
-            )
-        return full_name
-
-    @property
-    def full_name_without_suffix(self):
-        """Return a person's full name sans suffix.
-
-        This is used to determine whether a child has the same full name as their parent,
-        which would necessitate them getting a suffix of their own to disambiguate.
-        """
-        full_name = "{} {} {}".format(
-            self.first_name, self.middle_name, self.last_name
-        )
-        return full_name
-
-    @property
-    def name(self):
-        """Return a person's name."""
-        if self.suffix:
-            name = "{} {} {}".format(self.first_name, self.last_name, self.suffix)
-        else:
-            name = "{} {}".format(self.first_name, self.last_name)
-        return name
-
-    @property
-    def nametag(self):
-        """Return a person's name, appended with their tag, if any."""
-        if self.tag:
-            nametag = "{} {}".format(self.name, self.tag)
-        else:
-            nametag = self.name
-        return nametag
-
-    @property
     def nuclear_family(self):
         """Return this person's nuclear family."""
         nuclear_family = {self}
@@ -455,17 +470,76 @@ class Person(object):
         return nuclear_family
 
     @property
-    def queer(self):
-        """Return whether this person is not heterosexual."""
-        if self.male and self.attracted_to_men:
-            queer = True
-        elif self.female and self.attracted_to_women:
-            queer = True
-        elif not self.attracted_to_men and not self.attracted_to_women:
-            queer = True
+    def coworkers(self):
+        """Return this person's coworkers."""
+        if self.occupation:
+            coworkers = self.occupation.company.employees - {self}
         else:
-            queer = False
-        return queer
+            coworkers = set()
+        return coworkers
+
+    @property
+    def neighbors(self):
+        """Return this person's neighbors, i.e., people living or working on neighboring lots."""
+        neighbors = self.home.lot.neighboring_residents
+        # If you live in an apartment complex, add in the other people who live
+        # in it too (these won't be captured by the above command)
+        if self.home.apartment:
+            neighbors_in_the_same_complex = self.home.complex.residents - self.home.residents
+            neighbors |= neighbors_in_the_same_complex
+        return neighbors
+
+    @property
+    def neighbors_and_their_neighbors(self):
+        """Return this person's neighbors, as well as those people's neighbors."""
+        neighbors = self.home.lot.neighboring_residents_and_their_neighboring_residents
+        # If you live in an apartment complex, add in the other people who live
+        # in it too (these won't be captured by the above command)
+        if self.home.apartment:
+            neighbors_in_the_same_complex = self.home.complex.residents - self.home.residents
+            neighbors |= neighbors_in_the_same_complex
+        return neighbors
+
+    @property
+    def businesses_patronized(self):
+        """Return the businesses that this person patronizes.
+
+        This currently only returns the businesses nearest to where a person
+        lives, but one could conceive a person going near one where they work or
+        even going out of their way to go to a family member's business, etc. [TODO]
+        """
+        # Compile types of businesses that people visit at least some time in their
+        # normal routine living
+        routine_business_types = [
+            "Bank", "Barbershop", "BusDepot", "Hotel", "Park", "Restaurant", "Supermarket", "TaxiDepot"
+        ]
+        if self.face.distinctive_features.glasses == "yes":
+            routine_business_types.append("OptometryClinic")
+        # Compile the closest businesses for each of those types
+        businesses_patronized = set()
+        for business_type in routine_business_types:
+            businesses_patronized.add(
+                self.home.lot.nearest_business_of_type(business_type=business_type)
+            )
+        businesses_patronized.remove(None)
+        return businesses_patronized
+
+    @property
+    def major_life_events(self):
+        """Return the major events of this person's life."""
+        events = [self.birth, self.adoption]
+        events += self.moves
+        events += [job.hiring for job in self.occupations]
+        events += self.marriages
+        events += [kid.birth for kid in self.kids]
+        events += self.divorces
+        events += self.name_changes
+        events += list(self.building_commissions)
+        events += [self.departure, self.death]
+        while None in events:
+            events.remove(None)
+        events.sort(key=lambda ev: ev.year)  # Sort chronologically
+        return events
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
@@ -508,7 +582,8 @@ class Person(object):
     def attracted_to(self, other_person):
         """Return whether this person is attracted to other_person.
 
-        TODO: Have this be affected by other considerations, including appearance.
+        TODO: Have this be affected by other considerations, including personality
+        and appearance.
         """
         if other_person.male and self.attracted_to_men:
             attracted = True

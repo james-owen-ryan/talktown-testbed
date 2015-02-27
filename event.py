@@ -17,7 +17,10 @@ class Adoption(object):
         self.year = subject.year
         self.city = adoptive_parents[0].city  # May be None if parents not in the city yet
         self.subject = subject
+        self.subject.adoption = self  # Could there be multiple, actually?
         self.adoptive_parents = adoptive_parents
+        for adoptive_parent in adoptive_parents:
+            adoptive_parent.adoptions.append(self)
 
 
 class Birth(object):
