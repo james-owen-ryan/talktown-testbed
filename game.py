@@ -70,8 +70,8 @@ class Game(object):
         FireStation(owner=self.founder)
         PoliceStation(owner=self.founder)
         University(owner=self.founder)
-        Park(city=self.city)
-        Cemetery(city=self.city)
+        Park(owner=self.founder)
+        Cemetery(owner=self.founder)
 
 
     # 5. have the rich man's children start Bank, RealtyFirm, multiple ApartmentComplexes, Hotel, Supermarket,
