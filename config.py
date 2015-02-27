@@ -7,9 +7,7 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-        self.n_buildings_per_block = 2
                 ## WORLD GEN ##
-                
         # City generation
         self.loci = 3
         self.samples = 32
@@ -570,7 +568,7 @@ class Config(object):
                 ((0.97, 1.0), 'soul patch'),
             },
             "freckles": {
-                ((0.0, 0.8), 'no'),
+                ((0.0, 0.8), 'no'),  # These aren't booleans because Face.Feature extends str, not bool
                 ((0.8, 1.0), 'yes'),
             },
             "birthmark": {
