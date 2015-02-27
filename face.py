@@ -33,7 +33,7 @@ class Face(object):
         )
         if feature_will_get_inherited:
             takes_after = self._determine_whom_feature_gets_inherited_from(feature_type=feature_type)
-            type_str = self._get_a_persons_feature_of_type(person=takes_after, feature_type=feature_type)
+            type_str = str(self._get_a_persons_feature_of_type(person=takes_after, feature_type=feature_type))
             variant_id, exact_variant_inherited = self._determine_graphical_variant_of_this_feature(
                 takes_after=takes_after, feature_type=feature_type
             )
