@@ -101,7 +101,7 @@ class Face(object):
 
     @staticmethod
     def _get_a_persons_feature_of_type(person, feature_type):
-        """Return this person's facial feature of the given type (only heritable features listed)."""
+        """Return this person's facial feature of the given type."""
         features = {
             "skin color": person.face.skin.color,
             "head size": person.face.head.size,
@@ -132,7 +132,7 @@ class Face(object):
 
     @staticmethod
     def _get_persons_feature_variant_of_type(person, feature_type):
-        """Return this person's facial-feature variant for the given type (only heritable features listed)."""
+        """Return this person's facial-feature variant for the given type."""
         features = {
             "skin color": person.face.skin.color.variant_id,
             "head size": person.face.head.size.variant_id,
