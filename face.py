@@ -2,7 +2,7 @@ import random
 
 
 class Face(object):
-    """A character's face."""
+    """A person's face."""
 
     def __init__(self, person):
         """Initialize a Face object."""
@@ -18,7 +18,7 @@ class Face(object):
         self.facial_hair = FacialHair(face=self)
         self.distinctive_features = DistinctiveFeatures(face=self)
 
-    def determine_feature(self, feature_type):
+    def determine_facial_feature(self, feature_type):
         """Determine a person's facial feature, given their parents' and/or the population distribution.
 
         Two facial features do not always get determined by this method: skin color is deterministic
@@ -163,7 +163,7 @@ class Face(object):
 
 
 class Skin(object):
-    """A character's skin."""
+    """A person's skin."""
 
     def __init__(self, face):
         """Initialize a Skin object."""
@@ -181,105 +181,105 @@ class Skin(object):
                 )
             self.color = skin_color
         else:  # Generate from population distribution
-            self.color = self.face.determine_feature(feature_type="skin color")
+            self.color = self.face.determine_facial_feature(feature_type="skin color")
 
 
 class Head(object):
-    """A character's head."""
+    """A person's head."""
 
     def __init__(self, face):
         """Initialize a Head object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="head size")
-        self.shape = self.face.determine_feature(feature_type="head shape")
+        self.size = self.face.determine_facial_feature(feature_type="head size")
+        self.shape = self.face.determine_facial_feature(feature_type="head shape")
 
 
 class Hair(object):
-    """A character's hair (on his or her head)."""
+    """A person's hair (on his or her head)."""
 
     def __init__(self, face):
         """Initialize a Hair object."""
         self.face = face
-        self.length = self.face.determine_feature(feature_type="hair length")
-        self.color = self.face.determine_feature(feature_type="hair color")
+        self.length = self.face.determine_facial_feature(feature_type="hair length")
+        self.color = self.face.determine_facial_feature(feature_type="hair color")
 
 
 class Eyebrows(object):
-    """A character's eyebrows."""
+    """A person's eyebrows."""
 
     def __init__(self, face):
         """Initialize a Eyebrows object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="eyebrow size")
+        self.size = self.face.determine_facial_feature(feature_type="eyebrow size")
         if random.random() < self.face.person.game.config.chance_eyebrows_are_same_color_as_hair:
             self.color = self.face.hair.color
         else:
-            self.color = self.face.determine_feature(feature_type="eyebrow color")
+            self.color = self.face.determine_facial_feature(feature_type="eyebrow color")
 
 
 class Eyes(object):
-    """A character's eyes."""
+    """A person's eyes."""
 
     def __init__(self, face):
         """Initialize an Eyes object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="eye size")
-        self.shape = self.face.determine_feature(feature_type="eye shape")
-        self.color = self.face.determine_feature(feature_type="eye color")
-        self.horizontal_settedness = self.face.determine_feature(feature_type="eye horizontal settedness")
-        self.vertical_settedness = self.face.determine_feature(feature_type="eye vertical settedness")
+        self.size = self.face.determine_facial_feature(feature_type="eye size")
+        self.shape = self.face.determine_facial_feature(feature_type="eye shape")
+        self.color = self.face.determine_facial_feature(feature_type="eye color")
+        self.horizontal_settedness = self.face.determine_facial_feature(feature_type="eye horizontal settedness")
+        self.vertical_settedness = self.face.determine_facial_feature(feature_type="eye vertical settedness")
 
 
 class Ears(object):
-    """A character's ears."""
+    """A person's ears."""
 
     def __init__(self, face):
         """Initialize an Ears object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="ear size")
-        self.angle = self.face.determine_feature(feature_type="ear angle")
+        self.size = self.face.determine_facial_feature(feature_type="ear size")
+        self.angle = self.face.determine_facial_feature(feature_type="ear angle")
 
 
 class Nose(object):
-    """A character's nose."""
+    """A person's nose."""
 
     def __init__(self, face):
         """Initialize a Nose object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="nose size")
-        self.shape = self.face.determine_feature(feature_type="nose shape")
+        self.size = self.face.determine_facial_feature(feature_type="nose size")
+        self.shape = self.face.determine_facial_feature(feature_type="nose shape")
 
 
 class Mouth(object):
-    """A character's mouth."""
+    """A person's mouth."""
 
     def __init__(self, face):
         """Initialize a Mouth object."""
         self.face = face
-        self.size = self.face.determine_feature(feature_type="mouth size")
+        self.size = self.face.determine_facial_feature(feature_type="mouth size")
 
 
 class FacialHair(object):
-    """A character's facial hair."""
+    """A person's facial hair."""
 
     def __init__(self, face):
         """Initialize a FacialHair style."""
         self.face = face
-        self.style = self.face.determine_feature(feature_type="facial hair style")
+        self.style = self.face.determine_facial_feature(feature_type="facial hair style")
 
 
 class DistinctiveFeatures(object):
-    """A character's other distinguishing facial features."""
+    """A person's other distinguishing facial features."""
 
     def __init__(self, face):
         """Initialize a DistinctiveFeatures object."""
         self.face = face
-        self.freckles = self.face.determine_feature(feature_type="freckles")
-        self.birthmark = self.face.determine_feature(feature_type="birthmark")
-        self.scar = self.face.determine_feature(feature_type="scar")
-        self.tattoo = self.face.determine_feature(feature_type="tattoo")
-        self.glasses = self.face.determine_feature(feature_type="glasses")
-        self.sunglasses = self.face.determine_feature(feature_type="sunglasses")
+        self.freckles = self.face.determine_facial_feature(feature_type="freckles")
+        self.birthmark = self.face.determine_facial_feature(feature_type="birthmark")
+        self.scar = self.face.determine_facial_feature(feature_type="scar")
+        self.tattoo = self.face.determine_facial_feature(feature_type="tattoo")
+        self.glasses = self.face.determine_facial_feature(feature_type="glasses")
+        self.sunglasses = self.face.determine_facial_feature(feature_type="sunglasses")
 
 
 class Feature(str):
