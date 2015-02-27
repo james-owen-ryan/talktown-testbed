@@ -15,8 +15,9 @@ class Observation(object):
 
 
 class Concoction(object):
-    """A concoction by which a person unintentionally concocts new information (i.e., changes an
-    attribute's value from None to something)."""
+    """A concoction by which a person unintentionally concocts new false knowledge (i.e., changes an
+    attribute's value from None to something).
+    """
 
     def __init__(self, subject, parent):
         """Initialize a Concoction object."""
@@ -24,7 +25,7 @@ class Concoction(object):
 
 
 class Lie(object):
-    """A lie by which one person invents and conveys misinformation about someone."""
+    """A lie by which one person invents and conveys false knowledge about someone."""
 
     def __init__(self, subject, source, recipient):
         """Initialize a Lie object."""
@@ -32,7 +33,7 @@ class Lie(object):
 
 
 class Statement(object):
-    """A statement by which one person conveys information about someone."""
+    """A statement by which one person conveys knowledge about someone thay they believe is true."""
 
     def __init__(self, subject, source, recipient):
         """Initialize a Statement object."""
@@ -40,7 +41,7 @@ class Statement(object):
 
 
 class Degradation(object):
-    """A degradation by which a person misremembers information (i.e., changes an attribute's value)."""
+    """A degradation by which a person misremembers knowledge (i.e., changes an attribute's value)."""
 
     def __init__(self, subject, parent):
         """Initialize a Degradation object."""
@@ -48,7 +49,7 @@ class Degradation(object):
 
 
 class Transference(object):
-    """A transference by which a person unintentionally concocts new information (i.e., changes an
+    """A transference by which a person unintentionally concocts new false knowledge (i.e., changes an
     attribute's value from None to something)."""
 
     def __init__(self, subject, parent):
@@ -57,7 +58,7 @@ class Transference(object):
 
 
 class Forgetting(object):
-    """A forgetting by which a person forgets information.
+    """A forgetting by which a person forgets knowledge.
 
     A forgetting represents an ultimate terminus of a particular information item."""
 

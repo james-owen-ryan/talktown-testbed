@@ -1,4 +1,3 @@
-
 from occupation import *
 from event import *
 from business import *
@@ -9,9 +8,7 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-        self.n_buildings_per_block = 2
                 ## WORLD GEN ##
-                
         # City generation
         self.loci = 3
         self.samples = 32
@@ -208,71 +205,71 @@ class Config(object):
             Mayor: None,
         }
         # Job levels of various occupations (indexed by their class names)
-        # self.job_levels = {
-            # Cashier: 1,
-            # Janitor: 1,
-            # HotelMaid: 1,
-            # Waiter: 1,
-            # Secretary: 1,
-            # Groundskeeper: 1,
-            # BankTeller: 2,
-            # Concierge: 2,
-            # HairStylist: 2,
-            # ConstructionWorker: 2,
-            # Firefighter: 2,
-            # PoliceOfficer: 2,
-            # TaxiDriver: 2,
-            # BusDriver: 2,
-            # Nurse: 2,
-            # TattooArtist: 2,
-            # Manager: 3,
-            # FireChief: 3,
-            # PoliceChief: 3,
-            # Realtor: 3,
-            # Mortician: 3,
-            # Doctor: 4,
-            # Architect: 4,
-            # Optometrist: 4,
-            # PlasticSurgeon: 4,
-            # Lawyer: 4,
-            # Professor: 4,
-            # Owner: 5,
-            # Mayor: 5,
-        # }
+        self.job_levels = {
+            Cashier: 1,
+            Janitor: 1,
+            HotelMaid: 1,
+            Waiter: 1,
+            Secretary: 1,
+            Groundskeeper: 1,
+            BankTeller: 2,
+            Concierge: 2,
+            HairStylist: 2,
+            ConstructionWorker: 2,
+            Firefighter: 2,
+            PoliceOfficer: 2,
+            TaxiDriver: 2,
+            BusDriver: 2,
+            Nurse: 2,
+            TattooArtist: 2,
+            Manager: 3,
+            FireChief: 3,
+            PoliceChief: 3,
+            Realtor: 3,
+            Mortician: 3,
+            Doctor: 4,
+            Architect: 4,
+            Optometrist: 4,
+            PlasticSurgeon: 4,
+            Lawyer: 4,
+            Professor: 4,
+            Owner: 5,
+            Mayor: 5,
+        }
         # Compensation for various occupations
-        # self.compensations = {
-            # Birth: {
-                # Owner: 500,
-                # Doctor: 750,
-                # Nurse: 300,
-            # },
-            # BusinessConstruction: {
-                # Owner: 5000,
-                # Architect: 2000,
-                # ConstructionWorker: 400,
-            # },
-            # Death: {
-                # Mortician: 1000,
-            #    [Cemetery doesn't have an owner]
-            # },
-            # Divorce: {
-                # Lawyer: 1000,
-                # Owner: 500,
-            # },
-            # HouseConstruction: {
-                # Owner: 2500,
-                # Architect: 1000,
-                # ConstructionWorker: 200,
-            # },
-            # HomePurchase: {
-                # Owner: 2000,
-                # Realtor: 600,
-            # },
-            # NameChange: {
-                # Owner: 200,
-                # Lawyer: 200,
-            # },
-        # }
+        self.compensations = {
+            Birth: {
+                Owner: 500,
+                Doctor: 750,
+                Nurse: 300,
+            },
+            BusinessConstruction: {
+                Owner: 5000,
+                Architect: 2000,
+                ConstructionWorker: 400,
+            },
+            Death: {
+                Mortician: 1000,
+               # [Cemetery doesn't have an owner]
+            },
+            Divorce: {
+                Lawyer: 1000,
+                Owner: 500,
+            },
+            HouseConstruction: {
+                Owner: 2500,
+                Architect: 1000,
+                ConstructionWorker: 200,
+            },
+            HomePurchase: {
+                Owner: 2000,
+                Realtor: 600,
+            },
+            NameChange: {
+                Owner: 200,
+                Lawyer: 200,
+            },
+        }
         self.compensation_upon_building_construction_for_construction_firm_owner = 5000
         self.compensation_upon_building_construction_for_architect = 2000
         self.compensation_upon_building_construction_for_construction_worker = 400
@@ -314,21 +311,347 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
-        # Big Five personality traits (source [0])
-        self.big_5_floor = -1.0
-        self.big_5_cap = 1.0
-        self.big_5_sd = 0.35
-        self.big_5_o_mean = 0.375
-        self.big_5_c_mean = 0.25
-        self.big_5_e_mean = 0.15
-        self.big_5_a_mean = 0.35
-        self.big_5_n_mean = 0.0
-        self.big_5_o_heritability = 0.57
-        self.big_5_c_heritability = 0.54
-        self.big_5_e_heritability = 0.49
-        self.big_5_a_heritability = 0.48
-        self.big_5_n_heritability = 0.42
-        self.big_5_heritability_sd = 0.05
+        # Personality (Big Five source is [0])
+        self.big_five_floor = -1.0
+        self.big_five_cap = 1.0
+        self.big_five_heritability_chance = {
+            'openness': 0.57,
+            'conscientiousness': 0.54,
+            'extroversion': 0.49,
+            'agreeableness': 0.48,
+            'neuroticism': 0.42
+        }
+        self.big_five_mean = {
+            # These represent population means for these five traits
+            'openness': 0.375,
+            'conscientiousness': 0.25,
+            'extroversion': 0.15,
+            'agreeableness': 0.35,
+            'neuroticism': 0.0
+        }
+        self.big_five_sd = {
+            # A person's value for a trait is generated from a normal distribution
+            # around the trait's mean, with the value listed here as standard deviation
+            'openness': 0.35,
+            'conscientiousness': 0.35,
+            'extroversion': 0.35,
+            'agreeableness': 0.35,
+            'neuroticism': 0.35
+        }
+        self.big_five_inheritance_sd = {
+            # Person will inherit a parent's trait, but with some variance
+            # according to this standard deviation
+            'openness': 0.05,
+            'conscientiousness': 0.05,
+            'extroversion': 0.05,
+            'agreeableness': 0.05,
+            'neuroticism': 0.05
+        }
+        # Face
+        self.chance_eyebrows_are_same_color_as_hair = 0.8
+        self.child_skin_color_given_parents = {
+            ('black', 'brown'): 'brown',
+            ('brown', 'black'): 'brown',
+            ('black', 'beige'): 'brown',
+            ('beige', 'black'): 'brown',
+            ('black', 'pink'): 'beige',
+            ('pink', 'black'): 'beige',
+            ('black', 'white'): 'beige',
+            ('white', 'black'): 'beige',
+            ('brown', 'beige'): 'beige',
+            ('beige', 'brown'): 'beige',
+            ('brown', 'pink'): 'beige',
+            ('pink', 'brown'): 'beige',
+            ('brown', 'white'): 'beige',
+            ('white', 'brown'): 'beige',
+            ('beige', 'pink'): 'beige',
+            ('pink', 'beige'): 'beige',
+            ('beige', 'white'): 'beige',
+            ('white', 'beige'): 'beige',
+            ('pink', 'white'): 'pink',
+            ('white', 'pink'): 'pink',
+        }
+        self.facial_feature_type_heritability = {
+            "skin color": 1.0,
+            "head size": 0.75,
+            "head shape": 0.75,
+            "hair length": 0.05,  # From nurture, not nature
+            "hair color": 0.75,
+            "eyebrow size": 0.75,
+            "eyebrow color": 0.75,
+            "mouth size": 0.75,
+            "ear size": 0.75,
+            "ear angle": 0.75,
+            "nose size": 0.75,
+            "nose shape": 0.75,
+            "eye size": 0.75,
+            "eye shape": 0.75,
+            "eye color": 0.75,
+            "eye horizontal settedness": 0.75,
+            "eye vertical settedness": 0.75,
+            "facial hair style": 0.05,  # From nurture
+            "freckles": 0.75,
+            "birthmark": 0.00,
+            "scar": 0.00,
+            "tattoo": 0.05,  # From nurture
+            "glasses": 0.6,
+            "sunglasses": 0.05  # From nurture
+        }
+        self.facial_feature_variant_heritability = {
+            "skin color": 1.0,
+            "head size": 0.75,
+            "head shape": 0.75,
+            "hair length": 0.05,  # From nurture, not nature
+            "hair color": 0.75,
+            "eyebrow size": 0.75,
+            "eyebrow color": 0.75,
+            "mouth size": 0.75,
+            "ear size": 0.75,
+            "ear angle": 0.75,
+            "nose size": 0.75,
+            "nose shape": 0.75,
+            "eye size": 0.75,
+            "eye shape": 0.75,
+            "eye color": 0.75,
+            "eye horizontal settedness": 0.75,
+            "eye vertical settedness": 0.75,
+            "facial hair style": 0.5,  # From nurture
+            "freckles": 0.75,
+            "birthmark": 0.0,
+            "scar": 0.0,
+            "tattoo": 0.05,  # From nurture
+            "glasses": 0.6,
+            "sunglasses": 0.05  # From nurture
+        }
+        self.facial_feature_chance_inheritance_according_to_sex = {
+            # The chance someone inherits only from parent/grandparent of the same sex, given
+            # the dice already has them inheriting and not generating from population distribution
+            "head size": 0.8,
+            "head shape": 0.8,
+            "hair length": 0.99,
+            "hair color": 0.0,
+            "eyebrow size": 0.0,
+            "eyebrow color": 0.0,
+            "mouth size": 0.0,
+            "ear size": 0.0,
+            "ear angle": 0.0,
+            "nose size": 0.0,
+            "nose shape": 0.0,
+            "eye size": 0.0,
+            "eye shape": 0.0,
+            "eye color": 0.0,
+            "eye horizontal settedness": 0.0,
+            "eye vertical settedness": 0.0,
+            "facial hair style": 1.0,
+            "freckles": 0.0,
+            "birthmark": 0.0,
+            "scar": 0.0,
+            "tattoo": 0.0,  # From nurture
+            "glasses": 0.0,
+            "sunglasses": 0.00  # From nurture
+        }
+        self.facial_feature_distributions_male = {
+            "skin color": {
+                # A random float between 0.0 and 1.0 will be generated and the skin
+                # color whose range that number falls in will be assigned
+                ((0.0, 0.2), 'black'),
+                ((0.2, 0.4), 'brown'),
+                ((0.4, 0.6), 'beige'),
+                ((0.6, 0.8), 'pink'),
+                ((0.8, 1.0), 'white'),
+            },
+            "head size": {
+                ((0.0, 0.2), 'small'),
+                ((0.2, 0.5), 'medium'),
+                ((0.5, 1.0), 'large'),
+            },
+            "head shape": {
+                ((0.0, 0.4), 'square'),
+                ((0.4, 0.6), 'circle'),
+                ((0.6, 0.65), 'heart'),
+                ((0.65, 1.0), 'oval'),
+            },
+            "hair length": {
+                ((0.0, 0.15), 'bald'),
+                ((0.15, 0.65), 'short'),
+                ((0.65, 0.85), 'medium'),
+                ((0.85, 1.0), 'long'),
+            },
+            "hair color": {
+                ((0.0, 0.3), 'black'),
+                ((0.3, 0.5), 'brown'),
+                ((0.5, 0.7), 'blonde'),
+                ((0.7, 0.75), 'red'),
+                ((0.75, 0.8), 'gray'),
+                ((0.8, 0.85), 'white'),
+                ((0.85, 0.9), 'green'),
+                ((0.9, 0.95), 'blue'),
+                ((0.95, 1.0), 'purple'),
+            },
+            "eyebrow size": {
+                ((0.0, 0.3), 'small'),
+                ((0.3, 0.7), 'medium'),
+                ((0.7, 1.0), 'large'),
+            },
+            "eyebrow color": {
+                ((0.0, 0.35), 'black'),
+                ((0.35, 0.55), 'brown'),
+                ((0.55, 0.75), 'blonde'),
+                ((0.75, 0.8), 'red'),
+                ((0.8, 0.875), 'gray'),
+                ((0.875, 0.95), 'white'),
+                ((0.95, 0.97), 'green'),
+                ((0.97, 0.99), 'blue'),
+                ((0.99, 1.0), 'purple'),
+            },
+            "mouth size": {
+                ((0.0, 0.3), 'small'),
+                ((0.3, 0.7), 'medium'),
+                ((0.7, 1.0), 'large'),
+            },
+            "ear size": {
+                ((0.0, 0.3), 'small'),
+                ((0.3, 0.7), 'medium'),
+                ((0.7, 1.0), 'large'),
+            },
+            "ear angle": {
+                ((0.0, 0.8), 'flat'),
+                ((0.8, 1.0), 'protruding'),
+            },
+            "nose size": {
+                ((0.0, 0.3), 'small'),
+                ((0.3, 0.7), 'medium'),
+                ((0.7, 1.0), 'large'),
+            },
+            "nose shape": {
+                ((0.0, 0.4), 'long'),
+                ((0.4, 0.6), 'broad'),
+                ((0.6, 0.8), 'upturned'),
+                ((0.8, 1.0), 'pointy'),
+            },
+            "eye size": {
+                ((0.0, 0.3), 'small'),
+                ((0.3, 0.7), 'medium'),
+                ((0.7, 1.0), 'large'),
+            },
+            "eye shape": {
+                ((0.0, 0.6), 'round'),
+                ((0.6, 0.7), 'almond'),
+                ((0.7, 1.0), 'thin'),
+            },
+            "eye color": {
+                ((0.0, 0.3), 'black'),
+                ((0.3, 0.5), 'brown'),
+                ((0.5, 0.65), 'blue'),
+                ((0.65, 0.8), 'green'),
+                ((0.8, 0.88), 'yellow'),
+                ((0.88, 0.96), 'gray'),
+                ((0.96, 0.98), 'red'),
+                ((0.98, 0.99), 'purple'),
+                ((0.99, 1.0), 'white'),
+            },
+            "eye horizontal settedness": {
+                ((0.0, 0.3), 'narrow'),
+                ((0.3, 0.7), 'middle'),
+                ((0.7, 1.0), 'wide'),
+            },
+            "eye vertical settedness": {
+                ((0.0, 0.3), 'high'),
+                ((0.3, 0.7), 'middle'),
+                ((0.7, 1.0), 'low'),
+            },
+            "facial hair style": {
+                ((0.0, 0.5), 'none'),
+                ((0.5, 0.65), 'mustache'),
+                ((0.65, 0.8), 'full beard'),
+                ((0.8, 0.9), 'goatee'),
+                ((0.9, 0.97), 'sideburns'),
+                ((0.97, 1.0), 'soul patch'),
+            },
+            "freckles": {
+                ((0.0, 0.8), 'no'),  # These aren't booleans because Face.Feature extends str, not bool
+                ((0.8, 1.0), 'yes'),
+            },
+            "birthmark": {
+                ((0.0, 0.85), 'no'),
+                ((0.85, 1.0), 'yes'),
+            },
+            "scar": {
+                ((0.0, 0.85), 'no'),
+                ((0.85, 1.0), 'yes'),
+            },
+            "tattoo": {
+                ((0.0, 0.95), 'no'),
+                ((0.95, 1.0), 'yes'),
+            },
+            "glasses": {
+                ((0.0, 0.7), 'no'),
+                ((0.7, 1.0), 'yes'),
+            },
+            "sunglasses": {
+                ((0.0, 0.8), 'no'),
+                ((0.8, 1.0), 'yes'),
+            },
+        }
+        self.facial_feature_distributions_female = {
+            "skin color": self.facial_feature_distributions_male["skin color"],
+            "head size": {
+                ((0.0, 0.6), 'small'),
+                ((0.6, 0.8), 'medium'),
+                ((0.8, 1.0), 'large'),
+            },
+            "head shape": {
+                ((0.0, 0.1), 'square'),
+                ((0.1, 0.3), 'circle'),
+                ((0.3, 0.8), 'heart'),
+                ((0.8, 1.0), 'oval'),
+            },
+            "hair length": {
+                ((0.0, 0.005), 'bald'),
+                ((0.005, 0.2), 'short'),
+                ((0.2, 0.45), 'medium'),
+                ((0.45, 1.0), 'long'),
+            },
+            "hair color": self.facial_feature_distributions_male["hair color"],
+            "eyebrow size": {
+                ((0.0, 0.7), 'small'),
+                ((0.7, 0.9), 'medium'),
+                ((0.9, 1.0), 'large'),
+            },
+            "eyebrow color": self.facial_feature_distributions_male["eyebrow color"],
+            "mouth size": {
+                ((0.0, 0.6), 'small'),
+                ((0.6, 0.85), 'medium'),
+                ((0.85, 1.0), 'large'),
+            },
+            "ear size": {
+                ((0.0, 0.6), 'small'),
+                ((0.6, 0.85), 'medium'),
+                ((0.85, 1.0), 'large'),
+            },
+            "ear angle": self.facial_feature_distributions_male["ear angle"],
+            "nose size": self.facial_feature_distributions_male["nose size"],
+            "nose shape": self.facial_feature_distributions_male["nose shape"],
+            "eye size": self.facial_feature_distributions_male["eye size"],
+            "eye shape": self.facial_feature_distributions_male["eye shape"],
+            "eye color": self.facial_feature_distributions_male["eye color"],
+            "eye horizontal settedness": self.facial_feature_distributions_male["eye horizontal settedness"],
+            "eye vertical settedness": self.facial_feature_distributions_male["eye vertical settedness"],
+            "facial hair style": {
+                ((0.0, 1.0), 'none'),
+                ((0.0, 0.0), 'mustache'),
+                ((0.0, 0.0), 'full beard'),
+                ((0.0, 0.0), 'goatee'),
+                ((0.0, 0.0), 'sideburns'),
+                ((0.0, 0.0), 'soul patch'),
+            },
+            "freckles": self.facial_feature_distributions_male["freckles"],
+            "birthmark": self.facial_feature_distributions_male["birthmark"],
+            "scar": self.facial_feature_distributions_male["scar"],
+            "tattoo": self.facial_feature_distributions_male["tattoo"],
+            "glasses": self.facial_feature_distributions_male["glasses"],
+            "sunglasses": self.facial_feature_distributions_male["sunglasses"],
+        }
         # Names
         self.chance_son_inherits_fathers_exact_name = 0.03
         self.chance_child_inherits_first_name = 0.1
