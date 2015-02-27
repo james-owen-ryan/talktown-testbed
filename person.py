@@ -6,6 +6,7 @@ from name import Name
 from personality import Personality
 from mind import Mind
 import occupation
+from face import Face
 
 
 class Person(object):
@@ -45,6 +46,8 @@ class Person(object):
         self.attracted_to_men, self.attracted_to_women = (
             self._init_sexuality()
         )
+        # Set face
+        self.face = Face(person=self)
         # Set personality
         self.personality = Personality(subject=self)
         # Set mental attributes (just memory currently)
