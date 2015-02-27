@@ -1,3 +1,10 @@
 [0] Schmitt, et al. "Big Five Traits Across 56 Nations"
 
-[1] Paulauskaitė1, et al. "BIG FIVE PERSONALITY TRAITS LINKED WITH MIGRATORY INTENTIONS IN LITHUANIAN STUDENT SAMPLE"
+[1] Paulauskaitė1, et al. "Big Five Personality Traits Linked With Migratory Intentions In
+        Lithuanian Student Sample"
+
+[2] Reynolds and Pezdek. "Face Recognition Memory: The Effects of Exposure Duration and
+        Encoding Instruction"
+
+[3] Ruiz-Soler and Beltran. "The Relative Salience of Facial Features When Differentiating Faces
+        Based on an Interference Paradigm"
