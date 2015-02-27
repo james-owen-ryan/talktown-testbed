@@ -1,6 +1,6 @@
 import heapq
 from occupation import *
-from person import Person, PersonExNihilo
+from person import PersonExNihilo
 from residence import *
 
 # Objects of a business class represents both the company itself and the building
@@ -131,7 +131,7 @@ class Business(object):
         )
         # Decrease score for being near to another company of this same type
         dist_to_nearest_company_of_same_type = (
-            lot.dist_to_nearest_company_of_type(company_type=self.__class__, exclusion=self)
+            lot.dist_to_nearest_business_of_type(business_type=self.__class__.__name__, exclusion=self)
         )
         if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
             score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
