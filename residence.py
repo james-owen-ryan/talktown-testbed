@@ -29,10 +29,10 @@ class DwellingPlace(object):
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_number
+        house_number = self.lot.house_numbers[0]
         # street = str(self.lot.street)
         street = 'wtf lane'  # TEMP for testing
-        return "{} {}".format(house_number, street)
+        return "{} {}".format(house_number, self.lot.streets[0])
 
     def _init_ownership(self, initial_owners):
         """Set the initial owners of this dwelling place."""
@@ -52,9 +52,9 @@ class Apartment(DwellingPlace):
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_number
+        house_number = self.lot.house_numbers[0]
         # street = str(self.lot.street)
-        street = 'wtf lane'
+        street =  self.lot.streets[0]
         return "{} {} (Unit #{})".format(house_number, street, self.unit_number)
 
 

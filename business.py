@@ -127,11 +127,11 @@ class Business(object):
         # total population of this lot's neighboring lots; tertiary population is the
         # total population of this lot's neighboring lots and those lots' neighboring lots
         score += config.function_to_determine_company_preference_for_local_population(
-            secondary_pop=lot.secondary_population, tertiary_pop=lot.tertiary_population
+            secondary_pop=self.city.secondary_population(lot), tertiary_pop=self.city.tertiary_population(lot)
         )
         # Decrease score for being near to another company of this same type
         dist_to_nearest_company_of_same_type = (
-            lot.dist_to_nearest_business_of_type(business_type=self.__class__.__name__, exclusion=self)
+            self.city.dist_to_nearest_business_of_type(lot,business_type=type(self), exclusion=self)
         )
         if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
             score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
@@ -139,14 +139,14 @@ class Business(object):
             )
         # As an emergency criterion for the case where there are no people or companies in the town
         # yet, rate lots according to their distance from downtown
-        score -= lot.dist_from_downtown
+        score -= self.city.dist_from_downtown(lot)
         return score
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_number
+        house_number = self.lot.house_numbers[0]
         # street = str(self.lot.street)
-        street = 'wtf lane'
+        street = self.lot.streets[0]
         return "{} {}".format(house_number, street)
 
     @property

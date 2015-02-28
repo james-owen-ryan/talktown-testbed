@@ -29,7 +29,7 @@ class City(object):
 
     def __init__(self, gameState):
         """Initialize a City object."""
-        self.gameState = gameState
+        self.game = gameState
         self.founded = gameState.config.year_city_gets_founded
         self.residents = set()
         self.departed = set()  # People who left the city (i.e., left the simulation)
@@ -46,15 +46,84 @@ class City(object):
         self.generateLots(gameState.config)
         self.paths = {}
         self.generatePaths()
+        self.downtown = None
+        highestDensity = -1
+        for lot in self.lots:
+            density =  self.tertiary_density(lot)
+            if (density > highestDensity):
+                highestDensity = density
+                self.downtown = lot
+            
+    def dist_from_downtown(self,lot):
         
+        return self.getDistFrom(lot,self.downtown)
     def generatePaths(self):
         for start in self.blocks:
             for goal in self.blocks:
-                if (start != goal):
+                if (start == goal):
+                     self.paths[(start,goal)] = 0
+                else :
                     if ((start,goal) not in self.paths):
                         came_from, cost_so_far = City.a_star_search(start,goal)
-                        self.paths[(start,goal)] = came_from
-                        self.paths[(goal,start)] = came_from
+                        self.paths[(start,goal)] = len(came_from)
+                        self.paths[(goal,start)] = len(came_from)
+                        
+    def getDistFrom(self,lot1,lot2):
+        minDist = float("inf")
+        for block1 in lot1.blocks:
+            for block2 in lot2.blocks:
+                if self.paths[(block1,block2)] < minDist:
+                    minDist = self.paths[(block1,block2)]
+        return minDist
+        
+    def dist_to_nearest_business_of_type(self, lot, business_type, exclusion):
+        """Return the Manhattan distance between this lot and the nearest company of the given type.
+
+        @param company_type: The Class representing the type of company in question.
+        @param exclusion: A company who is being excluded from this determination because they
+                          are the ones making the call to this method, as they try to decide where
+                          to put their lot.
+        """
+        distances = [
+            self.getDistFrom(lot,company.lot) for company in self.companies if isinstance(company, business_type)
+            and company is not exclusion
+        ]
+        if distances:
+            return min(distances)
+        else:
+            return None
+    def secondary_population(self,lot):
+        # """Return the total population of this lot and its neighbors."""
+        secondary_population = 0
+        for neighbor in set([lot]) | lot.getNeighboringLots():
+            secondary_population += neighbor.population
+        return secondary_population
+    def tertiary_population(self,lot):
+        lots_already_considered = set()
+        tertiary_population = 0
+        for neighbor in set([lot]) | lot.getNeighboringLots():
+            if neighbor not in lots_already_considered:
+                lots_already_considered.add(neighbor)
+                tertiary_population += neighbor.population
+                for neighbor_to_that_lot in neighbor.getNeighboringLots():
+                    if neighbor_to_that_lot not in lots_already_considered:
+                        lots_already_considered.add(neighbor_to_that_lot)
+                        tertiary_population += neighbor.population
+        return tertiary_population
+        
+    def tertiary_density(self,lot):
+        lots_already_considered = set()
+        tertiary_density = 0
+        for neighbor in set([lot]) | lot.getNeighboringLots():
+            if neighbor not in lots_already_considered:
+                lots_already_considered.add(neighbor)
+                tertiary_density += 1
+                for neighbor_to_that_lot in neighbor.getNeighboringLots():
+                    if neighbor_to_that_lot not in lots_already_considered:
+                        lots_already_considered.add(neighbor_to_that_lot)
+                        tertiary_density += 1
+        return tertiary_density
+        
     def generateLots(self,configFile):
         
         loci =  configFile.loci
@@ -187,7 +256,7 @@ class City(object):
             sizeOfBlock = int(block[2]/2)
             tract = None
             if (sizeOfBlock > 1):
-                tract = Tract()
+                tract = Tract(self)
             
             for ii in range(0,sizeOfBlock+1):
                 Blocks[(ew,ns+ii,'NS')] =Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii)) 
@@ -204,27 +273,27 @@ class City(object):
                     tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,0,0)
                     tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,0,0)
              
-            neCorner = Lot()
+            neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
             insertInto(lots,(ew,ns,'E'),(0,neCorner))
             self.lots.add(neCorner)
             corners.add((ew,ns,'EW',ew,ns,'NS'))
             
-            nwCorner = Lot()
+            nwCorner = Lot(self)
             if (ew+sizeOfBlock <= size/2):
                 insertInto(lots,(ew+sizeOfBlock-1,ns,'N'),(n_buildings_per_block-1,nwCorner))
             insertInto(lots,(ew+sizeOfBlock,ns,'W'),(0,nwCorner))            
             corners.add((ew+sizeOfBlock-1,ns,'EW',ew+sizeOfBlock,ns,'NS'))
             self.lots.add(nwCorner)
             
-            seCorner = Lot()
+            seCorner = Lot(self)
             insertInto(lots,(ew,ns+sizeOfBlock,'S'),(0,seCorner))
             if (ns+sizeOfBlock <= size/2):
                 insertInto(lots,(ew,ns+sizeOfBlock-1,'E'),(n_buildings_per_block-1,seCorner))
             self.lots.add(seCorner)
             corners.add((ew,ns+sizeOfBlock,'EW',ew,ns+sizeOfBlock-1,'NS'))
             
-            swCorner = Lot()
+            swCorner = Lot(self)
             insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner))  
             insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
             corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
@@ -232,16 +301,16 @@ class City(object):
             
             for ii in range(1,sizeOfBlock*configFile.n_buildings_per_block-1): 
                 blockNum = int(ii/2)
-                lot = Lot()
+                lot = Lot(self)
                 self.lots.add(lot)      
                 insertInto(lots,(ew,ns+blockNum,'E'),(ii %n_buildings_per_block,lot))
-                lot = Lot()
+                lot = Lot(self)
                 self.lots.add(lot)      
                 insertInto(lots,(ew+blockNum,ns,'N'),(ii %n_buildings_per_block,lot))
-                lot = Lot()
+                lot = Lot(self)
                 self.lots.add(lot)      
                 insertInto(lots,(ew+sizeOfBlock,ns+blockNum,'W'),(ii %n_buildings_per_block,lot))
-                lot = Lot()
+                lot = Lot(self)
                 self.lots.add(lot)      
                 insertInto(lots,(ew+blockNum,ns+sizeOfBlock,'S'),(ii %n_buildings_per_block,lot))  
         for block in lots:
@@ -318,7 +387,7 @@ class City(object):
         unemployed_people = set()
         for resident in self.residents:
             if not resident.occupation and not resident.retired:
-                if resident.age >= self.gameState.config.age_people_start_working:
+                if resident.age >= self.game.config.age_people_start_working:
                     unemployed_people.add(resident)
         return unemployed_people
 
@@ -439,10 +508,11 @@ class Block(object):
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
 
-    def __init__(self):
+    def __init__(self,city):
         """Initialize a Lot object."""
         #self.game = block.city.game
        # self.city = block.city
+        self.city = city
         self.streets = []
         self.blocks = []
         self.sidesOfStreet = []
@@ -450,7 +520,7 @@ class Lot(object):
         self.building = None  # Will always be None for Tract
         self.landmark = None  # Will always be None for Lot
         self.positionsInBlock = []
-        self._init_add_to_city_plan()
+        
         #self.neighboring_lots = self._init_get_neighboring_lots()
     def addBlock(self,block,number,sideOfStreet,positionInBlock):
         self.streets.append(block.street)
@@ -458,15 +528,17 @@ class Lot(object):
         self.sidesOfStreet.append(sideOfStreet)
         self.house_numbers.append(number)
         self.positionsInBlock.append(positionInBlock)
-    def _init_add_to_city_plan(self):
-        """Add self to the city plan."""
-        #self.city.lots.add(self)
-
-    def _init_get_neighboring_lots(self):
-        """Collect all lots that neighbor this lot."""
-        self.neighboring_lots = set([l for l in self.city.lots if self.get_dist_to(l) < 5])  # TEMP for testing
-        # return neighboring_lots
-
+    def getNeighboringLots(self):
+        neighboringLots = set()
+        for block in self.blocks:
+            for lot in block.lots:
+                neighboringLots.add(lot)
+        return neighboringLots
+    # def _init_get_neighboring_lots(self):
+        # """Collect all lots that neighbor this lot."""
+        # self.neighboring_lots = set([l for l in self.city.lots if self.get_dist_to(l) < 2])  # TEMP for testing
+        # # return neighboring_lots
+        
     @property
     def population(self):
         """Return the number of people living/working on the lot."""
@@ -476,64 +548,48 @@ class Lot(object):
             population = 0
         return population
 
-    @property
-    def secondary_population(self):
-        """Return the total population of this lot and its neighbors."""
-        secondary_population = 0
-        for lot in [self] | self.neighboring_lots:
-            secondary_population += lot.population
-        return secondary_population
+    # @property
+    # def secondary_population(self):
+        # """Return the total population of this lot and its neighbors."""
+        # secondary_population = 0
+        # for lot in [self] | self.neighboring_lots:
+            # secondary_population += lot.population
+        # return secondary_population
 
-    @property
-    def tertiary_population(self):
-        """Return the total population of this lot and its neighbors and its neighbors' neighbors."""
-        lots_already_considered = set()
-        tertiary_population = 0
-        for lot in [self] | self.neighboring_lots:
-            if lot not in lots_already_considered:
-                lots_already_considered.add(lot)
-                tertiary_population += lot.population
-                for neighbor_to_that_lot in lot.neighboring_lots:
-                    if neighbor_to_that_lot not in lots_already_considered:
-                        lots_already_considered.add(neighbor_to_that_lot)
-                        tertiary_population += lot.population
-        return tertiary_population
+    # @property
+    # def tertiary_population(self):
+        # """Return the total population of this lot and its neighbors and its neighbors' neighbors."""
+        # lots_already_considered = set()
+        # tertiary_population = 0
+        # for lot in [self] | self.neighboring_lots:
+            # if lot not in lots_already_considered:
+                # lots_already_considered.add(lot)
+                # tertiary_population += lot.population
+                # for neighbor_to_that_lot in lot.neighboring_lots:
+                    # if neighbor_to_that_lot not in lots_already_considered:
+                        # lots_already_considered.add(neighbor_to_that_lot)
+                        # tertiary_population += lot.population
+        # return tertiary_population
 
-    @property
-    def dist_from_downtown(self):
-        """Return the Manhattan distance between this lot and the center of downtown."""
-        dist = 5
-        return dist
+    # @property
+    # def dist_from_downtown(self):
+        # """Return the Manhattan distance between this lot and the center of downtown."""
+        # dist = 5
+        # return dist
 
-    def get_dist_to(self, lot_or_tract):
-        """Return the Manhattan distance between this lot and some lot or tract."""
-        dist = min(50, abs(self.block.number - lot_or_tract.block.number))  # TEMP for testing
-        return dist
+    # def get_dist_to(self, lot_or_tract):
+        # """Return the Manhattan distance between this lot and some lot or tract."""
+        # dist = min(50, abs(self.block.number - lot_or_tract.block.number))  # TEMP for testing
+        # return dist
 
-    def dist_to_nearest_company_of_type(self, company_type, exclusion):
-        """Return the Manhattan distance between this lot and the nearest company of the given type.
-
-        @param company_type: The Class representing the type of company in question.
-        @param exclusion: A company who is being excluded from this determination because they
-                          are the ones making the call to this method, as they try to decide where
-                          to put their lot.
-        """
-        distances = [
-            self.get_dist_to(company.lot) for company in self.city.companies if isinstance(company, company_type)
-            and company is not exclusion
-        ]
-        if distances:
-            return min(distances)
-        else:
-            return None
 
 
 class Tract(Lot):
     """A tract of land on a block in a city, upon which parks and cemeteries are established."""
 
-    def __init__(self):
+    def __init__(self,city):
         """Initialize a Lot object."""
-        super(Tract, self).__init__()
+        super(Tract, self).__init__(city)
 
     def _init_add_to_city_plan(self):
         """Add self to the city plan."""
