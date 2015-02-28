@@ -46,7 +46,6 @@ class Game(object):
         # each of these establishments will bring in workers who will find vacant lots
         # on which to build homes
         self._establish_city_infrastructure()
-        self.a = Acquaintance(subjects=(self.founder, self.founder.spouse), preceded_by=None)
 
 
     def _produce_city_founder(self):
@@ -73,8 +72,8 @@ class Game(object):
         FireStation(owner=self.founder)
         PoliceStation(owner=self.founder)
         University(owner=self.founder)
-        Park(owner=self.founder)
-        Cemetery(owner=self.founder)
+        # Park(owner=self.founder)
+        # Cemetery(owner=self.founder)
 
 
     # 5. have the rich man's children start Bank, RealtyFirm, multiple ApartmentComplexes, Hotel, Supermarket,
