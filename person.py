@@ -113,9 +113,7 @@ class Person(object):
         # Prepare attributes representing this person's interpersonal relationships.
         self.spouse = None
         self.widowed = False
-        self.friends = set()
-        self.known_people = set()
-        self.known_by = set()
+        self.relationships = {}
         self.first_met = {}
         self.last_saw = {}
         self.talked_to_this_year = set()
@@ -468,6 +466,30 @@ class Person(object):
             if kid.home is self.home:
                 nuclear_family.add(kid)
         return nuclear_family
+
+    @property
+    def friends(self):
+        """Return the friends this person has (in their own conception)."""
+        friends = [
+            person for person in self.relationships if self.relationships[person].type == "friendship"
+        ]
+        return friends
+
+    @property
+    def enemies(self):
+        """Return the enemies this person has (in their own conception)."""
+        enemies = [
+            person for person in self.relationships if self.relationships[person].type == "enmity"
+        ]
+        return enemies
+
+    @property
+    def acquaintances(self):
+        """Return the acquaintances this person has."""
+        acquaintances = [
+            person for person in self.relationships if self.relationships[person].type == "acquaintance"
+        ]
+        return acquaintances
 
     @property
     def coworkers(self):

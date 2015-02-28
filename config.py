@@ -1133,3 +1133,20 @@ class Config(object):
         self.memory_mutations["tattoo"] = self.memory_mutations["freckles"]
         self.memory_mutations["glasses"] = self.memory_mutations["freckles"]
         self.memory_mutations["sunglasses"] = self.memory_mutations["freckles"]
+
+                ####################
+                ##  SOCIAL STUFF  ##
+                ####################
+
+        # These values help to determine the charge increment for an Acquaintance/Friendship/Enmity
+        # and get multiplied by its owner's extroversion and subject's agreeableness, respectively;
+        # the resulting value then gets added to the two people's compatibility, which will be on
+        # a scale from -1 to 1, and so these represent the proportion, relative to compatibility,
+        # that these values will play in determining charge increments
+        self.owner_extroversion_boost_to_charge_multiplier = 0.25
+        self.subject_agreeableness_boost_to_charge_multiplier = 0.25
+        # Once the charge of an Acquaintance exceeds these thresholds, a Friendship or Enmity
+        # (whichever is appropriate, of course) object will get instantiated
+        self.charge_threshold_friendship = 15.0
+        self.charge_threshold_enmity = -15.0
+

@@ -5,60 +5,84 @@ from knowledge import *
 class PersonMentalModel(object):
     """A person's mental model of a person, representing everything she believes about her."""
 
-    def __init__(self, owner, subject, originating_in_first_hand_observation):
+    def __init__(self, owner, subject, observation_or_reflection):
         """Initialize a PersonMentalModel object.
 
         @param owner: The person who holds this belief.
         @param subject: The person to whom this belief pertains.
-        @param originating_in_first_hand_observation: Whether this mental model is originating
-                                                      from first-hand observation of the subject,
-                                                      as opposed to hearing of them second-hand.
+        @param observation_or_reflection: The Observation or Reflection from which this
+                                          the beliefs composing this mental model originate.
         """
         self.owner = owner
         self.subject = subject
-        if originating_in_first_hand_observation:
-            self.face = FaceBelief(person_model=self)
+        self.face = FaceBelief(
+            person_model=self, observation_or_reflection=observation_or_reflection
+        )
+        self.owner.mind.mental_models[self.subject] = self
 
-    def determine_belief_facet(self, feature_type):
+    def build_up(self):
+        """Build up a mental model from a new observation, reflection."""
+
+    def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
         config = self.owner.game.config
-        true_feature_str, observation = (
-            self._get_true_feature_and_generate_an_observation_for_it(feature_type=feature_type)
-        )
-        chance_feature_gets_remembered_perfectly = (
-            self._calculate_chance_feature_gets_remembered_perfectly(feature_type=feature_type)
-        )
-        if random.random() < chance_feature_gets_remembered_perfectly:
-            belief_facet_obj = Facet(value=true_feature_str, evidence=observation)
+        if not observation_or_reflection:
+            # This is in service to preparation of a mental model composed (initially) of
+            # blank belief attributes -- then these can be filled in manually according
+            # to what a person tells another person, etc.
+            return None
         else:
-            # Knowledge will either succumb to mutation or transference or forgetting
-            result = self._decide_how_knowledge_will_pollute_or_be_forgotten(config=config)
-            if result == 't' and len(self.owner.mind.mental_models) > 1:  # Transference
-                # Note: the check on the owner's mental models is to make sure they
-                # actually have a mental model for a person other than themself to
-                # transfer the feature attribute from
-                belief_facet_obj = self._transfer_belief_facet(
-                    feature_type=feature_type, parent_knowledge_object=observation
+            true_feature_str = self._get_true_feature(feature_type=feature_type)
+            observation_or_reflection = observation_or_reflection
+            chance_feature_gets_remembered_perfectly = (
+                self._calculate_chance_feature_gets_remembered_perfectly(feature_type=feature_type)
+            )
+            # If this is a reflection, there's no chance person will forget
+            if observation_or_reflection.type == "reflection":
+                chance_feature_gets_remembered_perfectly = 1.0
+            if random.random() < chance_feature_gets_remembered_perfectly:
+                belief_facet_obj = Facet(value=true_feature_str, evidence=observation_or_reflection)
+            else:
+                # Knowledge will deteriorate, either mutation, transference, forgetting
+                belief_facet_obj = self.deteriorate_belief_facet(
+                    feature_type=feature_type, parent_knowledge_object=observation_or_reflection,
+                    current_feature_str=true_feature_str
                 )
-            elif result == 'm':  # Mutation
-                belief_facet_obj = self._mutate_belief_facet(
-                    feature_type=feature_type, parent_knowledge_object=observation,
-                    true_feature_str=true_feature_str
-                )
-            else:  # Forgetting
-                belief_facet_obj = self._forget_belief_facet(parent_knowledge_object=observation)
+            return belief_facet_obj
+
+    def deteriorate_belief_facet(self, feature_type, parent_knowledge_object, current_feature_str):
+        """Deteriorate a belief facet, either by mutation, transference, or forgetting."""
+        config = self.owner.game.config
+        result = self._decide_how_knowledge_will_pollute_or_be_forgotten(config=config)
+        if result == 't' and len(self.owner.mind.mental_models) > 1:  # Transference
+            # Note: the check on the owner's mental models is to make sure they
+            # actually have a mental model for a person other than themself to
+            # transfer the feature attribute from
+            belief_facet_obj = self._transfer_belief_facet(
+                feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
+            )
+        elif result == 'm':  # Mutation
+            belief_facet_obj = self._mutate_belief_facet(
+                feature_type=feature_type, parent_knowledge_object=parent_knowledge_object,
+                feature_being_mutated_from_str=current_feature_str
+            )
+        else:  # Forgetting
+            belief_facet_obj = self._forget_belief_facet(
+                parent_knowledge_object=parent_knowledge_object)
         return belief_facet_obj
 
-    def _mutate_belief_facet(self, feature_type, parent_knowledge_object, true_feature_str):
+    def _mutate_belief_facet(self, feature_type, parent_knowledge_object, feature_being_mutated_from_str):
         """Mutate a belief facet."""
         config = self.subject.game.config
         x = random.random()
-        possible_mutations = config.memory_mutations[feature_type][true_feature_str]
+        possible_mutations = config.memory_mutations[feature_type][feature_being_mutated_from_str]
         mutated_feature_str = next(  # See config.py to understand what this is doing
             mutation[1] for mutation in possible_mutations if
             mutation[0][0] <= x <= mutation[0][1]
         )
-        mutation = Mutation(parent=parent_knowledge_object, subject=self.subject)
+        mutation = Mutation(
+            parent=parent_knowledge_object, subject=self.subject, source=self.owner,
+            mutated_belief_str=feature_being_mutated_from_str)
         belief_facet_obj = Facet(value=mutated_feature_str, evidence=mutation)
         return belief_facet_obj
 
@@ -96,12 +120,11 @@ class PersonMentalModel(object):
         belief_facet_obj = Facet(value='', evidence=forgetting)
         return belief_facet_obj
 
-    def _get_true_feature_and_generate_an_observation_for_it(self, feature_type):
+    def _get_true_feature(self, feature_type):
         true_feature_str = str(self._get_a_persons_true_feature_of_type(
             person=self.subject, feature_type=feature_type)
         )
-        observation = Observation(subject=self.subject, source=self.owner)
-        return true_feature_str, observation
+        return true_feature_str
 
     @staticmethod
     def _decide_how_knowledge_will_pollute_or_be_forgotten(config):
@@ -205,153 +228,221 @@ class BuildingMentalModel(object):
 class FaceBelief(object):
     """A person's mental model of a person's face."""
 
-    def __init__(self, person_model):
+    def __init__(self, person_model, observation_or_reflection):
         """Initialize a FaceBelief object."""
         self.person_model = person_model
-        self.skin = SkinBelief(face_belief=self)
-        self.head = HeadBelief(face_belief=self)
-        self.hair = HairBelief(face_belief=self)
-        self.eyebrows = EyebrowsBelief(face_belief=self)
-        self.eyes = EyesBelief(face_belief=self)
-        self.ears = EarsBelief(face_belief=self)
-        self.nose = NoseBelief(face_belief=self)
-        self.mouth = MouthBelief(face_belief=self)
-        self.facial_hair = FacialHairBelief(face_belief=self)
-        self.distinctive_features = DistinctiveFeaturesBelief(face_belief=self)
+        self.skin = SkinBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.head = HeadBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.hair = HairBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.eyebrows = EyebrowsBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.eyes = EyesBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.ears = EarsBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.nose = NoseBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.mouth = MouthBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.facial_hair = FacialHairBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
+        self.distinctive_features = DistinctiveFeaturesBelief(
+            face_belief=self, observation_or_reflection=observation_or_reflection
+        )
 
 
 class SkinBelief(object):
     """A person's mental model of a person's skin."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Skin object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.color = self.face_belief.person_model.determine_belief_facet(feature_type="skin color")
+        self.color = self.face_belief.person_model.determine_belief_facet(
+            feature_type="skin color", observation_or_reflection=observation_or_reflection
+        )
 
 
 class HeadBelief(object):
     """A person's mental model of a person's head."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Head object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="head size")
-        self.shape = self.face_belief.person_model.determine_belief_facet(feature_type="head shape")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="head size", observation_or_reflection=observation_or_reflection
+        )
+        self.shape = self.face_belief.person_model.determine_belief_facet(
+            feature_type="head shape", observation_or_reflection=observation_or_reflection
+        )
 
 
 class HairBelief(object):
     """A person's mental model of a person's hair (on his or her head)."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Hair object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.length = self.face_belief.person_model.determine_belief_facet(feature_type="hair length")
-        self.color = self.face_belief.person_model.determine_belief_facet(feature_type="hair color")
+        self.length = self.face_belief.person_model.determine_belief_facet(
+            feature_type="hair length", observation_or_reflection=observation_or_reflection
+        )
+        self.color = self.face_belief.person_model.determine_belief_facet(
+            feature_type="hair color", observation_or_reflection=observation_or_reflection
+        )
 
 
 class EyebrowsBelief(object):
     """A person's mental model of a person's eyebrows."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Eyebrows object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="eyebrow size")
-        self.color = self.face_belief.person_model.determine_belief_facet(feature_type="eyebrow color")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eyebrow size", observation_or_reflection=observation_or_reflection
+        )
+        self.color = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eyebrow color", observation_or_reflection=observation_or_reflection
+        )
 
 
 class MouthBelief(object):
     """A person's mental model of a person's mouth."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Mouth object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="mouth size")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="mouth size", observation_or_reflection=observation_or_reflection
+        )
 
 
 class EarsBelief(object):
     """A person's mental model of a person's ears."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize an Ears object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="ear size")
-        self.angle = self.face_belief.person_model.determine_belief_facet(feature_type="ear angle")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="ear size", observation_or_reflection=observation_or_reflection
+        )
+        self.angle = self.face_belief.person_model.determine_belief_facet(
+            feature_type="ear angle", observation_or_reflection=observation_or_reflection
+        )
 
 
 class NoseBelief(object):
     """A person's mental model of a person's nose."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Nose object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="nose size")
-        self.shape = self.face_belief.person_model.determine_belief_facet(feature_type="nose shape")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="nose size", observation_or_reflection=observation_or_reflection
+        )
+        self.shape = self.face_belief.person_model.determine_belief_facet(
+            feature_type="nose shape", observation_or_reflection=observation_or_reflection
+        )
 
 
 class EyesBelief(object):
     """A person's mental model of a person's eyes."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize an Eyes object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.size = self.face_belief.person_model.determine_belief_facet(feature_type="eye size")
-        self.shape = self.face_belief.person_model.determine_belief_facet(feature_type="eye shape")
-        self.horizontal_settedness = self.face_belief.person_model.determine_belief_facet(feature_type="eye horizontal settedness")
-        self.vertical_settedness = self.face_belief.person_model.determine_belief_facet(feature_type="eye vertical settedness")
-        self.color = self.face_belief.person_model.determine_belief_facet(feature_type="eye color")
+        self.size = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eye size", observation_or_reflection=observation_or_reflection
+        )
+        self.shape = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eye shape", observation_or_reflection=observation_or_reflection
+        )
+        self.horizontal_settedness = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eye horizontal settedness", observation_or_reflection=observation_or_reflection
+        )
+        self.vertical_settedness = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eye vertical settedness", observation_or_reflection=observation_or_reflection
+        )
+        self.color = self.face_belief.person_model.determine_belief_facet(
+            feature_type="eye color", observation_or_reflection=observation_or_reflection
+        )
 
 
 class FacialHairBelief(object):
     """A person's mental model of a person's facial hair."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a FacialHair style.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.style = self.face_belief.person_model.determine_belief_facet(feature_type="facial hair style")
+        self.style = self.face_belief.person_model.determine_belief_facet(
+            feature_type="facial hair style", observation_or_reflection=observation_or_reflection
+        )
 
 
 class DistinctiveFeaturesBelief(object):
     """A person's mental model of a person's distinguishing features."""
 
-    def __init__(self, face_belief):
+    def __init__(self, face_belief, observation_or_reflection):
         """Initialize a DistinctiveFeatures object.
 
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
-        self.freckles = self.face_belief.person_model.determine_belief_facet(feature_type="freckles")
-        self.birthmark = self.face_belief.person_model.determine_belief_facet(feature_type="birthmark")
-        self.scar = self.face_belief.person_model.determine_belief_facet(feature_type="scar")
-        self.tattoo = self.face_belief.person_model.determine_belief_facet(feature_type="tattoo")
-        self.glasses = self.face_belief.person_model.determine_belief_facet(feature_type="glasses")
-        self.sunglasses = self.face_belief.person_model.determine_belief_facet(feature_type="sunglasses")
+        self.freckles = self.face_belief.person_model.determine_belief_facet(
+            feature_type="freckles", observation_or_reflection=observation_or_reflection
+        )
+        self.birthmark = self.face_belief.person_model.determine_belief_facet(
+            feature_type="birthmark", observation_or_reflection=observation_or_reflection
+        )
+        self.scar = self.face_belief.person_model.determine_belief_facet(
+            feature_type="scar", observation_or_reflection=observation_or_reflection
+        )
+        self.tattoo = self.face_belief.person_model.determine_belief_facet(
+            feature_type="tattoo", observation_or_reflection=observation_or_reflection
+        )
+        self.glasses = self.face_belief.person_model.determine_belief_facet(
+            feature_type="glasses", observation_or_reflection=observation_or_reflection
+        )
+        self.sunglasses = self.face_belief.person_model.determine_belief_facet(
+            feature_type="sunglasses", observation_or_reflection=observation_or_reflection
+        )
 
 
 class Facet(str):

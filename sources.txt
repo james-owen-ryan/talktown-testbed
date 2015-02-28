@@ -8,3 +8,6 @@
 
 [3] Ruiz-Soler and Beltran. "The Relative Salience of Facial Features When Differentiating Faces
         Based on an Interference Paradigm"
+
+[4] Selfhout et al. 2010: Emerging late adolescent friendship networks and Big Five personality
+        traits: a social network approach
