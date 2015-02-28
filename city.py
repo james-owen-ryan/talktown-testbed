@@ -1,8 +1,7 @@
-from random import random
-#from business import *
-#from residence import *
-#from occupation import *
-# from landmark import *
+import random
+from business import *
+from residence import *
+from occupation import *
 import pyqtree
 from random import gauss,randrange
 from corpora import Names
@@ -28,34 +27,34 @@ def clamp(val,minimum,maximum):
 class City(object):
     """A city in which a gameplay instance takes place."""
 
-    def __init__(self, game):
+    def __init__(self, gameState):
         """Initialize a City object."""
-        self.game = game
-        self.founded = game.config.year_city_gets_founded
+        self.gameState = gameState
+        self.founded = gameState.config.year_city_gets_founded
         self.residents = set()
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city
         self.companies = set()
         self.lots = set()
         self.tracts = set()
-        self.temp_init_lots_and_tracts_for_testing()
+        #self.temp_init_lots_and_tracts_for_testing()
         for lot in self.lots | self.tracts:
             lot._init_get_neighboring_lots()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
         self.streets = set()
         self.blocks = set()
-        self.generateLots(game.config)
+        self.generateLots(gameState.config)
         self.paths = {}
         self.generatePaths()
         
     def generatePaths(self):
-        for start in blocks:
-            for goal in blocks:
+        for start in self.blocks:
+            for goal in self.blocks:
                 if (start != goal):
-                    if ((start,goal) not in paths):
-                        came_from, cost_so_far = a_star_search(start,goal)
-                        paths[(start,goal)] = came_from
-                        paths[(goal,start)] = came_from
+                    if ((start,goal) not in self.paths):
+                        came_from, cost_so_far = City.a_star_search(start,goal)
+                        self.paths[(start,goal)] = came_from
+                        self.paths[(goal,start)] = came_from
     def generateLots(self,configFile):
         
         loci =  configFile.loci
@@ -92,14 +91,7 @@ class City(object):
                 n =int( node.center[1]-node.width*0.5)
                 s =int( node.center[1]+node.width*0.5)
                 blocks.append((w,n,node.width))
-                for xx in range(w,e):
-                    lots.append((xx+0.5,n+0.5))
-                    lots.append((xx+0.5,s-0.5))
-                for xx in range(n+1,s-1):
-                    lots.append((w+0.5,xx+0.5))
-                    lots.append((e-0.5,xx+0.5))
-                if (node.width > 2):
-                    tracts.append([w+1,n+1,node.width-2])
+
                 nsstreets[ (w,n)] = (w,s)
                 nsstreets[ (e,n)] = (e,s)
                 ewstreets[ (w,n)] = (e,n)
@@ -107,8 +99,8 @@ class City(object):
                 
             for child in node.children:
                 traverseTree(child)
+        traverseTree(tree)        
         
-        traverseTree(tree)
         for ii in range(0,size+2,2):
             for jj in range(0,size+2,2):
                 street = (ii,jj)
@@ -127,14 +119,12 @@ class City(object):
                         end = ewstreets[end]
                     if (end not in ewEnd):
                         ewEnd.append(end)             
-                        streets.append(['ew',start, end])
-
-         
+                        streets.append(['ew',start, end])         
         
         nsStreets = {}
         ewStreets = {}
         connections = {}
-        for street in streets:
+        for street in streets:            
             number = int(street[1][0]/2 if street[0] == "ns" else street[1][1]/2)+1
             direction = ""
             startingBlock = 0
@@ -148,10 +138,10 @@ class City(object):
                 direction =( "E" if number < size/4 else "W")
                 startingBlock =  street[1][0]
                 endingBlock =  street[2][0]
-
+            
             startingBlock = int(startingBlock/2)+1
             endingBlock = int(endingBlock/2)+1
-            reifiedStreet = (Street(city,number, direction,startingBlock,endingBlock))
+            reifiedStreet = (Street(number, direction,startingBlock,endingBlock))
             self.streets.add(reifiedStreet)
             for ii in range(startingBlock,endingBlock+1):
                 if (street[0] == "ns"):
@@ -168,11 +158,12 @@ class City(object):
                     coord = (ii,number)
                     next = (ii+1,number)
                 if (not coord in connections):
-                    connections[coord] = []
-                connections[coord].append(next)
+                    connections[coord] = set()
+                connections[coord].add(next)
                 if (not next in connections):
-                    connections[next] = []
-                connections[next].append(coord)
+                    connections[next] = set()
+                connections[next].add(coord)
+                
 
         def insertInto(dict,key,value):
             if (not key in dict):
@@ -188,7 +179,8 @@ class City(object):
         Numberings = {}
         n_buildings_per_block = Config().n_buildings_per_block
 
-
+        totalCount = 0;
+        corners = set()
         for block in blocks:
             ew = int(block[0]/2)+1
             ns = int(block[1]/2)+1 
@@ -199,61 +191,84 @@ class City(object):
             
             for ii in range(0,sizeOfBlock+1):
                 Blocks[(ew,ns+ii,'NS')] =Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii)) 
-                insertOnce(Numberings,(ew,ns+ii,'W'),Block.determine_house_numbering( (ii+ns)*100,'W', Config()))
+                insertOnce(Numberings,(ew,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', Config()))
                 Blocks[(ew+ii,ns,'EW')] =Block( ewStreets[(ew,ns)], (ii+ew)*100,(ew+ii,ns))        
-                insertOnce(Numberings,(ew+ii,ns,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', Config()))
+                insertOnce(Numberings,(ew+ii,ns,'N'),Block.determine_house_numbering( (ii+ew)*100,'N', Config()))
                 Blocks[(ew+sizeOfBlock,ns+ii,'NS')] =Block( nsStreets[(ew+sizeOfBlock,ns)], (ii+ns)*100,(ew+sizeOfBlock,ns+ii))   
-                insertOnce(Numberings,(ew+sizeOfBlock,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', Config()))     
+                insertOnce(Numberings,(ew+sizeOfBlock,ns+ii,'W'),Block.determine_house_numbering( (ii+ns)*100,'W', Config()))     
                 Blocks[(ew+ii,ns+sizeOfBlock,'EW')] =Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock))
-                insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'N'),Block.determine_house_numbering( (ii+ew)*100,'N', Config())) 
+                insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', Config())) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],None)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],None )
-                    tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None)
-                    tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None)
+                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,0,0)
+                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,0,0)
+                    tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,0,0)
+                    tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,0,0)
              
             neCorner = Lot()
-            insertInto(lots,(ew,ns,'S'),(0,neCorner))
-            insertInto(lots,(ew,ns,'W'),(0,neCorner))
+            insertInto(lots,(ew,ns,'N'),(0,neCorner))
+            insertInto(lots,(ew,ns,'E'),(0,neCorner))
+            self.lots.add(neCorner)
+            corners.add((ew,ns,'EW',ew,ns,'NS'))
             
             nwCorner = Lot()
-            insertInto(lots,(ew+sizeOfBlock,ns,'S'),(0,nwCorner))
-            insertInto(lots,(ew+sizeOfBlock,ns,'E'),(n_buildings_per_block-1,nwCorner))
+            if (ew+sizeOfBlock <= size/2):
+                insertInto(lots,(ew+sizeOfBlock-1,ns,'N'),(n_buildings_per_block-1,nwCorner))
+            insertInto(lots,(ew+sizeOfBlock,ns,'W'),(0,nwCorner))            
+            corners.add((ew+sizeOfBlock-1,ns,'EW',ew+sizeOfBlock,ns,'NS'))
+            self.lots.add(nwCorner)
             
             seCorner = Lot()
-            insertInto(lots,(ew,ns+sizeOfBlock,'N'),(n_buildings_per_block-1,seCorner))
-            insertInto(lots,(ew,ns+sizeOfBlock,'W'),(0,seCorner))
+            insertInto(lots,(ew,ns+sizeOfBlock,'S'),(0,seCorner))
+            if (ns+sizeOfBlock <= size/2):
+                insertInto(lots,(ew,ns+sizeOfBlock-1,'E'),(n_buildings_per_block-1,seCorner))
+            self.lots.add(seCorner)
+            corners.add((ew,ns+sizeOfBlock,'EW',ew,ns+sizeOfBlock-1,'NS'))
             
             swCorner = Lot()
-            insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock,'N'),(n_buildings_per_block-1,swCorner))
-            insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock,'E'),(n_buildings_per_block-1,swCorner))
+            insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner))  
+            insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
+            corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
+            self.lots.add(swCorner)
             
-            for ii in range(1,sizeOfBlock*Config().n_buildings_per_block):   
+            for ii in range(1,sizeOfBlock*Config().n_buildings_per_block-1): 
                 blockNum = int(ii/2)
-                insertInto(lots,(ew,ns+blockNum,'W'),(ii %n_buildings_per_block, Lot()))
-                insertInto(lots,(ew+blockNum,ns,'S'),(ii %n_buildings_per_block, Lot()))
-                insertInto(lots,(ew+sizeOfBlock,ns+blockNum,'E'),(ii %n_buildings_per_block, Lot()))
-                insertInto(lots,(ew+blockNum,ns+sizeOfBlock,'N'),(ii %n_buildings_per_block, Lot()))        
-                
+                lot = Lot()
+                self.lots.add(lot)      
+                insertInto(lots,(ew,ns+blockNum,'E'),(ii %n_buildings_per_block,lot))
+                lot = Lot()
+                self.lots.add(lot)      
+                insertInto(lots,(ew+blockNum,ns,'N'),(ii %n_buildings_per_block,lot))
+                lot = Lot()
+                self.lots.add(lot)      
+                insertInto(lots,(ew+sizeOfBlock,ns+blockNum,'W'),(ii %n_buildings_per_block,lot))
+                lot = Lot()
+                self.lots.add(lot)      
+                insertInto(lots,(ew+blockNum,ns+sizeOfBlock,'S'),(ii %n_buildings_per_block,lot))  
         for block in lots:
             dir = 'NS' if block[2] == 'W' or block[2] == 'E' else 'EW'
             actualBlock = Blocks[(block[0],block[1],dir)]
             lotList = lots[block]
+            
             for lot in lotList:
-                lot[1].addBlock(actualBlock,Numberings[block][lot[0]])
+                lot[1].addBlock(actualBlock,Numberings[block][lot[0]],block[2],lot[0])
                 actualBlock.lots.append(lot[1])
-
-
+                
         for conn in connections: 
             for neighbor in connections[conn]:
                 dx = neighbor[0] - conn[0]
                 dy = neighbor[1] - conn[1]
                 if dx != 0:
-                    Blocks[(conn[0],conn[1],'EW')].addNeighbor(Blocks[(neighbor[0],neighbor[1],'EW')])
+                    if (conn[0],conn[1],'EW') in Blocks and (neighbor[0],neighbor[1],'EW') in Blocks:
+                        Blocks[(conn[0],conn[1],'EW')].addNeighbor(Blocks[(neighbor[0],neighbor[1],'EW')])
                 if dy != 0:
-                    Blocks[(conn[0],conn[1],'NS')].addNeighbor(Blocks[(neighbor[0],neighbor[1],'NS')])
+                    if (conn[0],conn[1],'NS') in Blocks and (neighbor[0],neighbor[1],'NS') in Blocks:
+                        Blocks[(conn[0],conn[1],'NS')].addNeighbor(Blocks[(neighbor[0],neighbor[1],'NS')])
+        for corner in corners:
+            Blocks[(corner[0],corner[1],corner[2])].addNeighbor(Blocks[(corner[3],corner[4],corner[5])])
+            Blocks[(corner[3],corner[4],corner[5])].addNeighbor(Blocks[(corner[0],corner[1],corner[2])])
+            
         for block in Blocks:
-            self.blocks.add(block)
+            self.blocks.add(Blocks[block])
         self.mayor = None  # Currently being set to city founder by CityHall.__init__()
 
     def temp_init_lots_and_tracts_for_testing(self):
@@ -303,7 +318,7 @@ class City(object):
         unemployed_people = set()
         for resident in self.residents:
             if not resident.occupation and not resident.retired:
-                if resident.age >= self.game.config.age_people_start_working:
+                if resident.age >= self.gameState.config.age_people_start_working:
                     unemployed_people.add(resident)
         return unemployed_people
 
@@ -313,11 +328,12 @@ class City(object):
         @param occupation: The class pertaining to the occupation in question.
         """
         return (resident for resident in self.residents if isinstance(resident.occupation, occupation))
+    @staticmethod
     def heuristic(a, b):
         (x1, y1) = a.coords
         (x2, y2) = b.coords
         return abs(x1 - x2) + abs(y1 - y2)
-
+    @staticmethod
     def a_star_search(start, goal):
         frontier = PriorityQueue()
         frontier.put(start, 0)
@@ -336,7 +352,7 @@ class City(object):
                 new_cost = cost_so_far[current] + 1
                 if next not in cost_so_far or new_cost < cost_so_far[next]:
                     cost_so_far[next] = new_cost
-                    priority = new_cost + heuristic(goal, next)
+                    priority = new_cost + City.heuristic(goal, next)
                     frontier.put(next, priority)
                     came_from[next] = current
         
@@ -345,11 +361,10 @@ class City(object):
 class Street(object):
     """A street in a city."""
 
-    def __init__(self, city, number, direction,startingBlock,endingBlock):
+    def __init__(self, number, direction,startingBlock,endingBlock):
         """Initialize a Street object."""
         #self.game = city.game
-        self.city = city
-        self.type = type
+        #self.type = type
         self.number = number
         self.direction = direction  # Direction relative to the center of the city
         self.name = self.generate_name(number, direction)
@@ -359,18 +374,19 @@ class Street(object):
     @staticmethod
     def generate_name(number, direction):
         """Generate a street name."""
-        number_to_ordinal = {
-            1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th',9:'9th'
-        }
-        if random() < 0.13:
+        number_to_ordinal =  dict((key, value) for (key, value) in [(1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'),(9,'9th')])
+        if random.random() < 0.13:
             name = Names.any_surname()
         else:
             name = number_to_ordinal[number]
+
         if direction == 'E' or direction == 'W':
             street_type = 'Street'
         else:
             street_type = 'Avenue'
-        name = "{} {} {}".format(name, street_type, direction)
+        
+       # name = "{} {} {}".format(name, street_type, direction)
+        name = name + " " + street_type + " " + direction
         return name
 
     def __str__(self):
@@ -407,7 +423,7 @@ class Block(object):
         evenOdd = 0 if  sideOfStreet == "E" or sideOfStreet == "N" else 1
         for i in xrange(n_buildings):
             base_house_number = (i * house_number_increment) - 1
-            house_number = base_house_number + int(random() * house_number_increment)
+            house_number = base_house_number + int(random.random() * house_number_increment)
             if house_number % 2 == (1-evenOdd):  
                 house_number += 1
             if house_number < 1+evenOdd:
@@ -429,15 +445,19 @@ class Lot(object):
        # self.city = block.city
         self.streets = []
         self.blocks = []
+        self.sidesOfStreet = []
         self.house_numbers = []  # In the event a business/landmark is erected here, it inherits this
         self.building = None  # Will always be None for Tract
         self.landmark = None  # Will always be None for Lot
+        self.positionsInBlock = []
         self._init_add_to_city_plan()
         #self.neighboring_lots = self._init_get_neighboring_lots()
-    def addBlock(self,block,number):
+    def addBlock(self,block,number,sideOfStreet,positionInBlock):
         self.streets.append(block.street)
         self.blocks.append(block)
+        self.sidesOfStreet.append(sideOfStreet)
         self.house_numbers.append(number)
+        self.positionsInBlock.append(positionInBlock)
     def _init_add_to_city_plan(self):
         """Add self to the city plan."""
         #self.city.lots.add(self)
@@ -460,7 +480,7 @@ class Lot(object):
     def secondary_population(self):
         """Return the total population of this lot and its neighbors."""
         secondary_population = 0
-        for lot in {self} | self.neighboring_lots:
+        for lot in [self] | self.neighboring_lots:
             secondary_population += lot.population
         return secondary_population
 
@@ -469,7 +489,7 @@ class Lot(object):
         """Return the total population of this lot and its neighbors and its neighbors' neighbors."""
         lots_already_considered = set()
         tertiary_population = 0
-        for lot in {self} | self.neighboring_lots:
+        for lot in [self] | self.neighboring_lots:
             if lot not in lots_already_considered:
                 lots_already_considered.add(lot)
                 tertiary_population += lot.population

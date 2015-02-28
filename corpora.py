@@ -6,31 +6,31 @@ class Names(object):
     """A class that accesses names corpora to return random names."""
     masculine_forenames = tuple(
         name[:-1] for name in
-        open(os.getcwd()+'/corpora/masculine_names.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/masculine_names.txt', 'r')
     )
     feminine_forenames = tuple(
         name[:-1] for name in
-        open(os.getcwd()+'/corpora/feminine_names.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/feminine_names.txt', 'r')
     )
     english_surnames = tuple(
         name.strip('\n') for name in
-        open(os.getcwd()+'/corpora/english_surnames.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/english_surnames.txt', 'r')
     )
     french_surnames = tuple(
         name.strip('\n') for name in
-        open(os.getcwd()+'/corpora/french_surnames.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/french_surnames.txt', 'r')
     )
     german_surnames = tuple(
         name.strip('\n') for name in
-        open(os.getcwd()+'/corpora/german_surnames.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/german_surnames.txt', 'r')
     )
     irish_surnames = tuple(
         name.strip('\n') for name in
-        open(os.getcwd()+'/corpora/irish_surnames.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/irish_surnames.txt', 'r')
     )
     scandinavian_surnames = tuple(
         name.strip('\n') for name in
-        open(os.getcwd()+'/corpora/scandinavian_surnames.txt', 'r')
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/scandinavian_surnames.txt', 'r')
     )
     all_surnames = (
         english_surnames + french_surnames + irish_surnames +
