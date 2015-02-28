@@ -191,13 +191,13 @@ class City(object):
             
             for ii in range(0,sizeOfBlock+1):
                 Blocks[(ew,ns+ii,'NS')] =Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii)) 
-                insertOnce(Numberings,(ew,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', Config()))
+                insertOnce(Numberings,(ew,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', configFile))
                 Blocks[(ew+ii,ns,'EW')] =Block( ewStreets[(ew,ns)], (ii+ew)*100,(ew+ii,ns))        
-                insertOnce(Numberings,(ew+ii,ns,'N'),Block.determine_house_numbering( (ii+ew)*100,'N', Config()))
+                insertOnce(Numberings,(ew+ii,ns,'N'),Block.determine_house_numbering( (ii+ew)*100,'N', configFile))
                 Blocks[(ew+sizeOfBlock,ns+ii,'NS')] =Block( nsStreets[(ew+sizeOfBlock,ns)], (ii+ns)*100,(ew+sizeOfBlock,ns+ii))   
-                insertOnce(Numberings,(ew+sizeOfBlock,ns+ii,'W'),Block.determine_house_numbering( (ii+ns)*100,'W', Config()))     
+                insertOnce(Numberings,(ew+sizeOfBlock,ns+ii,'W'),Block.determine_house_numbering( (ii+ns)*100,'W', configFile))     
                 Blocks[(ew+ii,ns+sizeOfBlock,'EW')] =Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock))
-                insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', Config())) 
+                insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
                     tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,0,0)
                     tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,0,0)
@@ -230,7 +230,7 @@ class City(object):
             corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
             self.lots.add(swCorner)
             
-            for ii in range(1,sizeOfBlock*Config().n_buildings_per_block-1): 
+            for ii in range(1,sizeOfBlock*configFile.n_buildings_per_block-1): 
                 blockNum = int(ii/2)
                 lot = Lot()
                 self.lots.add(lot)      
