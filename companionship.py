@@ -1,5 +1,7 @@
-# TODO enemies?
+from belief import *
 
+
+# TODO enemies?
 
 class Acquaintance(object):
     """An acquaintance between two people."""
@@ -15,6 +17,19 @@ class Acquaintance(object):
         if preceded_by:
             preceded_by.succeeded_by = self
         self.succeeded_by = None  # Gets set by a succeeding Friendship object
+        self._init_build_mental_models_of_each_other()
+
+    def _init_build_mental_models_of_each_other(self):
+        """Instantiate (or further fill in) mental models of each other.
+
+        Note: People may already have mental models of people they haven't met from
+        other people having told them about them.
+        """
+        for person in self.subjects:
+            other_person = self.subjects[0] if self.subjects[0] is not person else self.subjects[1]
+            person.mind.mental_models[other_person] = PersonMentalModel(
+                owner=person, subject=other_person, originating_in_first_hand_observation=True
+            )
 
 
 class Friendship(object):

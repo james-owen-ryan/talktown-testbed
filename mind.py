@@ -11,6 +11,7 @@ class Mind(object):
             self.memory = self._init_memory()
         else:  # PersonExNihilo object
             self.memory = self._init_ex_nihilo_memory()
+        self.mental_models = {}
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
