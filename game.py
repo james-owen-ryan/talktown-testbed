@@ -2,7 +2,8 @@ from config import Config
 # import citygen
 from person import *
 from business import *
-from city import *
+from city_for_testing import *
+from companionship import Acquaintance  # FOR TESTING
 
 
 class Game(object):
@@ -25,27 +26,28 @@ class Game(object):
         # infrastructure on which the city gets built; this person will also serve as
         # the patriarch/matriarch of a very large, very rich family that the person who
         # dies at the beginning of the game and Player 2 and cronies will part of
-        if (False):
-            self.founder = self._produce_city_founder()
-            # Placeholder until you set up how the founder moves into the city
-            self.founder.city = self.founder.spouse.city = self.city
-            # Make the city founder mayor de facto
-            self.city.mayor = self.founder
-            # Have that city founder establish a construction form in the limits of the new
-            # city plan -- this firm will shortly construct all the major buildings in town
-            ConstructionFirm(owner=self.founder)
-            # Now that there is a construction firm in town, the founder and family can
-            # move into town
-            self.founder.move_into_the_city(hiring_that_instigated_move=None)
-            # Have the city founder build several apartment complexes downtown -- first, however,
-            # build a realty firm so that these apartment units can be sold
-            RealtyFirm(owner=self.founder.spouse)
-            self._build_apartment_complexes_downtown()
-            # Construct city hall -- this will automatically make the city founder its
-            # mayor -- and other public institutions making up the city's infrastructure;
-            # each of these establishments will bring in workers who will find vacant lots
-            # on which to build homes
-            self._establish_city_infrastructure()
+        self.founder = self._produce_city_founder()
+        # Placeholder until you set up how the founder moves into the city
+        self.founder.city = self.founder.spouse.city = self.city
+        # Make the city founder mayor de facto
+        self.city.mayor = self.founder
+        # Have that city founder establish a construction form in the limits of the new
+        # city plan -- this firm will shortly construct all the major buildings in town
+        ConstructionFirm(owner=self.founder)
+        # Now that there is a construction firm in town, the founder and family can
+        # move into town
+        self.founder.move_into_the_city(hiring_that_instigated_move=None)
+        # Have the city founder build several apartment complexes downtown -- first, however,
+        # build a realty firm so that these apartment units can be sold
+        RealtyFirm(owner=self.founder.spouse)
+        self._build_apartment_complexes_downtown()
+        # Construct city hall -- this will automatically make the city founder its
+        # mayor -- and other public institutions making up the city's infrastructure;
+        # each of these establishments will bring in workers who will find vacant lots
+        # on which to build homes
+        self._establish_city_infrastructure()
+        self.a = Acquaintance(subjects=(self.founder, self.founder.spouse), preceded_by=None)
+
 
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.

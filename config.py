@@ -8,7 +8,11 @@ class Config(object):
 
     def __init__(self):
         """Construct a Config object."""
-                ## WORLD GEN ##
+
+                #################
+                ##  WORLD GEN  ##
+                #################
+
         # City generation
         self.loci = 3
         self.samples = 32
@@ -82,7 +86,11 @@ class Config(object):
             None: 0,
         }
         self.pull_to_live_near_workplace = 5
-                ## ECONOMY ##
+
+                ###############
+                ##  ECONOMY  ##
+                ###############
+
         # Misc
         self.age_people_start_working = 16
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
@@ -284,7 +292,11 @@ class Config(object):
         self.preference_to_contract_former_contract = 2
         self.preference_to_contract_extended_family = 1
         self.preference_to_contract_known_person = 0.5
-                ## PEOPLE REPRESENTATION ##
+
+                #############################
+                ##  PEOPLE REPRESENTATION  ##
+                #############################
+
         # People ex nihilo
         self.function_to_determine_person_ex_nihilo_age_given_job_level = (
             lambda job_level: 18 + random.randint(2*job_level, 10*job_level)
@@ -302,15 +314,6 @@ class Config(object):
         self.homosexuality_incidence = 0.045
         self.bisexuality_incidence = 0.01
         self.asexuality_incidence = 0.002
-        # Memory
-        self.memory_mean = 0.7
-        self.memory_sd = 0.1
-        self.memory_cap = 0.9
-        self.memory_floor = 0.1
-        self.memory_floor_at_birth = 0.55  # Worst possible memory of newborn
-        self.memory_sex_diff = 0.03  # Men have worse memory, studies show
-        self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
-        self.memory_heritability_sd = 0.05
         # Personality (Big Five source is [0])
         self.big_five_floor = -1.0
         self.big_five_cap = 1.0
@@ -339,7 +342,7 @@ class Config(object):
             'neuroticism': 0.35
         }
         self.big_five_inheritance_sd = {
-            # Person will inherit a parent's trait, but with some variance
+            # PersonMentalModel will inherit a parent's trait, but with some variance
             # according to this standard deviation
             'openness': 0.05,
             'conscientiousness': 0.05,
@@ -662,3 +665,470 @@ class Config(object):
         self.frequency_of_naming_after_mother = 0
         self.frequency_of_naming_after_grandmother = 5
         self.frequency_of_naming_after_greatgrandmother = 2
+
+                ########################
+                ##  MEMORY/KNOWLEDGE  ##
+                ########################
+
+        self.memory_mean = 1.0
+        self.memory_sd = 0.05
+        self.memory_cap = 1.0
+        self.memory_floor = 0.5  # After severe memory loss from aging
+        self.memory_floor_at_birth = 0.8  # Worst possible memory of newborn
+        self.memory_sex_diff = 0.03  # Men have worse memory, studies show
+        self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
+        self.memory_heritability_sd = 0.05
+        self.person_feature_salience = {
+            # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
+            # These values represent means (for someone with memory value of self.memory_mean),
+            # floors, and caps for the base chance someone perfectly remembers a feature of
+            # a person of this type (the base chance gets multiplied by the person's memory);
+            # if a feature isn't remembered perfectly, it may get misremembered by degradation
+            # or transference, or may get forgotten
+            #                               MEAN    FLOOR   CAP
+            "skin color":                   (0.95,  0.80,   0.99),
+            "tattoo":                       (0.95,  0.80,   0.99),
+            "birthmark":                    (0.90,  0.70,   0.99),
+            "scar":                         (0.90,  0.70,   0.99),
+            "facial hair style":            (0.90,  0.70,   0.99),
+            "glasses":                      (0.90,  0.70,   0.96),
+            "sunglasses":                   (0.90,  0.70,   0.96),
+            "freckles":                     (0.85,  0.50,   0.95),
+            "hair color":                   (0.85,  0.50,   0.95),
+            "hair length":                  (0.80,  0.50,   0.95),
+            "head size":                    (0.75,  0.45,   0.90),
+            "head shape":                   (0.75,  0.45,   0.90),
+            "eye horizontal settedness":    (0.70,  0.40,   0.90),
+            "eye vertical settedness":      (0.70,  0.40,   0.90),
+            "eye size":                     (0.67,  0.40,   0.90),
+            "eye color":                    (0.67,  0.40,   0.90),
+            "eye shape":                    (0.65,  0.35,   0.90),
+            "mouth size":                   (0.60,  0.25,   0.80),
+            "nose size":                    (0.45,  0.20,   0.70),
+            "nose shape":                   (0.45,  0.20,   0.70),
+            "eyebrow size":                 (0.45,  0.20,   0.70),
+            "eyebrow color":                (0.45,  0.20,   0.70),
+            "ear size":                     (0.30,  0.10,   0.50),
+            "ear angle":                    (0.30,  0.10,   0.50),
+        }
+        # Chance of certain types of memory pollution -- note that these chances only
+        # get reference when it's already been decided that some piece of knowledge
+        # will get polluted/forgotten; as such, these chances are only relative to
+        # one another
+        self.memory_pollution_probabilities = (
+            ((0.0, 0.7), 'f'),  # Random number in this range triggers forgetting
+            ((0.7, 0.9), 'm'),  # Mutation
+            ((0.9, 1.0), 't'),  # Transference
+        )
+        self.memory_mutations = {
+            # Probabilities specifying how feature values are likely to degrade
+            "skin color": {
+                'black': (
+                    ((0.0, 0.7), 'brown'),
+                    ((0.7, 0.95), 'beige'),
+                    ((0.95, 0.975), 'pink'),
+                    ((0.975, 1.0), 'white'),
+                ),
+                'brown': (
+                    ((0.0, 0.475), 'black'),
+                    ((0.475, 0.95), 'beige'),
+                    ((0.95, 0.975), 'pink'),
+                    ((0.975, 1.0), 'white'),
+                ),
+                'beige': (
+                    ((0.0, 0.24), 'black'),
+                    ((0.24, 0.7), 'brown'),
+                    ((0.7, 0.94), 'pink'),
+                    ((0.94, 1.0), 'white'),
+                ),
+                'pink': (
+                    ((0.0, 0.475), 'white'),
+                    ((0.475, 0.95), 'beige'),
+                    ((0.95, 0.975), 'brown'),
+                    ((0.975, 1.0), 'black'),
+                ),
+                'white': (
+                    ((0.0, 0.7), 'pink'),
+                    ((0.7, 0.95), 'beige'),
+                    ((0.95, 0.975), 'brown'),
+                    ((0.975, 1.0), 'black'),
+                ),
+            },
+            "head size": {
+                'small': (
+                    ((0.0, 0.8), 'medium'),
+                    ((0.8, 1.0), 'large'),
+                ),
+                'medium': (
+                    ((0.0, 0.5), 'small'),
+                    ((0.5, 1.0), 'large'),
+                ),
+                'large': (
+                    ((0.0, 0.8), 'medium'),
+                    ((0.8, 1.0), 'small'),
+                ),
+            },
+            "head shape": {
+                'square': (
+                    ((0.0, 0.4), 'circle'),
+                    ((0.4, 0.8), 'oval'),
+                    ((0.8, 1.0), 'heart'),
+                ),
+                'circle': (
+                    ((0.0, 0.1), 'square'),
+                    ((0.1, 0.7), 'oval'),
+                    ((0.7, 1.0), 'heart'),
+                ),
+                'oval': (
+                    ((0.0, 0.1), 'square'),
+                    ((0.1, 0.7), 'circle'),
+                    ((0.7, 1.0), 'heart'),
+                ),
+                'heart': (
+                    ((0.0, 0.4), 'circle'),
+                    ((0.4, 0.8), 'oval'),
+                    ((0.8, 1.0), 'square'),
+                ),
+            },
+            "hair length": {
+                'bald': (
+                    ((0.0, 0.9), 'short'),
+                    ((0.9, 0.95), 'medium'),
+                    ((0.95, 1.0), 'long'),
+                ),
+                'short': (
+                    ((0.0, 0.2), 'bald'),
+                    ((0.2, 0.9), 'medium'),
+                    ((0.9, 1.0), 'long'),
+                ),
+                'medium': (
+                    ((0.0, 0.05), 'bald'),
+                    ((0.05, 0.525), 'short'),
+                    ((0.525, 1.0), 'long'),
+                ),
+                'long': (
+                    ((0.0, 0.9), 'medium'),
+                    ((0.9, 0.95), 'short'),
+                    ((0.95, 1.0), 'bald'),
+                ),
+            },
+            "hair color": {
+                'black': (
+                    ((0.0, 0.8), 'brown'),
+                    ((0.8, 0.85), 'purple'),
+                    ((0.85, 0.9), 'blue'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'blonde'),
+                    ((0.96, 0.97), 'gray'),
+                    ((0.97, 0.98), 'white'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'brown': (
+                    ((0.0, 0.7), 'black'),
+                    ((0.7, 0.95), 'red'),
+                    ((0.95, 0.98), 'blonde'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'gray'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'red': (
+                    ((0.0, 0.8), 'brown'),
+                    ((0.8, 0.95), 'black'),
+                    ((0.95, 0.98), 'blonde'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'gray'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'blonde': (
+                    ((0.0, 0.7), 'brown'),
+                    ((0.7, 0.95), 'gray'),
+                    ((0.95, 0.98), 'red'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'black'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'gray': (
+                    ((0.0, 0.8), 'white'),
+                    ((0.8, 0.85), 'black'),
+                    ((0.85, 0.9), 'blonde'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'blue'),
+                    ((0.96, 0.97), 'purple'),
+                    ((0.97, 0.98), 'brown'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'white': (
+                    ((0.0, 0.8), 'gray'),
+                    ((0.8, 0.85), 'black'),
+                    ((0.85, 0.9), 'blonde'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'blue'),
+                    ((0.96, 0.97), 'purple'),
+                    ((0.97, 0.98), 'brown'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'purple': (
+                    ((0.0, 0.6), 'blue'),
+                    ((0.6, 0.8), 'green'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'blonde'),
+                    ((0.96, 0.97), 'white'),
+                ),
+                'green': (
+                    ((0.0, 0.6), 'blue'),
+                    ((0.6, 0.8), 'purple'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'blonde'),
+                    ((0.96, 0.97), 'white'),
+                ),
+                'blue': (
+                    ((0.0, 0.6), 'purple'),
+                    ((0.6, 0.8), 'green'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'blonde'),
+                    ((0.96, 0.97), 'white'),
+                ),
+            },
+            "ear angle": {
+                'flat': (
+                    ((0.0, 1.0), 'protruding'),  # Only one thing to possibly mutate into
+                ),
+                'protruding': (
+                    ((0.0, 1.0), 'flat'),
+                ),
+            },
+            "nose shape": {
+                'long': (
+                    ((0.0, 0.4), 'pointy'),
+                    ((0.4, 0.6), 'broad'),
+                    ((0.6, 1.0), 'upturned'),
+                ),
+                'pointy': (
+                    ((0.0, 0.4), 'long'),
+                    ((0.4, 0.6), 'broad'),
+                    ((0.6, 1.0), 'upturned'),
+                ),
+                'broad': (
+                    ((0.0, 0.4), 'pointy'),
+                    ((0.4, 0.6), 'long'),
+                    ((0.6, 1.0), 'upturned'),
+                ),
+                'upturned': (
+                    ((0.0, 0.4), 'pointy'),
+                    ((0.4, 0.6), 'broad'),
+                    ((0.6, 1.0), 'long'),
+                ),
+            },
+            "eye shape": {
+                'round': (
+                    ((0.0, 0.3), 'thin'),
+                    ((0.3, 1.0), 'almond'),
+                ),
+                'thin': (
+                    ((0.0, 0.5), 'round'),
+                    ((0.5, 1.0), 'almond'),
+                ),
+                'almond': (
+                    ((0.0, 0.3), 'thin'),
+                    ((0.3, 1.0), 'round'),
+                ),
+            },
+            "eye color": {
+                'black': (
+                    ((0.0, 0.8), 'brown'),
+                    ((0.8, 0.85), 'purple'),
+                    ((0.85, 0.9), 'blue'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'yellow'),
+                    ((0.96, 0.97), 'gray'),
+                    ((0.97, 0.98), 'white'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'brown': (
+                    ((0.0, 0.7), 'black'),
+                    ((0.7, 0.95), 'red'),
+                    ((0.95, 0.98), 'yellow'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'gray'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'red': (
+                    ((0.0, 0.8), 'brown'),
+                    ((0.8, 0.95), 'black'),
+                    ((0.95, 0.98), 'yellow'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'gray'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'yellow': (
+                    ((0.0, 0.7), 'brown'),
+                    ((0.7, 0.95), 'gray'),
+                    ((0.95, 0.98), 'red'),
+                    ((0.98, 0.985), 'purple'),
+                    ((0.985, 0.99), 'blue'),
+                    ((0.99, 0.995), 'black'),
+                    ((0.995, 0.999), 'white'),
+                    ((0.999, 1.0), 'green'),
+                ),
+                'gray': (
+                    ((0.0, 0.8), 'white'),
+                    ((0.8, 0.85), 'black'),
+                    ((0.85, 0.9), 'yellow'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'blue'),
+                    ((0.96, 0.97), 'purple'),
+                    ((0.97, 0.98), 'brown'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'white': (
+                    ((0.0, 0.8), 'gray'),
+                    ((0.8, 0.85), 'black'),
+                    ((0.85, 0.9), 'yellow'),
+                    ((0.9, 0.95), 'red'),
+                    ((0.95, 0.96), 'blue'),
+                    ((0.96, 0.97), 'purple'),
+                    ((0.97, 0.98), 'brown'),
+                    ((0.98, 1.0), 'green'),
+                ),
+                'purple': (
+                    ((0.0, 0.6), 'blue'),
+                    ((0.6, 0.8), 'green'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'yellow'),
+                    ((0.96, 0.97), 'white'),
+                ),
+                'green': (
+                    ((0.0, 0.6), 'blue'),
+                    ((0.6, 0.8), 'purple'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'yellow'),
+                    ((0.96, 0.97), 'white'),
+                ),
+                'blue': (
+                    ((0.0, 0.6), 'purple'),
+                    ((0.6, 0.8), 'green'),
+                    ((0.8, 0.85), 'red'),
+                    ((0.85, 0.9), 'black'),
+                    ((0.9, 0.93), 'brown'),
+                    ((0.93, 0.95), 'gray'),
+                    ((0.95, 0.96), 'yellow'),
+                    ((0.96, 0.97), 'white'),
+                ),
+            },
+            "eye horizontal settedness": {
+                'narrow': (
+                    ((0.0, 0.8), 'middle'),
+                    ((0.8, 1.0), 'wide'),
+                ),
+                'middle': (
+                    ((0.0, 0.5), 'narrow'),
+                    ((0.5, 1.0), 'wide'),
+                ),
+                'wide': (
+                    ((0.0, 0.8), 'middle'),
+                    ((0.8, 1.0), 'narrow'),
+                ),
+            },
+            "eye vertical settedness": {
+                'low': (
+                    ((0.0, 0.8), 'middle'),
+                    ((0.8, 1.0), 'high'),
+                ),
+                'middle': (
+                    ((0.0, 0.5), 'low'),
+                    ((0.5, 1.0), 'high'),
+                ),
+                'high': (
+                    ((0.0, 0.8), 'middle'),
+                    ((0.8, 1.0), 'low'),
+                ),
+            },
+            "facial hair style": {
+                'none': (
+                    ((0.0, 0.4), 'soul patch'),
+                    ((0.4, 0.8), 'sideburns'),
+                    ((0.8, 0.9), 'mustache'),
+                    ((0.9, 0.98), 'goatee'),
+                    ((0.98, 1.0), 'full beard'),
+                ),
+                'soul patch': (
+                    ((0.0, 0.4), 'none'),
+                    ((0.4, 0.8), 'sideburns'),
+                    ((0.8, 0.9), 'mustache'),
+                    ((0.9, 0.98), 'goatee'),
+                    ((0.98, 1.0), 'full beard'),
+                ),
+                'sideburns': (
+                    ((0.0, 0.4), 'soul patch'),
+                    ((0.4, 0.8), 'none'),
+                    ((0.8, 0.9), 'mustache'),
+                    ((0.9, 0.98), 'goatee'),
+                    ((0.98, 1.0), 'full beard'),
+                ),
+                'mustache': (
+                    ((0.0, 0.4), 'soul patch'),
+                    ((0.4, 0.8), 'sideburns'),
+                    ((0.8, 0.9), 'none'),
+                    ((0.9, 0.98), 'goatee'),
+                    ((0.98, 1.0), 'full beard'),
+                ),
+                'goatee': (
+                    ((0.0, 0.4), 'soul patch'),
+                    ((0.4, 0.8), 'sideburns'),
+                    ((0.8, 0.9), 'mustache'),
+                    ((0.9, 0.98), 'none'),
+                    ((0.98, 1.0), 'full beard'),
+                ),
+                'full beard': (
+                    ((0.0, 0.4), 'soul patch'),
+                    ((0.4, 0.8), 'sideburns'),
+                    ((0.8, 0.9), 'mustache'),
+                    ((0.9, 0.98), 'goatee'),
+                    ((0.98, 1.0), 'none'),
+                ),
+            },
+            "freckles": {
+                'no': (
+                    ((0.0, 1.0), 'yes'),  # Only one thing to possibly mutate into
+                ),
+                'yes': (
+                    ((0.0, 1.0), 'no'),
+                ),
+            },
+        }
+        self.memory_mutations["eye size"] = self.memory_mutations["head size"]
+        self.memory_mutations["nose size"] = self.memory_mutations["head size"]
+        self.memory_mutations["eyebrow size"] = self.memory_mutations["head size"]
+        self.memory_mutations["eyebrow color"] = self.memory_mutations["hair color"]
+        self.memory_mutations["mouth size"] = self.memory_mutations["head size"]
+        self.memory_mutations["ear size"] = self.memory_mutations["head size"]
+        self.memory_mutations["birthmark"] = self.memory_mutations["freckles"]
+        self.memory_mutations["scar"] = self.memory_mutations["freckles"]
+        self.memory_mutations["tattoo"] = self.memory_mutations["freckles"]
+        self.memory_mutations["glasses"] = self.memory_mutations["freckles"]
+        self.memory_mutations["sunglasses"] = self.memory_mutations["freckles"]
