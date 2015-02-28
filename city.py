@@ -8,6 +8,7 @@ from corpora import Names
 from config import Config
 import heapq
 
+
 class PriorityQueue:
     def __init__(self):
         self.elements = []
@@ -21,9 +22,11 @@ class PriorityQueue:
     def get(self):
         return heapq.heappop(self.elements)[1]
 
-def clamp(val,minimum,maximum):
-    return max(minimum,min(val,maximum))
-    
+
+def clamp(val, minimum, maximum):
+    return max(minimum, min(val, maximum))
+
+
 class City(object):
     """A city in which a gameplay instance takes place."""
 
@@ -38,12 +41,12 @@ class City(object):
         self.lots = set()
         self.tracts = set()
         #self.temp_init_lots_and_tracts_for_testing()
-        for lot in self.lots | self.tracts:
-            lot._init_get_neighboring_lots()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
         self.streets = set()
         self.blocks = set()
         self.generateLots(gameState.config)
+        for lot in self.lots | self.tracts:
+            lot.setNeighboringLots()
         self.paths = {}
         self.generatePaths()
         self.downtown = None
@@ -57,6 +60,7 @@ class City(object):
     def dist_from_downtown(self,lot):
         
         return self.getDistFrom(lot,self.downtown)
+
     def generatePaths(self):
         for start in self.blocks:
             for goal in self.blocks:
@@ -68,7 +72,7 @@ class City(object):
                         self.paths[(start,goal)] = len(came_from)
                         self.paths[(goal,start)] = len(came_from)
                         
-    def getDistFrom(self,lot1,lot2):
+    def getDistFrom(self, lot1, lot2):
         minDist = float("inf")
         for block1 in lot1.blocks:
             for block2 in lot2.blocks:
@@ -92,43 +96,45 @@ class City(object):
             return min(distances)
         else:
             return None
-    def secondary_population(self,lot):
+
+    def secondary_population(self, lot):
         # """Return the total population of this lot and its neighbors."""
         secondary_population = 0
-        for neighbor in set([lot]) | lot.getNeighboringLots():
+        for neighbor in set([lot]) | lot.neighboring_lots:
             secondary_population += neighbor.population
         return secondary_population
-    def tertiary_population(self,lot):
+
+    def tertiary_population(self, lot):
         lots_already_considered = set()
         tertiary_population = 0
-        for neighbor in set([lot]) | lot.getNeighboringLots():
+        for neighbor in set([lot]) | lot.neighboring_lots:
             if neighbor not in lots_already_considered:
                 lots_already_considered.add(neighbor)
                 tertiary_population += neighbor.population
-                for neighbor_to_that_lot in neighbor.getNeighboringLots():
+                for neighbor_to_that_lot in neighbor.neighboring_lots:
                     if neighbor_to_that_lot not in lots_already_considered:
                         lots_already_considered.add(neighbor_to_that_lot)
                         tertiary_population += neighbor.population
         return tertiary_population
         
-    def tertiary_density(self,lot):
+    def tertiary_density(self, lot):
         lots_already_considered = set()
         tertiary_density = 0
-        for neighbor in set([lot]) | lot.getNeighboringLots():
+        for neighbor in set([lot]) | lot.neighboring_lots:
             if neighbor not in lots_already_considered:
                 lots_already_considered.add(neighbor)
                 tertiary_density += 1
-                for neighbor_to_that_lot in neighbor.getNeighboringLots():
+                for neighbor_to_that_lot in neighbor.neighboring_lots:
                     if neighbor_to_that_lot not in lots_already_considered:
                         lots_already_considered.add(neighbor_to_that_lot)
                         tertiary_density += 1
         return tertiary_density
         
-    def generateLots(self,configFile):
+    def generateLots(self, configFile):
         
-        loci =  configFile.loci
+        loci = configFile.loci
         samples = configFile.samples
-        size =configFile.size
+        size = configFile.size
         
         lociLocations = []
         for ii in range(loci):
@@ -361,19 +367,19 @@ class City(object):
     @property
     def vacant_lots(self):
         """Return all vacant lots in the city."""
-        vacant_lots = (lot for lot in self.lots if not lot.building)
+        vacant_lots = [lot for lot in self.lots if not lot.building]
         return vacant_lots
 
     @property
     def vacant_tracts(self):
         """Return all vacant tracts in the city."""
-        vacant_tracts = (tract for tract in self.tracts if not tract.landmark)
+        vacant_tracts = [tract for tract in self.tracts if not tract.landmark]
         return vacant_tracts
 
     @property
     def vacant_homes(self):
         """Return all vacant homes in the city."""
-        vacant_homes = (home for home in self.dwelling_places if not home.residents)
+        vacant_homes = [home for home in self.dwelling_places if not home.residents]
         return vacant_homes
 
     @property
@@ -396,12 +402,14 @@ class City(object):
 
         @param occupation: The class pertaining to the occupation in question.
         """
-        return (resident for resident in self.residents if isinstance(resident.occupation, occupation))
+        return [resident for resident in self.residents if isinstance(resident.occupation, occupation)]
+
     @staticmethod
     def heuristic(a, b):
         (x1, y1) = a.coords
         (x2, y2) = b.coords
         return abs(x1 - x2) + abs(y1 - y2)
+
     @staticmethod
     def a_star_search(start, goal):
         frontier = PriorityQueue()
@@ -427,10 +435,11 @@ class City(object):
         
         return came_from, cost_so_far
 
+
 class Street(object):
     """A street in a city."""
 
-    def __init__(self, number, direction,startingBlock,endingBlock):
+    def __init__(self, number, direction, startingBlock, endingBlock):
         """Initialize a Street object."""
         #self.game = city.game
         #self.type = type
@@ -443,7 +452,9 @@ class Street(object):
     @staticmethod
     def generate_name(number, direction):
         """Generate a street name."""
-        number_to_ordinal =  dict((key, value) for (key, value) in [(1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'),(9,'9th')])
+        number_to_ordinal =  dict((key, value) for (key, value) in [
+            (1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'),(9,'9th')
+        ])
         if random.random() < 0.13:
             name = Names.any_surname()
         else:
@@ -475,9 +486,11 @@ class Block(object):
         self.lots = []
         self.neighbors = []
         self.coords = coords
+
     def __str__(self):
         """Return string representation."""
         return "{} block of {}".format(self.number, str(self.street))
+
     @property
     def buildings(self):
         """Return all the buildings on this block."""
@@ -502,8 +515,10 @@ class Block(object):
             house_number += block_number
             house_numbers.append(house_number)
         return house_numbers
+
     def addNeighbor(self,other):
         self.neighbors.append(other)
+
 
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
@@ -520,25 +535,24 @@ class Lot(object):
         self.building = None  # Will always be None for Tract
         self.landmark = None  # Will always be None for Lot
         self.positionsInBlock = []
+        self.neighboring_lots = set()  # Gets set by City call to setNeighboringLots after all lots have been generated
         
         #self.neighboring_lots = self._init_get_neighboring_lots()
-    def addBlock(self,block,number,sideOfStreet,positionInBlock):
+
+    def addBlock(self, block, number, sideOfStreet, positionInBlock):
         self.streets.append(block.street)
         self.blocks.append(block)
         self.sidesOfStreet.append(sideOfStreet)
         self.house_numbers.append(number)
         self.positionsInBlock.append(positionInBlock)
-    def getNeighboringLots(self):
+
+    def setNeighboringLots(self):
         neighboringLots = set()
         for block in self.blocks:
             for lot in block.lots:
                 neighboringLots.add(lot)
-        return neighboringLots
-    # def _init_get_neighboring_lots(self):
-        # """Collect all lots that neighbor this lot."""
-        # self.neighboring_lots = set([l for l in self.city.lots if self.get_dist_to(l) < 2])  # TEMP for testing
-        # # return neighboring_lots
-        
+        self.neighboring_lots = neighboringLots
+
     @property
     def population(self):
         """Return the number of people living/working on the lot."""
@@ -583,14 +597,14 @@ class Lot(object):
         # return dist
 
 
-
 class Tract(Lot):
     """A tract of land on a block in a city, upon which parks and cemeteries are established."""
 
-    def __init__(self,city):
+    def __init__(self, city):
         """Initialize a Lot object."""
         super(Tract, self).__init__(city)
 
     def _init_add_to_city_plan(self):
         """Add self to the city plan."""
+        pass
         #self.city.tracts.add(self)
