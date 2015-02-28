@@ -1,5 +1,4 @@
 from config import Config
-# import citygen
 from person import *
 from business import *
 from city import *

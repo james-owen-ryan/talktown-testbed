@@ -473,7 +473,7 @@ class Person(object):
     def coworkers(self):
         """Return this person's coworkers."""
         if self.occupation:
-            coworkers = self.occupation.company.employees - {self}
+            coworkers = self.occupation.company.employees - set([self])
         else:
             coworkers = set()
         return coworkers

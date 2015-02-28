@@ -13,6 +13,7 @@ class Config(object):
         self.loci = 3
         self.samples = 32
         self.size = 16
+        self.n_buildings_per_block = 2
         # City founder
         self.year_city_gets_founded = 1910  # Year world gen begins
         self.age_of_city_founder = 30
@@ -451,33 +452,33 @@ class Config(object):
             "sunglasses": 0.00  # From nurture
         }
         self.facial_feature_distributions_male = {
-            "skin color": {
+            "skin color": [
                 # A random float between 0.0 and 1.0 will be generated and the skin
                 # color whose range that number falls in will be assigned
                 ((0.0, 0.2), 'black'),
                 ((0.2, 0.4), 'brown'),
                 ((0.4, 0.6), 'beige'),
                 ((0.6, 0.8), 'pink'),
-                ((0.8, 1.0), 'white'),
-            },
-            "head size": {
+                ((0.8, 1.0), 'white')
+            ],
+            "head size": [
                 ((0.0, 0.2), 'small'),
                 ((0.2, 0.5), 'medium'),
                 ((0.5, 1.0), 'large'),
-            },
-            "head shape": {
+            ],
+            "head shape": [
                 ((0.0, 0.4), 'square'),
                 ((0.4, 0.6), 'circle'),
                 ((0.6, 0.65), 'heart'),
-                ((0.65, 1.0), 'oval'),
-            },
-            "hair length": {
+                ((0.65, 1.0), 'oval')
+            ],
+            "hair length": [
                 ((0.0, 0.15), 'bald'),
                 ((0.15, 0.65), 'short'),
                 ((0.65, 0.85), 'medium'),
-                ((0.85, 1.0), 'long'),
-            },
-            "hair color": {
+                ((0.85, 1.0), 'long')
+            ],
+            "hair color": [
                 ((0.0, 0.3), 'black'),
                 ((0.3, 0.5), 'brown'),
                 ((0.5, 0.7), 'blonde'),
@@ -486,14 +487,14 @@ class Config(object):
                 ((0.8, 0.85), 'white'),
                 ((0.85, 0.9), 'green'),
                 ((0.9, 0.95), 'blue'),
-                ((0.95, 1.0), 'purple'),
-            },
-            "eyebrow size": {
+                ((0.95, 1.0), 'purple')
+            ],
+            "eyebrow size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large'),
-            },
-            "eyebrow color": {
+                ((0.7, 1.0), 'large')
+            ],
+            "eyebrow color": [
                 ((0.0, 0.35), 'black'),
                 ((0.35, 0.55), 'brown'),
                 ((0.55, 0.75), 'blonde'),
@@ -502,44 +503,44 @@ class Config(object):
                 ((0.875, 0.95), 'white'),
                 ((0.95, 0.97), 'green'),
                 ((0.97, 0.99), 'blue'),
-                ((0.99, 1.0), 'purple'),
-            },
-            "mouth size": {
+                ((0.99, 1.0), 'purple')
+            ],
+            "mouth size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large'),
-            },
-            "ear size": {
+                ((0.7, 1.0), 'large')
+            ],
+            "ear size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large'),
-            },
-            "ear angle": {
+                ((0.7, 1.0), 'large')
+            ],
+            "ear angle": [
                 ((0.0, 0.8), 'flat'),
-                ((0.8, 1.0), 'protruding'),
-            },
-            "nose size": {
+                ((0.8, 1.0), 'protruding')
+            ],
+            "nose size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large'),
-            },
-            "nose shape": {
+                ((0.7, 1.0), 'large')
+            ],
+            "nose shape": [
                 ((0.0, 0.4), 'long'),
                 ((0.4, 0.6), 'broad'),
                 ((0.6, 0.8), 'upturned'),
-                ((0.8, 1.0), 'pointy'),
-            },
-            "eye size": {
+                ((0.8, 1.0), 'pointy')
+            ],
+            "eye size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large'),
-            },
-            "eye shape": {
+                ((0.7, 1.0), 'large')
+            ],
+            "eye shape": [
                 ((0.0, 0.6), 'round'),
                 ((0.6, 0.7), 'almond'),
-                ((0.7, 1.0), 'thin'),
-            },
-            "eye color": {
+                ((0.7, 1.0), 'thin')
+            ],
+            "eye color": [
                 ((0.0, 0.3), 'black'),
                 ((0.3, 0.5), 'brown'),
                 ((0.5, 0.65), 'blue'),
@@ -549,86 +550,86 @@ class Config(object):
                 ((0.96, 0.98), 'red'),
                 ((0.98, 0.99), 'purple'),
                 ((0.99, 1.0), 'white'),
-            },
-            "eye horizontal settedness": {
+            ],
+            "eye horizontal settedness": [
                 ((0.0, 0.3), 'narrow'),
                 ((0.3, 0.7), 'middle'),
                 ((0.7, 1.0), 'wide'),
-            },
-            "eye vertical settedness": {
+            ],
+            "eye vertical settedness": [
                 ((0.0, 0.3), 'high'),
                 ((0.3, 0.7), 'middle'),
                 ((0.7, 1.0), 'low'),
-            },
-            "facial hair style": {
+            ],
+            "facial hair style": [
                 ((0.0, 0.5), 'none'),
                 ((0.5, 0.65), 'mustache'),
                 ((0.65, 0.8), 'full beard'),
                 ((0.8, 0.9), 'goatee'),
                 ((0.9, 0.97), 'sideburns'),
                 ((0.97, 1.0), 'soul patch'),
-            },
-            "freckles": {
+            ],
+            "freckles": [
                 ((0.0, 0.8), 'no'),  # These aren't booleans because Face.Feature extends str, not bool
                 ((0.8, 1.0), 'yes'),
-            },
-            "birthmark": {
+            ],
+            "birthmark": [
                 ((0.0, 0.85), 'no'),
                 ((0.85, 1.0), 'yes'),
-            },
-            "scar": {
+            ],
+            "scar": [
                 ((0.0, 0.85), 'no'),
                 ((0.85, 1.0), 'yes'),
-            },
-            "tattoo": {
+            ],
+            "tattoo": [
                 ((0.0, 0.95), 'no'),
                 ((0.95, 1.0), 'yes'),
-            },
-            "glasses": {
+            ],
+            "glasses": [
                 ((0.0, 0.7), 'no'),
                 ((0.7, 1.0), 'yes'),
-            },
-            "sunglasses": {
+            ],
+            "sunglasses": [
                 ((0.0, 0.8), 'no'),
                 ((0.8, 1.0), 'yes'),
-            },
+            ]
         }
         self.facial_feature_distributions_female = {
             "skin color": self.facial_feature_distributions_male["skin color"],
-            "head size": {
+            "head size": [
                 ((0.0, 0.6), 'small'),
                 ((0.6, 0.8), 'medium'),
                 ((0.8, 1.0), 'large'),
-            },
-            "head shape": {
+            ],
+            "head shape": [
                 ((0.0, 0.1), 'square'),
                 ((0.1, 0.3), 'circle'),
                 ((0.3, 0.8), 'heart'),
                 ((0.8, 1.0), 'oval'),
-            },
-            "hair length": {
+            ],
+            "hair length": [
                 ((0.0, 0.005), 'bald'),
                 ((0.005, 0.2), 'short'),
                 ((0.2, 0.45), 'medium'),
                 ((0.45, 1.0), 'long'),
-            },
+            ],
             "hair color": self.facial_feature_distributions_male["hair color"],
-            "eyebrow size": {
+            "eyebrow size": [
                 ((0.0, 0.7), 'small'),
                 ((0.7, 0.9), 'medium'),
                 ((0.9, 1.0), 'large'),
-            },
+            ],
             "eyebrow color": self.facial_feature_distributions_male["eyebrow color"],
-            "mouth size": {
+            "mouth size": [
                 ((0.0, 0.6), 'small'),
                 ((0.6, 0.85), 'medium'),
                 ((0.85, 1.0), 'large'),
-            },
-            "ear size": {
+            ],
+            "ear size": [
                 ((0.0, 0.6), 'small'),
                 ((0.6, 0.85), 'medium'),
                 ((0.85, 1.0), 'large'),
-            },
+            ],
             "ear angle": self.facial_feature_distributions_male["ear angle"],
             "nose size": self.facial_feature_distributions_male["nose size"],
             "nose shape": self.facial_feature_distributions_male["nose shape"],
@@ -637,14 +638,14 @@ class Config(object):
             "eye color": self.facial_feature_distributions_male["eye color"],
             "eye horizontal settedness": self.facial_feature_distributions_male["eye horizontal settedness"],
             "eye vertical settedness": self.facial_feature_distributions_male["eye vertical settedness"],
-            "facial hair style": {
+            "facial hair style": [
                 ((0.0, 1.0), 'none'),
                 ((0.0, 0.0), 'mustache'),
                 ((0.0, 0.0), 'full beard'),
                 ((0.0, 0.0), 'goatee'),
                 ((0.0, 0.0), 'sideburns'),
                 ((0.0, 0.0), 'soul patch'),
-            },
+            ],
             "freckles": self.facial_feature_distributions_male["freckles"],
             "birthmark": self.facial_feature_distributions_male["birthmark"],
             "scar": self.facial_feature_distributions_male["scar"],
