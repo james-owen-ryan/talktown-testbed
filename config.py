@@ -495,7 +495,8 @@ class Config(object):
             "eyebrow size": [
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
-                ((0.7, 1.0), 'large')
+                ((0.7, 0.9), 'large')
+                ((0.9, 1.0), 'unibrow')
             ],
             "eyebrow color": [
                 ((0.0, 0.35), 'black'),
