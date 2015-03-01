@@ -1,33 +1,41 @@
 from belief import *
 
 
-class Acquaintance(object):
-    """One person's conception of their acquaintance with another person."""
+class Relationship(object):
+    """A social and/or romantic relationship between two people."""
 
     def __init__(self, owner, subject, preceded_by):
-        """Initialize an Acquaintance object.
+        """Initialize a Relationship object.
 
-        @param owner: The person whom this conception of the acquaintance belongs to.
+        @param owner: The person whom this conception of the relationship belongs to.
         @param subject: The other person to whom the conception pertains.
-        @param preceded_by: A Kinship relationship that preceded this, if any.
+        @param preceded_by: A relationship that preceded this, if any.
         """
-        self.type = 'acquaintance'
+        self.type = self.__class__.__name__.lower()
         self.owner = owner
         self.subject = subject
         self.preceded_by = preceded_by
-        if preceded_by:
-            preceded_by.succeeded_by = self
-        self.succeeded_by = None  # May get set by a succeeding Friendship object
+        self.succeeded_by = None
         self.where_they_met = self.owner.location
         self.when_they_met = self.owner.game.date
         # Set this as the primary relationship owner has with subject
         self.owner.relationships[self.subject] = self
-        self.compatibility = self._init_get_compatibility()
-        self.charge_increment = self._init_determine_charge_increment()
-        self.charge = float(self.charge_increment)
-        self.spark_increment = self._init_determine_initial_spark_increment()
-        self.spark = float(self.spark_increment)
-        self.form_or_build_up_mental_model()
+        if not preceded_by:
+            self.compatibility = self._init_get_compatibility()
+            self.charge_increment = self._init_determine_charge_increment()
+            self.charge = float(self.charge_increment)
+            self.spark_increment = self._init_determine_initial_spark_increment()
+            self.spark = float(self.spark_increment)
+            self.form_or_build_up_mental_model()
+        elif preceded_by:
+            preceded_by.succeeded_by = self
+            self.compatibility = preceded_by.compatibility
+            # Inherit the charge increment and current charge of the preceding Acquaintance
+            self.charge_increment = float(preceded_by.charge_increment)
+            self.charge = float(preceded_by.charge)
+            # Inherit the spark increment and current spark of the preceding Acquaintance
+            self.spark_increment = float(preceded_by.spark_increment)
+            self.spark = float(preceded_by.spark)
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
@@ -170,9 +178,9 @@ class Acquaintance(object):
         config = self.owner.game.config
         # Progress charge, possibly leading to a Friendship or Enmity
         self.charge += self.charge_increment * self.age_difference_effect_on_charge_increment
-        if self.charge > config.charge_threshold_friendship:
+        if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
             Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
-        elif self.charge < config.charge_threshold_enmity:
+        elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
             Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
         # Progress spark, possibly leading to a
         self.spark_increment *= config.spark_decay_rate
@@ -202,90 +210,40 @@ class Acquaintance(object):
         return spark_reduction_due_to_age_difference
 
 
-class Enmity(object):
+class Acquaintance(Relationship):
+    """One person's conception of their acquaintance with another person."""
+
+    def __init__(self, owner, subject, preceded_by):
+        """Initialize an Acquaintance object.
+
+            @param owner: The person whom this conception of the acquaintance belongs to.
+            @param subject: The other person to whom the conception pertains.
+            @param preceded_by: A Kinship relationship that preceded this, if any.
+            """
+        super(Acquaintance, self).__init__(owner, subject, preceded_by)
+
+
+class Enmity(Relationship):
     """One person's conception of their enmity with another person."""
 
     def __init__(self, owner, subject, preceded_by):
         """Initialize a Enmity object.
 
-        @param owner: The person whom this conception of the enmity belongs to.
-        @param subject: The other person to whom the conception pertains.
-        @param preceded_by: An Acquaintance relationship that preceded this, if any.
-        """
-        self.type = 'enmity'
-        self.owner = owner
-        self.subject = subject
-        self.preceded_by = preceded_by
-        self.preceded_by.succeeded_by = self
-        self.succeeded_by = None  # Can't be succeeded
-        self.where_they_met = self.preceded_by.where_they_met
-        self.when_they_met = self.preceded_by.when_they_met
-        # Set this as the primary relationship owner has with subject
-        self.owner.relationships[self.subject] = self
-        # Inherit the charge increment and current charge of the preceding Acquaintance
-        self.charge_increment = float(preceded_by.charge_increment)
-        self.charge = float(preceded_by.charge)
-
-    def progress_relationship(self):
-        """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
-        config = self.owner.game.config
-        self.charge += self.charge_increment
-        if self.charge > config.charge_threshold_friendship:
-            Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
-        elif self.charge < config.charge_threshold_enmity:
-            Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
+            @param owner: The person whom this conception of the enmity belongs to.
+            @param subject: The other person to whom the conception pertains.
+            @param preceded_by: An Acquaintance relationship that preceded this, if any.
+            """
+        super(Enmity, self).__init__(owner, subject, preceded_by)
 
 
-class Friendship(object):
+class Friendship(Relationship):
     """One person's conception of their friendship with another person."""
 
     def __init__(self, owner, subject, preceded_by):
         """Initialize a Friendship object.
 
-        @param owner: The person whom this conception of the enmity belongs to.
-        @param subject: The other person to whom the conception pertains.
-        @param preceded_by: An Acquaintance relationship that preceded this, if any.
-        """
-        self.type = 'friendship'
-        self.owner = owner
-        self.subject = subject
-        self.preceded_by = preceded_by
-        self.preceded_by.succeeded_by = self
-        self.succeeded_by = None  # Can't be succeeded
-        self.where_they_met = self.preceded_by.where_they_met
-        self.when_they_met = self.preceded_by.when_they_met
-        # Set this as the primary relationship owner has with subject
-        self.owner.relationships[self.subject] = self
-        # Inherit the charge increment and current charge of the preceding Acquaintance
-        self.charge_increment = float(preceded_by.charge_increment)
-        self.charge = float(preceded_by.charge)
-
-    def progress_relationship(self):
-        """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
-        config = self.owner.game.config
-        self.charge += self.charge_increment
-        if self.charge > config.charge_threshold_friendship:
-            Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
-        elif self.charge < config.charge_threshold_enmity:
-            Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
-
-
-class Kinship(object):
-    """One person's conception of their family relationship with another person."""
-
-    def __init__(self, owner, subject, relationship):
-        """Initialize a Kinship object.
-
-        @param owner: The person whom this conception of the enmity belongs to.
-        @param subject: The other person to whom the conception pertains.
-        @param relationship: A string representing the specific family relationship.
-        """
-        self.type = 'kinship'
-        self.owner = owner
-        self.subject = subject
-        self.relationship = relationship
-        self.succeeded_by = None  # May get set by a succeeding Acquaintance object
-        self.where_they_met = None  # When they meet, an Acquaintance object is instantiated
-        self.when_they_met = None
-        # Set this as the primary relationship owner has with subject
-        self.owner.relationships[self.subject] = self
+            @param owner: The person whom this conception of the enmity belongs to.
+            @param subject: The other person to whom the conception pertains.
+            @param preceded_by: An Acquaintance relationship that preceded this, if any.
+            """
+        super(Friendship, self).__init__(owner, subject, preceded_by)

@@ -1229,3 +1229,4 @@ class Config(object):
         self.charge_threshold_friendship = 15.0
         self.charge_threshold_enmity = -15.0
 
+

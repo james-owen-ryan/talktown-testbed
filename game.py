@@ -3,7 +3,7 @@ from person import *
 from business import *
 from city import *
 #from city_for_testing import *
-from companionship import Acquaintance  # FOR TESTING
+from relationship import Acquaintance  # FOR TESTING
 
 
 class Game(object):
