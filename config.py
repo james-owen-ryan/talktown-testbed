@@ -496,7 +496,7 @@ class Config(object):
                 ((0.0, 0.3), 'small'),
                 ((0.3, 0.7), 'medium'),
                 ((0.7, 0.9), 'large'),
-                ((0.9, 1.0), 'unibrow')
+                ((0.9, 1.0), 'unibrow'),
             ],
             "eyebrow color": [
                 ((0.0, 0.35), 'black'),
@@ -621,7 +621,8 @@ class Config(object):
             "eyebrow size": [
                 ((0.0, 0.7), 'small'),
                 ((0.7, 0.9), 'medium'),
-                ((0.9, 1.0), 'large'),
+                ((0.9, 0.95), 'large'),
+                ((0.95, 1.0), 'unibrow'),
             ],
             "eyebrow color": self.facial_feature_distributions_male["eyebrow color"],
             "mouth size": [
@@ -1042,6 +1043,28 @@ class Config(object):
                     ((0.96, 0.97), 'white'),
                 ),
             },
+            "eyebrow size": {
+                'small': (
+                    ((0.0, 0.8), 'medium'),
+                    ((0.8, 0.95), 'unibrow'),
+                    ((0.95, 1.0), 'large'),
+                ),
+                'medium': (
+                    ((0.0, 0.5), 'small'),
+                    ((0.5, 0.95), 'large'),
+                    ((0.95, 1.0), 'unibrow'),
+                ),
+                'large': (
+                    ((0.0, 0.8), 'medium'),
+                    ((0.8, 0.95), 'unibrow'),
+                    ((0.95, 1.0), 'small'),
+                ),
+                'unibrow': (
+                    ((0.0, 0.8), 'large'),
+                    ((0.8, 0.95), 'medium'),
+                    ((0.95, 1.0), 'small'),
+                ),
+            },
             "eye horizontal settedness": {
                 'narrow': (
                     ((0.0, 0.8), 'middle'),
@@ -1125,7 +1148,6 @@ class Config(object):
         }
         self.memory_mutations["eye size"] = self.memory_mutations["head size"]
         self.memory_mutations["nose size"] = self.memory_mutations["head size"]
-        self.memory_mutations["eyebrow size"] = self.memory_mutations["head size"]
         self.memory_mutations["eyebrow color"] = self.memory_mutations["hair color"]
         self.memory_mutations["mouth size"] = self.memory_mutations["head size"]
         self.memory_mutations["ear size"] = self.memory_mutations["head size"]
