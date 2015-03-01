@@ -765,8 +765,10 @@ class Person(object):
                 score += decision_maker.game.config.preference_to_contract_extended_family
             if person in decision_maker.friends:
                 score += decision_maker.game.config.preference_to_contract_friend
-            elif person in decision_maker.known_people:
-                score += decision_maker.game.config.preference_to_contract_known_person
+            elif person in decision_maker.acquaintances:
+                score += decision_maker.game.config.preference_to_contract_acquaintance
+            if person in decision_maker.enemies:
+                score += decision_maker.game.config.dispreference_to_hire_enemy
             if person in decision_maker.former_contractors:
                 score += decision_maker.game.config.preference_to_contract_former_contract
         # Multiply score according to this person's experience in this occupation
