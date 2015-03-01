@@ -231,9 +231,9 @@ class City(object):
             
             startingBlock = int(startingBlock/2)+1
             endingBlock = int(endingBlock/2)+1
-            reifiedStreet = (Street(number, direction,startingBlock,endingBlock))
+            reifiedStreet = (Street(self, number, direction, startingBlock, endingBlock))
             self.streets.add(reifiedStreet)
-            for ii in range(startingBlock,endingBlock+1):
+            for ii in range(startingBlock, endingBlock+1):
                 if (street[0] == "ns"):
                     nsStreets[(number,ii)] = reifiedStreet
                 else:
@@ -467,31 +467,42 @@ class City(object):
 class Street(object):
     """A street in a city."""
 
-    def __init__(self, number, direction, startingBlock, endingBlock):
+    def __init__(self, city, number, direction, startingBlock, endingBlock):
         """Initialize a Street object."""
+        self.city = city
         self.number = number
         self.direction = direction  # Direction relative to the center of the city
         self.name = self.generate_name(number, direction)
         self.startingBlock = startingBlock
         self.endingBlock = endingBlock
 
-    @staticmethod
-    def generate_name(number, direction):
+    def generate_name(self, number, direction):
         """Generate a street name."""
-        number_to_ordinal =  dict((key, value) for (key, value) in [
-            (1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'), (9,'9th')
-        ])
-        if random.random() < 0.13:
-            name = Names.any_surname()
-        else:
-            name = number_to_ordinal[number]
-
+        config = self.city.game.config
+        number_to_ordinal = {
+            1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th',
+            6: '6th', 7: '7th', 8: '8th', 9: '9th'
+        }
         if direction == 'E' or direction == 'W':
             street_type = 'Street'
+            if random.random() < config.chance_street_gets_numbered_name:
+                name = number_to_ordinal[number]
+            else:
+                if random.random() < 0.5:
+                    name = Names.any_surname()
+                else:
+                    name = Names.a_place_name()
         else:
             street_type = 'Avenue'
-        
-        name = name + " " + street_type + " " + direction
+            if random.random() < config.chance_avenue_gets_numbered_name:
+                name = number_to_ordinal[number]
+            else:
+                if random.random() < 0.5:
+                    name = Names.any_surname()
+                else:
+                    name = Names.a_place_name()
+        # name = "{0} {1} {2}".format(name, street_type, direction)
+        name = "{0} {1}".format(name, street_type)
         return name
 
     def __str__(self):
