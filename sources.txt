@@ -9,5 +9,8 @@
 [3] Ruiz-Soler and Beltran. "The Relative Salience of Facial Features When Differentiating Faces
         Based on an Interference Paradigm"
 
-[4] Selfhout et al. 2010: Emerging late adolescent friendship networks and Big Five personality
-        traits: a social network approach
+[4] Selfhout et al. 2010: "Emerging late adolescent friendship networks and Big Five personality
+        traits: a social network approach"
+
+[5] Shanhong Luo and Guangjian Zhang. "What Leads to Romantic Attraction: Similarity, Reciprocity,
+        Security, or Beauty? Evidence From a Speed-Dating Study"
