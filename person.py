@@ -631,22 +631,6 @@ class Person(object):
             relation = None
         return relation
 
-    def attracted_to(self, other_person):
-        """Return whether this person is attracted to other_person.
-
-        TODO: Have this be affected by other considerations, including personality
-        and appearance.
-        """
-        if other_person.male and self.attracted_to_men:
-            attracted = True
-        elif other_person.female and self.attracted_to_women:
-            attracted = True
-        else:
-            attracted = False
-        if other_person in self.extended_family:
-            attracted = False
-        return attracted
-
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
         lawyer = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Lawyer)
