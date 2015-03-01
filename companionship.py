@@ -99,6 +99,7 @@ class Acquaintance(object):
             Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
         elif self.charge < config.charge_threshold_enmity:
             Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
+        self.form_or_build_up_mental_model()
 
 
 class Enmity(object):
@@ -115,6 +116,7 @@ class Enmity(object):
         self.owner = owner
         self.subject = subject
         self.preceded_by = preceded_by
+        self.preceded_by.succeeded_by = self
         self.succeeded_by = None  # Can't be succeeded
         self.where_they_met = self.preceded_by.where_they_met
         self.when_they_met = self.preceded_by.when_they_met
@@ -148,6 +150,7 @@ class Friendship(object):
         self.owner = owner
         self.subject = subject
         self.preceded_by = preceded_by
+        self.preceded_by.succeeded_by = self
         self.succeeded_by = None  # Can't be succeeded
         self.where_they_met = self.preceded_by.where_they_met
         self.when_they_met = self.preceded_by.when_they_met
