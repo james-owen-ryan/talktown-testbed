@@ -281,8 +281,11 @@ class City(object):
                 if (tract != None):
                     tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,0,0)
                     tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,0,0)
-                    tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,0,0)
-                    tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,0,0)
+                    if (ew+sizeOfBlock <= size/2):
+                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,0,0)
+                    
+                    if (ns+sizeOfBlock <= size/2):
+                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,0,0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
