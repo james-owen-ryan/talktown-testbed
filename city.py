@@ -69,8 +69,13 @@ class City(object):
                 else :
                     if ((start,goal) not in self.paths):
                         came_from, cost_so_far = City.a_star_search(start,goal)
-                        self.paths[(start,goal)] = len(came_from)
-                        self.paths[(goal,start)] = len(came_from)
+                        current  = goal
+                        count = 0
+                        while (current != start):
+                            current = came_from[current]
+                            count += 1
+                        self.paths[(start,goal)] =count
+                        self.paths[(goal,start)] =count
                         
     def getDistFrom(self, lot1, lot2):
         minDist = float("inf")
