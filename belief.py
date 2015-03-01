@@ -20,10 +20,9 @@ class PersonMentalModel(object):
         )
         self.owner.mind.mental_models[self.subject] = self
 
-    def build_up(self, observation_or_reflection):
+    def build_up(self, new_observation_or_reflection):
         """Build up a mental model from a new observation or reflection."""
-        pass
-
+        self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
 
     def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
@@ -245,6 +244,31 @@ class FaceBelief(object):
         self.distinctive_features = DistinctiveFeaturesBelief(
             face_belief=self, observation_or_reflection=observation_or_reflection
         )
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up the components of this belief by potentially filling in missing information
+        and/or repairing wrong information, or else by updating the evidence for already correct facets.
+        """
+        for belief_type in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if belief_type != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                for feature in belief_type.__dict__:
+                    if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
+                        belief_facet = belief_type.__dict__[feature]
+                        if not belief_facet.accurate:
+                            # Potentially make it accurate
+                            belief_type.__dict__[feature] = (
+                                belief_type.face_belief.person_model.determine_belief_facet(
+                                    feature_type=belief_facet.feature_type,
+                                    observation_or_reflection=new_observation_or_reflection
+                                )
+                            )
+                        else:
+                            # Belief facet is already accurate, but update its evidence to point to
+                            # the new observation or reflection (which will slow any potential deterioration)
+                            belief_type.__dict__[feature] = Facet(
+                                value=str(belief_facet), owner=belief_facet.owner, subject=belief_facet.subject,
+                                feature_type=belief_facet.feature_type, evidence=new_observation_or_reflection
+                            )
 
 
 class SkinBelief(object):

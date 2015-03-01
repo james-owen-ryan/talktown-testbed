@@ -25,8 +25,7 @@ class Acquaintance(object):
         self.compatibility = self._init_get_compatibility()
         self.charge_increment = self._init_determine_charge_increment()
         self.charge = float(self.charge_increment)
-        self.owner.game.charges.append(self.charge_increment)
-        # self.build_up_mental_model()
+        self.form_or_build_up_mental_model()
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
@@ -78,7 +77,7 @@ class Acquaintance(object):
         charge_increment *= charge_intensity_reduction_due_to_age_difference
         return charge_increment
 
-    def build_up_mental_model(self):
+    def form_or_build_up_mental_model(self):
         """Instantiate (or further fill in) a mental model of this person.
 
         Note: The owner of this Acquaintance may already have a mental model of the subject,
@@ -90,7 +89,7 @@ class Acquaintance(object):
                 owner=self.owner, subject=self.subject, observation_or_reflection=observation
             )
         else:
-            self.owner.mind.mental_models[self.subject].build_up()
+            self.owner.mind.mental_models[self.subject].build_up(new_observation_or_reflection=observation)
 
     def progress_relationship(self):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
