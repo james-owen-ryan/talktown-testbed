@@ -263,7 +263,7 @@ class City(object):
             tract = None
             if (sizeOfBlock > 1):
                 tract = Tract(self)
-            
+                self.tracts.add(tract)
             for ii in range(0,sizeOfBlock+1):
                 Blocks[(ew,ns+ii,'NS')] =Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii)) 
                 insertOnce(Numberings,(ew,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', configFile))
