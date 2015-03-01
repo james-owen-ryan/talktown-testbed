@@ -39,6 +39,8 @@ class PersonMentalModel(object):
             chance_feature_gets_remembered_perfectly = (
                 self._calculate_chance_feature_gets_remembered_perfectly(feature_type=feature_type)
             )
+            # Affect this chance by the person's memory
+            chance_feature_gets_remembered_perfectly *= self.owner.mind.memory
             # If this is a reflection, there's no chance person will forget
             if observation_or_reflection.type == "reflection":
                 chance_feature_gets_remembered_perfectly = 1.0
