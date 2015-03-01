@@ -131,7 +131,7 @@ class Business(object):
         )
         # Decrease score for being near to another company of this same type
         dist_to_nearest_company_of_same_type = (
-            self.city.dist_to_nearest_business_of_type(lot,business_type=type(self), exclusion=self)
+            self.city.dist_to_nearest_business_of_type(lot, business_type=type(self), exclusion=self)
         )
         if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
             score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
@@ -237,8 +237,10 @@ class Business(object):
             score += config.preference_to_hire_extended_family
         if person in decision_maker.friends:
             score += config.preference_to_hire_friend
-        elif person in decision_maker.known_people:
-            score += config.preference_to_hire_known_person
+        elif person in decision_maker.acquaintances:
+            score += config.preference_to_hire_acquaintance
+        if person in decision_maker.enemies:
+            score += config.dispreference_to_hire_enemy
         if person.occupation:
             score *= person.occupation.level
         else:
