@@ -84,6 +84,17 @@ class City(object):
                 if self.paths[(block1,block2)] < minDist:
                     minDist = self.paths[(block1,block2)]
         return minDist
+
+    def nearest_business_of_type(self, lot, business_type):
+        """Return the Manhattan distance between this lot and the nearest company of the given type.
+
+        @param business_type: The Class representing the type of company in question.
+        """
+        businesses_of_this_type = self.businesses_of_type(business_type)
+        if businesses_of_this_type:
+            return min(businesses_of_this_type, key=lambda b: self.getDistFrom(lot, b.lot))
+        else:
+            return None
         
     def dist_to_nearest_business_of_type(self, lot, business_type, exclusion):
         """Return the Manhattan distance between this lot and the nearest company of the given type.
@@ -411,6 +422,16 @@ class City(object):
         @param occupation: The class pertaining to the occupation in question.
         """
         return [resident for resident in self.residents if isinstance(resident.occupation, occupation)]
+
+    def businesses_of_type(self, business_type):
+        """Return all business in this city of the given type.
+
+        @param business_type: A string of the Class name representing the type of business in question.
+        """
+        businesses_of_this_type = [
+            company for company in self.companies if company.__class__.__name__ == business_type
+        ]
+        return businesses_of_this_type
 
     @staticmethod
     def heuristic(a, b):
