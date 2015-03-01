@@ -10,7 +10,10 @@ class Routine(object):
 
     @property
     def daytime_location(self):
-        pass
+        """Return this person's daytime location, which is dynamic."""
+        if self.person.occupation and self.person.occupation.shift == "day":
+            location = self.person.occupation.company
+
 
     def set_businesses_patronized(self):
         """Return the businesses that this person patronizes.
