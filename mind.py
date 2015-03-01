@@ -4,10 +4,10 @@ import random
 class Mind(object):
     """A person's mind."""
 
-    def __init__(self, subject):
+    def __init__(self, person):
         """Initialize a Mind object."""
-        self.subject = subject
-        if self.subject.mother:  # Person object
+        self.person = person
+        if self.person.mother:  # Person object
             self.memory = self._init_memory()
         else:  # PersonExNihilo object
             self.memory = self._init_ex_nihilo_memory()
@@ -15,14 +15,14 @@ class Mind(object):
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
-        config = self.subject.game.config
+        config = self.person.game.config
         if random.random() < config.memory_heritability:
-            takes_after = random.choice([self.subject.mother, self.subject.father])
+            takes_after = random.choice([self.person.mother, self.person.father])
             memory = random.normalvariate(takes_after.mind.memory, config.memory_heritability_sd)
         else:
             takes_after = None
             memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.subject.male:  # Men have slightly worse memory (studies show)
+        if self.person.male:  # Men have slightly worse memory (studies show)
             memory -= config.memory_sex_diff
         if memory > config.memory_cap:
             memory = config.memory_cap
@@ -33,9 +33,9 @@ class Mind(object):
 
     def _init_ex_nihilo_memory(self):
         """Determine this person's base memory capability."""
-        config = self.subject.game.config
+        config = self.person.game.config
         memory = random.normalvariate(config.memory_mean, config.memory_sd)
-        if self.subject.male:  # Men have slightly worse memory (studies show)
+        if self.person.male:  # Men have slightly worse memory (studies show)
             memory -= config.memory_sex_diff
         if memory > config.memory_cap:
             memory = config.memory_cap
