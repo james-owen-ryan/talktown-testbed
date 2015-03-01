@@ -25,6 +25,8 @@ class Acquaintance(object):
         self.compatibility = self._init_get_compatibility()
         self.charge_increment = self._init_determine_charge_increment()
         self.charge = float(self.charge_increment)
+        self.spark_increment = self._init_determine_initial_spark_increment()
+        self.spark = float(self.spark_increment)
         self.form_or_build_up_mental_model()
 
     def _init_get_compatibility(self):
@@ -68,14 +70,86 @@ class Acquaintance(object):
         # Reduce charge intensity for sex difference
         if self.owner.male != self.subject.male:
             charge_increment *= config.charge_intensity_reduction_due_to_sex_difference
-        # Reduce charge intensity for age difference
-        charge_intensity_reduction_due_to_age_difference = (
-            config.function_to_determine_how_age_difference_reduces_charge_intensity(
-                age1=self.owner.age, age2=self.subject.age
-            )
-        )
-        charge_increment *= charge_intensity_reduction_due_to_age_difference
         return charge_increment
+
+    def _init_determine_initial_spark_increment(self):
+        """Determine the initial spark increment for this relationship.
+
+        Spark captures a person's cumulative romantic attraction to another person. The
+        increment has a decay rate that is specified in config.py, which means that every
+        time these two people spend time together, the spark increment will decrease. For
+        this reason, this method only determines the *initial* spark increment, and not the
+        a spark increment that will remain static, as the charge increment does.
+
+        A source here for how personality affects attraction is [5].
+
+        TODO: Have this be affected by physical appearance.
+        """
+        config = self.owner.game.config
+        # Make sure this person isn't a family member and is the sex
+        # that owner is attracted to
+        if self.subject in self.owner.extended_family:
+            initial_spark_increment = 0
+        elif self.subject.male and not self.owner.attracted_to_men:
+            initial_spark_increment = 0
+        elif self.subject.female and not self.owner.attracted_to_women:
+            initial_spark_increment = 0
+        else:
+            # Affect it according to personalities using source [5]
+            initial_spark_increment = 0
+            initial_spark_increment += self._affect_initial_spark_increment_by_own_personality()
+            initial_spark_increment += self._affect_initial_spark_increment_by_acquaintance_personality()
+        return initial_spark_increment
+
+    def _affect_initial_spark_increment_by_own_personality(self):
+        """Affect the initial spark increment according to the personality of the acquaintance.
+
+        This method relies on source [5].
+        """
+        config = self.owner.game.config
+        sex_key = 'm' if self.owner.male else 'f'
+        effect_from_own_personality = 0
+        effect_from_own_personality += (
+            self.subject.personality.openness_to_experience * config.openness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_own_personality += (
+            self.subject.personality.conscientiousness * config.conscientiousness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_own_personality += (
+            self.subject.personality.extroversion * config.extroversion_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_own_personality += (
+            self.subject.personality.agreeableness * config.agreeableness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_own_personality += (
+            self.subject.personality.neuroticism * config.neuroticism_boost_to_spark_multiplier[sex_key]
+        )
+        return effect_from_own_personality
+
+    def _affect_initial_spark_increment_by_acquaintance_personality(self):
+        """Affect the initial spark increment according to the personality of the acquaintance.
+
+        This method relies on source [5].
+        """
+        config = self.owner.game.config
+        sex_key = 'm' if self.owner.male else 'f'
+        effect_from_acquaintance_personality = 0
+        effect_from_acquaintance_personality += (
+            self.subject.personality.openness_to_experience * config.openness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_acquaintance_personality += (
+            self.subject.personality.conscientiousness * config.conscientiousness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_acquaintance_personality += (
+            self.subject.personality.extroversion * config.extroversion_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_acquaintance_personality += (
+            self.subject.personality.agreeableness * config.agreeableness_boost_to_spark_multiplier[sex_key]
+        )
+        effect_from_acquaintance_personality += (
+            self.subject.personality.neuroticism * config.neuroticism_boost_to_spark_multiplier[sex_key]
+        )
+        return effect_from_acquaintance_personality
 
     def form_or_build_up_mental_model(self):
         """Instantiate (or further fill in) a mental model of this person.
@@ -94,12 +168,38 @@ class Acquaintance(object):
     def progress_relationship(self):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
         config = self.owner.game.config
-        self.charge += self.charge_increment
+        # Progress charge, possibly leading to a Friendship or Enmity
+        self.charge += self.charge_increment * self.age_difference_effect_on_charge_increment
         if self.charge > config.charge_threshold_friendship:
             Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
         elif self.charge < config.charge_threshold_enmity:
             Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
+        # Progress spark, possibly leading to a
+        self.spark_increment *= config.spark_decay_rate
+        self.spark += self.spark_increment * self.age_difference_effect_on_spark_increment
         self.form_or_build_up_mental_model()
+
+    @property
+    def age_difference_effect_on_charge_increment(self):
+        """Return the effect that age difference between owner and subject currently has on the charge increment."""
+        config = self.owner.game.config
+        charge_intensity_reduction_due_to_age_difference = (
+            config.function_to_determine_how_age_difference_reduces_charge_intensity(
+                age1=self.owner.age, age2=self.subject.age
+            )
+        )
+        return charge_intensity_reduction_due_to_age_difference
+
+    @property
+    def age_difference_effect_on_spark_increment(self):
+        """Return the effect that age difference between owner and subject currently has on the spark increment."""
+        config = self.owner.game.config
+        spark_reduction_due_to_age_difference = (
+            config.function_to_determine_how_age_difference_reduces_charge_intensity(
+                age1=self.owner.age, age2=self.subject.age
+            )
+        )
+        return spark_reduction_due_to_age_difference
 
 
 class Enmity(object):

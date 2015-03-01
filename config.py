@@ -1166,6 +1166,7 @@ class Config(object):
                 ##  SOCIAL STUFF  ##
                 ####################
 
+        #               CHARGE          #
         # These values help to determine the charge increment for an Acquaintance/Friendship/Enmity
         # and get multiplied by its owner's extroversion and subject's agreeableness, respectively;
         # the resulting value then gets added to the two people's compatibility, which will be on
@@ -1179,6 +1180,50 @@ class Config(object):
             # becoming friends or enemies
             lambda age1, age2: max(0.05, 1 - (abs(math.sqrt(age1)-math.sqrt(age2))/4.5))
         )
+        #               SPARK          #
+        # These values help determine the initial spark increment for an Acquaintance; the accumulation
+        # of spark represents a person's romantic attraction toward the acquaintance. Values here
+        # come from source [5]: the first set are dependent on the acquaintance's personality, and the
+        # second on the person themself's personality (i.e., generally how likely they are to be attracted
+        # to other people based on their own personality alone)
+        #       Affected by own personality        #
+        self.self_openness_boost_to_spark_multiplier = {
+            'm': 0.2, 'f': 0.55
+        }
+        self.self_conscientiousness_boost_to_spark_multiplier = {
+            'm': -0.09, 'f': -0.1
+        }
+        self.self_extroversion_boost_to_spark_multiplier = {
+            'm': 0.13, 'f': 0.43
+        }
+        self.self_agreeableness_boost_to_spark_multiplier = {
+            'm': 0.3, 'f': 0.19
+        }
+        self.self_neuroticism_boost_to_spark_multiplier = {
+            'm': 0.01, 'f': 0.05
+        }
+        #       Affected by partner personality     #
+        self.openness_boost_to_spark_multiplier = {
+            'm': -0.39, 'f': -0.37
+        }
+        self.conscientiousness_boost_to_spark_multiplier = {
+            'm': 0.5, 'f': 0.38
+        }
+        self.extroversion_boost_to_spark_multiplier = {
+            'm': 0.5, 'f': 0.49
+        }
+        self.agreeableness_boost_to_spark_multiplier = {
+            'm': 0.52, 'f': 0.31
+        }
+        self.neuroticism_boost_to_spark_multiplier = {
+            'm': -0.36, 'f': -0.63
+        }
+        #       Affected by age difference (this is not sourced currently)
+        self.function_to_determine_how_age_difference_reduces_spark_increment = (
+            lambda age1, age2: max(0.05, 1 - (abs(math.sqrt(age1)-math.sqrt(age2))/1.5))
+        )
+        # Spark decay rate
+        self.spark_decay_rate = 0.8
         # Once the charge of an Acquaintance exceeds these thresholds, a Friendship or Enmity
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0
