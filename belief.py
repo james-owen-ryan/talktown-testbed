@@ -251,13 +251,14 @@ class FaceBelief(object):
         """
         for belief_type in self.__dict__:  # Iterates over all attributes defined in __init__()
             if belief_type != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                for feature in belief_type.__dict__:
+                belief = self.__dict__[belief_type]
+                for feature in belief.__dict__:
                     if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
-                        belief_facet = belief_type.__dict__[feature]
+                        belief_facet = belief.__dict__[feature]
                         if not belief_facet.accurate:
                             # Potentially make it accurate
-                            belief_type.__dict__[feature] = (
-                                belief_type.face_belief.person_model.determine_belief_facet(
+                            belief.__dict__[feature] = (
+                                belief.face_belief.person_model.determine_belief_facet(
                                     feature_type=belief_facet.feature_type,
                                     observation_or_reflection=new_observation_or_reflection
                                 )
@@ -265,7 +266,7 @@ class FaceBelief(object):
                         else:
                             # Belief facet is already accurate, but update its evidence to point to
                             # the new observation or reflection (which will slow any potential deterioration)
-                            belief_type.__dict__[feature] = Facet(
+                            belief.__dict__[feature] = Facet(
                                 value=str(belief_facet), owner=belief_facet.owner, subject=belief_facet.subject,
                                 feature_type=belief_facet.feature_type, evidence=new_observation_or_reflection
                             )
