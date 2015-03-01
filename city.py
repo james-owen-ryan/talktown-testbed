@@ -83,7 +83,7 @@ class City(object):
     def dist_to_nearest_business_of_type(self, lot, business_type, exclusion):
         """Return the Manhattan distance between this lot and the nearest company of the given type.
 
-        @param company_type: The Class representing the type of company in question.
+        @param business_type: The Class representing the type of company in question.
         @param exclusion: A company who is being excluded from this determination because they
                           are the ones making the call to this method, as they try to decide where
                           to put their lot.
