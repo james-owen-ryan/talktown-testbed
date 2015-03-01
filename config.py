@@ -1,6 +1,7 @@
 from occupation import *
 from event import *
 from business import *
+import math
 
 
 class Config(object):
@@ -115,9 +116,10 @@ class Config(object):
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
-        self.preference_to_hire_friend = 1
         self.preference_to_hire_extended_family = 1
-        self.preference_to_hire_known_person = 0.5
+        self.preference_to_hire_friend = 1  # TODO modify this according to charge
+        self.dispreference_to_hire_enemy = -1  # TODO modify this according to charge
+        self.preference_to_hire_acquaintance = 0.5  # TODO modify this according to charge
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
@@ -289,10 +291,11 @@ class Config(object):
             lambda years_experience: years_experience**0.2
         )
         self.preference_to_contract_immediate_family = 3
-        self.preference_to_contract_friend = 2
+        self.preference_to_contract_friend = 2  # TODO have this be modified by charge
+        self.dispreference_to_contract_enemy = -2  # TODO have this be modified by charge
         self.preference_to_contract_former_contract = 2
         self.preference_to_contract_extended_family = 1
-        self.preference_to_contract_known_person = 0.5
+        self.preference_to_contract_acquaintance = 0.5  # TODO have this be modified by charge
 
                 #############################
                 ##  PEOPLE REPRESENTATION  ##
@@ -335,12 +338,14 @@ class Config(object):
         }
         self.big_five_sd = {
             # A person's value for a trait is generated from a normal distribution
-            # around the trait's mean, with the value listed here as standard deviation
-            'openness': 0.35,
-            'conscientiousness': 0.35,
-            'extroversion': 0.35,
-            'agreeableness': 0.35,
-            'neuroticism': 0.35
+            # around the trait's mean, with the value listed here as standard deviation --
+            # these are very high to make enmity a possibility, because that requires
+            # personality discord, which requires a decent amount of variance
+            'openness': 0.5,
+            'conscientiousness': 0.5,
+            'extroversion': 0.5,
+            'agreeableness': 0.5,
+            'neuroticism': 0.5
         }
         self.big_five_inheritance_sd = {
             # PersonMentalModel will inherit a parent's trait, but with some variance
@@ -1168,6 +1173,12 @@ class Config(object):
         # that these values will play in determining charge increments
         self.owner_extroversion_boost_to_charge_multiplier = 0.25
         self.subject_agreeableness_boost_to_charge_multiplier = 0.25
+        self.charge_intensity_reduction_due_to_sex_difference = 0.5
+        self.function_to_determine_how_age_difference_reduces_charge_intensity = (
+            # This makes people with large age differences more indifferent about potentially
+            # becoming friends or enemies
+            lambda age1, age2: max(0.05, 1 - (abs(math.sqrt(age1)-math.sqrt(age2))/4.5))
+        )
         # Once the charge of an Acquaintance exceeds these thresholds, a Friendship or Enmity
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0

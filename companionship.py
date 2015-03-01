@@ -25,7 +25,8 @@ class Acquaintance(object):
         self.compatibility = self._init_get_compatibility()
         self.charge_increment = self._init_determine_charge_increment()
         self.charge = float(self.charge_increment)
-        self.build_up_mental_model()
+        self.owner.game.charges.append(self.charge_increment)
+        # self.build_up_mental_model()
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
@@ -39,9 +40,9 @@ class Acquaintance(object):
             abs(self.owner.personality.extroversion - self.subject.personality.extroversion) +
             abs(self.owner.personality.agreeableness - self.subject.personality.agreeableness)
         )
-        # Normalize absolute difference to 0.0-1.0 increasing compatibility scale (from its natural
+        # Normalize absolute difference to -1.0 to 1.0 compatibility scale (from its natural
         # 0.0-6.0 increasing difference scale, given each personality trait is on the scale -1 to 1)
-        normalized_diff = (6.0 - diff) / 6.0
+        normalized_diff = (3.0 - diff) / 3.0
         compatibility = normalized_diff
         return compatibility
 
@@ -55,6 +56,9 @@ class Acquaintance(object):
         a function of their compatibility and one's extroversion and the other's agreeableness --
         following source [4], people higher in extroversion select more friends, while people high
         in agreeableness get selected more often.
+
+        Additionally, charge intensity gets diminished (it gets brought toward 0) as a function of
+        the age difference between these two people.
         """
         config = self.owner.game.config
         charge_increment = (
@@ -62,6 +66,16 @@ class Acquaintance(object):
             self.owner.personality.extroversion * config.owner_extroversion_boost_to_charge_multiplier +
             self.subject.personality.agreeableness * config.subject_agreeableness_boost_to_charge_multiplier
         )
+        # Reduce charge intensity for sex difference
+        if self.owner.male != self.subject.male:
+            charge_increment *= config.charge_intensity_reduction_due_to_sex_difference
+        # Reduce charge intensity for age difference
+        charge_intensity_reduction_due_to_age_difference = (
+            config.function_to_determine_how_age_difference_reduces_charge_intensity(
+                age1=self.owner.age, age2=self.subject.age
+            )
+        )
+        charge_increment *= charge_intensity_reduction_due_to_age_difference
         return charge_increment
 
     def build_up_mental_model(self):
@@ -70,9 +84,10 @@ class Acquaintance(object):
         Note: The owner of this Acquaintance may already have a mental model of the subject,
         even if they haven't met, from other people having told them about them.
         """
+        observation = Observation(subject=self.subject, source=self.owner)
         if self.subject not in self.owner.mind.mental_models:
             PersonMentalModel(
-                owner=self.owner, subject=self.subject, originating_in_first_hand_observation=True
+                owner=self.owner, subject=self.subject, observation_or_reflection=observation
             )
         else:
             self.owner.mind.mental_models[self.subject].build_up()
