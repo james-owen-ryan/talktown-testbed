@@ -8,6 +8,10 @@ class Routine(object):
         if self.person.home:
             self.set_businesses_patronized()
 
+    @property
+    def daytime_location(self):
+        pass
+
     def set_businesses_patronized(self):
         """Return the businesses that this person patronizes.
 

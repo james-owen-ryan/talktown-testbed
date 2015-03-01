@@ -45,7 +45,7 @@ class Business(object):
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
         # The order really matters here -- see hire() below
-        new_position = Owner(person=owner, company=self)
+        new_position = Owner(person=owner, company=self, shift="day")
         hiring = Hiring(subject=owner, company=self, occupation=Owner)
         if owner.occupation and owner is not self.city.game.founder:
             # The city founder will have multiple occupations, in the sense that they will
@@ -66,8 +66,12 @@ class Business(object):
 
     def _init_hire_initial_employees(self):
         """Fill all the positions that are vacant at the time of this company forming."""
-        for vacant_position in self.city.game.config.initial_job_vacancies[self.__class__]:
-            self.hire(occupation_of_need=vacant_position)
+        # Hire employees for the day shift
+        for vacant_position in self.city.game.config.initial_job_vacancies[self.__class__]['day']:
+            self.hire(occupation_of_need=vacant_position, shift="day")
+        # Hire employees for the night shift
+        for vacant_position in self.city.game.config.initial_job_vacancies[self.__class__]['night']:
+            self.hire(occupation_of_need=vacant_position, shift="night")
 
     def _init_choose_vacant_lot(self):
         """Choose a vacant lot on which to build the company building.
@@ -162,7 +166,19 @@ class Business(object):
          """
         return self.employees
 
-    def hire(self, occupation_of_need):
+    @property
+    def day_shift(self):
+        """Return all employees who work the day shift here."""
+        day_shift = set([employee for employee in self.employees if employee.shift == "day"])
+        return day_shift
+
+    @property
+    def night_shift(self):
+        """Return all employees who work the night shift here."""
+        day_shift = set([employee for employee in self.employees if employee.shift == "night"])
+        return day_shift
+
+    def hire(self, occupation_of_need, shift):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
         job_candidates_in_town = self._assemble_job_candidates(occupation_of_need=occupation_of_need)
         if job_candidates_in_town:
@@ -172,7 +188,7 @@ class Business(object):
             selected_candidate = self._find_candidate_from_outside_the_city(occupation_of_need=occupation_of_need)
         # Instantiate the new occupation -- this means that the subject may
         # momentarily have two occupations simultaneously
-        new_position = occupation_of_need(person=selected_candidate, company=self)
+        new_position = occupation_of_need(person=selected_candidate, company=self, shift=shift)
         # Now instantiate a Hiring object to hold data about the hiring
         hiring = Hiring(subject=selected_candidate, company=self, occupation=occupation_of_need)
         # Now terminate the person's former occupation, if any (which may cause
