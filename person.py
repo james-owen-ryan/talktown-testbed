@@ -7,6 +7,7 @@ from personality import Personality
 from mind import Mind
 import occupation
 from face import Face
+from routine import Routine
 
 
 class Person(object):
@@ -51,7 +52,9 @@ class Person(object):
         # Set personality
         self.personality = Personality(person=self)
         # Set mental attributes (just memory currently)
-        self.mind = Mind(subject=self)
+        self.mind = Mind(person=self)
+        # Set daily routine
+        self.routine = Routine(person=self)
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
         self.first_name = None
         self.middle_name = None
@@ -521,30 +524,6 @@ class Person(object):
             neighbors_in_the_same_complex = self.home.complex.residents - self.home.residents
             neighbors |= neighbors_in_the_same_complex
         return neighbors
-
-    @property
-    def businesses_patronized(self):
-        """Return the businesses that this person patronizes.
-
-        This currently only returns the businesses nearest to where a person
-        lives, but one could conceive a person going near one where they work or
-        even going out of their way to go to a family member's business, etc. [TODO]
-        """
-        # Compile types of businesses that people visit at least some time in their
-        # normal routine living
-        routine_business_types = [
-            "Bank", "Barbershop", "BusDepot", "Hotel", "Park", "Restaurant", "Supermarket", "TaxiDepot"
-        ]
-        if self.face.distinctive_features.glasses == "yes":
-            routine_business_types.append("OptometryClinic")
-        # Compile the closest businesses for each of those types
-        businesses_patronized = set()
-        for business_type in routine_business_types:
-            businesses_patronized.add(
-                self.home.lot.nearest_business_of_type(business_type=business_type)
-            )
-        businesses_patronized.remove(None)
-        return businesses_patronized
 
     @property
     def major_life_events(self):
