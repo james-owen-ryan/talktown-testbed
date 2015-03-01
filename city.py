@@ -89,11 +89,11 @@ class City(object):
                           to put their lot.
         """
         distances = [
-            self.getDistFrom(lot,company.lot) for company in self.companies if isinstance(company, business_type)
+            self.getDistFrom(lot, company.lot) for company in self.companies if isinstance(company, business_type)
             and company is not exclusion
         ]
         if distances:
-            return min(distances)
+            return max(99, min(distances))  # Elsewhere, a max of 99 is relied on
         else:
             return None
 
