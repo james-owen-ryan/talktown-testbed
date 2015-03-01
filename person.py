@@ -563,6 +563,36 @@ class Person(object):
         events.sort(key=lambda ev: ev.year)  # Sort chronologically
         return events
 
+    def feature_of_type(self, feature_type):
+        """Return this person's feature of the given type."""
+        features = {
+            "skin color": self.face.skin.color,
+            "head size": self.face.head.size,
+            "head shape": self.face.head.shape,
+            "hair length": self.face.hair.length,
+            "hair color": self.face.hair.color,
+            "eyebrow size": self.face.eyebrows.size,
+            "eyebrow color": self.face.eyebrows.color,
+            "mouth size": self.face.mouth.size,
+            "ear size": self.face.ears.size,
+            "ear angle": self.face.ears.angle,
+            "nose size": self.face.nose.size,
+            "nose shape": self.face.nose.shape,
+            "eye size": self.face.eyes.size,
+            "eye shape": self.face.eyes.shape,
+            "eye color": self.face.eyes.color,
+            "eye horizontal settedness": self.face.eyes.horizontal_settedness,
+            "eye vertical settedness": self.face.eyes.vertical_settedness,
+            "facial hair style": self.face.facial_hair.style,
+            "freckles": self.face.distinctive_features.freckles,
+            "birthmark": self.face.distinctive_features.birthmark,
+            "scar": self.face.distinctive_features.scar,
+            "tattoo": self.face.distinctive_features.tattoo,  # From nurture
+            "glasses": self.face.distinctive_features.glasses,
+            "sunglasses": self.face.distinctive_features.sunglasses  # From nurture
+        }
+        return features[feature_type]
+
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
         if person in self.greatgrandparents:
