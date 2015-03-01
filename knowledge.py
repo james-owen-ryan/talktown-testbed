@@ -36,8 +36,8 @@ class Concoction(object):
     a person they have never met (i.e., they hear things about this person from someone,
     but then concoct other things about this person that no one told them). Concoction
     can't occur from a person actually meeting someone firsthand, because all mis/knowledge
-    stemming from such an encounter will begin as an observation and then pollute either from
-    a mutation or transference, or else be forgotten.
+    stemming from such an encounter will begin as an observation and then deteriorate from
+    a mutation, transference, or forgetting.
     """
 
     def __init__(self, subject, source):
