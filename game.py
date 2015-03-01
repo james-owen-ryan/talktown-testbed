@@ -47,11 +47,6 @@ class Game(object):
         # on which to build homes
         self._establish_city_infrastructure()
 
-        # FOR TESTING
-        self.date = 11
-        self.founder.location = 'hi'
-        self.a = Acquaintance(self.founder, self.founder.spouse, None)
-
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.
 
