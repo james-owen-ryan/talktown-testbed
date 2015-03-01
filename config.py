@@ -123,32 +123,95 @@ class Config(object):
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
-            ApartmentComplex: (Janitor, Janitor, Manager),
-            Bank: (Janitor, BankTeller, BankTeller, Manager),
-            Barbershop: (Cashier, HairStylist, HairStylist, Manager),
-            BusDepot: (BusDriver, BusDriver, Manager),
-            CityHall: (Secretary, Secretary),  # Mayor excluded due to special hiring process
-            ConstructionFirm: (
-                # Order matters for this one -- architect must come first to build the others'
-                # houses!
-                Architect, Secretary, ConstructionWorker, ConstructionWorker, ConstructionWorker,
-                ConstructionWorker
-            ),
-            OptometryClinic: (Secretary, Nurse, Nurse, Manager, Optometrist),
-            FireStation: (Secretary, Firefighter, Firefighter, FireChief),
-            Hospital: (Secretary, Nurse, Nurse, Manager, Doctor),
-            Hotel: (HotelMaid, HotelMaid, Concierge, Manager),
-            LawFirm: (Secretary, Lawyer, Lawyer),
-            PlasticSurgeryClinic: (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
-            PoliceStation: (Secretary, PoliceOfficer, PoliceOfficer, PoliceChief),
-            RealtyFirm: (Secretary, Realtor, Realtor),
-            Restaurant: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            Supermarket: (Cashier, Cashier, Waiter, Waiter, Waiter, Manager),
-            TattooParlor: (Cashier, TattooArtist, TattooArtist, Manager),
-            TaxiDepot: (TaxiDriver, TaxiDriver, Manager),
-            University: (Professor, Professor),
-            Cemetery: (Groundskeeper, Groundskeeper, Mortician),
-            Park: (Groundskeeper, Groundskeeper, Manager),
+            ApartmentComplex: {
+                'day': (Janitor, Manager),
+                'night': (Janitor,),
+            },
+            Bank: {
+                'day': (BankTeller, BankTeller, Manager),
+                'night': (Janitor,),
+            },
+            Barbershop: {
+                'day': (Cashier, HairStylist, Manager),
+                'night': (Cashier, HairStylist, Manager),
+            },
+            BusDepot: {
+                'day': (BusDriver, Manager),
+                'night': (BusDriver,),
+            },
+            CityHall: {
+                'day': (Secretary, Secretary, Janitor),  # Mayor excluded due to special hiring process
+                'night': (Janitor,),
+            },
+            ConstructionFirm: {
+                'day': (
+                    # Order matters for this one -- architect must come first to build the others'
+                    # houses!
+                    Architect, Secretary, ConstructionWorker, ConstructionWorker,
+                    ConstructionWorker, ConstructionWorker
+                ),
+                'night': (Janitor,),
+            },
+            OptometryClinic: {
+                'day': (Secretary, Nurse, Nurse, Manager, Optometrist),
+                'night': (Janitor,),
+            },
+            FireStation: {
+                'day': (Secretary, Firefighter, Firefighter, FireChief),
+                'night': (Secretary, Firefighter),
+            },
+            Hospital: {
+                'day': (Secretary, Nurse, Manager, Doctor),
+                'night': (Secretary, Nurse, Manager, Doctor),
+            },
+            Hotel: {
+                'day': (HotelMaid, HotelMaid, Concierge, Manager),
+                'night': (Manager,),
+            },
+            LawFirm: {
+                'day': (Secretary, Lawyer, Lawyer),
+                'night': (Janitor,),
+            },
+            PlasticSurgeryClinic: {
+                'day': (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+                'night': (Janitor,),
+            },
+            PoliceStation: {
+                'day': (Secretary, PoliceOfficer, PoliceChief),
+                'night': (Secretary, PoliceOfficer),
+            },
+            RealtyFirm: {
+                'day': (Secretary, Realtor, Realtor),
+                'night': (Janitor,),
+            },
+            Restaurant: {
+                'day': (Cashier, Waiter, Manager),
+                'night': (Cashier, Waiter, Waiter, Manager),
+            },
+            Supermarket: {
+                'day': (Cashier, Cashier, Manager),
+                'night': (Cashier, Cashier, Manager),
+            },
+            TattooParlor: {
+                'day': (Cashier, TattooArtist, Manager),
+                'night': (Cashier, TattooArtist, Manager),
+            },
+            TaxiDepot: {
+                'day': (TaxiDriver, Manager),
+                'night': (TaxiDriver,)
+            },
+            University: {
+                'day': (Professor, Professor),
+                'night': (Janitor, Janitor)
+            },
+            Cemetery: {
+                'day': (Groundskeeper, Mortician),
+                'night': (),
+            },
+            Park: {
+                'day': (Groundskeeper, Groundskeeper, Manager),
+                'night': (),
+            }
         }
         # Industries of various occupations (indexed by their class names)
         self.industries = {
