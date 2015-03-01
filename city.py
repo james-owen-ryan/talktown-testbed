@@ -40,7 +40,6 @@ class City(object):
         self.companies = set()
         self.lots = set()
         self.tracts = set()
-        #self.temp_init_lots_and_tracts_for_testing()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
         self.streets = set()
         self.blocks = set()
@@ -114,7 +113,7 @@ class City(object):
             return None
 
     def secondary_population(self, lot):
-        # """Return the total population of this lot and its neighbors."""
+        """Return the total population of this lot and its neighbors."""
         secondary_population = 0
         for neighbor in set([lot]) | lot.neighboring_lots:
             secondary_population += neighbor.population
@@ -470,8 +469,6 @@ class Street(object):
 
     def __init__(self, number, direction, startingBlock, endingBlock):
         """Initialize a Street object."""
-        #self.game = city.game
-        #self.type = type
         self.number = number
         self.direction = direction  # Direction relative to the center of the city
         self.name = self.generate_name(number, direction)
@@ -482,7 +479,7 @@ class Street(object):
     def generate_name(number, direction):
         """Generate a street name."""
         number_to_ordinal =  dict((key, value) for (key, value) in [
-            (1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'),(9,'9th')
+            (1, '1st'), (2, '2nd'), (3, '3rd'), (4, '4th'), (5, '5th'), (6, '6th'), (7, '7th'), (8, '8th'), (9,'9th')
         ])
         if random.random() < 0.13:
             name = Names.any_surname()
@@ -494,7 +491,6 @@ class Street(object):
         else:
             street_type = 'Avenue'
         
-       # name = "{1} {2} {3}".format(name, street_type, direction)
         name = name + " " + street_type + " " + direction
         return name
 
@@ -506,10 +502,8 @@ class Street(object):
 class Block(object):
     """A block on a street in a city."""
 
-    def __init__(self,street, number,coords):
+    def __init__(self, street, number,coords):
         """Initialize a Block object."""
-        # self.game = street.city.game
-        # self.city = street.city
         self.street = street
         self.number = number
         self.lots = []
@@ -554,8 +548,6 @@ class Lot(object):
 
     def __init__(self,city):
         """Initialize a Lot object."""
-        #self.game = block.city.game
-       # self.city = block.city
         self.city = city
         self.streets = []
         self.blocks = []
@@ -565,8 +557,6 @@ class Lot(object):
         self.landmark = None  # Will always be None for Lot
         self.positionsInBlock = []
         self.neighboring_lots = set()  # Gets set by City call to setNeighboringLots after all lots have been generated
-        
-        #self.neighboring_lots = self._init_get_neighboring_lots()
 
     def addBlock(self, block, number, sideOfStreet, positionInBlock):
         self.streets.append(block.street)
@@ -591,40 +581,6 @@ class Lot(object):
             population = 0
         return population
 
-    # @property
-    # def secondary_population(self):
-        # """Return the total population of this lot and its neighbors."""
-        # secondary_population = 0
-        # for lot in [self] | self.neighboring_lots:
-            # secondary_population += lot.population
-        # return secondary_population
-
-    # @property
-    # def tertiary_population(self):
-        # """Return the total population of this lot and its neighbors and its neighbors' neighbors."""
-        # lots_already_considered = set()
-        # tertiary_population = 0
-        # for lot in [self] | self.neighboring_lots:
-            # if lot not in lots_already_considered:
-                # lots_already_considered.add(lot)
-                # tertiary_population += lot.population
-                # for neighbor_to_that_lot in lot.neighboring_lots:
-                    # if neighbor_to_that_lot not in lots_already_considered:
-                        # lots_already_considered.add(neighbor_to_that_lot)
-                        # tertiary_population += lot.population
-        # return tertiary_population
-
-    # @property
-    # def dist_from_downtown(self):
-        # """Return the Manhattan distance between this lot and the center of downtown."""
-        # dist = 5
-        # return dist
-
-    # def get_dist_to(self, lot_or_tract):
-        # """Return the Manhattan distance between this lot and some lot or tract."""
-        # dist = min(50, abs(self.block.number - lot_or_tract.block.number))  # TEMP for testing
-        # return dist
-
 
 class Tract(Lot):
     """A tract of land on a block in a city, upon which parks and cemeteries are established."""
@@ -632,8 +588,3 @@ class Tract(Lot):
     def __init__(self, city):
         """Initialize a Lot object."""
         super(Tract, self).__init__(city)
-
-    def _init_add_to_city_plan(self):
-        """Add self to the city plan."""
-        pass
-        #self.city.tracts.add(self)
