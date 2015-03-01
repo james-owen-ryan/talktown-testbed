@@ -40,6 +40,10 @@ class Names(object):
         name.strip('\n') for name in
         open(os.getcwd()+'/Assets/StreamingAssets/corpora/US_settlement_names.txt', 'r')
     )
+    restaurant_names = tuple(
+        name.strip('\n') for name in
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/restaurant_names.txt', 'r')
+    )
 
     @classmethod
     def a_masculine_name(cls):
@@ -85,3 +89,8 @@ class Names(object):
     def a_place_name(cls):
         """Return a random place name."""
         return random.choice(cls.place_names)
+
+    @classmethod
+    def a_restaurant_name(cls):
+        """Return a random restaurant name."""
+        return random.choice(cls.restaurant_names)
