@@ -342,11 +342,11 @@ class Person(object):
     def full_name(self):
         """Return a person's full name."""
         if self.suffix:
-            full_name = "{} {} {} {}".format(
+            full_name = "{0} {1} {2} {3}".format(
                 self.first_name, self.middle_name, self.last_name, self.suffix
             )
         else:
-            full_name = "{} {} {}".format(
+            full_name = "{0} {1} {2}".format(
                 self.first_name, self.middle_name, self.last_name
             )
         return full_name
@@ -358,7 +358,7 @@ class Person(object):
         This is used to determine whether a child has the same full name as their parent,
         which would necessitate them getting a suffix of their own to disambiguate.
         """
-        full_name = "{} {} {}".format(
+        full_name = "{0} {1} {2}".format(
             self.first_name, self.middle_name, self.last_name
         )
         return full_name
@@ -367,16 +367,16 @@ class Person(object):
     def name(self):
         """Return a person's name."""
         if self.suffix:
-            name = "{} {} {}".format(self.first_name, self.last_name, self.suffix)
+            name = "{0} {1} {2}".format(self.first_name, self.last_name, self.suffix)
         else:
-            name = "{} {}".format(self.first_name, self.last_name)
+            name = "{0} {1}".format(self.first_name, self.last_name)
         return name
 
     @property
     def nametag(self):
         """Return a person's name, appended with their tag, if any."""
         if self.tag:
-            nametag = "{} {}".format(self.name, self.tag)
+            nametag = "{0} {1}".format(self.name, self.tag)
         else:
             nametag = self.name
         return nametag
@@ -435,7 +435,7 @@ class Person(object):
         A person's next of kin will make decisions about their estate and
         so forth upon the person's death.
         """
-        assert not self.alive, "{} is dead, but a request was made for his next of kin."
+        assert not self.alive, "{0} is dead, but a request was made for his next of kin."
         if self.spouse and self.spouse.present:
             next_of_kin = self.spouse
         elif self.mother and self.mother.present:
@@ -674,14 +674,14 @@ class Person(object):
 
     def marry(self, partner):
         """Marry partner."""
-        assert(self.present and partner.present), "{} tried to marry {}, but one of them is dead or departed."
+        assert(self.present and partner.present), "{0} tried to marry {1}, but one of them is dead or departed."
         event.Marriage(subjects=(self, partner))
 
     def divorce(self, partner):
         """Divorce partner."""
-        assert(self.alive and partner.alive), "{} tried to divorce {}, but one of them is dead."
+        assert(self.alive and partner.alive), "{0} tried to divorce {1}, but one of them is dead."
         assert(partner is self.spouse and partner.spouse is self), (
-            "{} tried to divorce {}, whom they are not married to.".format(self.name, partner.name)
+            "{0} tried to divorce {1}, whom they are not married to.".format(self.name, partner.name)
         )
         # The soon-to-be divorcees will decide together which lawyer to hire, because they are
         # technically still married (and spouses are considered as part of this method call)
