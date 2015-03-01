@@ -74,16 +74,15 @@ class Game(object):
         # Park(owner=self.founder)
         # Cemetery(owner=self.founder)
 
-
-    # 5. have the rich man's children start Bank, RealtyFirm, multiple ApartmentComplexes, Hotel, Supermarket,
-    # BusDepot, TaxiDepot
-    #
-    # 6. have other people come into town and start Barbershop, multiple Restaurants
-    #
-    # 7. eventually, have other people come in and start first or more of the following: OptometryClinic,
-    # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
-    #
-    # 	- For these, have them potentially be started by reasoning over supply, need, etc.
+        # 5. have the rich man's children start Bank, RealtyFirm, multiple ApartmentComplexes, Hotel, Supermarket,
+        # BusDepot, TaxiDepot
+        #
+        # 6. have other people come into town and start Barbershop, multiple Restaurants
+        #
+        # 7. eventually, have other people come in and start first or more of the following: OptometryClinic,
+        # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
+        #
+        # 	- For these, have them potentially be started by reasoning over supply, need, etc.
 
     def advance_one_year(self):
         """Advance one year (the timestep during simulation."""

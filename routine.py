@@ -5,7 +5,8 @@ class Routine(object):
         """Initialize a Routine object."""
         self.person = person
         self.businesses_patronized = {}  # Gets set by set_businesses_patronized()
-        self.set_businesses_patronized()
+        if self.person.home:
+            self.set_businesses_patronized()
 
     def set_businesses_patronized(self):
         """Return the businesses that this person patronizes.
@@ -25,6 +26,21 @@ class Routine(object):
         businesses_patronized = {}
         for business_type in routine_business_types:
             businesses_patronized[business_type] = (
-                self.person.home.lot.nearest_business_of_type(business_type=business_type)
+                self.person.city.nearest_business_of_type(
+                    lot=self.person.home.lot, business_type=business_type
+                )
             )
         self.businesses_patronized = businesses_patronized
+
+    def update_business_patronized_of_specific_type(self, business_type):
+        """Update which business of a specific type this person patronized.
+
+        This gets called whenever a new business of this type is built in town, since
+        people may decide to patronize the new business instead of the business they used
+        to patronize.
+        """
+        self.businesses_patronized[business_type] = (
+            self.person.city.nearest_business_of_type(
+                lot=self.person.home.lot, business_type=business_type
+            )
+        )

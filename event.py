@@ -242,6 +242,12 @@ class BusinessConstruction(object):
             self.construction_firm = None
             self.builders = set()
         self.subject.building_commissions.add(self)
+        # Update which business of this type everyone in the city patronizes, since
+        # they may decide to now patronize this business instead of the one they used to
+        for resident in self.business.city.residents:
+            resident.routine.update_business_patronized_of_specific_type(
+                business_type=self.business.__class__.__name__
+            )
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -803,6 +809,8 @@ class Move(object):
             # Add yourself to city residents, if you moved from outside the city
             person.city = person.game.city
             person.game.city.residents.add(person)
+            # Update your patronized businesses given that these may now change
+            person.routine.set_businesses_patronized()
 
 
 class NameChange(object):

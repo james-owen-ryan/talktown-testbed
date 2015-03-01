@@ -42,6 +42,7 @@ class Person(object):
         # Set misc attributes
         self.alive = True
         self.death_year = None
+        self.home = None  # Must come before setting routine
         # Set biological characteristics
         self.infertile = self._init_fertility(male=self.male, config=self.game.config)
         self.attracted_to_men, self.attracted_to_women = (
@@ -148,8 +149,6 @@ class Person(object):
         self.college_graduate = False
         # Prepare attributes pertaining to dynamic emotional considerations
         self.grieving = False  # After spouse dies
-        # Prepare misc attributes that get set by other methods
-        self.home = None
 
     @staticmethod
     def _init_sex():
