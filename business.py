@@ -62,7 +62,7 @@ class Business(object):
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
-        return 'lol {}'.format(self.__class__.__name__)  # Placeholder obviously
+        return 'lol {0}'.format(self.__class__.__name__)  # Placeholder obviously
 
     def _init_hire_initial_employees(self):
         """Fill all the positions that are vacant at the time of this company forming."""
@@ -81,7 +81,7 @@ class Business(object):
         else:
             vacant_lots_or_tracts = self.city.vacant_lots
         assert vacant_lots_or_tracts, (
-            "{} is attempting to found a {}, but there's no vacant lots/tracts in {}".format(
+            "{0} is attempting to found a {1}, but there's no vacant lots/tracts in {2}".format(
                 self.owner.person.name, self.__class__.__name__, self.city.name
             )
         )
@@ -147,7 +147,7 @@ class Business(object):
         house_number = self.lot.house_numbers[0]
         # street = str(self.lot.street)
         street = self.lot.streets[0]
-        return "{} {}".format(house_number, street)
+        return "{0} {1}".format(house_number, street)
 
     @property
     def residents(self):

@@ -473,7 +473,7 @@ class Street(object):
         else:
             street_type = 'Avenue'
         
-       # name = "{} {} {}".format(name, street_type, direction)
+       # name = "{1} {2} {3}".format(name, street_type, direction)
         name = name + " " + street_type + " " + direction
         return name
 
@@ -497,7 +497,7 @@ class Block(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{} block of {}".format(self.number, str(self.street))
+        return "{0} block of {1}".format(self.number, str(self.street))
 
     @property
     def buildings(self):

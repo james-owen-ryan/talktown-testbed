@@ -99,7 +99,7 @@ class Birth(object):
 
     def _get_hyphenated_last_name(self):
         """Get a hyphenated last name for the child, if the parents have decided to attribute one."""
-        hyphenated_last_name = "{}-{}".format(
+        hyphenated_last_name = "{0}-{1}".format(
             self.father.last_name, self.mother.last_name
         )
         # Check if this child will be the progenitor of this hyphenated surname, i.e.,
@@ -368,7 +368,7 @@ class Divorce(object):
 
     def __str__(self):
         """Return string representation."""
-        return "Divorce of {} and {} in {}".format(
+        return "Divorce of {0} and {1} in {2}".format(
             self.subjects[0].name, self.subjects[1].name, self.year
         )
 
@@ -638,7 +638,7 @@ class Marriage(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{}-year marriage between {} and {}".format(
+        return "{0}-year marriage between {1} and {2}".format(
             self.duration, self.names_at_time_of_marriage[0], self.names_at_time_of_marriage[1]
         )
 
@@ -832,7 +832,7 @@ class NameChange(object):
 
     def __str__(self):
         """Return string representation."""
-        return "Name change by which {} became known as {}".format(
+        return "Name change by which {0} became known as {1}".format(
             self.old_name, self.new_name
         )
 
