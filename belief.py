@@ -20,8 +20,10 @@ class PersonMentalModel(object):
         )
         self.owner.mind.mental_models[self.subject] = self
 
-    def build_up(self):
-        """Build up a mental model from a new observation, reflection."""
+    def build_up(self, observation_or_reflection):
+        """Build up a mental model from a new observation or reflection."""
+        pass
+
 
     def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
@@ -41,7 +43,10 @@ class PersonMentalModel(object):
             if observation_or_reflection.type == "reflection":
                 chance_feature_gets_remembered_perfectly = 1.0
             if random.random() < chance_feature_gets_remembered_perfectly:
-                belief_facet_obj = Facet(value=true_feature_str, evidence=observation_or_reflection)
+                belief_facet_obj = Facet(
+                    value=true_feature_str, owner=self.owner, subject=self.subject,
+                    feature_type=feature_type, evidence=observation_or_reflection
+                )
             else:
                 # Knowledge will deteriorate, either mutation, transference, forgetting
                 belief_facet_obj = self.deteriorate_belief_facet(
@@ -68,7 +73,8 @@ class PersonMentalModel(object):
             )
         else:  # Forgetting
             belief_facet_obj = self._forget_belief_facet(
-                parent_knowledge_object=parent_knowledge_object)
+                feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
+            )
         return belief_facet_obj
 
     def _mutate_belief_facet(self, feature_type, parent_knowledge_object, feature_being_mutated_from_str):
@@ -83,7 +89,10 @@ class PersonMentalModel(object):
         mutation = Mutation(
             parent=parent_knowledge_object, subject=self.subject, source=self.owner,
             mutated_belief_str=feature_being_mutated_from_str)
-        belief_facet_obj = Facet(value=mutated_feature_str, evidence=mutation)
+        belief_facet_obj = Facet(
+            value=mutated_feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=mutation
+        )
         return belief_facet_obj
 
     def _transfer_belief_facet(self, feature_type, parent_knowledge_object):
@@ -106,24 +115,28 @@ class PersonMentalModel(object):
         )
         feature_str = str(belief_facet_transferred_from)
         transference = Transference(
-            parent=parent_knowledge_object, subject=self.subject,
+            subject=self.subject, source=self.owner, parent=parent_knowledge_object,
             belief_facet_transferred_from=belief_facet_transferred_from
         )
-        belief_facet_obj = Facet(value=feature_str, evidence=transference)
+        belief_facet_obj = Facet(
+            value=feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=transference
+        )
         return belief_facet_obj
 
-    def _forget_belief_facet(self, parent_knowledge_object):
+    def _forget_belief_facet(self, feature_type, parent_knowledge_object):
         """Cause a belief facet to be forgotten."""
-        forgetting = Forgetting(subject=self.subject, parent=parent_knowledge_object)
+        forgetting = Forgetting(subject=self.subject, source=self.owner, parent=parent_knowledge_object)
         # Facets evidenced by a Forgetting should always have an empty string
         # for their value
-        belief_facet_obj = Facet(value='', evidence=forgetting)
+        belief_facet_obj = Facet(
+            value='', owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=forgetting
+        )
         return belief_facet_obj
 
     def _get_true_feature(self, feature_type):
-        true_feature_str = str(self._get_a_persons_true_feature_of_type(
-            person=self.subject, feature_type=feature_type)
-        )
+        true_feature_str = str(self.subject.feature_of_type(feature_type=feature_type))
         return true_feature_str
 
     @staticmethod
@@ -149,37 +162,6 @@ class PersonMentalModel(object):
         if chance_it_gets_remembered_perfectly > chance_cap:
             chance_it_gets_remembered_perfectly = chance_cap
         return chance_it_gets_remembered_perfectly
-
-    @staticmethod
-    def _get_a_persons_true_feature_of_type(person, feature_type):
-        """Return this person's feature of the given type."""
-        features = {
-            "skin color": person.face.skin.color,
-            "head size": person.face.head.size,
-            "head shape": person.face.head.shape,
-            "hair length": person.face.hair.length,
-            "hair color": person.face.hair.color,
-            "eyebrow size": person.face.eyebrows.size,
-            "eyebrow color": person.face.eyebrows.color,
-            "mouth size": person.face.mouth.size,
-            "ear size": person.face.ears.size,
-            "ear angle": person.face.ears.angle,
-            "nose size": person.face.nose.size,
-            "nose shape": person.face.nose.shape,
-            "eye size": person.face.eyes.size,
-            "eye shape": person.face.eyes.shape,
-            "eye color": person.face.eyes.color,
-            "eye horizontal settedness": person.face.eyes.horizontal_settedness,
-            "eye vertical settedness": person.face.eyes.vertical_settedness,
-            "facial hair style": person.face.facial_hair.style,
-            "freckles": person.face.distinctive_features.freckles,
-            "birthmark": person.face.distinctive_features.birthmark,
-            "scar": person.face.distinctive_features.scar,
-            "tattoo": person.face.distinctive_features.tattoo,  # From nurture
-            "glasses": person.face.distinctive_features.glasses,
-            "sunglasses": person.face.distinctive_features.sunglasses  # From nurture
-        }
-        return features[feature_type]
 
     def _get_a_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
@@ -454,7 +436,7 @@ class Facet(str):
     person*, with metadata about that specific belief.
     """
 
-    def __init__(self, value, evidence):
+    def __init__(self, value, owner, subject, feature_type, evidence):
         """Initialize a Facet object.
 
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
@@ -463,9 +445,21 @@ class Facet(str):
                          facet of a person's belief.
         """
         super(Facet, self).__init__()
+        self.owner = owner
+        self.subject = subject
+        self.feature_type = feature_type
         self.evidence = evidence
         self.evidence.beliefs_evidenced.add(self)
 
-    def __new__(cls, value, evidence):
+    def __new__(cls, value, owner, subject, feature_type, evidence):
         """Do str stuff."""
         return str.__new__(cls, value)
+
+    @property
+    def accurate(self):
+        """Return whether this belief is accurate."""
+        true_feature = self.subject.feature_of_type(feature_type=self.feature_type)
+        if self == true_feature:
+            return True
+        else:
+            return False
