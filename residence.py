@@ -1,4 +1,4 @@
-# from event import HomePurchase
+import random
 
 
 class DwellingPlace(object):
@@ -29,10 +29,10 @@ class DwellingPlace(object):
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_numbers[0]
-        # street = str(self.lot.street)
-        street = 'wtf lane'  # TEMP for testing
-        return "{0} {1}".format(house_number, self.lot.streets[0])
+        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
+        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
+        street = self.lot.streets[index_of_street_address_will_be_on]
+        return "{0} {1}".format(house_number, street)
 
     def _init_ownership(self, initial_owners):
         """Set the initial owners of this dwelling place."""
@@ -52,9 +52,9 @@ class Apartment(DwellingPlace):
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_numbers[0]
-        # street = str(self.lot.street)
-        street =  self.lot.streets[0]
+        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
+        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
+        street = self.lot.streets[index_of_street_address_will_be_on]
         return "{0} {1} (Unit #{2})".format(house_number, street, self.unit_number)
 
 

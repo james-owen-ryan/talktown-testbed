@@ -148,9 +148,9 @@ class Business(object):
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        house_number = self.lot.house_numbers[0]
-        # street = str(self.lot.street)
-        street = self.lot.streets[0]
+        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
+        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
+        street = self.lot.streets[index_of_street_address_will_be_on]
         return "{0} {1}".format(house_number, street)
 
     @property

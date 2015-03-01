@@ -149,6 +149,8 @@ class Person(object):
         self.college_graduate = False
         # Prepare attributes pertaining to dynamic emotional considerations
         self.grieving = False  # After spouse dies
+        # Prepare attributes pertaining to exact location at a point
+        self.location = None
 
     @staticmethod
     def _init_sex():
