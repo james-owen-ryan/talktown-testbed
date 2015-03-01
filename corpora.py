@@ -36,6 +36,10 @@ class Names(object):
         english_surnames + french_surnames + irish_surnames +
         scandinavian_surnames
     )
+    place_names = tuple(
+        name.strip('\n') for name in
+        open(os.getcwd()+'/Assets/StreamingAssets/corpora/US_settlement_names.txt', 'r')
+    )
 
     @classmethod
     def a_masculine_name(cls):
@@ -76,3 +80,8 @@ class Names(object):
     def any_surname(cls):
         """Return a random surname of any ethnicity."""
         return random.choice(cls.all_surnames)
+
+    @classmethod
+    def a_place_name(cls):
+        """Return a random place name."""
+        return random.choice(cls.place_names)
