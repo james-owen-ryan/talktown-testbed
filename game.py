@@ -29,6 +29,7 @@ class Game(object):
         self.founder = self._produce_city_founder()
         # Placeholder until you set up how the founder moves into the city
         self.founder.city = self.founder.spouse.city = self.city
+        self.city.name = self._generate_name_for_city()
         # Make the city founder mayor de facto
         self.city.mayor = self.founder
         # Have that city founder establish a construction form in the limits of the new
@@ -58,6 +59,15 @@ class Game(object):
             game=self, job_opportunity_impetus=None, spouse_already_generated=None, this_person_is_the_founder=True
         )
         return city_founder
+
+    def _generate_name_for_city(self):
+        """Generate a name for the city."""
+        if random.random() < self.config.chance_city_gets_named_for_founder:
+            suffix = random.choice(["ville", " City", " Town", ""])
+            name = "{0}{1}".format(self.founder.last_name, suffix)
+        else:
+            name = Names.a_place_name()
+        return name
 
     def _build_apartment_complexes_downtown(self):
         """Build multiple apartment complexes downtown."""

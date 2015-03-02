@@ -55,6 +55,7 @@ class City(object):
             if (density > highestDensity):
                 highestDensity = density
                 self.downtown = lot
+        self.name = None  # Gets set by Game.establish_setting()
             
     def dist_from_downtown(self,lot):
         
@@ -557,7 +558,7 @@ class Block(object):
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
 
-    def __init__(self,city):
+    def __init__(self, city):
         """Initialize a Lot object."""
         self.city = city
         self.streets = []

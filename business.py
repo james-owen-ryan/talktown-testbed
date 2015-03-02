@@ -35,12 +35,18 @@ class Business(object):
             self.owner = None
         else:
             self.owner = self._init_set_and_get_owner_occupation(owner=owner)
-        self.name = self._init_get_named()
         self._init_hire_initial_employees()
         if self.__class__ not in config.companies_that_get_established_on_tracts:
             architect = owner.contract_person_of_certain_occupation(occupation_in_question=Architect)
             self.construction = architect.occupation.construct_building(client=owner, business=self)
-        self.address = self._init_generate_address()
+        # These get set by _init_generate_address()
+        self.address = None
+        self.street_address_is_on = None
+        self._init_generate_address()
+        # This gets set by self._init_get_named()
+        self.name = None
+        while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
+            self._init_get_named()
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
@@ -62,7 +68,60 @@ class Business(object):
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
-        return 'lol {0}'.format(self.__class__.__name__)  # Placeholder obviously
+        config = self.city.game.config
+        class_to_company_name_component = {
+            ApartmentComplex: 'Apartments',
+            Bank: 'Bank',
+            Barbershop: 'Barbershop',
+            BusDepot: 'Bus Depot',
+            CityHall: 'City Hall',
+            ConstructionFirm: 'Construction',
+            OptometryClinic: 'Optometry',
+            FireStation: 'Fire Dept.',
+            Hospital: 'Hospital',
+            Hotel: 'Hotel',
+            LawFirm: 'Law Offices of',
+            PlasticSurgeryClinic: 'Cosmetic Surgery Clinic',
+            PoliceStation: 'Police Dept.',
+            RealtyFirm: 'Realty',
+            Restaurant: 'Restaurant',
+            Supermarket: 'Grocers',
+            TattooParlor: 'Tattoo',
+            TaxiDepot: 'Taxi',
+            University: 'University',
+            Cemetery: 'Cemetery',
+            Park: 'Park',
+        }
+        classes_that_get_special_names = (
+            CityHall, FireStation, Hospital, PoliceStation, Cemetery, LawFirm, Restaurant, University, Park
+        )
+        if self.__class__ not in classes_that_get_special_names:
+            if random.random() < config.chance_company_gets_named_after_owner:
+                prefix = self.owner.person.last_name
+            elif random.random() < 0.9:
+                prefix = self.street_address_is_on.name
+            else:
+                prefix = Names.a_place_name()
+            name = "{0} {1}".format(prefix, class_to_company_name_component[self.__class__])
+        elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, Cemetery):
+            name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
+        elif self.__class__ is LawFirm:
+            associates = [self.owner] + [e for e in self.employees if e.occupation.__class__ is Lawyer]
+            suffix = "{0}, and {1}".format(
+                ', '.join(a.person.last_name for a in associates[-1]), associates[-1].person.last_name
+            )
+            name = "{0} {1}".format(class_to_company_name_component[LawFirm], suffix)
+        elif self.__class__ is Restaurant:
+            name = Names.a_restaurant_name()
+        elif self.__class__ in (University, Park):
+            name = "{0} {1}".format(self.city.game.founder.name, class_to_company_name_component[self.__class__])
+        else:
+            raise Exception("A company of class {0} was unable to be named.".format(self.__class__.__name__))
+        self.name = name
+
+    def __str__(self):
+        """Return string representation."""
+        return "{0}, {1}".format(self.name, self.address)
 
     def _init_hire_initial_employees(self):
         """Fill all the positions that are vacant at the time of this company forming."""
@@ -151,7 +210,8 @@ class Business(object):
         index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
         house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
         street = self.lot.streets[index_of_street_address_will_be_on]
-        return "{0} {1}".format(house_number, street)
+        self.address = "{0} {1}".format(house_number, street.name)
+        self.street_address_is_on = street
 
     @property
     def residents(self):

@@ -18,8 +18,10 @@ class Config(object):
         self.samples = 32
         self.size = 16
         self.n_buildings_per_block = 2
+        self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
+        self.chance_company_gets_named_after_owner = 0.5
         # City founder
         self.year_city_gets_founded = 1910  # Year world gen begins
         self.age_of_city_founder = 30
