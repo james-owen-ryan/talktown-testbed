@@ -40,7 +40,7 @@ class Routine(object):
         if random.random() < config.chance_someone_goes_on_errand_vs_visits_someone:
             location = self._go_on_errand()
         else:
-            location = self._visit_someone()
+            location = self._visit_someone().home
         return location
 
     def _go_on_errand(self):
@@ -68,6 +68,63 @@ class Routine(object):
 
     def _visit_someone(self):
         """Return the residence of the person who this person will go visit."""
+        config = self.person.game.config
+        x = random.random()
+        relationship_to_person_who_person_who_will_be_visited = next(
+            r for r in config.who_someone_visiting_will_visit_probabilities if r[0][0] <= x <= r[0][1]
+        )[1]
+        if (relationship_to_person_who_person_who_will_be_visited == "fr" and
+                any(f for f in self.person.friends if f.present and f.home is not self.person.home)):
+            person_they_will_visit = self._visit_a_friend()
+        elif (relationship_to_person_who_person_who_will_be_visited == "if" and
+                any(f for f in self.person.immediate_family if f.present and f.home is not self.person.home)):
+            person_they_will_visit = self._visit_an_immediate_family_member()
+        elif (relationship_to_person_who_person_who_will_be_visited == "ef" and
+                any(f for f in self.person.extended_family if f.present and f.home is not self.person.home)):
+            person_they_will_visit = self._visit_an_extended_family_member()
+        else:
+            # Just stay home lol
+            person_they_will_visit = None
+        return person_they_will_visit
+
+    def _visit_a_friend(self):
+        """Return the friend that this person will visit.
+
+        TODO: Flesh this out.
+        """
+        friends_person_doesnt_live_with = [
+            f for f in self.person.friends if f.present and f.home is not self.person.home
+        ]
+        if random.random() > 0.5:
+            # Visit best friend (who doesn't live with them)
+            friend_they_will_visit = max(
+                friends_person_doesnt_live_with, key=lambda friend: self.person.relationships[friend].charge
+            )
+        else:
+            friend_they_will_visit = random.choice(friends_person_doesnt_live_with)
+        return friend_they_will_visit
+
+    def _visit_an_immediate_family_member(self):
+        """Return the immediate family member that this person will visit.
+
+        TODO: Flesh this out.
+        """
+        immediate_family_person_doesnt_live_with = [
+            f for f in self.person.immediate_family if f.present and f.home is not self.person.home
+        ]
+        immediate_family_they_will_visit = random.choice(immediate_family_person_doesnt_live_with)
+        return immediate_family_they_will_visit
+
+    def _visit_an_extended_family_member(self):
+        """Return the extended family member that this person will visit.
+
+        TODO: Flesh this out.
+        """
+        extended_family_person_doesnt_live_with = [
+            f for f in self.person.extended_family if f.present and f.home is not self.person.home
+        ]
+        extended_family_they_will_visit = random.choice(extended_family_person_doesnt_live_with)
+        return extended_family_they_will_visit
 
     def set_businesses_patronized(self):
         """Return the businesses that this person patronizes.

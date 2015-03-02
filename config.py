@@ -57,6 +57,14 @@ class Config(object):
         }
         self.chance_someone_leaves_home_on_sick_day = 0.05
         self.chance_someone_goes_on_errand_vs_visits_someone = 0.75  # thus 0.25 of visiting someone
+        self.who_someone_visiting_will_visit_probabilities = (
+            ((0.0, 0.5), 'fr'),  # Visit friend
+            ((0.5, 0.9), 'if'),  # immediate family
+            ((0.9, 1.0), 'ef'),  # extended family
+        )
+        self.chance_someone_visiting_someone_visits_immediate_family = 0.3
+        self.chance_someone_visiting_someone_visits_friend = 0.5
+        self.chance_someone_visiting_someone_visits_extended_family = 0.
         self.probabilities_of_errand_to_business_type = (
             # Keep in mind, this person will be spending the entire day/night cycle there
             ((0.00, 0.30), 'Restaurant'),
