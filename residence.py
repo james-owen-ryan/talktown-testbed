@@ -22,6 +22,7 @@ class DwellingPlace(object):
         self.move_ins = []
         self.move_outs = []
         self._init_ownership(initial_owners=owners)
+        self.people_here_now = set()  # People at home on a specific time step (either a resident or visitor)
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""

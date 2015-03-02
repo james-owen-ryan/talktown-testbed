@@ -7,13 +7,20 @@ class Routine(object):
     def __init__(self, person):
         """Initialize a Routine object."""
         self.person = person
+        self.working = False  # Whether or not the person is working at an exact timestep
         self.businesses_patronized = {}  # Gets set by set_businesses_patronized()
         if self.person.home:
             self.set_businesses_patronized()
 
+    def enact(self):
+        """Enact this person's daily routine for a particular timestep."""
+        self.person.location, self.working = self.decide_where_to_go()
+        self.person.location.people_here_now.add(self.person)
+
     def decide_where_to_go(self):
         """Return this person's daytime location, which is dynamic."""
         config = self.person.game.config
+        working = False  # Keep track of this, because they could be going into work on an off-day (e.g., restaurant)
         if self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
             if random.random() < config.chance_someone_doesnt_have_to_work_some_day:
                 if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
@@ -26,13 +33,14 @@ class Routine(object):
                 else:
                     location = self.person.home
             else:
+                working = True
                 location = self.person.occupation.company
         else:
             if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
                 location = self._go_in_public()
             else:
                 location = self.person.home
-        return location
+        return location, working
 
     def _go_in_public(self):
         """Return the location in public that this person will go to."""
@@ -40,7 +48,11 @@ class Routine(object):
         if random.random() < config.chance_someone_goes_on_errand_vs_visits_someone:
             location = self._go_on_errand()
         else:
-            location = self._visit_someone().home
+            person_they_will_visit = self._visit_someone()
+            if person_they_will_visit:
+                location = person_they_will_visit.home
+            else:
+                location = self.person.home
         return location
 
     def _go_on_errand(self):
@@ -137,8 +149,8 @@ class Routine(object):
         # normal routine living
         routine_business_types = [
             "Bank", "Barbershop", "BusDepot", "Hotel", "OptometryClinic",
-            "Park", "Restaurant", "Supermarket", "TaxiDepot",
-
+            "Park", "Restaurant", "Supermarket", "TaxiDepot", "Cemetery",
+            "TattooParlor", "PlasticSurgeryClinic", "University"
         ]
         # Ascertain and record the closest businesses for each of those types
         businesses_patronized = {}

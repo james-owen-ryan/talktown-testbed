@@ -48,6 +48,7 @@ class Business(object):
             self._init_get_named()
         # This is the set of people who require some service at this company today
         self.customers_today_or_tonight = set()
+        self.people_here_now = set()  # People at this business on a specific time step (either working or patronizing)
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
