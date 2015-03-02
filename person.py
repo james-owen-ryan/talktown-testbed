@@ -956,7 +956,9 @@ class Person(object):
                 openness_component = self._get_openness_component_to_chance_of_social_interaction()
             else:
                 openness_component = 0.0
-                friendship_component = self._get_friendship_component_to_chance_of_social_interaction()
+                friendship_component = self._get_friendship_component_to_chance_of_social_interaction(
+                    other_person=other_person
+                )
             chance = extroversion_component + openness_component + friendship_component
             if chance < config.chance_someone_instigates_interaction_with_other_person_floor:
                 chance = config.chance_someone_instigates_interaction_with_other_person_floor
