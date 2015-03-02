@@ -133,7 +133,7 @@ class Groundskeeper(Occupation):
 
 
 class Nurse(Occupation):
-    """A nurse at a hospital or optometry clinic or plastic-surgery clinic."""
+    """A nurse at a hospital, optometry clinic, plastic-surgery clinic, or school."""
 
     def __init__(self, person, company, shift):
         """Initialize a Nurse object.
@@ -220,6 +220,18 @@ class ConstructionWorker(Occupation):
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(ConstructionWorker, self).__init__(person=person, company=company, shift=shift)
+
+
+class DayCareProvider(Occupation):
+    """A person who works at a day care."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a DayCareProvider object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(DayCareProvider, self).__init__(person=person, company=company, shift=shift)
 
 
 class Doctor(Occupation):
@@ -389,18 +401,6 @@ class PoliceOfficer(Occupation):
         super(PoliceOfficer, self).__init__(person=person, company=company, shift=shift)
 
 
-class Professor(Occupation):
-    """A professor at the university."""
-
-    def __init__(self, person, company, shift):
-        """Initialize a Professor object.
-
-        @param person: The Person object for the person whose occupation this is.
-        @param company: The Company object for the company that person works for in this capacity.
-        """
-        super(Professor, self).__init__(person=person, company=company, shift=shift)
-
-
 class Realtor(Occupation):
     """A realtor at a realty firm."""
 
@@ -418,6 +418,18 @@ class Realtor(Occupation):
         """Return a sold home."""
         home_sales = HomePurchase(subjects=clients, home=home, realtor=self)
         return home_sales.home
+
+
+class Professor(Occupation):
+    """A professor at the university."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Professor object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Professor, self).__init__(person=person, company=company, shift=shift)
 
 
 class TattooArtist(Occupation):
@@ -442,6 +454,18 @@ class TaxiDriver(Occupation):
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(TaxiDriver, self).__init__(person=person, company=company, shift=shift)
+
+
+class Teacher(Occupation):
+    """A teacher at the K-12 school."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Teacher object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Teacher, self).__init__(person=person, company=company, shift=shift)
 
 
 class Waiter(Occupation):

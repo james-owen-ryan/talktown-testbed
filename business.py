@@ -78,6 +78,7 @@ class Business(object):
             BusDepot: 'Bus Depot',
             CityHall: 'City Hall',
             ConstructionFirm: 'Construction',
+            DayCare: 'Day Care',
             OptometryClinic: 'Optometry',
             FireStation: 'Fire Dept.',
             Hospital: 'Hospital',
@@ -87,6 +88,7 @@ class Business(object):
             PoliceStation: 'Police Dept.',
             RealtyFirm: 'Realty',
             Restaurant: 'Restaurant',
+            School: 'K-12 School',
             Supermarket: 'Grocers',
             TattooParlor: 'Tattoo',
             TaxiDepot: 'Taxi',
@@ -95,7 +97,7 @@ class Business(object):
             Park: 'Park',
         }
         classes_that_get_special_names = (
-            CityHall, FireStation, Hospital, PoliceStation, Cemetery, LawFirm, Restaurant, University, Park
+            CityHall, FireStation, Hospital, PoliceStation, School, Cemetery, LawFirm, Restaurant, University, Park
         )
         if self.__class__ not in classes_that_get_special_names:
             if random.random() < config.chance_company_gets_named_after_owner:
@@ -105,7 +107,7 @@ class Business(object):
             else:
                 prefix = Names.a_place_name()
             name = "{0} {1}".format(prefix, class_to_company_name_component[self.__class__])
-        elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, Cemetery):
+        elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, School, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
         elif self.__class__ is LawFirm:
             associates = [self.owner] + [e for e in self.employees if e.__class__ is Lawyer]
@@ -482,6 +484,17 @@ class ConstructionFirm(Business):
         return building_constructions
 
 
+class DayCare(Business):
+    """A day care center for young children."""
+
+    def __init__(self, owner):
+        """Initialize a DayCare object.
+
+        @param owner: The owner of this business.
+        """
+        super(DayCare, self).__init__(owner)
+
+
 class OptometryClinic(Business):
     """An optometry clinic."""
 
@@ -622,6 +635,17 @@ class Restaurant(Business):
         @param owner: The owner of this business.
         """
         super(Restaurant, self).__init__(owner)
+
+
+class School(Business):
+    """The local K-12 school."""
+
+    def __init__(self, owner):
+        """Initialize a School object.
+
+        @param owner: The owner of this business.
+        """
+        super(School, self).__init__(owner)
 
 
 class Supermarket(Business):

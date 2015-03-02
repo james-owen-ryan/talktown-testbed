@@ -24,14 +24,14 @@ class Config(object):
         self.chance_street_gets_numbered_name = 0.8
         self.chance_company_gets_named_after_owner = 0.5
         self.public_institutions_started_upon_city_founding = (
-            CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
+            CityHall, Hospital, FireStation, PoliceStation, School, University, Park, Cemetery
         )
         # self.public_institutions_started_upon_city_founding = (
         #     CityHall, Hospital, FireStation, PoliceStation, University
         # )
         self.businesses_started_upon_city_founding = (
             # Excluding construction firm, reality firm, and apartment complexes built by founder
-            Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop,
+            Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop, DayCare,
             Restaurant, Restaurant, OptometryClinic, LawFirm, TattooParlor, PlasticSurgeryClinic
         )
         # City founder
@@ -184,9 +184,9 @@ class Config(object):
                 0)
         )
         # Company types that are public resources, i.e., not privately owned
-        self.public_companies = (CityHall, FireStation, Hospital, PoliceStation, University, Cemetery, Park)
+        self.public_companies = (CityHall, FireStation, Hospital, PoliceStation, School, University, Cemetery, Park)
         # Company types that get established on tracts, not on lots
-        self.companies_that_get_established_on_tracts = (Cemetery, Park)
+        self.companies_that_get_established_on_tracts = (Cemetery, Park)  # TODO maybe add University?
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
@@ -226,6 +226,10 @@ class Config(object):
                 ),
                 'night': (Janitor,),
             },
+            DayCare: {
+                'day': (DayCareProvider, DayCareProvider),
+                'night': (Janitor,),
+            },
             OptometryClinic: {
                 'day': (Secretary, Nurse, Nurse, Manager, Optometrist),
                 'night': (Janitor,),
@@ -262,6 +266,10 @@ class Config(object):
                 'day': (Cashier, Waiter, Manager),
                 'night': (Cashier, Waiter, Waiter, Manager),
             },
+            School: {
+                'day': (Teacher, Teacher, Nurse),
+                'night': (Janitor, Janitor)
+            },
             Supermarket: {
                 'day': (Cashier, Cashier, Manager),
                 'night': (Cashier, Cashier, Manager),
@@ -297,6 +305,7 @@ class Config(object):
             Groundskeeper: 'Parks',
             BankTeller: 'Finance',
             Concierge: 'Hospitality',
+            DayCareProvider: 'Education',
             HairStylist: 'Cosmetic',
             ConstructionWorker: 'Construction',
             Firefighter: 'Fire',
@@ -305,6 +314,7 @@ class Config(object):
             BusDriver: 'Transportation',
             Nurse: 'Medical',
             TattooArtist: 'Cosmetic',
+            Teacher: 'Education',
             Manager: None,
             FireChief: 'Fire',
             PoliceChief: 'Police',
@@ -330,6 +340,7 @@ class Config(object):
             Groundskeeper: None,
             BankTeller: None,
             Concierge: None,
+            DayCareProvider: None,
             HairStylist: None,
             ConstructionWorker: None,
             Firefighter: None,
@@ -338,6 +349,7 @@ class Config(object):
             BusDriver: None,
             Nurse: None,
             TattooArtist: None,
+            Teacher: None,
             Manager: 'Self',  # Must have worked in the industry for which you will manage
             FireChief: 'Fire',
             PoliceChief: 'Police',
@@ -362,6 +374,7 @@ class Config(object):
             Groundskeeper: 1,
             BankTeller: 2,
             Concierge: 2,
+            DayCareProvider: 2,
             HairStylist: 2,
             ConstructionWorker: 2,
             Firefighter: 2,
@@ -370,6 +383,7 @@ class Config(object):
             BusDriver: 2,
             Nurse: 2,
             TattooArtist: 2,
+            Teacher: 2,
             Manager: 3,
             FireChief: 3,
             PoliceChief: 3,
