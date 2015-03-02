@@ -57,6 +57,14 @@ class City(object):
                 highestDensity = density
                 self.downtown = lot
         self.name = None  # Gets set by Game.establish_setting()
+        # These get set when these businesses get established (by their __init__() magic methods)
+        self.cemetery = None
+        self.city_hall = None
+        self.fire_station = None
+        self.hospital = None
+        self.police_station = None
+        self.school = None
+        self.university = None
             
     def dist_from_downtown(self,lot):
         

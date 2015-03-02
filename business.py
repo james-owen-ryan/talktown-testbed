@@ -435,6 +435,7 @@ class Cemetery(Business):
     def __init__(self, owner):
         """Initialize a Cemetery object."""
         super(Cemetery, self).__init__(owner)
+        self.city.cemetery = self
         self.plots = {}
 
     def inter_person(self, person):
@@ -453,6 +454,7 @@ class CityHall(Business):
         @param owner: The owner of this business.
         """
         super(CityHall, self).__init__(owner)
+        self.city.city_hall = self
 
 
 class ConstructionFirm(Business):
@@ -515,6 +517,7 @@ class FireStation(Business):
         @param owner: The owner of this business.
         """
         super(FireStation, self).__init__(owner)
+        self.city.fire_station = self
 
 
 class Hospital(Business):
@@ -526,6 +529,7 @@ class Hospital(Business):
         @param owner: The owner of this business.
         """
         super(Hospital, self).__init__(owner)
+        self.city.hospital = self
 
     @property
     def baby_deliveries(self):
@@ -604,6 +608,7 @@ class PoliceStation(Business):
         @param owner: The owner of this business.
         """
         super(PoliceStation, self).__init__(owner)
+        self.city.police_station = self
 
 
 class RealtyFirm(Business):
@@ -646,6 +651,7 @@ class School(Business):
         @param owner: The owner of this business.
         """
         super(School, self).__init__(owner)
+        self.city.school = self
 
 
 class Supermarket(Business):
@@ -690,3 +696,4 @@ class University(Business):
         @param owner: The owner of this business.
         """
         super(University, self).__init__(owner)
+        self.city.university = self
