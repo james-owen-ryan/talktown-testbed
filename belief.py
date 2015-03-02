@@ -36,9 +36,16 @@ class PersonMentalModel(object):
             # blank belief attributes -- then these can be filled in manually according
             # to what a person tells another person, etc.
             return None
-        else:
+        elif observation_or_reflection.type == "reflection":
+            # Generate a true facet
             true_feature_str = self._get_true_feature(feature_type=feature_type)
-            observation_or_reflection = observation_or_reflection
+            belief_facet_obj = Facet(
+                value=true_feature_str, owner=self.owner, subject=self.subject,
+                feature_type=feature_type, evidence=observation_or_reflection
+            )
+            return belief_facet_obj
+        elif observation_or_reflection.type == "observation":
+            true_feature_str = self._get_true_feature(feature_type=feature_type)
             chance_feature_gets_remembered_perfectly = (
                 self._calculate_chance_feature_gets_remembered_perfectly(feature_type=feature_type)
             )

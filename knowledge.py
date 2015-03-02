@@ -8,6 +8,9 @@ class Reflection(object):
         self.time = source.game.date
         self.subject = subject
         self.source = source
+        assert subject is source, "{} attempted to reflect about {}, who is not themself.".format(
+            source.name, subject.name
+        )
         self.parent = None  # Will always be None
         self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
@@ -48,7 +51,6 @@ class Concoction(object):
         self.parent = parent  # Will be None if concocted out of nowhere, else a Forgetting if that preceded it
         self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
-        self.source.game.c.append(self)
 
 
 class Lie(object):

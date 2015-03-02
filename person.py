@@ -9,6 +9,8 @@ import occupation
 from face import Face
 from routine import Routine
 from relationship import Acquaintance
+from knowledge import Reflection
+from belief import PersonMentalModel
 
 
 class Person(object):
@@ -1003,6 +1005,16 @@ class Person(object):
             config.chance_of_interaction_friendship_component if other_person in top_five_friends else 0.0
         )
         return friendship_component
+
+    def reflect(self):
+        """Reflect on one's own features."""
+        reflection = Reflection(subject=self, source=self)
+        if self not in self.mind.mental_models:
+            PersonMentalModel(
+                owner=self, subject=self, observation_or_reflection=reflection
+            )
+        else:
+            self.mind.mental_models[self].build_up(new_observation_or_reflection=reflection)
 
 
 class PersonExNihilo(Person):
