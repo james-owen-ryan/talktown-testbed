@@ -13,6 +13,7 @@ class Config(object):
                 #################
                 ##  WORLD GEN  ##
                 #################
+
         # City generation
         self.loci = 3
         self.samples = 32
@@ -22,12 +23,12 @@ class Config(object):
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
         self.chance_company_gets_named_after_owner = 0.5
-        self.public_institutions_started_upon_city_founding = (
-            CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
-        )
         # self.public_institutions_started_upon_city_founding = (
-        #     CityHall, Hospital, FireStation, PoliceStation, University
+        #     CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
         # )
+        self.public_institutions_started_upon_city_founding = (
+            CityHall, Hospital, FireStation, PoliceStation, University
+        )
         self.businesses_started_upon_city_founding = (
             # Excluding construction firm, reality firm, and apartment complexes built by founder
             Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop,
@@ -41,7 +42,33 @@ class Config(object):
         self.boost_to_the_founders_conception_chance = 0.2
         # City establishment and early development
         self.number_of_apartment_complexes_founder_builds_downtown = 3
-                ## FULL SIMULATION ##
+
+                #################
+                ##  FULL SIM   ##
+                #################
+
+        # Daily routines
+        self.chance_someone_calls_in_sick_to_work = 0.03
+        self.chance_someone_doesnt_have_to_work_some_day = 0.28  # Proxy in lieu of reifying notion of weekend
+        self.chance_someone_leaves_home_on_day_off = {
+            # Keep in mind, they currently will be spending the entire day/night cycle
+            # at some particular place in public
+            "day": 0.3, "night": 0.05
+        }
+        self.chance_someone_leaves_home_on_sick_day = 0.05
+        self.chance_someone_goes_on_errand_vs_visits_someone = 0.75  # thus 0.25 of visiting someone
+        self.probabilities_of_errand_to_business_type = (
+            # Keep in mind, this person will be spending the entire day/night cycle there
+            ((0.00, 0.30), 'Restaurant'),
+            ((0.30, 0.55), 'Supermarket'),
+            ((0.55, 0.65), 'Park'),
+            ((0.65, 0.75), 'Bank'),
+            ((0.75, 0.80), 'BusDepot'),
+            ((0.80, 0.85), 'Cemetery'),
+            ((0.85, 0.90), 'TaxiDepot'),
+            ((0.90, 0.95), 'Hotel'),
+            ((0.95, 1.00), 'University'),
+        )
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
@@ -966,7 +993,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'blonde'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
                 'green': (
                     ((0.0, 0.6), 'blue'),
@@ -976,7 +1003,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'blonde'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
                 'blue': (
                     ((0.0, 0.6), 'purple'),
@@ -986,7 +1013,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'blonde'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
             },
             "ear angle": {
@@ -1102,7 +1129,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'yellow'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
                 'green': (
                     ((0.0, 0.6), 'blue'),
@@ -1112,7 +1139,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'yellow'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
                 'blue': (
                     ((0.0, 0.6), 'purple'),
@@ -1122,7 +1149,7 @@ class Config(object):
                     ((0.9, 0.93), 'brown'),
                     ((0.93, 0.95), 'gray'),
                     ((0.95, 0.96), 'yellow'),
-                    ((0.96, 0.97), 'white'),
+                    ((0.96, 1.0), 'white'),
                 ),
             },
             "eyebrow size": {
