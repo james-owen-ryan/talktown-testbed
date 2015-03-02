@@ -586,7 +586,7 @@ class Person(object):
         events.sort(key=lambda ev: ev.year)  # Sort chronologically
         return events
 
-    def feature_of_type(self, feature_type):
+    def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         features = {
             "skin color": self.face.skin.color,
@@ -610,11 +610,44 @@ class Person(object):
             "freckles": self.face.distinctive_features.freckles,
             "birthmark": self.face.distinctive_features.birthmark,
             "scar": self.face.distinctive_features.scar,
-            "tattoo": self.face.distinctive_features.tattoo,  # From nurture
+            "tattoo": self.face.distinctive_features.tattoo,
             "glasses": self.face.distinctive_features.glasses,
-            "sunglasses": self.face.distinctive_features.sunglasses  # From nurture
+            "sunglasses": self.face.distinctive_features.sunglasses
         }
         return features[feature_type]
+
+    def get_knowledge(self, other_person, feature_type):
+        """Return this person's knowledge about another person's feature of the given type."""
+        if other_person not in self.mind.mental_models:
+            return None
+        else:
+            features = {
+                "skin color": self.mind.mental_models[other_person].face.skin.color,
+                "head size": self.mind.mental_models[other_person].face.head.size,
+                "head shape": self.mind.mental_models[other_person].face.head.shape,
+                "hair length": self.mind.mental_models[other_person].face.hair.length,
+                "hair color": self.mind.mental_models[other_person].face.hair.color,
+                "eyebrow size": self.mind.mental_models[other_person].face.eyebrows.size,
+                "eyebrow color": self.mind.mental_models[other_person].face.eyebrows.color,
+                "mouth size": self.mind.mental_models[other_person].face.mouth.size,
+                "ear size": self.mind.mental_models[other_person].face.ears.size,
+                "ear angle": self.mind.mental_models[other_person].face.ears.angle,
+                "nose size": self.mind.mental_models[other_person].face.nose.size,
+                "nose shape": self.mind.mental_models[other_person].face.nose.shape,
+                "eye size": self.mind.mental_models[other_person].face.eyes.size,
+                "eye shape": self.mind.mental_models[other_person].face.eyes.shape,
+                "eye color": self.mind.mental_models[other_person].face.eyes.color,
+                "eye horizontal settedness": self.mind.mental_models[other_person].face.eyes.horizontal_settedness,
+                "eye vertical settedness": self.mind.mental_models[other_person].face.eyes.vertical_settedness,
+                "facial hair style": self.mind.mental_models[other_person].face.facial_hair.style,
+                "freckles": self.mind.mental_models[other_person].face.distinctive_features.freckles,
+                "birthmark": self.mind.mental_models[other_person].face.distinctive_features.birthmark,
+                "scar": self.mind.mental_models[other_person].face.distinctive_features.scar,
+                "tattoo": self.mind.mental_models[other_person].face.distinctive_features.tattoo,
+                "glasses": self.mind.mental_models[other_person].face.distinctive_features.glasses,
+                "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
+            }
+            return features[feature_type]
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""

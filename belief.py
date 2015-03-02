@@ -173,7 +173,7 @@ class PersonMentalModel(object):
         return belief_facet_obj
 
     def _get_true_feature(self, feature_type):
-        true_feature_str = str(self.subject.feature_of_type(feature_type=feature_type))
+        true_feature_str = str(self.subject.get_feature(feature_type=feature_type))
         return true_feature_str
 
     @staticmethod
@@ -557,7 +557,7 @@ class Facet(str):
     @property
     def accurate(self):
         """Return whether this belief is accurate."""
-        true_feature = self.subject.feature_of_type(feature_type=self.feature_type)
+        true_feature = self.subject.get_feature(feature_type=self.feature_type)
         if self == true_feature:
             return True
         else:
