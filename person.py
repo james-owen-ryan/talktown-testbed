@@ -937,9 +937,64 @@ class Person(object):
     def socialize(self):
         """Socialize with nearby people."""
         for person in self.location.people_here_now:
-            if person not in self.relationships:
-                Acquaintance(owner=self, subject=person, preceded_by=None)
-            self.relationships[person].progress_relationship()
+            if self._decide_to_instigate_social_interaction(other_person=person):
+                if person not in self.relationships:
+                    Acquaintance(owner=self, subject=person, preceded_by=None)
+                if not self.relationships[person].interacted_this_timestep:
+                    # Make sure they didn't already interact this timestep
+                    self.relationships[person].progress_relationship()
+
+    def _decide_to_instigate_social_interaction(self, other_person):
+        """Decide whether to instigate a social interaction with another person."""
+        config = self.game.config
+        if other_person is self:
+            chance = 0.0
+        else:
+            extroversion_component = self._get_extroversion_component_to_chance_of_social_interaction()
+            if other_person not in self.relationships:
+                friendship_component = 0.0
+                openness_component = self._get_openness_component_to_chance_of_social_interaction()
+            else:
+                openness_component = 0.0
+                friendship_component = self._get_friendship_component_to_chance_of_social_interaction()
+            chance = extroversion_component + openness_component + friendship_component
+            if chance < config.chance_someone_instigates_interaction_with_other_person_floor:
+                chance = config.chance_someone_instigates_interaction_with_other_person_floor
+            elif chance > config.chance_someone_instigates_interaction_with_other_person_cap:
+                chance = config.chance_someone_instigates_interaction_with_other_person_cap
+        if random.random() < chance:
+            return True
+        else:
+            return False
+
+    def _get_extroversion_component_to_chance_of_social_interaction(self):
+        """Return the effect of this person's extroversion on the chance of instigating social interaction."""
+        config = self.game.config
+        extroversion_component = self.personality.extroversion
+        if extroversion_component < config.chance_of_interaction_extroversion_component_floor:
+            extroversion_component = config.chance_of_interaction_extroversion_component_floor
+        elif extroversion_component > config.chance_of_interaction_extroversion_component_cap:
+            extroversion_component = config.chance_of_interaction_extroversion_component_cap
+        return extroversion_component
+
+    def _get_openness_component_to_chance_of_social_interaction(self):
+        """Return the effect of this person's openness on the chance of instigating social interaction."""
+        config = self.game.config
+        openness_component = self.personality.openness_to_experience
+        if openness_component < config.chance_of_interaction_openness_component_floor:
+            openness_component = config.chance_of_interaction_openness_component_floor
+        elif openness_component > config.chance_of_interaction_openness_component_cap:
+            openness_component = config.chance_of_interaction_openness_component_cap
+        return openness_component
+
+    def _get_friendship_component_to_chance_of_social_interaction(self, other_person):
+        """Return the effect of an existing friendship on the chance of instigating social interaction."""
+        config = self.game.config
+        top_five_friends = heapq.nlargest(5, self.relationships, key=lambda p: self.relationships[p].charge)
+        friendship_component = (
+            config.chance_of_interaction_friendship_component if other_person in top_five_friends else 0.0
+        )
+        return friendship_component
 
 
 class PersonExNihilo(Person):

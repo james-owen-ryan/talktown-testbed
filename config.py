@@ -89,6 +89,19 @@ class Config(object):
         self.chance_someone_gets_contacts_or_glasses = 0.002
         self.chance_someone_gets_a_tattoo_some_day = 0.001  # Face tattoo, of course
         self.chance_someone_gets_plastic_surgery_some_day = 0.001
+        # Socializing
+        # The chance someone will spark up an interaction with someone else has to
+        # do with their extroversion, openness to experience (if they don't know
+        # them already), and how well they already know that person; derivation of this
+        # starts from the contribution of a person's extroversion (which gets floored
+        # or capped according to parameters below)
+        self.chance_of_interaction_extroversion_component_floor = 0.05
+        self.chance_of_interaction_extroversion_component_cap = 0.7
+        self.chance_of_interaction_openness_component_floor = 0.01
+        self.chance_of_interaction_openness_component_cap = 0.7
+        self.chance_of_interaction_friendship_component = 0.7  # Boost to chance if person in top five friends
+        self.chance_someone_instigates_interaction_with_other_person_floor = 0.05
+        self.chance_someone_instigates_interaction_with_other_person_cap = 0.95
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
