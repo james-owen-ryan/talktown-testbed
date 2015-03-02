@@ -648,6 +648,7 @@ class Person(object):
                 "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
             }
             return features[feature_type]
+        #
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
