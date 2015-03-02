@@ -23,12 +23,12 @@ class Config(object):
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
         self.chance_company_gets_named_after_owner = 0.5
-        # self.public_institutions_started_upon_city_founding = (
-        #     CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
-        # )
         self.public_institutions_started_upon_city_founding = (
-            CityHall, Hospital, FireStation, PoliceStation, University
+            CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
         )
+        # self.public_institutions_started_upon_city_founding = (
+        #     CityHall, Hospital, FireStation, PoliceStation, University
+        # )
         self.businesses_started_upon_city_founding = (
             # Excluding construction firm, reality firm, and apartment complexes built by founder
             Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop,
@@ -69,6 +69,10 @@ class Config(object):
             ((0.90, 0.95), 'Hotel'),
             ((0.95, 1.00), 'University'),
         )
+        self.chance_someone_gets_a_haircut_some_day = 0.02
+        self.chance_someone_gets_contacts_or_glasses = 0.002
+        self.chance_someone_gets_a_tattoo_some_day = 0.001  # Face tattoo, of course
+        self.chance_someone_gets_plastic_surgery_some_day = 0.001
         # Marriage
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name

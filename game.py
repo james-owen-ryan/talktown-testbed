@@ -17,6 +17,7 @@ class Game(object):
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.city = None
         self._establish_setting()
+        self.time_of_day = "day"
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
@@ -83,7 +84,7 @@ class Game(object):
             owner.city = self.city
             business(owner=owner)
 
-        # 7. eventually, have other people come in and start first or more of the following: OptometryClinic,
+        # 7. eventually, have other people come in and start more of the following: OptometryClinic,
         # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
         #
         # 	- For these, have them potentially be started by reasoning over supply, need, etc.
