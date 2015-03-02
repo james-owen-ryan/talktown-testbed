@@ -83,11 +83,22 @@ class Config(object):
                 ((0.55, 0.65), 'Park'),
                 ((0.65, 0.75), 'Bank'),
                 ((0.75, 0.80), 'BusDepot'),
-                ((0.80, 0.85), 'Cemetery'),
-                ((0.85, 0.90), 'TaxiDepot'),
+                ((0.80, 0.85), 'Bar'),
+                ((0.85, 0.88), 'Cemetery'),
+                ((0.88, 0.90), 'TaxiDepot'),
                 ((0.90, 0.95), 'Hotel'),
                 ((0.95, 1.00), 'University'),
-            )
+            ),
+            "night": (
+                ((0.00, 0.35), 'Restaurant'),
+                ((0.35, 0.70), 'Bar'),
+                ((0.70, 0.80), 'Hotel'),
+                ((0.80, 0.88), 'Supermarket'),
+                ((0.88, 0.95), 'TaxiDepot'),
+                ((0.95, 0.97), 'BusDepot'),
+                ((0.97, 0.99), 'Park'),
+                ((0.99, 1.00), 'Cemetery'),
+            ),
         }
         self.chance_someone_gets_a_haircut_some_day = 0.02
         self.chance_someone_gets_contacts_or_glasses = 0.002

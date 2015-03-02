@@ -105,7 +105,7 @@ class Routine(object):
             x = random.random()
             business_type_of_errand = next(
                 # See config.py to understand what's going on here
-                e for e in config.probabilities_of_errand_to_business_type if
+                e for e in config.probabilities_of_errand_to_business_type[self.person.game.time_of_day] if
                 e[0][0] <= x <= e[0][1]
             )[1]
         location = self.businesses_patronized[business_type_of_errand]
@@ -192,7 +192,7 @@ class Routine(object):
         # Compile types of businesses that people visit at least some time in their
         # normal routine living
         routine_business_types = [
-            "Bank", "Barbershop", "BusDepot", "DayCare", "Hotel", "OptometryClinic",
+            "Bank", "Bar", "Barbershop", "BusDepot", "DayCare", "Hotel", "OptometryClinic",
             "Park", "Restaurant", "Supermarket", "TaxiDepot", "Cemetery",
             "TattooParlor", "PlasticSurgeryClinic", "University"
         ]
