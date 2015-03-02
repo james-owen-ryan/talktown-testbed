@@ -30,7 +30,6 @@ class PersonMentalModel(object):
 
     def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
-        config = self.owner.game.config
         if not observation_or_reflection:
             # This is in service to preparation of a mental model composed (initially) of
             # blank belief attributes -- then these can be filled in manually according
