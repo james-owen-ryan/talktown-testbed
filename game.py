@@ -89,7 +89,8 @@ class Game(object):
         #
         # 	- For these, have them potentially be started by reasoning over supply, need, etc.
 
-    def advance_one_year(self):
-        """Advance one year (the timestep during simulation."""
-        self.true_year += 1
-        self.year = self.true_year
+    def advance_timestep(self):
+        """Advance to the next day/night cycle."""
+        self.time_of_day = "night" if self.time_of_day == "day" else "day"
+        for person in self.city.residents:
+            person.routine.enact()
