@@ -49,6 +49,8 @@ class Routine(object):
                 location = self.person.occupation.company
         else:
             chance_of_leaving_home = self.person.personality.extroversion
+            if self.person.kids_at_home:
+                chance_of_leaving_home *= config.chance_someone_leaves_home_multiplier_due_to_kids
             floor = config.chance_someone_leaves_home_on_day_off_floor[self.person.game.time_of_day]
             cap = config.chance_someone_leaves_home_on_day_off_cap[self.person.game.time_of_day]
             if chance_of_leaving_home < floor:
