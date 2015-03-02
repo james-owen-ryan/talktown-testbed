@@ -862,8 +862,8 @@ class Config(object):
             # These values represent means (for someone with memory value of self.memory_mean),
             # floors, and caps for the base chance someone perfectly remembers a feature of
             # a person of this type (the base chance gets multiplied by the person's memory);
-            # if a feature isn't remembered perfectly, it may get misremembered by degradation
-            # or transference, or may get forgotten
+            # if a feature isn't remembered perfectly, it will immediately deteriorate by
+            # mutation, transference, or forgetting
             #                               MEAN    FLOOR   CAP
             "skin color":                   (0.95,  0.80,   0.99),
             "tattoo":                       (0.95,  0.80,   0.99),
@@ -895,7 +895,34 @@ class Config(object):
         # of as representing the expected number of days a belief facet will remain intact
         # without a person seeing the person in question to reinforce the true feature);
         # this gets divided by a person's memory and divided by the strength of the belief facet
-        self.chance_of_memory_deterioration_on_a_given_timestep = 0.2  # Expected 5 days to forget stranger's feature
+        self.chance_of_memory_deterioration_on_a_given_timestep = {
+            # i.e., 0.2 would be expected 5 days to forget stranger's feature
+            "skin color":                   0.01,
+            "tattoo":                       0.01,
+            "birthmark":                    0.02,
+            "scar":                         0.02,
+            "facial hair style":            0.08,
+            "glasses":                      0.08,
+            "sunglasses":                   0.08,
+            "freckles":                     0.15,
+            "hair color":                   0.15,
+            "hair length":                  0.15,
+            "head size":                    0.2,
+            "head shape":                   0.2,
+            "eye horizontal settedness":    0.25,
+            "eye vertical settedness":      0.25,
+            "eye size":                     0.25,
+            "eye color":                    0.25,
+            "eye shape":                    0.25,
+            "mouth size":                   0.35,
+            "nose size":                    0.35,
+            "nose shape":                   0.35,
+            "eyebrow size":                 0.40,
+            "eyebrow color":                0.40,
+            "ear size":                     0.40,
+            "ear angle":                    0.10,
+            "":                             0.03,  # Chance of concoction, essentially
+        }
         # Chance of certain types of memory deterioration -- note that these chances only
         # get reference when it's already been decided that some piece of knowledge
         # will get polluted/forgotten; as such, these chances are only relative to

@@ -319,10 +319,14 @@ class FaceBelief(object):
                 for feature in belief.__dict__:
                     if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
                         belief_facet = belief.__dict__[feature]
+                        if belief_facet is not None:
+                            feature_type_str = belief_facet.feature_type
+                        else:
+                            feature_type_str = ''
                         # Determine the chance of memory deterioration, which starts from a base value
                         # that gets affected by the person's memory and the strength of the belief facet
                         chance_of_memory_deterioration = (
-                            config.chance_of_memory_deterioration_on_a_given_timestep /
+                            config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
                             self.person_model.owner.mind.memory /
                             belief_facet.strength
                         )
