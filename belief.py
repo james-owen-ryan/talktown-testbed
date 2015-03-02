@@ -102,7 +102,6 @@ class PersonMentalModel(object):
         TODO: Have transference be more likely to happen between similar people --
         this requires an operationalized notion of how similar any two people are.
         """
-        config = self.subject.game.config
         if any(person for person in self.owner.mind.mental_models if person.male == self.subject.male):
             person_belief_will_transfer_from = next(
                 person for person in self.owner.mind.mental_models if person.male == self.subject.male
@@ -110,7 +109,7 @@ class PersonMentalModel(object):
         else:
             person_belief_will_transfer_from = random.sample(self.owner.mind.mental_models, 1)[0]
         belief_facet_transferred_from = (
-            self.owner.mind.mental_models[person_belief_will_transfer_from]._get_a_facet_to_this_belief_of_type(
+            self.owner.mind.mental_models[person_belief_will_transfer_from].get_facet_to_this_belief_of_type(
                 feature_type=feature_type
             )
         )
@@ -164,7 +163,7 @@ class PersonMentalModel(object):
             chance_it_gets_remembered_perfectly = chance_cap
         return chance_it_gets_remembered_perfectly
 
-    def _get_a_facet_to_this_belief_of_type(self, feature_type):
+    def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
         features = {
             "skin color": self.face.skin.color,
