@@ -46,6 +46,7 @@ class City(object):
         self.generateLots(gameState.config)
         for lot in self.lots | self.tracts:
             lot.setNeighboringLots()
+          
         self.paths = {}
         self.generatePaths()
         self.downtown = None
@@ -281,22 +282,23 @@ class City(object):
                 tract = Tract(self)
                 self.tracts.add(tract)
             for ii in range(0,sizeOfBlock+1):
-                Blocks[(ew,ns+ii,'NS')] =Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii)) 
+                
+                insertOnce(Blocks,(ew,ns+ii,'NS'),Block( nsStreets[(ew,ns)], (ii+ns)*100,(ew,ns+ii))) 
                 insertOnce(Numberings,(ew,ns+ii,'E'),Block.determine_house_numbering( (ii+ns)*100,'E', configFile))
-                Blocks[(ew+ii,ns,'EW')] =Block( ewStreets[(ew,ns)], (ii+ew)*100,(ew+ii,ns))        
+                insertOnce(Blocks,(ew+ii,ns,'EW'),Block( ewStreets[(ew,ns)], (ii+ew)*100,(ew+ii,ns)))        
                 insertOnce(Numberings,(ew+ii,ns,'N'),Block.determine_house_numbering( (ii+ew)*100,'N', configFile))
-                Blocks[(ew+sizeOfBlock,ns+ii,'NS')] =Block( nsStreets[(ew+sizeOfBlock,ns)], (ii+ns)*100,(ew+sizeOfBlock,ns+ii))   
+                insertOnce(Blocks,(ew+sizeOfBlock,ns+ii,'NS'),Block( nsStreets[(ew+sizeOfBlock,ns)], (ii+ns)*100,(ew+sizeOfBlock,ns+ii)))   
                 insertOnce(Numberings,(ew+sizeOfBlock,ns+ii,'W'),Block.determine_house_numbering( (ii+ns)*100,'W', configFile))     
-                Blocks[(ew+ii,ns+sizeOfBlock,'EW')] =Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock))
+                insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,0,0)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,0,0)
+                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],0,'W',0)
+                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],0 ,'S',0)
                     if (ew+sizeOfBlock <= size/2):
-                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,0,0)
+                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],0,'E',0)
                     
                     if (ns+sizeOfBlock <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,0,0)
+                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],0,'N',0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
