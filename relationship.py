@@ -192,6 +192,9 @@ class Relationship(object):
         self.spark += self.spark_increment * self.age_difference_effect_on_spark_increment
         self.form_or_build_up_mental_model()
         self.interacted_this_timestep = True
+        # Call this method for the subject's own conception of this relationship
+        # to update its attributes according to this interaction
+        self.subject.relationships[self.owner].progress_relationship()
 
     @property
     def age_difference_effect_on_charge_increment(self):
