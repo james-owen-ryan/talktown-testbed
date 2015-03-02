@@ -574,7 +574,15 @@ class Lot(object):
         # These get set by init_generate_address(), which gets called by City
         self.address = None
         self.street_address_is_on = None
-        self.neighboring_residents = set([])  # Gets added to as appropriate by event.Move
+
+    @property
+    def population(self):
+        """Return the number of people living/working on the lot."""
+        if self.building:
+            population = len(self.building.residents)
+        else:
+            population = 0
+        return population
 
     def addBlock(self, block, number, sideOfStreet, positionInBlock):
         self.streets.append(block.street)
