@@ -100,6 +100,10 @@ class Game(object):
             person.routine.enact()
         # Have people socialize with other people also at that location --
         # this will cause relationships to form/progress, which in turn
-        # will cause knowledge to propagate
+        # will cause knowledge to build up and to propagate
         for person in self.city.residents:
             person.socialize()
+        # Deteriorate people's mental models from time passing
+        for person in self.city.residents:
+            for other_person in person.mind.mental_models:
+                person.mind.mental_models[other_person].deteriorate()

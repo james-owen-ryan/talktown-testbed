@@ -892,7 +892,13 @@ class Config(object):
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
         }
-        # Chance of certain types of memory pollution -- note that these chances only
+        # Chance of memory deterioration happening on a given timestep -- the chance
+        # for each belief facet of it deteriorating on a given timestep (can be thought
+        # of as representing the expected number of days a belief facet will remain intact
+        # without a person seeing the person in question to reinforce the true feature);
+        # this gets divided by a person's memory and divided by the strength of the belief facet
+        self.chance_of_memory_deterioration_on_a_given_timestep = 0.2  # Expected 5 days to forget stranger's feature
+        # Chance of certain types of memory deterioration -- note that these chances only
         # get reference when it's already been decided that some piece of knowledge
         # will get polluted/forgotten; as such, these chances are only relative to
         # one another

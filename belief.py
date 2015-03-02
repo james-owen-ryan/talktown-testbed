@@ -24,6 +24,10 @@ class PersonMentalModel(object):
         """Build up a mental model from a new observation or reflection."""
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
 
+    def deteriorate(self):
+        """Deteriorate a mental model from time passing."""
+        self.face.deteriorate()
+
     def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
         config = self.owner.game.config
@@ -59,24 +63,51 @@ class PersonMentalModel(object):
     def deteriorate_belief_facet(self, feature_type, parent_knowledge_object, current_feature_str):
         """Deteriorate a belief facet, either by mutation, transference, or forgetting."""
         config = self.owner.game.config
-        result = self._decide_how_knowledge_will_pollute_or_be_forgotten(config=config)
-        if result == 't' and len(self.owner.mind.mental_models) > 1:  # Transference
-            # Note: the check on the owner's mental models is to make sure they
-            # actually have a mental model for a person other than themself to
-            # transfer the feature attribute from
-            belief_facet_obj = self._transfer_belief_facet(
-                feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
-            )
-        elif result == 'm':  # Mutation
-            belief_facet_obj = self._mutate_belief_facet(
-                feature_type=feature_type, parent_knowledge_object=parent_knowledge_object,
-                feature_being_mutated_from_str=current_feature_str
-            )
-        else:  # Forgetting
-            belief_facet_obj = self._forget_belief_facet(
+        if current_feature_str != '':
+            result = self._decide_how_knowledge_will_pollute_or_be_forgotten(config=config)
+            if result == 't' and len(self.owner.mind.mental_models) > 1:  # Transference
+                # Note: the check on the owner's mental models is to make sure they
+                # actually have a mental model for a person other than themself to
+                # transfer the feature attribute from
+                belief_facet_obj = self._transfer_belief_facet(
+                    feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
+                )
+            elif result == 'm':  # Mutation
+                belief_facet_obj = self._mutate_belief_facet(
+                    feature_type=feature_type, parent_knowledge_object=parent_knowledge_object,
+                    feature_being_mutated_from_str=current_feature_str
+                )
+            else:  # Forgetting
+                belief_facet_obj = self._forget_belief_facet(
+                    feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
+                )
+        else:
+            belief_facet_obj = self._concoct_belief_facet(
                 feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
             )
         return belief_facet_obj
+
+    def _concoct_belief_facet(self, feature_type, parent_knowledge_object):
+        """Concoct a new belief facet of the given type.
+
+        This is done using the feature distributions that are used to generate the features
+        themselves for people that don't have parents.
+        """
+        config = self.owner.game.config
+        concoction = Concoction(subject=self.subject, source=self.owner, parent=parent_knowledge_object)
+        if self.subject.male:
+            distribution = config.facial_feature_distributions_male[feature_type]
+        else:
+            distribution = config.facial_feature_distributions_female[feature_type]
+        x = random.random()
+        feature_str = next(  # See config.py to understand what this is doing
+            feature_type[1] for feature_type in distribution if feature_type[0][0] <= x <= feature_type[0][1]
+        )
+        belief_facet_object = Facet(
+            value=feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=concoction
+        )
+        return belief_facet_object
 
     def _mutate_belief_facet(self, feature_type, parent_knowledge_object, feature_being_mutated_from_str):
         """Mutate a belief facet."""
@@ -254,7 +285,7 @@ class FaceBelief(object):
                 for feature in belief.__dict__:
                     if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
                         belief_facet = belief.__dict__[feature]
-                        if not belief_facet.accurate:
+                        if belief_facet is None or not belief_facet.accurate:
                             # Potentially make it accurate
                             belief.__dict__[feature] = (
                                 belief.face_belief.person_model.determine_belief_facet(
@@ -263,12 +294,43 @@ class FaceBelief(object):
                                 )
                             )
                         else:
-                            # Belief facet is already accurate, but update its evidence to point to
-                            # the new observation or reflection (which will slow any potential deterioration)
-                            belief.__dict__[feature] = Facet(
-                                value=str(belief_facet), owner=belief_facet.owner, subject=belief_facet.subject,
-                                feature_type=belief_facet.feature_type, evidence=new_observation_or_reflection
+                            # Belief facet is already accurate, but update its evidence to point to the new
+                            # observation or reflection (which will slow any potential deterioration) -- this
+                            # will also increment the strength of the belief facet, which will make it less
+                            # likely to deteriorate in this future
+                            belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
+    def deteriorate(self):
+        """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
+        config = self.person_model.owner.game.config
+        for belief_type in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if belief_type != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                belief = self.__dict__[belief_type]
+                for feature in belief.__dict__:
+                    if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
+                        belief_facet = belief.__dict__[feature]
+                        # Determine the chance of memory deterioration, which starts from a base value
+                        # that gets affected by the person's memory and the strength of the belief facet
+                        chance_of_memory_deterioration = (
+                            config.chance_of_memory_deterioration_on_a_given_timestep /
+                            self.person_model.owner.mind.memory /
+                            belief_facet.strength
+                        )
+                        if random.random() < chance_of_memory_deterioration:
+                            if belief_facet is None:
+                                parent_knowledge_object = None
+                                current_feature_str = None
+                            else:
+                                parent_knowledge_object = belief_facet.evidence
+                                current_feature_str = str(belief_facet)
+                            # Instantiate a new belief facet that represents a deterioration of
+                            # the existing one (which itself may be a deterioration already)
+                            deteriorated_belief_facet = self.person_model.deteriorate_belief_facet(
+                                feature_type=belief_facet.feature_type,
+                                parent_knowledge_object=belief_facet.evidence,
+                                current_feature_str=str(belief_facet)
                             )
+                            belief.__dict__[feature] = deteriorated_belief_facet
 
 
 class SkinBelief(object):
@@ -476,6 +538,11 @@ class Facet(str):
         self.feature_type = feature_type
         self.evidence = evidence
         self.evidence.beliefs_evidenced.add(self)
+        # Strength represents the number of times new evidence has
+        # supported this belief -- it's used to reduce the chance of a
+        # belief facet deteriorating (by dividing the base chance of
+        # deterioration by the strength of the facet)
+        self.strength = 1
 
     def __new__(cls, value, owner, subject, feature_type, evidence):
         """Do str stuff."""
@@ -489,3 +556,9 @@ class Facet(str):
             return True
         else:
             return False
+
+    def attribute_new_evidence(self, new_evidence):
+        """Attribute new evidence that supports this belief facet."""
+        self.evidence = new_evidence
+        new_evidence.beliefs_evidenced.add(self)
+        self.strength += 1

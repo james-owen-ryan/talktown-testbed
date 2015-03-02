@@ -32,24 +32,23 @@ class Concoction(object):
     """A concoction by which a person unintentionally concocts new false knowledge (i.e., changes an
     attribute's value from None to something).
 
-    Note: I only think this can happen when a person modifies a mental model of
+    Note: There is only two ways a concoction can happen: when a person modifies a mental model of
     a person they have never met (i.e., they hear things about this person from someone,
-    but then concoct other things about this person that no one told them). Concoction
-    can't occur from a person actually meeting someone firsthand, because all mis/knowledge
-    stemming from such an encounter will begin as an observation and then deteriorate from
-    a mutation, transference, or forgetting.
+    but then concoct other things about this person that no one told them), or when they concoct
+    a new value for an attribute whose true value they had forgotten.
     """
 
-    def __init__(self, subject, source):
+    def __init__(self, subject, source, parent=None):
         """Initialize a Concoction object."""
         self.type = "concoction"
-        self.location = None  # Spawn at nebulous time and space
-        self.time = None
+        self.location = source.location
+        self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = None  # Will always be None
+        self.parent = parent  # Will be None if concocted out of nowhere, else a Forgetting if that preceded it
         self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
+        self.source.game.c.append(self)
 
 
 class Lie(object):
@@ -91,8 +90,8 @@ class Mutation(object):
     def __init__(self, parent, subject, source, mutated_belief_str):
         """Initialize a Mutation object."""
         self.type = "mutation"
-        self.location = None  # Happen at nebulous time and space
-        self.time = None
+        self.location = source.location
+        self.time = source.game.date
         self.subject = subject
         self.source = source
         self.parent = parent  # The knowledge object from which this directly descended
@@ -117,8 +116,8 @@ class Transference(object):
                                       gets transferred as a believed attribute about subject.
         """
         self.type = "transference"
-        self.location = None  # Happen at nebulous time and space
-        self.time = None
+        self.location = source.location
+        self.time = source.game.date
         self.subject = subject
         self.source = source
         self.parent = parent  # The knowledge object from which this directly descended
