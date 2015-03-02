@@ -76,6 +76,10 @@ class Routine(object):
                 e[0][0] <= x <= e[0][1]
             )[1]
         location = self.businesses_patronized[business_type_of_errand]
+        if not location:
+            # Just stay home if there's no business of that type that you
+            # patronize (which maybe shouldn't happen?)
+            location = self.person.home
         return location
 
     def _visit_someone(self):
