@@ -22,6 +22,17 @@ class Config(object):
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
         self.chance_company_gets_named_after_owner = 0.5
+        # self.public_institutions_started_upon_city_founding = (
+        #     CityHall, Hospital, FireStation, PoliceStation, University, Park, Cemetery
+        # )
+        self.public_institutions_started_upon_city_founding = (
+            CityHall, Hospital, FireStation, PoliceStation, University
+        )
+        self.businesses_started_upon_city_founding = (
+            # Excluding construction firm, reality firm, and apartment complexes built by founder
+            Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop,
+            Restaurant, Restaurant, OptometryClinic, LawFirm, TattooParlor, PlasticSurgeryClinic
+        )
         # City founder
         self.year_city_gets_founded = 1910  # Year world gen begins
         self.age_of_city_founder = 30

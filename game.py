@@ -76,19 +76,13 @@ class Game(object):
 
     def _establish_city_infrastructure(self):
         """Build the essential public institutions that will serve as the city's infrastructure."""
-        CityHall(owner=self.founder)
-        Hospital(owner=self.founder)
-        FireStation(owner=self.founder)
-        PoliceStation(owner=self.founder)
-        University(owner=self.founder)
-        # Park(owner=self.founder)
-        # Cemetery(owner=self.founder)
+        for public_institution in self.config.public_institutions_started_upon_city_founding:
+            public_institution(owner=self.founder)
+        for business in self.config.businesses_started_upon_city_founding:
+            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
+            owner.city = self.city
+            business(owner=owner)
 
-        # 5. have the rich man's children start Bank, RealtyFirm, multiple ApartmentComplexes, Hotel, Supermarket,
-        # BusDepot, TaxiDepot
-        #
-        # 6. have other people come into town and start Barbershop, multiple Restaurants
-        #
         # 7. eventually, have other people come in and start first or more of the following: OptometryClinic,
         # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
         #
