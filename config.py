@@ -49,7 +49,7 @@ class Config(object):
 
         # Daily routines
         self.chance_someone_calls_in_sick_to_work = 0.03
-        self.chance_someone_doesnt_have_to_work_some_day = 0.28  # Proxy in lieu of reifying notion of weekend
+        self.chance_someone_doesnt_have_to_work_some_day = 0.00  # Proxy in lieu of reifying notion of weekend
         self.chance_someone_leaves_home_on_day_off = {
             # Keep in mind, they currently will be spending the entire day/night cycle
             # at some particular place in public
