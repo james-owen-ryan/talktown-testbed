@@ -17,7 +17,7 @@ class Business(object):
 
         @param owner: The owner of this business.
         """
-        config = owner.city.game.config
+        config = owner.game.config
         self.city = owner.city
         self.city.companies.add(self)
         self.founded = self.city.game.year
@@ -106,9 +106,9 @@ class Business(object):
         elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
         elif self.__class__ is LawFirm:
-            associates = [self.owner] + [e for e in self.employees if e.occupation.__class__ is Lawyer]
-            suffix = "{0}, and {1}".format(
-                ', '.join(a.person.last_name for a in associates[-1]), associates[-1].person.last_name
+            associates = [self.owner] + [e for e in self.employees if e.__class__ is Lawyer]
+            suffix = "{0} & {1}".format(
+                ', '.join(a.person.last_name for a in associates[:-1]), associates[-1].person.last_name
             )
             name = "{0} {1}".format(class_to_company_name_component[LawFirm], suffix)
         elif self.__class__ is Restaurant:
