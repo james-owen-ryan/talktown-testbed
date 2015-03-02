@@ -18,6 +18,10 @@ class Face(object):
         self.facial_hair = FacialHair(face=self)
         self.distinctive_features = DistinctiveFeatures(face=self)
 
+    def __str__(self):
+        """Return string representation."""
+        return "Face of {1}".format(self.person.name)
+
     def determine_facial_feature(self, feature_type):
         """Determine a person's facial feature, given their parents' and/or the population distribution.
 

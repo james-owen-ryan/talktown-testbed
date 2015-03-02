@@ -18,6 +18,10 @@ class Routine(object):
         if self.person.home:
             self.set_businesses_patronized()
 
+    def __str__(self):
+        """Return string representation."""
+        return "Daily routine of {1}".format(self.person.name)
+
     def enact(self):
         """Enact this person's daily routine for a particular timestep."""
         self.person.location, self.working = self.decide_where_to_go()

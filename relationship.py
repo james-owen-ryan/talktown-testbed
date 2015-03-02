@@ -171,48 +171,9 @@ class Relationship(object):
         )
         return effect_from_acquaintance_personality
 
-    def form_or_build_up_mental_model(self):
-        """Instantiate (or further fill in) a mental model of this person.
-
-        Note: The owner of this Acquaintance may already have a mental model of the subject,
-        even if they haven't met, from other people having told them about them.
-        """
-        observation = Observation(subject=self.subject, source=self.owner)
-        if self.subject not in self.owner.mind.mental_models:
-            PersonMentalModel(
-                owner=self.owner, subject=self.subject, observation_or_reflection=observation
-            )
-        else:
-            self.owner.mind.mental_models[self.subject].build_up(new_observation_or_reflection=observation)
-
-    def progress_relationship(self):
-        """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
-        config = self.owner.game.config
-        # Update data
-        self.total_interactions += 1
-        self.where_they_last_met = self.owner.location  # Changes as appropriate
-        self.when_they_last_met = self.owner.game.date
-        # Progress charge, possibly leading to a Friendship or Enmity
-        self.charge += (
-            self.charge_increment * self.age_difference_effect_on_charge_increment *
-            self.job_level_difference_effect_on_charge_increment
-        )
-        if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
-            Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
-        elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
-            Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
-        # Progress spark, possibly leading to a
-        self.spark_increment *= config.spark_decay_rate
-        self.spark += (
-            self.spark_increment * self.age_difference_effect_on_spark_increment *
-            self.job_level_difference_effect_on_spark_increment
-        )
-        self.form_or_build_up_mental_model()
-        self.interacted_this_timestep = True
-        # Call this method for the subject's own conception of this relationship
-        # to update its attributes according to this interaction
-        if not self.subject.relationships[self.owner].interacted_this_timestep:
-            self.subject.relationships[self.owner].progress_relationship()
+    def __str__(self):
+        """Return string representation."""
+        return "{0}'s {1} with {2}".format(self.owner.name, self.type, self.subject.name)
 
     @property
     def age_difference_effect_on_charge_increment(self):
@@ -273,6 +234,49 @@ class Relationship(object):
             )
         )
         return spark_reduction_due_to_job_level_difference
+
+    def form_or_build_up_mental_model(self):
+        """Instantiate (or further fill in) a mental model of this person.
+
+        Note: The owner of this Acquaintance may already have a mental model of the subject,
+        even if they haven't met, from other people having told them about them.
+        """
+        observation = Observation(subject=self.subject, source=self.owner)
+        if self.subject not in self.owner.mind.mental_models:
+            PersonMentalModel(
+                owner=self.owner, subject=self.subject, observation_or_reflection=observation
+            )
+        else:
+            self.owner.mind.mental_models[self.subject].build_up(new_observation_or_reflection=observation)
+
+    def progress_relationship(self):
+        """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
+        config = self.owner.game.config
+        # Update data
+        self.total_interactions += 1
+        self.where_they_last_met = self.owner.location  # Changes as appropriate
+        self.when_they_last_met = self.owner.game.date
+        # Progress charge, possibly leading to a Friendship or Enmity
+        self.charge += (
+            self.charge_increment * self.age_difference_effect_on_charge_increment *
+            self.job_level_difference_effect_on_charge_increment
+        )
+        if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
+            Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
+        elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
+            Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
+        # Progress spark, possibly leading to a
+        self.spark_increment *= config.spark_decay_rate
+        self.spark += (
+            self.spark_increment * self.age_difference_effect_on_spark_increment *
+            self.job_level_difference_effect_on_spark_increment
+        )
+        self.form_or_build_up_mental_model()
+        self.interacted_this_timestep = True
+        # Call this method for the subject's own conception of this relationship
+        # to update its attributes according to this interaction
+        if not self.subject.relationships[self.owner].interacted_this_timestep:
+            self.subject.relationships[self.owner].progress_relationship()
 
 
 class Acquaintance(Relationship):

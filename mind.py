@@ -44,6 +44,10 @@ class Mind(object):
         feature_object = Feature(value=memory, inherited_from=None)
         return feature_object
 
+    def __str__(self):
+        """Return string representation."""
+        return "Mind of {0}".format(self.person.name)
+
 
 class Feature(float):
     """A feature representing a person's memory capability and metadata about that."""

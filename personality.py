@@ -13,6 +13,10 @@ class Personality(object):
         self.agreeableness = self._determine_personality_feature(feature_type="agreeableness")
         self.neuroticism = self._determine_personality_feature(feature_type="neuroticism")
 
+    def __str__(self):
+        """Return string representation."""
+        return "Personality of {0}".format(self.person.name)
+
     @property
     def o(self):
         """Return this person's openness to experience."""

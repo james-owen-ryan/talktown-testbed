@@ -28,6 +28,10 @@ class Occupation(object):
         self.industry = person.game.config.industries[self.__class__]
         self.prerequisite_industry = person.game.config.prerequisite_industries[self.__class__]
 
+    def __str__(self):
+        """Return string representation."""
+        return "{0} at {1}".format(self.__class__.__name__, self.company.name)
+
     @property
     def years_experience(self):
         """Return years this person has had this occupation."""

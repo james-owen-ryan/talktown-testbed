@@ -20,6 +20,10 @@ class PersonMentalModel(object):
         )
         self.owner.mind.mental_models[self.subject] = self
 
+    def __str__(self):
+        """Return string representation."""
+        return "{0}'s mental model of {1}".format(self.owner.name, self.subject.name)
+
     def build_up(self, new_observation_or_reflection):
         """Build up a mental model from a new observation or reflection."""
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
