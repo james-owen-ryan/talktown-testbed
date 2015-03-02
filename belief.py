@@ -103,9 +103,9 @@ class PersonMentalModel(object):
         this requires an operationalized notion of how similar any two people are.
         """
         config = self.subject.game.config
-        if any(person for person in self.owner.mind.mental_models if person.sex == self.subject.sex):
+        if any(person for person in self.owner.mind.mental_models if person.male == self.subject.male):
             person_belief_will_transfer_from = next(
-                person for person in self.owner.mind.mental_models if person.sex == self.subject.sex
+                person for person in self.owner.mind.mental_models if person.male == self.subject.male
             )
         else:
             person_belief_will_transfer_from = random.sample(self.owner.mind.mental_models, 1)[0]
