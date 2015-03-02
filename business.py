@@ -161,7 +161,7 @@ class Business(object):
             else:
                 choice = top_three_choices[2]
         elif lot_scores:
-            choice = top_three_choices[0]
+            choice = max(lot_scores)
         else:
             raise Exception("A company attempted to secure a lot in town when in fact none are vacant.")
         return choice
