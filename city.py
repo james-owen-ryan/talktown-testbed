@@ -594,10 +594,7 @@ class Lot(object):
         """Generate an address, given the lot building is on."""
         index_of_street_address_will_be_on = random.randint(0, len(self.streets)-1)
         house_number = self.house_numbers[index_of_street_address_will_be_on]
-        try:
-            house_number = int(house_number)
-        except TypeError:
-            house_number = 'NO HOUSE NUMBER'
+        house_number = int(house_number)
         street = self.streets[index_of_street_address_will_be_on]
         self.address = "{0} {1}".format(house_number, street.name)
         self.street_address_is_on = street
