@@ -218,7 +218,7 @@ class Business(object):
          a restaurant nearby where people work); for ApartmentComplex, this is overridden
          to return the employees that work there and also the people that live there.
          """
-        return self.employees
+        return [employee.person for employee in self.employees]
 
     @property
     def day_shift(self):
