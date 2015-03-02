@@ -39,10 +39,9 @@ class Business(object):
         if self.__class__ not in config.companies_that_get_established_on_tracts:
             architect = owner.contract_person_of_certain_occupation(occupation_in_question=Architect)
             self.construction = architect.occupation.construct_building(client=owner, business=self)
-        # These get set by _init_generate_address()
-        self.address = None
-        self.street_address_is_on = None
-        self._init_generate_address()
+        # Set address
+        self.address = self.lot.address
+        self.street_address_is_on = self.lot.street_address_is_on
         # This gets set by self._init_get_named()
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
@@ -206,14 +205,6 @@ class Business(object):
         # yet, rate lots according to their distance from downtown
         score -= self.city.dist_from_downtown(lot)
         return score
-
-    def _init_generate_address(self):
-        """Generate an address, given the lot building is on."""
-        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
-        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
-        street = self.lot.streets[index_of_street_address_will_be_on]
-        self.address = "{0} {1}".format(house_number, street.name)
-        self.street_address_is_on = street
 
     @property
     def residents(self):

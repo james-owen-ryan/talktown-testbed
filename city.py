@@ -46,7 +46,7 @@ class City(object):
         self.generateLots(gameState.config)
         for lot in self.lots | self.tracts:
             lot.setNeighboringLots()
-          
+            lot._init_generate_address()
         self.paths = {}
         self.generatePaths()
         self.downtown = None
@@ -571,6 +571,10 @@ class Lot(object):
         self.landmark = None  # Will always be None for Lot
         self.positionsInBlock = []
         self.neighboring_lots = set()  # Gets set by City call to setNeighboringLots after all lots have been generated
+        # These get set by _init_generate_address()
+        self.address = None
+        self.street_address_is_on = None
+        # self._init_generate_address()
 
     def addBlock(self, block, number, sideOfStreet, positionInBlock):
         self.streets.append(block.street)
@@ -585,6 +589,18 @@ class Lot(object):
             for lot in block.lots:
                 neighboringLots.add(lot)
         self.neighboring_lots = neighboringLots
+
+    def _init_generate_address(self):
+        """Generate an address, given the lot building is on."""
+        index_of_street_address_will_be_on = random.randint(0, len(self.streets)-1)
+        house_number = self.house_numbers[index_of_street_address_will_be_on]
+        try:
+            house_number = int(house_number)
+        except TypeError:
+            house_number = 'NO HOUSE NUMBER'
+        street = self.streets[index_of_street_address_will_be_on]
+        self.address = "{0} {1}".format(house_number, street.name)
+        self.street_address_is_on = street
 
     @property
     def population(self):

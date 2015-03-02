@@ -13,7 +13,7 @@ class DwellingPlace(object):
         self.city.dwelling_places.add(self)
         self.lot = lot
         self._init_get_named()
-        self.address = self._init_generate_address()
+        self.address = self.lot.address
         self.owners = set()  # Gets set via self._init_ownership()
         self.former_owners = set()
         self.residents = set()
@@ -26,13 +26,6 @@ class DwellingPlace(object):
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
         pass
-
-    def _init_generate_address(self):
-        """Generate an address, given the lot building is on."""
-        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
-        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
-        street = self.lot.streets[index_of_street_address_will_be_on]
-        return "{0} {1}".format(house_number, street)
 
     def _init_ownership(self, initial_owners):
         """Set the initial owners of this dwelling place."""
