@@ -42,7 +42,14 @@ class Routine(object):
                 working = True
                 location = self.person.occupation.company
         else:
-            if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
+            chance_of_leaving_home = self.person.personality.extroversion
+            floor = config.chance_someone_leaves_home_on_day_off_floor[self.person.game.time_of_day]
+            cap = config.chance_someone_leaves_home_on_day_off_cap[self.person.game.time_of_day]
+            if chance_of_leaving_home < floor:
+                chance_of_leaving_home = floor
+            elif chance_of_leaving_home > cap:
+                chance_of_leaving_home = cap
+            if random.random() < chance_of_leaving_home:
                 location = self._go_in_public()
             else:
                 location = self.person.home
@@ -59,6 +66,10 @@ class Routine(object):
                 location = person_they_will_visit.home
             else:
                 location = self.person.home
+        # In case something went wrong, e.g., there's no business of a type
+        # that this person patronizes, just have them stay at home
+        if not location:
+            location = self.person.home
         return location
 
     def _go_on_errand(self):
@@ -82,10 +93,6 @@ class Routine(object):
                 e[0][0] <= x <= e[0][1]
             )[1]
         location = self.businesses_patronized[business_type_of_errand]
-        if not location:
-            # Just stay home if there's no business of that type that you
-            # patronize (which maybe shouldn't happen?)
-            location = self.person.home
         return location
 
     def _visit_someone(self):
