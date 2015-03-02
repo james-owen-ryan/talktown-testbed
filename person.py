@@ -8,6 +8,7 @@ from mind import Mind
 import occupation
 from face import Face
 from routine import Routine
+from relationship import Acquaintance
 
 
 class Person(object):
@@ -935,8 +936,10 @@ class Person(object):
 
     def socialize(self):
         """Socialize with nearby people."""
-
-
+        for person in self.location.people_here_now:
+            if person not in self.relationships:
+                Acquaintance(owner=self, subject=person, preceded_by=None)
+            self.relationships[person].progress_relationship()
 
 
 class PersonExNihilo(Person):

@@ -14,6 +14,7 @@ class Game(object):
         self.config = Config()
         self.year = self.config.year_city_gets_founded
         self.true_year = self.config.year_city_gets_founded  # True year never gets changed during retconning
+        self.date = 1  # Day of the year  (TODO leap years)
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.city = None
         self._establish_setting()
@@ -92,5 +93,13 @@ class Game(object):
     def advance_timestep(self):
         """Advance to the next day/night cycle."""
         self.time_of_day = "night" if self.time_of_day == "day" else "day"
+        if self.time_of_day == "day":
+            self.date = self.date+1 if self.date != 365 else 1
+        # Have people go to the location they will be at this timestep
         for person in self.city.residents:
             person.routine.enact()
+        # Have people socialize with other people also at that location --
+        # this will cause relationships to form/progress, which in turn
+        # will cause knowledge to propagate
+        for person in self.city.residents:
+            person.socialize()
