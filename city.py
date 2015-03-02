@@ -292,13 +292,13 @@ class City(object):
                 insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,'W',0)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,'S',0)
+                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],n_buildings_per_block,'W',0)
+                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],n_buildings_per_block ,'S',0)
                     if (ew+sizeOfBlock <= size/2):
-                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,'E',0)
+                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],n_buildings_per_block,'E',0)
                     
                     if (ns+sizeOfBlock <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,'N',0)
+                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],n_buildings_per_block,'N',0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
@@ -536,7 +536,7 @@ class Block(object):
     @staticmethod
     def determine_house_numbering(block_number,sideOfStreet, config):
         """Devise an appropriate house numbering scheme given the number of buildings on the block."""
-        n_buildings = config.n_buildings_per_block
+        n_buildings = config.n_buildings_per_block+1
         house_numbers = []
         house_number_increment = 100.0 / n_buildings
         evenOdd = 0 if  sideOfStreet == "E" or sideOfStreet == "N" else 1
