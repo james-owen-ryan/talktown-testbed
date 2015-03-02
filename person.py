@@ -122,7 +122,6 @@ class Person(object):
         self.last_saw = {}
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
-        self.love_interest = None
         self.sexual_partners = set()
         # Prepare attributes pertaining to pregnancy
         self.impregnated_by = None
@@ -151,6 +150,10 @@ class Person(object):
         self.grieving = False  # After spouse dies
         # Prepare attributes pertaining to exact location at a point
         self.location = None
+
+    def __str__(self):
+        """Return string representation."""
+        return "{0}, {1} years old".format(self.name, self.age)
 
     @staticmethod
     def _init_sex():
@@ -480,6 +483,33 @@ class Person(object):
         return friends
 
     @property
+    def best_friend(self):
+        """Return this person's best friend, if any."""
+        if self.friends:
+            best_friend = max(self.friends, key=lambda f: self.relationships[f].charge)
+        else:
+            best_friend = None
+        return best_friend
+
+    @property
+    def worst_enemy(self):
+        """Return this person's worst enemy."""
+        if self.enemies:
+            worst_enemy = min(self.enemies, key=lambda e: self.relationships[e].charge)
+        else:
+            worst_enemy = None
+        return worst_enemy
+
+    @property
+    def love_interest(self):
+        """Return this person's strongest love interest, if any."""
+        if any(r for r in self.relationships if self.relationships[r].spark > 0):
+            strongest_love_interest = max(self.relationships.keys(), key=lambda r: self.relationships[r].spark)
+        else:
+            strongest_love_interest = None
+        return strongest_love_interest
+
+    @property
     def enemies(self):
         """Return the enemies this person has (in their own conception)."""
         enemies = [
@@ -619,23 +649,12 @@ class Person(object):
         else:
             event.NameChange(subject=self, new_last_name=new_last_name, reason=reason, lawyer=None)
 
-    def fall_in_love(self, person):
-        """Fall in love with person."""
-        self.love_interest = person
-
-    def fall_out_of_love(self):
-        """Fall out of love."""
-        self.love_interest = None
-
     def have_sex(self, partner, protection):
         """Have sex with partner."""
         config = self.game.config
         self.sexual_partners.add(partner)
         partner.sexual_partners.add(self)
-        if random.random() < config.chance_person_falls_in_love_after_sex:
-            self.fall_in_love(person=partner)
-        if random.random() < config.chance_person_falls_in_love_after_sex:
-            partner.fall_in_love(person=self)
+        # TODO modify spark between these people
         if self.male != partner.male and not self.pregnant and not partner.pregnant:
             if (not protection) or random.random() < config.chance_protection_does_not_work:
                 self._determine_whether_pregnant(partner=partner)
@@ -1042,8 +1061,6 @@ class PersonExNihilo(Person):
             game=self.game, job_opportunity_impetus=None, spouse_already_generated=self
         )
         spouse.infertile = False
-        self.fall_in_love(spouse)
-        spouse.fall_in_love(self)
         self._init_retcon_marriage(spouse=spouse)
         self._init_retcon_births_of_children()
 
@@ -1052,8 +1069,6 @@ class PersonExNihilo(Person):
         spouse = PersonExNihilo(
             game=self.game, job_opportunity_impetus=job_opportunity_impetus, spouse_already_generated=self
         )
-        self.fall_in_love(spouse)
-        spouse.fall_in_love(self)
         self._init_retcon_marriage(spouse=spouse)
         self._init_retcon_births_of_children()
 

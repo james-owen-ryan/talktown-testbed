@@ -672,7 +672,6 @@ class Marriage(object):
         spouse1.extended_family |= spouse2.extended_family
         spouse2.extended_family |= spouse1.extended_family
         self._cease_grieving_of_former_spouses(newlyweds=self.subjects)
-        self._cease_feelings_for_former_love_interests(newlyweds=self.subjects, config=config)
 
     @staticmethod
     def _cease_grieving_of_former_spouses(newlyweds):
@@ -680,20 +679,6 @@ class Marriage(object):
         if any(newlywed for newlywed in newlyweds if newlywed.grieving):
             for newlywed in newlyweds:
                 newlywed.grieving = False
-
-    @staticmethod
-    def _cease_feelings_for_former_love_interests(newlyweds, config):
-        """Make the newlyweds (probably) have each other as their strongest love interests."""
-        spouse1, spouse2 = newlyweds
-        x = random.random()
-        if x < config.chance_a_newlywed_keeps_former_love_interest:
-            # Only spouse1 guaranteed to have fallen in love
-            spouse1.fall_in_love(person=spouse2)
-        elif x < config.chance_a_newlywed_keeps_former_love_interest * 2:
-            spouse2.fall_in_love(person=spouse1)
-        else:
-            spouse1.fall_in_love(person=spouse2)
-            spouse2.fall_in_love(person=spouse1)
 
     def _have_newlyweds_pool_money_together(self):
         """Have the newlyweds combine their money holdings into a single account."""
