@@ -36,6 +36,11 @@ class Relationship(object):
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
             self.spark = 0
+        # This attribute records whether the other person has already called the
+        # progress_relationship() method of this object on this timestep -- it gets
+        # set to True by progress_relationship() and then turned back to False by
+        # Game.advance_timestep()
+        self.interacted_this_timestep = False
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
@@ -186,6 +191,7 @@ class Relationship(object):
         self.spark_increment *= config.spark_decay_rate
         self.spark += self.spark_increment * self.age_difference_effect_on_spark_increment
         self.form_or_build_up_mental_model()
+        self.interacted_this_timestep = True
 
     @property
     def age_difference_effect_on_charge_increment(self):
@@ -216,11 +222,13 @@ class Acquaintance(Relationship):
     def __init__(self, owner, subject, preceded_by):
         """Initialize an Acquaintance object.
 
-            @param owner: The person whom this conception of the acquaintance belongs to.
-            @param subject: The other person to whom the conception pertains.
-            @param preceded_by: A Kinship relationship that preceded this, if any.
-            """
+        @param owner: The person whom this conception of the acquaintance belongs to.
+        @param subject: The other person to whom the conception pertains.
+        @param preceded_by: A Kinship relationship that preceded this, if any.
+        """
         super(Acquaintance, self).__init__(owner, subject, preceded_by)
+        if self.owner not in self.subject.relationships:
+            Acquaintance(owner=self.subject, subject=self.owner, preceded_by=None)
 
 
 class Enmity(Relationship):
@@ -229,10 +237,10 @@ class Enmity(Relationship):
     def __init__(self, owner, subject, preceded_by):
         """Initialize a Enmity object.
 
-            @param owner: The person whom this conception of the enmity belongs to.
-            @param subject: The other person to whom the conception pertains.
-            @param preceded_by: An Acquaintance relationship that preceded this, if any.
-            """
+        @param owner: The person whom this conception of the enmity belongs to.
+        @param subject: The other person to whom the conception pertains.
+        @param preceded_by: An Acquaintance relationship that preceded this, if any.
+        """
         super(Enmity, self).__init__(owner, subject, preceded_by)
 
 
@@ -242,8 +250,8 @@ class Friendship(Relationship):
     def __init__(self, owner, subject, preceded_by):
         """Initialize a Friendship object.
 
-            @param owner: The person whom this conception of the enmity belongs to.
-            @param subject: The other person to whom the conception pertains.
-            @param preceded_by: An Acquaintance relationship that preceded this, if any.
-            """
+        @param owner: The person whom this conception of the enmity belongs to.
+        @param subject: The other person to whom the conception pertains.
+        @param preceded_by: An Acquaintance relationship that preceded this, if any.
+        """
         super(Friendship, self).__init__(owner, subject, preceded_by)
