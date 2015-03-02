@@ -32,7 +32,8 @@ class Config(object):
         self.businesses_started_upon_city_founding = (
             # Excluding construction firm, reality firm, and apartment complexes built by founder
             Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop, DayCare,
-            Restaurant, Restaurant, OptometryClinic, LawFirm, TattooParlor, PlasticSurgeryClinic
+            Restaurant, Restaurant, OptometryClinic, LawFirm, TattooParlor, PlasticSurgeryClinic,
+            Bar, Bar,
         )
         # City founder
         self.year_city_gets_founded = 1910  # Year world gen begins
@@ -74,18 +75,20 @@ class Config(object):
         self.chance_someone_visiting_someone_visits_immediate_family = 0.3
         self.chance_someone_visiting_someone_visits_friend = 0.5
         self.chance_someone_visiting_someone_visits_extended_family = 0.
-        self.probabilities_of_errand_to_business_type = (
+        self.probabilities_of_errand_to_business_type = {
             # Keep in mind, this person will be spending the entire day/night cycle there
-            ((0.00, 0.30), 'Restaurant'),
-            ((0.30, 0.55), 'Supermarket'),
-            ((0.55, 0.65), 'Park'),
-            ((0.65, 0.75), 'Bank'),
-            ((0.75, 0.80), 'BusDepot'),
-            ((0.80, 0.85), 'Cemetery'),
-            ((0.85, 0.90), 'TaxiDepot'),
-            ((0.90, 0.95), 'Hotel'),
-            ((0.95, 1.00), 'University'),
-        )
+            "day": (
+                ((0.00, 0.30), 'Restaurant'),
+                ((0.30, 0.55), 'Supermarket'),
+                ((0.55, 0.65), 'Park'),
+                ((0.65, 0.75), 'Bank'),
+                ((0.75, 0.80), 'BusDepot'),
+                ((0.80, 0.85), 'Cemetery'),
+                ((0.85, 0.90), 'TaxiDepot'),
+                ((0.90, 0.95), 'Hotel'),
+                ((0.95, 1.00), 'University'),
+            )
+        }
         self.chance_someone_gets_a_haircut_some_day = 0.02
         self.chance_someone_gets_contacts_or_glasses = 0.002
         self.chance_someone_gets_a_tattoo_some_day = 0.001  # Face tattoo, of course
@@ -206,6 +209,10 @@ class Config(object):
                 'day': (BankTeller, BankTeller, Manager),
                 'night': (Janitor,),
             },
+            Bar: {
+                'day': (Bartender,),
+                'night': (Bartender, Bartender, Manager),
+            },
             Barbershop: {
                 'day': (Cashier, HairStylist, Manager),
                 'night': (Cashier, HairStylist, Manager),
@@ -305,6 +312,7 @@ class Config(object):
             Secretary: None,
             Groundskeeper: 'Parks',
             BankTeller: 'Finance',
+            Bartender: 'Hospitality',
             Concierge: 'Hospitality',
             DayCareProvider: 'Education',
             HairStylist: 'Cosmetic',
@@ -340,6 +348,7 @@ class Config(object):
             Secretary: None,
             Groundskeeper: None,
             BankTeller: None,
+            Bartender: None,
             Concierge: None,
             DayCareProvider: None,
             HairStylist: None,
@@ -374,6 +383,7 @@ class Config(object):
             Secretary: 1,
             Groundskeeper: 1,
             BankTeller: 2,
+            Bartender: 2,
             Concierge: 2,
             DayCareProvider: 2,
             HairStylist: 2,

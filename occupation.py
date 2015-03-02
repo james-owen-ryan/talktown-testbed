@@ -186,6 +186,18 @@ class BankTeller(Occupation):
         super(BankTeller, self).__init__(person=person, company=company, shift=shift)
 
 
+class Bartender(Occupation):
+    """A bartender at a bar."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Bartender object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Bartender, self).__init__(person=person, company=company, shift=shift)
+
+
 class BusDriver(Occupation):
     """A bus driver at a bus depot."""
 

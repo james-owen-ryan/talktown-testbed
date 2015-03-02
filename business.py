@@ -97,7 +97,8 @@ class Business(object):
             Park: 'Park',
         }
         classes_that_get_special_names = (
-            CityHall, FireStation, Hospital, PoliceStation, School, Cemetery, LawFirm, Restaurant, University, Park
+            CityHall, FireStation, Hospital, PoliceStation, School, Cemetery, LawFirm, Bar,
+            Restaurant, University, Park
         )
         if self.__class__ not in classes_that_get_special_names:
             if random.random() < config.chance_company_gets_named_after_owner:
@@ -115,6 +116,8 @@ class Business(object):
                 ', '.join(a.person.last_name for a in associates[:-1]), associates[-1].person.last_name
             )
             name = "{0} {1}".format(class_to_company_name_component[LawFirm], suffix)
+        elif self.__class__ is Bar:
+            name = Names.a_bar_name()
         elif self.__class__ is Restaurant:
             name = Names.a_restaurant_name()
         elif self.__class__ in (University, Park):
@@ -405,6 +408,17 @@ class Bank(Business):
         @param owner: The owner of this business.
         """
         super(Bank, self).__init__(owner)
+
+
+class Bar(Business):
+    """A bar."""
+
+    def __init__(self, owner):
+        """Initialize a Restaurant object.
+
+        @param owner: The owner of this business.
+        """
+        super(Bar, self).__init__(owner)
 
 
 class Barbershop(Business):
