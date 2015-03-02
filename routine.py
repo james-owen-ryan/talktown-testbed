@@ -1,6 +1,12 @@
 import random
 
 
+# TODO -- visiting methods don't take into account
+# whether the person they will visit is even home;
+# once we implement a telephone system, have them
+# call first, or have people invite people over too
+
+
 class Routine(object):
     """A person's daily routine."""
 
@@ -89,7 +95,10 @@ class Routine(object):
         relationship_to_person_who_person_who_will_be_visited = next(
             r for r in config.who_someone_visiting_will_visit_probabilities if r[0][0] <= x <= r[0][1]
         )[1]
-        if (relationship_to_person_who_person_who_will_be_visited == "fr" and
+        if (relationship_to_person_who_person_who_will_be_visited == 'nb' and
+                self.person.neighbors):
+            person_they_will_visit = self._visit_a_neighbor()
+        elif (relationship_to_person_who_person_who_will_be_visited == "fr" and
                 any(f for f in self.person.friends if f.present and f.home is not self.person.home)):
             person_they_will_visit = self._visit_a_friend()
         elif (relationship_to_person_who_person_who_will_be_visited == "if" and
@@ -102,6 +111,14 @@ class Routine(object):
             # Just stay home lol
             person_they_will_visit = None
         return person_they_will_visit
+
+    def _visit_a_neighbor(self):
+        """Return the neighbor that this person will visit.
+
+        TODO: Flesh this out.
+        """
+        neighbor_they_will_visit = random.choice(list(self.person.neighbors))
+        return neighbor_they_will_visit
 
     def _visit_a_friend(self):
         """Return the friend that this person will visit.
