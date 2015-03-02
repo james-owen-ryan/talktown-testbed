@@ -74,8 +74,10 @@ class Relationship(object):
         following source [4], people higher in extroversion select more friends, while people high
         in agreeableness get selected more often.
 
-        Additionally, charge intensity gets diminished (it gets brought toward 0) as a function of
-        the age difference between these two people.
+        Charge intensity will dynamically get diminished (it gets brought toward 0) as a function of
+        the age difference between these two people, as well as a function of the difference in job
+        level between the two people. (This happens dynamically because age differences get less
+        significant as people grow older, and job levels may change.)
         """
         config = self.owner.game.config
         charge_increment = (
@@ -102,13 +104,15 @@ class Relationship(object):
         TODO: Have this be affected by physical appearance.
         """
         config = self.owner.game.config
-        # Make sure this person isn't a family member and is the sex
-        # that owner is attracted to
+        # Make sure this person isn't a family member of owner, is the sex
+        # that owner is attracted to, and both are adults
         if self.subject in self.owner.extended_family:
             initial_spark_increment = 0
         elif self.subject.male and not self.owner.attracted_to_men:
             initial_spark_increment = 0
         elif self.subject.female and not self.owner.attracted_to_women:
+            initial_spark_increment = 0
+        elif not self.owner.adult or not self.subject.adult:
             initial_spark_increment = 0
         else:
             # Affect it according to personalities using source [5]
@@ -189,14 +193,20 @@ class Relationship(object):
         self.where_they_last_met = self.owner.location  # Changes as appropriate
         self.when_they_last_met = self.owner.game.date
         # Progress charge, possibly leading to a Friendship or Enmity
-        self.charge += self.charge_increment * self.age_difference_effect_on_charge_increment
+        self.charge += (
+            self.charge_increment * self.age_difference_effect_on_charge_increment *
+            self.job_level_difference_effect_on_charge_increment
+        )
         if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
             Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
         elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
             Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
         # Progress spark, possibly leading to a
         self.spark_increment *= config.spark_decay_rate
-        self.spark += self.spark_increment * self.age_difference_effect_on_spark_increment
+        self.spark += (
+            self.spark_increment * self.age_difference_effect_on_spark_increment *
+            self.job_level_difference_effect_on_spark_increment
+        )
         self.form_or_build_up_mental_model()
         self.interacted_this_timestep = True
         # Call this method for the subject's own conception of this relationship
@@ -216,6 +226,25 @@ class Relationship(object):
         return charge_intensity_reduction_due_to_age_difference
 
     @property
+    def job_level_difference_effect_on_charge_increment(self):
+        """Return the effect that job-level difference currently has on the charge increment."""
+        config = self.owner.game.config
+        if self.owner.occupation:  # TODO if someone is retired give them job level of their last job
+            owner_job_level = self.owner.occupation.level
+        else:
+            owner_job_level = 0.1
+        if self.subject.occupation:
+            subject_job_level = self.subject.occupation.level
+        else:
+            subject_job_level = 0.1
+        charge_intensity_reduction_due_to_job_level_difference = (
+            config.function_to_determine_how_job_level_difference_reduces_charge_intensity(
+                job_level1=owner_job_level, job_level2=subject_job_level
+            )
+        )
+        return charge_intensity_reduction_due_to_job_level_difference
+
+    @property
     def age_difference_effect_on_spark_increment(self):
         """Return the effect that age difference between owner and subject currently has on the spark increment."""
         config = self.owner.game.config
@@ -225,6 +254,25 @@ class Relationship(object):
             )
         )
         return spark_reduction_due_to_age_difference
+
+    @property
+    def job_level_difference_effect_on_spark_increment(self):
+        """Return the effect that job-level difference currently has on the charge increment."""
+        config = self.owner.game.config
+        if self.owner.occupation:  # TODO if someone is retired give them job level of their last job
+            owner_job_level = self.owner.occupation.level
+        else:
+            owner_job_level = 0.1
+        if self.subject.occupation:
+            subject_job_level = self.subject.occupation.level
+        else:
+            subject_job_level = 0.1
+        spark_reduction_due_to_job_level_difference = (
+            config.function_to_determine_how_job_level_difference_reduces_spark_increment(
+                job_level1=owner_job_level, job_level2=subject_job_level
+            )
+        )
+        return spark_reduction_due_to_job_level_difference
 
 
 class Acquaintance(Relationship):

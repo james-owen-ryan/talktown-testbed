@@ -1353,6 +1353,11 @@ class Config(object):
             # becoming friends or enemies
             lambda age1, age2: max(0.05, 1 - (abs(math.sqrt(age1)-math.sqrt(age2))/4.5))
         )
+        self.function_to_determine_how_job_level_difference_reduces_charge_intensity = (
+            # This makes people with job-level differences more indifferent about potentially
+            # becoming friends or enemies
+            lambda job_level1, job_level2: max(0.05, 1 - (abs(math.sqrt(job_level1)-math.sqrt(job_level2))))
+        )
         #               SPARK          #
         # These values help determine the initial spark increment for an Acquaintance; the accumulation
         # of spark represents a person's romantic attraction toward the acquaintance. Values here
@@ -1394,6 +1399,11 @@ class Config(object):
         #       Affected by age difference (this is not sourced currently)
         self.function_to_determine_how_age_difference_reduces_spark_increment = (
             lambda age1, age2: max(0.05, 1 - (abs(math.sqrt(age1)-math.sqrt(age2))/1.5))
+        )
+        self.function_to_determine_how_job_level_difference_reduces_spark_increment = (
+            # This makes people with job-level differences less likely to develop romantic feelings
+            # for one another
+            lambda job_level1, job_level2: max(0.05, 1 - (abs(math.sqrt(job_level1)-math.sqrt(job_level2))))
         )
         # Spark decay rate
         self.spark_decay_rate = 0.8
