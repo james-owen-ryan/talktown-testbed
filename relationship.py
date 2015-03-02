@@ -194,7 +194,8 @@ class Relationship(object):
         self.interacted_this_timestep = True
         # Call this method for the subject's own conception of this relationship
         # to update its attributes according to this interaction
-        self.subject.relationships[self.owner].progress_relationship()
+        if not self.subject.relationships[self.owner].interacted_this_timestep:
+            self.subject.relationships[self.owner].progress_relationship()
 
     @property
     def age_difference_effect_on_charge_increment(self):
