@@ -27,8 +27,11 @@ class Routine(object):
         """Return this person's daytime location, which is dynamic."""
         config = self.person.game.config
         working = False  # Keep track of this, because they could be going into work on an off-day (e.g., restaurant)
-        if not self.person.adult and self.person.game.time_of_day == "day":
-            location = self._go_to_school_or_daycare()
+        if not self.person.adult:
+            if self.person.game.time_of_day == "day":
+                location = self._go_to_school_or_daycare()
+            else:
+                location = self.person.home  # Kids stay home at night
             working = False
         elif self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
             if random.random() < config.chance_someone_doesnt_have_to_work_some_day:
