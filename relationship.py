@@ -18,6 +18,9 @@ class Relationship(object):
         self.succeeded_by = None
         self.where_they_met = self.owner.location
         self.when_they_met = self.owner.game.date
+        self.where_they_last_met = self.owner.location  # Changes as appropriate
+        self.when_they_last_met = self.owner.game.date
+        self.total_interactions = 0
         # Set this as the primary relationship owner has with subject
         self.owner.relationships[self.subject] = self
         if not preceded_by:
@@ -181,6 +184,10 @@ class Relationship(object):
     def progress_relationship(self):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
         config = self.owner.game.config
+        # Update data
+        self.total_interactions += 1
+        self.where_they_last_met = self.owner.location  # Changes as appropriate
+        self.when_they_last_met = self.owner.game.date
         # Progress charge, possibly leading to a Friendship or Enmity
         self.charge += self.charge_increment * self.age_difference_effect_on_charge_increment
         if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
