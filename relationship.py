@@ -32,10 +32,10 @@ class Relationship(object):
             self.compatibility = preceded_by.compatibility
             # Inherit the charge increment and current charge of the preceding Acquaintance
             self.charge_increment = float(preceded_by.charge_increment)
-            self.charge = float(preceded_by.charge)
+            self.charge = 0
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
-            self.spark = float(preceded_by.spark)
+            self.spark = 0
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
