@@ -292,13 +292,13 @@ class City(object):
                 insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],0,'W',0)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],0 ,'S',0)
+                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],None,'W',0)
+                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],None ,'S',0)
                     if (ew+sizeOfBlock <= size/2):
-                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],0,'E',0)
+                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],None,'E',0)
                     
                     if (ns+sizeOfBlock <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],0,'N',0)
+                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],None,'N',0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
