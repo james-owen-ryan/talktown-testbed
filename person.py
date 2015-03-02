@@ -537,7 +537,11 @@ class Person(object):
     @property
     def neighbors(self):
         """Return this person's neighbors, i.e., people living or working on neighboring lots."""
-        neighbors = self.home.lot.neighboring_residents
+        neighbors = set()
+        # Get all people living on neighboring lots
+        for lot in self.home.lot.neighboring_lots:
+            if lot.building:
+                neighbors |= lot.building.residents
         # If you live in an apartment complex, add in the other people who live
         # in it too (these won't be captured by the above command)
         if self.home.apartment:
@@ -928,6 +932,11 @@ class Person(object):
         elif final_desire_to_live_near_family > config.desire_to_live_near_family_cap:
             final_desire_to_live_near_family = config.desire_to_live_near_family_cap
         return final_desire_to_live_near_family
+
+    def socialize(self):
+        """Socialize with nearby people."""
+
+
 
 
 class PersonExNihilo(Person):
