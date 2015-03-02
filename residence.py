@@ -12,21 +12,28 @@ class DwellingPlace(object):
         self.city = lot.city
         self.city.dwelling_places.add(self)
         self.lot = lot
-        self._init_get_named()
         self.address = self.lot.address
-        self.owners = set()  # Gets set via self._init_ownership()
-        self.former_owners = set()
         self.residents = set()
         self.former_residents = set()
         self.transactions = []
         self.move_ins = []
         self.move_outs = []
+        self.owners = set()  # Gets set via self._init_ownership()
+        self.former_owners = set()
         self._init_ownership(initial_owners=owners)
+        self.name = None  # Gets set by _init_get_named()
+        self._init_get_named()
         self.people_here_now = set()  # People at home on a specific time step (either a resident or visitor)
+
+    def __str__(self):
+        """Return string representation."""
+        return "{0}, {1}".format(self.name, self.address)
 
     def _init_get_named(self):
         """Get named by the owner of this building (the client for which it was constructed)."""
-        pass
+
+        owner_surnames = set([o.last_name for o in self.owners])
+        self.name = "{0} Residence".format('-'.join(owner_surnames))
 
     def _init_ownership(self, initial_owners):
         """Set the initial owners of this dwelling place."""
