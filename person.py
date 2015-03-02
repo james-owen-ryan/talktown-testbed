@@ -476,6 +476,12 @@ class Person(object):
         return nuclear_family
 
     @property
+    def kids_at_home(self):
+        """Return kids of this person that live with them, if any."""
+        kids_at_home = [k for k in self.kids if k.home is self.home]
+        return kids_at_home
+
+    @property
     def friends(self):
         """Return the friends this person has (in their own conception)."""
         friends = [
