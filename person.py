@@ -960,9 +960,6 @@ class PersonExNihilo(Person):
             )
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
-        # Finally, move this person (and family, if any) into the city
-        # if not this_person_is_the_founder and not spouse_already_generated:
-        #     self.move_into_the_city(hiring_that_instigated_move=job_opportunity_impetus)
 
     @staticmethod
     def _override_sex(spouse):
