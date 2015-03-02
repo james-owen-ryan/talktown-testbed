@@ -33,7 +33,7 @@ class City(object):
     def __init__(self, gameState):
         """Initialize a City object."""
         self.game = gameState
-        self.founded = gameState.config.year_city_gets_founded
+        self.founded = gameState.year
         self.residents = set()
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city

@@ -22,13 +22,10 @@ class Config(object):
         self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
-        self.chance_company_gets_named_after_owner = 0.5
+        self.date_city_gets_founded = (1910, 10, 18)  # Date world gen begins
         self.public_institutions_started_upon_city_founding = (
             CityHall, Hospital, FireStation, PoliceStation, School, University, Park, Cemetery
         )
-        # self.public_institutions_started_upon_city_founding = (
-        #     CityHall, Hospital, FireStation, PoliceStation, University
-        # )
         self.businesses_started_upon_city_founding = (
             # Excluding construction firm, reality firm, and apartment complexes built by founder
             Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop, DayCare,
@@ -36,7 +33,6 @@ class Config(object):
             Bar, Bar,
         )
         # City founder
-        self.year_city_gets_founded = 1910  # Year world gen begins
         self.age_of_city_founder = 30
         self.age_of_city_founders_spouse = 30
         self.money_city_founder_starts_with = 100000
@@ -187,6 +183,8 @@ class Config(object):
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Housing
         self.number_of_apartment_units_per_complex = 8
+        # Company naming
+        self.chance_company_gets_named_after_owner = 0.5
         # Companies deciding where to locate themselves
         self.function_to_determine_company_preference_for_local_population = (
             lambda secondary_pop, tertiary_pop: (secondary_pop * 5) + (tertiary_pop * 2)

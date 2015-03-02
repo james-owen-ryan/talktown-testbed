@@ -2,8 +2,7 @@ from config import Config
 from person import *
 from business import *
 from city import *
-#from city_for_testing import *
-from relationship import Acquaintance  # FOR TESTING
+import datetime
 
 
 class Game(object):
@@ -12,9 +11,9 @@ class Game(object):
     def __init__(self):
         """Initialize a Game object."""
         self.config = Config()
-        self.year = self.config.year_city_gets_founded
-        self.true_year = self.config.year_city_gets_founded  # True year never gets changed during retconning
-        self.date = 1  # Day of the year
+        self.year = self.config.date_city_gets_founded[-1]
+        self.true_year = self.config.date_city_gets_founded[-1]  # True year never gets changed during retconning
+        self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.city = None
         self._establish_setting()
@@ -90,21 +89,24 @@ class Game(object):
         #
         # 	- For these, have them potentially be started by reasoning over supply, need, etc.
 
+    @property
+    def date(self):
+        """Return the current full date."""
+        year = datetime.date.fromordinal(self.ordinal_date).year
+        month = datetime.date.fromordinal(self.ordinal_date).month
+        day = datetime.date.fromordinal(self.ordinal_date).day
+        month_ordinals_to_names = {
+            1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June", 7: "July",
+            8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
+        }
+        date = "{0} of {1} {2}, {3}".format(
+            self.time_of_day.title(), month_ordinals_to_names[month], day, year
+        )
+        return date
+
     def advance_timestep(self):
         """Advance to the next day/night cycle."""
-        self.time_of_day = "night" if self.time_of_day == "day" else "day"
-        if self.time_of_day == "day":
-            if self.date == 365:
-                if self.year % 4 == 0:
-                    self.date = 366
-                else:
-                    self.year += 1
-                    self.date = 1
-            elif self.date == 366:
-                self.year += 1
-                self.date = 1
-            else:
-                self.date += 1
+        self._advance_time()
         # Have people go to the location they will be at this timestep
         for person in self.city.residents:
             person.routine.enact()
@@ -117,3 +119,14 @@ class Game(object):
         for person in self.city.residents:
             for other_person in person.mind.mental_models:
                 person.mind.mental_models[other_person].deteriorate()
+            # But also have them reflect accurately on their own features
+            person.reflect()
+
+    def _advance_time(self):
+        """Advance time of day and date, if it's a new day."""
+        self.time_of_day = "night" if self.time_of_day == "day" else "day"
+        if self.time_of_day == "day":
+            self.ordinal_date += 1
+            if datetime.date.fromordinal(self.ordinal_date) != self.year:
+                # Happy New Year
+                self.year += 1
