@@ -27,7 +27,10 @@ class Routine(object):
         """Return this person's daytime location, which is dynamic."""
         config = self.person.game.config
         working = False  # Keep track of this, because they could be going into work on an off-day (e.g., restaurant)
-        if self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
+        if not self.person.adult and self.person.game.time_of_day == "day":
+            location = self._go_to_school_or_daycare()
+            working = False
+        elif self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
             if random.random() < config.chance_someone_doesnt_have_to_work_some_day:
                 if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
                     location = self._go_in_public()
@@ -54,6 +57,14 @@ class Routine(object):
             else:
                 location = self.person.home
         return location, working
+
+    def _go_to_school_or_daycare(self):
+        """Return the school or day care that this child attends."""
+        if self.person.age > 5:
+            school_or_day_care = self.person.city.school
+        else:
+            school_or_day_care = self.businesses_patronized["DayCare"]
+        return school_or_day_care
 
     def _go_in_public(self):
         """Return the location in public that this person will go to."""
@@ -176,7 +187,7 @@ class Routine(object):
         # Compile types of businesses that people visit at least some time in their
         # normal routine living
         routine_business_types = [
-            "Bank", "Barbershop", "BusDepot", "Hotel", "OptometryClinic",
+            "Bank", "Barbershop", "BusDepot", "DayCare", "Hotel", "OptometryClinic",
             "Park", "Restaurant", "Supermarket", "TaxiDepot", "Cemetery",
             "TattooParlor", "PlasticSurgeryClinic", "University"
         ]
