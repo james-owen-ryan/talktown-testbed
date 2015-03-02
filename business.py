@@ -47,6 +47,8 @@ class Business(object):
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
             self._init_get_named()
+        # This is the set of people who require some service at this company today
+        self.customers_today_or_tonight = set()
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
@@ -364,6 +366,10 @@ class Business(object):
             if candidate.occupation.years_experience < 1:
                 qualified = False
         return qualified
+
+    def serve_customers(self):
+        """Serve customers (gets overridden by certain subclasses as appropriate)."""
+        pass
 
 
 class ApartmentComplex(Business):
