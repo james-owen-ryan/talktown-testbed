@@ -20,6 +20,10 @@ class Business(object):
         config = owner.game.config
         self.city = owner.city
         self.city.companies.add(self)
+        if self.__class__ is ApartmentComplex:
+            self.city.apartment_complexes.add(self)
+        else:
+            self.city.other_businesses.add(self)
         self.founded = self.city.game.year
         self.lot = self._init_choose_vacant_lot()
         if self.__class__ in config.companies_that_get_established_on_tracts:

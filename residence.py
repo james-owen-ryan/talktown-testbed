@@ -72,3 +72,4 @@ class House(DwellingPlace):
         super(House, self).__init__(lot, owners=construction.subjects)
         self.construction = construction
         self.lot.building = self
+        self.city.game.houses.add(self)

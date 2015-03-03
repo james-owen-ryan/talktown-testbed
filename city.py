@@ -41,6 +41,9 @@ class City(object):
         self.lots = set()
         self.tracts = set()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
+        self.houses = set()  # Convenience wrapper for C# land
+        self.apartment_complexes = set()  # Convenience wrapper for C# land
+        self.other_businesses = set()  # Convenience wrapper for C# land
         self.streets = set()
         self.blocks = set()
         self.generateLots(gameState.config)
@@ -65,7 +68,7 @@ class City(object):
         self.police_station = None
         self.school = None
         self.university = None
-            
+
     def dist_from_downtown(self,lot):
         
         return self.getDistFrom(lot,self.downtown)
