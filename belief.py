@@ -1,5 +1,19 @@
 import random
 from knowledge import *
+from corpora import Names
+
+
+class BuildingMentalModel(object):
+    """A person's mental model of a building (either business, house, or apartment unit)."""
+
+    def __init__(self, owner, subject, observation):
+        """Initialize a BuildingMentalModel object.
+
+        @param owner: The person who holds this belief.
+        @param subject: The building to whom this belief pertains.
+        """
+        self.owner = owner
+        self.subject = subject
 
 
 class PersonMentalModel(object):
@@ -15,9 +29,16 @@ class PersonMentalModel(object):
         """
         self.owner = owner
         self.subject = subject
+        # Form beliefs about the person's name
+        self.name_belief = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        self.first_name, self.middle_name, self.last_name = (
+            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
+        )
+        # Form beliefs about the person's face
         self.face = FaceBelief(
             person_model=self, observation_or_reflection=observation_or_reflection
         )
+
         self.owner.mind.mental_models[self.subject] = self
 
     def __str__(self):
@@ -31,6 +52,9 @@ class PersonMentalModel(object):
     def deteriorate(self):
         """Deteriorate a mental model from time passing."""
         self.face.deteriorate()
+
+    def insert_belief_facet(self, feature_type, evidence):
+        """Insert a particular belief facet into this mental model (for when a person hears about another person)."""
 
     def determine_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
@@ -122,12 +146,20 @@ class PersonMentalModel(object):
     def _mutate_belief_facet(self, feature_type, parent_knowledge_object, feature_being_mutated_from_str):
         """Mutate a belief facet."""
         config = self.subject.game.config
-        x = random.random()
-        possible_mutations = config.memory_mutations[feature_type][feature_being_mutated_from_str]
-        mutated_feature_str = next(  # See config.py to understand what this is doing
-            mutation[1] for mutation in possible_mutations if
-            mutation[0][0] <= x <= mutation[0][1]
-        )
+        if feature_type in ("first name", "middle name"):
+            if self.subject.male:
+                mutated_feature_str = Names.a_masculine_name_starting_with(letter=feature_being_mutated_from_str[0])
+            else:
+                mutated_feature_str = Names.a_masculine_name_starting_with(letter=feature_being_mutated_from_str[0])
+        elif feature_type == "last name":
+            mutated_feature_str = Names.a_surname_starting_with(letter=feature_being_mutated_from_str[0])
+        else:
+            x = random.random()
+            possible_mutations = config.memory_mutations[feature_type][feature_being_mutated_from_str]
+            mutated_feature_str = next(  # See config.py to understand what this is doing
+                mutation[1] for mutation in possible_mutations if
+                mutation[0][0] <= x <= mutation[0][1]
+            )
         mutation = Mutation(
             parent=parent_knowledge_object, subject=self.subject, source=self.owner,
             mutated_belief_str=feature_being_mutated_from_str)
@@ -143,6 +175,8 @@ class PersonMentalModel(object):
         TODO: Have transference be more likely to happen between similar people --
         this requires an operationalized notion of how similar any two people are.
         """
+        # TODO make transference of a name feature be more likely for familiar names
+        # TODO notion of person similarity should be at play here
         if any(person for person in self.owner.mind.mental_models if person.male == self.subject.male):
             person_belief_will_transfer_from = next(
                 person for person in self.owner.mind.mental_models if person.male == self.subject.male
@@ -207,6 +241,11 @@ class PersonMentalModel(object):
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
         features = {
+            # Names
+            "first name": self.first_name,
+            "middle name": self.middle_name,
+            "last name": self.last_name,
+            # Appearance
             "skin color": self.face.skin.color,
             "head size": self.face.head.size,
             "head shape": self.face.head.shape,
@@ -235,17 +274,39 @@ class PersonMentalModel(object):
         return features[feature_type]
 
 
-class BuildingMentalModel(object):
-    """A person's mental model of a building, representing everything she believes about it."""
+class NameBelief(object):
+    """A person's mental model of another person's name."""
 
-    def __init__(self, owner, subject):
-        """Initialize a BuildingMentalModel object.
+    def __init__(self, person_model, observation_or_reflection):
+        """Initialize a NameBelief object."""
+        self.person_model = person_model
+        self.first_name = self._init_name_facet(
+            feature_type="first name", observation_or_reflection=observation_or_reflection
+        )
+        self.middle_name = self._init_name_facet(
+            feature_type="middle name", observation_or_reflection=observation_or_reflection
+        )
+        self.last_name = self._init_name_facet(
+            feature_type="last name", observation_or_reflection=observation_or_reflection
+        )
 
-        @param owner: The person who holds this belief.
-        @param subject: The building to whom this belief pertains.
-        """
-        self.owner = owner
-        self.subject = subject
+    def _init_name_facet(self, feature_type, observation_or_reflection):
+        """Establish a belief, or lack of belief, about a person's first name."""
+        config = self.person_model.owner.game.config
+        if observation_or_reflection.type == "reflection":
+            name_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        elif random.random() < config.chance_someones_feature_comes_up_in_conversation_with_them[feature_type]:
+            name_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        else:
+            # Build empty name facet -- having None for observation_or_reflection will automate this
+            name_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=None
+            )
+        return name_facet
 
 
 class FaceBelief(object):

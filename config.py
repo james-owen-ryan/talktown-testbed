@@ -857,6 +857,15 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
+        self.chance_someones_feature_comes_up_in_conversation_with_them = {
+            "first name":   0.80,
+            "last name":    0.40,
+            "workplace":    0.40,
+            "address":      0.35,  # Only notion of where they live right now, so higher than would be intuitive
+            "job shift":    0.35,
+            "job title":    0.30,
+            "middle name":  0.02,
+        }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
             # These values represent means (for someone with memory value of self.memory_mean),
@@ -877,18 +886,21 @@ class Config(object):
             "hair length":                  (0.80,  0.50,   0.95),
             "head size":                    (0.75,  0.45,   0.90),
             "head shape":                   (0.75,  0.45,   0.90),
+            "first name":                   (0.75,  0.45,   0.90),
             "eye horizontal settedness":    (0.70,  0.40,   0.90),
             "eye vertical settedness":      (0.70,  0.40,   0.90),
             "eye size":                     (0.67,  0.40,   0.90),
             "eye color":                    (0.67,  0.40,   0.90),
             "eye shape":                    (0.65,  0.35,   0.90),
             "mouth size":                   (0.60,  0.25,   0.80),
+            "last name":                    (0.55,  0.25,   0.75),
             "nose size":                    (0.45,  0.20,   0.70),
             "nose shape":                   (0.45,  0.20,   0.70),
             "eyebrow size":                 (0.45,  0.20,   0.70),
             "eyebrow color":                (0.45,  0.20,   0.70),
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
+            "middle name":                  (0.25,  0.05,   0.30),
         }
         # Chance of memory deterioration happening on a given timestep -- the chance
         # for each belief facet of it deteriorating on a given timestep (can be thought
