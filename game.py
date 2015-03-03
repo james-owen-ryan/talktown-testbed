@@ -18,6 +18,9 @@ class Game(object):
         self.city = None
         self._establish_setting()
         self.time_of_day = "day"
+        # This gets incremented each time a new person is born/generated,
+        # which affords a persistent ID for each person
+        self.current_person_id = 0
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""

@@ -20,6 +20,8 @@ class Person(object):
         """Initialize a Person object."""
         # Set location and gameplay instance
         self.game = game
+        self.id = self.game.current_person_id
+        self.game.current_person_id += 1
         self.birth = birth
         if birth:
             self.city = self.birth.city
@@ -589,6 +591,11 @@ class Person(object):
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         features = {
+            # Name
+            "first name": self.first_name,
+            "middle name": self.middle_name,
+            "last name": self.last_name,
+            # Appearance
             "skin color": self.face.skin.color,
             "head size": self.face.head.size,
             "head shape": self.face.head.shape,
