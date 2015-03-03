@@ -90,6 +90,30 @@ class Names(object):
         return random.choice(cls.all_surnames)
 
     @classmethod
+    def a_masculine_name_starting_with(cls, letter):
+        """Return a random masculine name starting with the given letter."""
+        names_that_start_with_that_letter = [
+            name for name in cls.masculine_forenames if name[0].lower() == letter.lower()
+        ]
+        return random.choice(names_that_start_with_that_letter)
+
+    @classmethod
+    def a_feminine_name_starting_with(cls, letter):
+        """Return a random feminine name starting with the given letter."""
+        names_that_start_with_that_letter = [
+            name for name in cls.feminine_forenames if name[0].lower() == letter.lower()
+        ]
+        return random.choice(names_that_start_with_that_letter)
+
+    @classmethod
+    def a_surname_starting_with(cls, letter):
+        """Return a random surname starting with the given letter."""
+        names_that_start_with_that_letter = [
+            name for name in cls.all_surnames if name[0].lower() == letter.lower()
+        ]
+        return random.choice(names_that_start_with_that_letter)
+
+    @classmethod
     def a_place_name(cls):
         """Return a random place name."""
         return random.choice(cls.place_names)
