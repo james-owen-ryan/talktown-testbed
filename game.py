@@ -10,6 +10,7 @@ class Game(object):
 
     def __init__(self):
         """Initialize a Game object."""
+        self.current_person_id = 0
         self.config = Config()
         self.year = self.config.date_city_gets_founded[-1]
         self.true_year = self.config.date_city_gets_founded[-1]  # True year never gets changed during retconning
@@ -18,7 +19,7 @@ class Game(object):
         self.city = None
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
-        self.current_person_id = 0
+
         self._establish_setting()
         self.time_of_day = "day"
 
