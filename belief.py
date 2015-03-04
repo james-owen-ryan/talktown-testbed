@@ -1645,7 +1645,7 @@ class Facet(str):
         # deterioration by the strength of the facet)
         self.strength = self.owner.game.config.strength_of_information_types[initial_evidence.type]
 
-    def __new__(cls, value, owner, subject, feature_type, initial_evidence, predecessor, object_itself):
+    def __new__(cls, value, owner, subject, feature_type, initial_evidence, predecessor, parent, object_itself):
         """Do str stuff."""
         return str.__new__(cls, value)
 
