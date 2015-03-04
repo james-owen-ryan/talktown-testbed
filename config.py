@@ -859,9 +859,19 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
+        self.strength_of_information_types = {
+            "reflection": 10,
+            "observation": 5,
+            "concoction": 3,
+            "mutation": 3,
+            "transference": 3,
+            "forgetting": 3,
+            "statement": 2,
+            "lie": 2,
+        }
         self.name_feature_types = ("first name", "middle name", "last name")
         self.work_feature_types = ("workplace", "job title", "job shift")
-        self.home_feature_types = ("home", "home is apartment", "home block", "home address")
+        self.home_feature_types = ("home",)
         self.chance_someones_feature_comes_up_in_conversation_with_them = {
             "first name":   0.80,
             "last name":    0.40,
@@ -916,7 +926,6 @@ class Config(object):
         # without a person seeing the person in question to reinforce the true feature);
         # this gets divided by a person's memory and divided by the strength of the belief facet
         self.chance_of_memory_deterioration_on_a_given_timestep = {
-            # i.e., 0.2 would be expected 5 days to forget stranger's feature
             "skin color":                   0.01,
             "tattoo":                       0.01,
             "birthmark":                    0.02,
@@ -938,6 +947,7 @@ class Config(object):
             "middle name":                  0.20,
             "head size":                    0.20,
             "head shape":                   0.20,
+            "business block":               0.25,
             "eye horizontal settedness":    0.25,
             "eye vertical settedness":      0.25,
             "eye size":                     0.25,
@@ -951,6 +961,7 @@ class Config(object):
             "eyebrow color":                0.40,
             "ear size":                     0.40,
             "home address":                 0.60,
+            "business address":             0.65,
             "":                             0.03,  # Chance of concoction, essentially
         }
         # Chance of certain types of memory deterioration -- note that these chances only

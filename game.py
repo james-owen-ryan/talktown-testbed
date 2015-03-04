@@ -122,7 +122,7 @@ class Game(object):
             person.socialize()
         # Deteriorate people's mental models from time passing
         for person in self.city.residents:
-            for thing in person.mind.mental_models:
+            for thing in list(person.mind.mental_models):
                 person.mind.mental_models[thing].deteriorate()
             # But also have them reflect accurately on their own features
             person.reflect()

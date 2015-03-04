@@ -373,6 +373,14 @@ class Business(object):
         """Serve customers (gets overridden by certain subclasses as appropriate)."""
         pass
 
+    def get_feature(self, feature_type):
+        """Return this person's feature of the given type."""
+        features = {
+            "business block": str(self.lot.block_address_is_on),
+            "business address": self.address,
+        }
+        return features[feature_type]
+
 
 class ApartmentComplex(Business):
     """An apartment complex."""

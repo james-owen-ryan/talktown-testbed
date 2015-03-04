@@ -597,14 +597,10 @@ class Person(object):
             "middle name": self.middle_name,
             "last name": self.last_name,
             # Occupation
-            # CHANGE THIS TO THE BUSINESS OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
-            # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
             "workplace": self.occupation.company.name if self.occupation else "None",
             "job title": self.occupation.__class__.__name__ if self.occupation else "None",
             "job shift": self.occupation.shift if self.occupation else "None",
             # Home
-            # CHANGE THIS TO THE HOME OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
-            # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
             "home": self.home.name,
             # Appearance
             "skin color": self.face.skin.color,
@@ -634,7 +630,7 @@ class Person(object):
         }
         return features[feature_type]
 
-    def get_knowledge(self, other_person, feature_type):
+    def get_knowledge_about_person(self, other_person, feature_type):
         """Return this person's knowledge about another person's feature of the given type."""
         if other_person not in self.mind.mental_models:
             return None
@@ -645,17 +641,11 @@ class Person(object):
                 "middle name": self.mind.mental_models[other_person].middle_name,
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
-                # CHANGE THIS TO THE OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
                 "workplace": self.mind.mental_models[other_person].occupation.workplace,
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
-                # CHANGE THIS TO THE HOME OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
-                # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
-                "home": self.home.name,
-                "home is apartment": "yes" if self.home.apartment else "no",
-                "home block": str(self.home.lot.block_address_is_on),
-                "home address": self.home.address,
+                "home": self.mind.mental_models[other_person].home.name,
                 # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
@@ -683,7 +673,18 @@ class Person(object):
                 "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
             }
             return features[feature_type]
-        #
+
+    def get_knowledge_about_place(self, place, feature_type):
+        """Return this person's knowledge about this place's feature of the given type."""
+        if place not in self.mind.mental_models:
+            return None
+        else:
+            features = {
+                "home is apartment": "yes" if self.mind.mental_models[place].apartment else "no",
+                "home block": self.mind.mental_models[place].block,
+                "home address": self.mind.mental_models[place].block,
+            }
+            return features[feature_type]
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
@@ -1087,12 +1088,7 @@ class Person(object):
 
     def observe(self):
         """Observe the place one is at and the people there."""
-        # for thing in set([self.location]) | self.location.people_here_now:
-        if self.location.type == "residence":
-            things = set([self.location]) | self.location.people_here_now
-        else:
-            things = self.location.people_here_now
-        for thing in things:
+        for thing in set([self.location]) | self.location.people_here_now - set([self]):
             self._form_or_build_up_mental_model(subject=thing)
 
     def _form_or_build_up_mental_model(self, subject):
