@@ -303,8 +303,11 @@ class City(object):
                 insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],n_buildings_per_block,'W',0)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],n_buildings_per_block ,'S',0)
+                
+                    if (ns+ii <= size/2):
+                        tract.addBlock(Blocks[(ew,ns+ii,'NS')],n_buildings_per_block,'W',0)
+                    if (ew+ii <= size/2):
+                        tract.addBlock( Blocks[(ew+ii,ns,'EW')],n_buildings_per_block ,'S',0)
                     if (ew+sizeOfBlock <= size/2):
                         tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],n_buildings_per_block,'E',0)
                     
@@ -332,8 +335,12 @@ class City(object):
             corners.add((ew,ns+sizeOfBlock,'EW',ew,ns+sizeOfBlock-1,'NS'))
             
             swCorner = Lot(self)
-            insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner))  
-            insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
+            
+            if (ew+sizeOfBlock <= size/2):
+                insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner)) 
+
+            if (ns+sizeOfBlock <= size/2):            
+                insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
             corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
             self.lots.add(swCorner)
             
@@ -549,7 +556,7 @@ class Block(object):
         """Devise an appropriate house numbering scheme given the number of buildings on the block."""
         n_buildings = config.n_buildings_per_block+1
         house_numbers = []
-        house_number_increment = 100.0 / n_buildings
+        house_number_increment = int(100.0 / n_buildings)
         evenOdd = 0 if  sideOfStreet == "E" or sideOfStreet == "N" else 1
         for i in xrange(n_buildings):
             base_house_number = (i * house_number_increment) - 1
@@ -612,10 +619,10 @@ class Lot(object):
 
     def init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        index_of_street_address_will_be_on = random.randint(0, len(self.streets)-1)
-        house_number = self.house_numbers[index_of_street_address_will_be_on]
+        self.index_of_street_address_will_be_on = random.randint(0, len(self.streets)-1)
+        house_number = self.house_numbers[self.index_of_street_address_will_be_on]
         house_number = int(house_number)
-        street = self.streets[index_of_street_address_will_be_on]
+        street = self.streets[self.index_of_street_address_will_be_on]
         self.address = "{0} {1}".format(house_number, street.name)
         self.street_address_is_on = street
 
