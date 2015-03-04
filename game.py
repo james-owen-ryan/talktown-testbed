@@ -125,9 +125,10 @@ class Game(object):
         for person in self.city.residents:
             for thing in list(person.mind.mental_models):
                 person.mind.mental_models[thing].deteriorate()
-            # But also have them reflect accurately on their own features
-            if person.age > 3:
-                person.reflect()
+            # But also have them reflect accurately on their own features --
+            # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
+            # if person.age > 3:
+            #     person.reflect()
 
     def _advance_time(self):
         """Advance time of day and date, if it's a new day."""
