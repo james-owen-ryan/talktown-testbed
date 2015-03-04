@@ -641,7 +641,7 @@ class Person(object):
                 "middle name": self.mind.mental_models[other_person].middle_name,
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
-                "workplace": self.mind.mental_models[other_person].occupation.workplace,
+                "workplace": self.mind.mental_models[other_person].occupation.company,
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
@@ -683,6 +683,8 @@ class Person(object):
                 "home is apartment": "yes" if self.mind.mental_models[place].apartment else "no",
                 "home block": self.mind.mental_models[place].block,
                 "home address": self.mind.mental_models[place].block,
+                "business block": self.mind.mental_models[place].block,
+                "business address": self.mind.mental_models[place].block,
             }
             return features[feature_type]
 
