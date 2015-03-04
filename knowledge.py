@@ -37,7 +37,7 @@ class Concoction(object):
     a new value for an attribute whose true value they had forgotten.
     """
 
-    def __init__(self, subject, source, parent=None):
+    def __init__(self, subject, source):
         """Initialize a Concoction object."""
         self.type = "concoction"
         self.location = source.location
@@ -64,7 +64,7 @@ class Lie(object):
 class Statement(object):
     """A statement by which one person conveys knowledge about someone that they believe is true."""
 
-    def __init__(self, subject, source, recipient, parent):
+    def __init__(self, subject, source, recipient):
         """Initialize a Statement object."""
         self.type = "statement"
         self.location = source.location
@@ -78,7 +78,7 @@ class Statement(object):
 class Mutation(object):
     """A mutation by which a person misremembers knowledge from time passing (i.e., changes an attribute's value)."""
 
-    def __init__(self, parent, subject, source, mutated_belief_str):
+    def __init__(self, subject, source, mutated_belief_str):
         """Initialize a Mutation object."""
         self.type = "mutation"
         self.location = source.location
