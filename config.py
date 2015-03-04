@@ -19,6 +19,8 @@ class Config(object):
         self.samples = 32
         self.size = 16
         self.n_buildings_per_block = 2
+        self.largest_possible_house_number = 799
+        self.smallest_possible_house_number = 100
         self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8

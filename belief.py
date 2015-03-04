@@ -132,7 +132,7 @@ class MentalModel(object):
         return chance_it_gets_remembered_perfectly
 
 
-class BusinessMentalModel(object):
+class BusinessMentalModel(MentalModel):
     """A person's mental model of a business."""
 
     def __init__(self, owner, subject, observation):
@@ -141,11 +141,10 @@ class BusinessMentalModel(object):
         @param owner: The person who holds this belief.
         @param subject: The building to whom this belief pertains.
         """
-        self.owner = owner
-        self.subject = subject
+        super(BusinessMentalModel, self).__init__(owner, subject)
 
 
-class DwellingPlaceModel(object):
+class DwellingPlaceModel(MentalModel):
     """A person's mental model of a business."""
 
     def __init__(self, owner, subject, observation):
@@ -154,8 +153,7 @@ class DwellingPlaceModel(object):
         @param owner: The person who holds this belief.
         @param subject: The building to whom this belief pertains.
         """
-        self.owner = owner
-        self.subject = subject
+        super(DwellingPlaceModel, self).__init__(owner, subject)
         self.apartment = self._init_home_facet(
             feature_type="home is apartment", observation_or_reflection=observation_or_reflection
         )
@@ -189,23 +187,22 @@ class DwellingPlaceModel(object):
         and/or repairing wrong information, or else by updating the evidence for already correct facets.
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                belief_facet = self.__dict__[feature]
-                if belief_facet is None or not belief_facet.accurate:
-                    feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Potentially make it accurate
-                    self.__dict__[feature] = (
-                        self.person_model.determine_belief_facet(
-                            feature_type=feature_type,
-                            observation_or_reflection=new_observation_or_reflection
-                        )
+            belief_facet = self.__dict__[feature]
+            if belief_facet is None or not belief_facet.accurate:
+                feature_type = self.attribute_to_belief_type(attribute=feature)
+                # Potentially make it accurate
+                self.__dict__[feature] = (
+                    self.person_model.determine_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
                     )
-                else:
-                    # Belief facet is already accurate, but update its evidence to point to the new
-                    # observation or reflection (which will slow any potential deterioration) -- this
-                    # will also increment the strength of the belief facet, which will make it less
-                    # likely to deteriorate in this future
-                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                )
+            else:
+                # Belief facet is already accurate, but update its evidence to point to the new
+                # observation or reflection (which will slow any potential deterioration) -- this
+                # will also increment the strength of the belief facet, which will make it less
+                # likely to deteriorate in this future
+                belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
@@ -353,6 +350,7 @@ class PersonMentalModel(MentalModel):
 
     def _concoct_home_facet(self, feature_type):
         """Concoct a facet to a belief about a person's home."""
+        config = self.owner.game.config
         if feature_type == "home":  # TODO make this more realistic?
             concocted_home = random.choice(list(self.subject.city.dwelling_places))
             concocted_feature_str = concocted_home.name
@@ -365,13 +363,13 @@ class PersonMentalModel(MentalModel):
             concocted_feature_str = str(random_block)
             concocted_object_itself = None
         else:   # home address
-            house_number = int(random.random() * 799) + 1
-            while house_number < 99:
+            house_number = int(random.random() * config.largest_possible_house_number) + 1
+            while house_number < config.smallest_possible_house_number:
                 house_number += int(random.random() * 500)
-            house_number = min(house_number, 799)
+            house_number = min(house_number, config.largest_possible_house_number)
             random_street = random.choice(list(self.owner.city.streets))
             if random.random() > 0.5:
-                unit_number = int(random.random() * 8.4)
+                unit_number = int(random.random() * config.number_of_apartment_units_per_complex)
                 concocted_feature_str = "{0} {1} (Unit #{2})".format(house_number, random_street, unit_number)
             else:
                 concocted_feature_str = "{0} {1}".format(house_number, random_street)
@@ -529,20 +527,29 @@ class PersonMentalModel(MentalModel):
 
     def _mutate_home_address_facet(self, facet_being_mutated):
         """Mutate a belief facet pertaining to a person's home address."""
+        config = self.owner.game.config
         # Change the house number
         digits_of_house_number = list(str(facet_being_mutated)[:3])
+        print digits_of_house_number
         for i in xrange(3):
             if random.random() < 0.5:
                 change_to_digit = random.randint(1, 2)
             else:
                 change_to_digit = random.randint(-2, -1)
             mutated_digit = int(digits_of_house_number[i]) + change_to_digit
-            if mutated_digit < 1:
-                mutated_digit = 1
+            if mutated_digit < 0:
+                mutated_digit = 0
             elif mutated_digit > 9:
                 mutated_digit = 9
             digits_of_house_number[i] = str(mutated_digit)
         mutated_house_number = ''.join(digits_of_house_number)
+        # Make sure mutated house number is valid
+        mutated_house_number = int(mutated_house_number)
+        while mutated_house_number < config.smallest_possible_house_number:
+            mutated_house_number += 100
+        while mutated_house_number > config.smallest_possible_house_number:
+            mutated_house_number -= 100
+        mutated_house_number = str(mutated_house_number)
         if random.random() < 0.5:
             # Also mutate street to a nearby street
             street_of_current_facet = next(
