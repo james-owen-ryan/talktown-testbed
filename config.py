@@ -859,6 +859,7 @@ class Config(object):
         self.memory_heritability_sd = 0.05
         self.name_feature_types = ("first name", "middle name", "last name")
         self.work_feature_types = ("workplace", "job title", "job shift")
+        self.home_feature_types = ("home", "home is apartment", "home block", "home address")
         self.chance_someones_feature_comes_up_in_conversation_with_them = {
             "first name":   0.80,
             "last name":    0.40,
@@ -925,7 +926,9 @@ class Config(object):
             "first name":                   0.10,
             "ear angle":                    0.10,
             "workplace":                    0.10,
+            "home is apartment":            0.10,
             "last name":                    0.15,
+            "home":                         0.15,
             "job title":                    0.15,
             "freckles":                     0.15,
             "hair color":                   0.15,
@@ -938,12 +941,14 @@ class Config(object):
             "eye size":                     0.25,
             "eye color":                    0.25,
             "eye shape":                    0.25,
+            "home block":                   0.25,
             "mouth size":                   0.35,
             "nose size":                    0.35,
             "nose shape":                   0.35,
             "eyebrow size":                 0.40,
             "eyebrow color":                0.40,
             "ear size":                     0.40,
+            "home address":                 0.60,
             "":                             0.03,  # Chance of concoction, essentially
         }
         # Chance of certain types of memory deterioration -- note that these chances only

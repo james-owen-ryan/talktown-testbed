@@ -3,6 +3,9 @@ from knowledge import *
 from corpora import Names
 
 
+# TODO StreetMentalModel, BlockMentalModel, CityMentalModel?
+
+
 class BusinessMentalModel(object):
     """A person's mental model of a business."""
 
@@ -31,6 +34,8 @@ class DwellingPlaceModel(object):
         self.owner = owner
         self.subject = subject
 
+        # put address, block, is_apartment on this instead of as attributes on a person
+
 
 class PersonMentalModel(object):
     """A person's mental model of a person, representing everything she believes about her."""
@@ -53,6 +58,8 @@ class PersonMentalModel(object):
         )
         # Form beliefs about the person's work life
         self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        # Form beliefs about the person's home
+        self.home = HomeBelief(person_model=self, observation_or_reflection=observation_or_reflection)
         # Form beliefs about the person's face
         self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
 
@@ -67,6 +74,7 @@ class PersonMentalModel(object):
             self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
         )
         self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        self.home.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
 
     def deteriorate(self):
@@ -75,6 +83,7 @@ class PersonMentalModel(object):
         self.first_name, self.middle_name, self.last_name = (
             self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
         )
+        self.home.deteriorate()
         self.occupation.deteriorate()
         self.face.deteriorate()
 
@@ -139,6 +148,8 @@ class PersonMentalModel(object):
             concocted_object_itself = None
         elif feature_type in config.work_feature_types:
             concocted_feature_str, concocted_object_itself = self._concoct_work_facet(feature_type=feature_type)
+        elif feature_type in config.home_feature_types:
+            concocted_feature_str, concocted_object_itself = self._concoct_home_facet(feature_type=feature_type)
         else:  # Appearance feature
             if self.subject.male:
                 distribution = config.facial_feature_distributions_male[feature_type]
@@ -181,6 +192,33 @@ class PersonMentalModel(object):
             concocted_object_itself = None
         return concocted_feature_str, concocted_object_itself
 
+    def _concoct_home_facet(self, feature_type):
+        """Concoct a facet to a belief about a person's home."""
+        if feature_type == "home":  # TODO make this more realistic?
+            concocted_home = random.choice(list(self.subject.city.dwelling_places))
+            concocted_feature_str = concocted_home.name
+            concocted_object_itself = concocted_home
+        elif feature_type == "home is apartment":
+            concocted_feature_str = random.choice(["yes", "no"])
+            concocted_object_itself = None
+        elif feature_type == "home block":
+            random_block = random.choice(list(self.owner.city.blocks))
+            concocted_feature_str = str(random_block)
+            concocted_object_itself = None
+        else:   # home address
+            house_number = int(random.random() * 799) + 1
+            while house_number < 99:
+                house_number += int(random.random() * 500)
+            house_number = min(house_number, 799)
+            random_street = random.choice(list(self.owner.city.streets))
+            if random.random() > 0.5:
+                unit_number = int(random.random() * 8.4)
+                concocted_feature_str = "{0} {1} (Unit #{2})".format(house_number, random_street, unit_number)
+            else:
+                concocted_feature_str = "{0} {1}".format(house_number, random_street)
+            concocted_object_itself = None
+        return concocted_feature_str, concocted_object_itself
+
     def _mutate_belief_facet(self, feature_type, parent_knowledge_object, facet_being_mutated):
         """Mutate a belief facet."""
         config = self.subject.game.config
@@ -193,7 +231,11 @@ class PersonMentalModel(object):
             mutated_feature_str, mutated_object_itself = self._mutate_work_belief_facet(
                 feature_type=feature_type, facet_being_mutated=facet_being_mutated
             )
-        else:
+        elif feature_type in config.home_feature_types:
+            mutated_feature_str, mutated_object_itself = self._mutate_home_belief_facet(
+                feature_type=feature_type, facet_being_mutated=facet_being_mutated
+            )
+        else:  # Appearance facet
             x = random.random()
             possible_mutations = config.memory_mutations[feature_type][str(facet_being_mutated)]
             mutated_feature_str = next(  # See config.py to understand what this is doing
@@ -276,6 +318,86 @@ class PersonMentalModel(object):
             random_job_title = random.choice(list(random_company.employees)).__class__.__name__
             mutated_feature_str = random_job_title
             mutated_object_itself = None
+        return mutated_feature_str, mutated_object_itself
+
+    def _mutate_home_belief_facet(self, feature_type, facet_being_mutated):
+        """Mutate a belief facet pertaining to a person's home."""
+        if feature_type == "home":  # TODO make this more realistic, e.g., mutate to a relative's house
+            # For now, only thing that makes sense is to just do the same thing as concocting a new home
+            random_home = random.choice(list(self.subject.city.dwelling_places))
+            mutated_feature_str = random_home.name
+            mutated_object_itself = random_home
+        elif feature_type == "home is apartment":
+            mutated_feature_str = "yes" if facet_being_mutated == "no" else "no"
+            mutated_object_itself = None
+        elif feature_type == "home block":
+            mutated_feature_str, mutated_object_itself = (
+                self._mutate_home_block_facet(facet_being_mutated=facet_being_mutated)
+            )
+        else:   # home address
+            mutated_feature_str, mutated_object_itself = (
+                self._mutate_home_address_facet(facet_being_mutated=facet_being_mutated)
+            )
+        return mutated_feature_str, mutated_object_itself
+
+    def _mutate_home_block_facet(self, facet_being_mutated):
+        """Mutate a belief facet pertaining to a person's home block."""
+        # Add 100-300 to block number
+        block_number_first_digit = int(str(facet_being_mutated)[0])
+        if random.random() < 0.5:
+            change_to_block_number = random.randint(1, 3)
+        else:
+            change_to_block_number = random.randint(-3, -1)
+        block_number_first_digit += change_to_block_number
+        if block_number_first_digit < 1:
+            block_number_first_digit = 1
+        elif block_number_first_digit > 8:
+            block_number_first_digit = 8
+        if random.random() < 0.5:
+            # Also mutate street to a nearby street
+            street_of_current_facet = next(
+                s for s in self.owner.city.streets if s.name == str(facet_being_mutated).split(' of ')[1]
+            )
+            street_being_mutated_to = next(
+                s for s in self.owner.city.streets if s.direction == street_of_current_facet.direction and
+                abs(s.number - street_of_current_facet.number) < 3
+            )
+            mutated_feature_str = str(block_number_first_digit) + '00' + ' of ' + street_being_mutated_to.name
+        else:
+            mutated_feature_str = str(block_number_first_digit) + str(facet_being_mutated)[1:]
+        mutated_object_itself = None
+        return mutated_feature_str, mutated_object_itself
+
+    def _mutate_home_address_facet(self, facet_being_mutated):
+        """Mutate a belief facet pertaining to a person's home address."""
+        # Change the house number
+        digits_of_house_number = list(str(facet_being_mutated)[:3])
+        for i in xrange(3):
+            if random.random() < 0.5:
+                change_to_digit = random.randint(1, 2)
+            else:
+                change_to_digit = random.randint(-2, -1)
+            mutated_digit = int(digits_of_house_number[i]) + change_to_digit
+            if mutated_digit < 1:
+                mutated_digit = 1
+            elif mutated_digit > 9:
+                mutated_digit = 9
+            digits_of_house_number[i] = str(mutated_digit)
+        mutated_house_number = ''.join(digits_of_house_number)
+        if random.random() < 0.5:
+            # Also mutate street to a nearby street
+            street_of_current_facet = next(
+                # Get out just the street name (strip away house number and apartment unit number, if any)
+                s for s in self.owner.city.streets if s.name == str(facet_being_mutated)[4:].split(' (')[0]
+            )
+            street_being_mutated_to = next(
+                s for s in self.owner.city.streets if s.direction == street_of_current_facet.direction and
+                abs(s.number - street_of_current_facet.number) < 3
+            )
+            mutated_feature_str = "{0} {1}".format(mutated_house_number, street_being_mutated_to.name)
+        else:
+            mutated_feature_str = str(mutated_house_number) + str(facet_being_mutated)[3:]
+        mutated_object_itself = None
         return mutated_feature_str, mutated_object_itself
 
     def _transfer_belief_facet(self, feature_type, parent_knowledge_object):
@@ -372,6 +494,11 @@ class PersonMentalModel(object):
             "workplace": self.occupation.company,
             "job title": self.occupation.job_title,
             "job shift": self.occupation.shift,
+            # Home
+            "home": self.home.home,
+            "home is apartment": self.home.apartment,
+            "home block": self.home.block,
+            "home address": self.home.address,
             # Appearance
             "skin color": self.face.skin.color,
             "head size": self.face.head.size,
@@ -506,7 +633,7 @@ class WorkBelief(object):
     def __init__(self, person_model, observation_or_reflection):
         """Initialize a WorkBelief object."""
         self.person_model = person_model
-        self.company = self._init_work_facet(
+        self.company = self._init_work_facet(  # Will have company object as 'object_itself' attribute on Facet
             feature_type="workplace", observation_or_reflection=observation_or_reflection
         )
         self.job_title = self._init_work_facet(
@@ -597,6 +724,109 @@ class WorkBelief(object):
             "company": "workplace",
             "job_title": "job title",
             "shift": "job shift"
+        }
+        return attribute_to_belief_type[attribute]
+
+
+class HomeBelief(object):
+    """A person's mental model of a person's home."""
+
+    def __init__(self, person_model, observation_or_reflection):
+        """Initialize a HomeBelief object."""
+        self.person_model = person_model
+        self.home = self._init_home_facet(  # Will have home object as 'object_itself' attribute on Facet
+            feature_type="home", observation_or_reflection=observation_or_reflection
+        )
+        self.apartment = self._init_home_facet(
+            feature_type="home is apartment", observation_or_reflection=observation_or_reflection
+        )
+        self.block = self._init_home_facet(
+            feature_type="home block", observation_or_reflection=observation_or_reflection
+        )
+        self.address = self._init_home_facet(
+            feature_type="home address", observation_or_reflection=observation_or_reflection
+        )
+
+    def _init_home_facet(self, feature_type, observation_or_reflection):
+        """Establish a belief, or lack of belief, pertaining to a person's home."""
+        if observation_or_reflection.type == "reflection":
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        # If you are observing the person at their home, build up a belief about that
+        elif self.person_model.owner.location is self.person_model.subject.home:
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        else:
+            # Build empty work facet -- having None for observation_or_reflection will automate this
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=None
+            )
+        return home_facet
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up the components of this belief by potentially filling in missing information
+        and/or repairing wrong information, or else by updating the evidence for already correct facets.
+        """
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                belief_facet = self.__dict__[feature]
+                if belief_facet is None or not belief_facet.accurate:
+                    feature_type = self.attribute_to_belief_type(attribute=feature)
+                    # Potentially make it accurate
+                    self.__dict__[feature] = (
+                        self.person_model.determine_belief_facet(
+                            feature_type=feature_type,
+                            observation_or_reflection=new_observation_or_reflection
+                        )
+                    )
+                else:
+                    # Belief facet is already accurate, but update its evidence to point to the new
+                    # observation or reflection (which will slow any potential deterioration) -- this
+                    # will also increment the strength of the belief facet, which will make it less
+                    # likely to deteriorate in this future
+                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
+    def deteriorate(self):
+        """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
+        config = self.person_model.owner.game.config
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                belief_facet = self.__dict__[feature]
+                if belief_facet is not None:
+                    feature_type_str = belief_facet.feature_type
+                else:
+                    feature_type_str = ''
+                # Determine the chance of memory deterioration, which starts from a base value
+                # that gets affected by the person's memory and the strength of the belief facet
+                chance_of_memory_deterioration = (
+                    config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
+                    self.person_model.owner.mind.memory /
+                    belief_facet.strength
+                )
+                if random.random() < chance_of_memory_deterioration:
+                    if belief_facet is None:
+                        parent_knowledge_object = None
+                    else:
+                        parent_knowledge_object = belief_facet.evidence
+                    # Instantiate a new belief facet that represents a deterioration of
+                    # the existing one (which itself may be a deterioration already)
+                    deteriorated_belief_facet = self.person_model.deteriorate_belief_facet(
+                        feature_type=belief_facet.feature_type,
+                        parent_knowledge_object=parent_knowledge_object,
+                        current_belief_facet=belief_facet
+                    )
+                    self.__dict__[feature] = deteriorated_belief_facet
+
+    @staticmethod
+    def attribute_to_belief_type(attribute):
+        """Return the belief type of an attribute."""
+        attribute_to_belief_type = {
+            "home": "home",
+            "apartment": "home is apartment",
+            "block": "home block",
+            "address": "home address"
         }
         return attribute_to_belief_type[attribute]
 
