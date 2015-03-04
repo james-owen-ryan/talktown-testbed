@@ -642,8 +642,8 @@ class Person(object):
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
                 "workplace": self.mind.mental_models[other_person].occupation.company,
-                "workplace address": self.mind.mental_models[other_person.occupation.company].address,  # Error if unemployed
-                "workplace block": self.mind.mental_models[other_person.occupation.company].block,
+                "workplace address": self.mind.mental_models[other_person.occupation.company].address,  # Error if
+                "workplace block": self.mind.mental_models[other_person.occupation.company].block,      # unemployed?
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
