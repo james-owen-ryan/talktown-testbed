@@ -497,8 +497,10 @@ class Person(object):
     @property
     def best_friend(self):
         """Return this person's best friend, if any."""
-        if self.friends:
-            best_friend = max(self.friends, key=lambda f: self.relationships[f].charge)
+        if self.relationships:
+            best_friend = max(self.relationships, key=lambda f: self.relationships[f].charge)
+            if self.relationships[best_friend].charge < 0:
+                best_friend = None
         else:
             best_friend = None
         return best_friend
@@ -506,8 +508,10 @@ class Person(object):
     @property
     def worst_enemy(self):
         """Return this person's worst enemy."""
-        if self.enemies:
-            worst_enemy = min(self.enemies, key=lambda e: self.relationships[e].charge)
+        if self.relationships:
+            worst_enemy = min(self.relationships, key=lambda f: self.relationships[f].charge)
+            if self.relationships[worst_enemy].charge < 0:
+                worst_enemy = None
         else:
             worst_enemy = None
         return worst_enemy
@@ -517,9 +521,22 @@ class Person(object):
         """Return this person's strongest love interest, if any."""
         if any(r for r in self.relationships if self.relationships[r].spark > 0):
             strongest_love_interest = max(self.relationships.keys(), key=lambda r: self.relationships[r].spark)
+            if self.relationships[strongest_love_interest].spark < 0:
+                strongest_love_interest = None
         else:
             strongest_love_interest = None
         return strongest_love_interest
+
+    @property
+    def significant_other(self):
+        """Return this person's strongest significant other, if any."""
+        if self.spouse:
+            significant_other = self.spouse
+        elif any(r for r in self.relationships if self.relationships[r].type == "romance"):
+            significant_other = next(r for r in self.relationships if self.relationships[r].type == "romance")
+        else:
+            significant_other = None
+        return significant_other
 
     @property
     def enemies(self):
@@ -541,7 +558,7 @@ class Person(object):
     def coworkers(self):
         """Return this person's coworkers."""
         if self.occupation:
-            coworkers = self.occupation.company.employees - set([self])
+            coworkers = set([e.person for e in self.occupation.company.employees]) - set([self])
         else:
             coworkers = set()
         return coworkers
@@ -1109,6 +1126,38 @@ class Person(object):
                 BusinessMentalModel(owner=self, subject=subject, observation=observation)
         else:
             self.mind.mental_models[subject].build_up(new_observation_or_reflection=observation)
+
+    def salience_of_person(self, person):
+        """Return how salient the other person is to this person."""
+        config = self.game.config
+        salience = 0
+        # Score salience for this person's relationship to self
+        if person is self:
+            salience += config.salience_of_other_people["self"]
+        if person in self.acquaintances:
+            salience += config.salience_of_other_people["acquaintance"]
+        if person in self.coworkers:
+            salience += config.salience_of_other_people["coworker"]
+        if person in self.extended_family:
+            salience += config.salience_of_other_people["extended family"]
+        elif person in self.immediate_family:
+            salience += config.salience_of_other_people["immediate family"]
+        if person in self.friends:
+            salience += config.salience_of_other_people["friend"]
+        if person in self.enemies:
+            salience += config.salience_of_other_people["enemy"]
+        if person is self.best_friend:
+            salience += config.salience_of_other_people["best friend"]
+        elif person is self.worst_enemy:
+            salience += config.salience_of_other_people["worst enemy"]
+        elif person is self.love_interest:
+            salience += config.salience_of_other_people["love interest"]
+        elif person is self.significant_other:
+            salience += config.salience_of_other_people["significant other"]
+        # Boost salience for this person's job level
+        if person.occupation:
+            salience += config.salience_job_level_boost(job_level=person.occupation.level)
+        return salience
 
 
 class PersonExNihilo(Person):

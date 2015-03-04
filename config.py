@@ -859,6 +859,22 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
+        self.salience_of_other_people = {
+            "acquaintance": 1,
+            "coworker": 1.5,
+            "extended family": 1.5,
+            "friend": 2,
+            "enemy": 2,
+            "immediate family": 2,
+            "love interest": 3,
+            "best friend": 3,
+            "worst enemy": 3,
+            "significant other": 4,
+            "self": 10,
+        }
+        self.salience_job_level_boost = (
+            lambda job_level: job_level * 1
+        )
         self.strength_of_information_types = {
             "reflection": 10,
             "observation": 5,
