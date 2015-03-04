@@ -658,13 +658,11 @@ class Person(object):
                 "middle name": self.mind.mental_models[other_person].middle_name,
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
-                "workplace": self.mind.mental_models[other_person].occupation.company,
+                "workplace": self.mind.mental_models[other_person].occupation.company,  # Will be name of the company
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
-                "home": self.mind.mental_models[other_person].home.name,
-                "home address": self.mind.mental_models[other_person.home].address,
-                "home block": self.mind.mental_models[other_person.home].block,
+                "home": self.mind.mental_models[other_person].home,  # Will be the name of the residence
                 # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
@@ -691,7 +689,10 @@ class Person(object):
                 "glasses": self.mind.mental_models[other_person].face.distinctive_features.glasses,
                 "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
             }
-            if self.mind.mental_models[other_person].occupation.company:
+            if self.mind.mental_models[other_person].home.mental_model:
+                features["home address"] = self.mind.mental_models[other_person].home.mental_model.address
+                features["home block"] = self.mind.mental_models[other_person].home.mental_model.block
+            if self.mind.mental_models[other_person].occupation.company.mental_model:
                 features["workplace address"] = (
                     self.mind.mental_models[other_person].occupation.company.mental_model.address
                 )
