@@ -160,7 +160,8 @@ class Game(object):
         ]
         owners_knowledge_about_subject = set()
         for feature in all_features_of_knowledge_about_a_person:
-            owners_knowledge_about_subject.add(
-                (feature, owner.get_knowledge_about_person(subject, feature))
-            )
+            if owner.get_knowledge_about_person(subject, feature):
+                owners_knowledge_about_subject.add(
+                    (feature, owner.get_knowledge_about_person(subject, feature))
+                )
         return owners_knowledge_about_subject
