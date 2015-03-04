@@ -1602,7 +1602,8 @@ class Facet(str):
         @param feature_type: A string representing the type of feature this facet is about.
         @param initial_evidence: An information object that serves as the initial evidence for
                                  this being a facet of a person's belief.
-        @param predecessor: The belief facet that this person had prior to this one, if any.
+        @param predecessor: What this person believed prior (i.e., the belief facet they had for
+                            this particular feature prior to this facet being instantiated).
         @param parent: The belief facet that beget this one -- will be the same as
                        predecessor except for statements, in which case it will be the
                        source of the statement's belief that they expressed to this person
