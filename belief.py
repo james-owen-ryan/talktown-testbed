@@ -193,6 +193,15 @@ class BusinessMentalModel(MentalModel):
         ]
         return believed_employees
 
+    def people_here_when(self, date):
+        """Return all the people that owner believes were here at a given date."""
+        believed_here_on_this_date = [
+            p for p in self.owner.mind.mental_models if p.type == "person" and
+            date in self.owner.mind.mental_models[p].whereabouts.date and
+            self.owner.mind.mental_models[p].whereabouts.date[date].object_itself is self.subject
+        ]
+        return believed_here_on_this_date
+
     def _init_business_facet(self, feature_type, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a business."""
         # If you are physically at this business observing it, build up a belief
@@ -429,6 +438,15 @@ class DwellingPlaceModel(MentalModel):
             self.owner.mind.mental_models[p].home.object_itself is self.subject
         ]
         return believed_residents
+
+    def people_here_when(self, date):
+        """Return all the people that owner believes were here at a given date."""
+        believed_here_on_this_date = [
+            p for p in self.owner.mind.mental_models if p.type == "person" and
+            date in self.owner.mind.mental_models[p].whereabouts.date and
+            self.owner.mind.mental_models[p].whereabouts.date[date].object_itself is self.subject
+        ]
+        return believed_here_on_this_date
 
     def _init_dwelling_place_facet(self, feature_type, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a dwelling place."""
@@ -668,6 +686,7 @@ class PersonMentalModel(MentalModel):
         self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
         self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
         self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
+        self.whereabouts = WhereaboutsBelief(person_model=self, observation_or_reflection=observation_or_reflection)
 
     def _init_home_facet(self, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's home."""
@@ -695,6 +714,7 @@ class PersonMentalModel(MentalModel):
         )
         self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        self.whereabouts.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self._build_up_other_belief_facets(new_observation_or_reflection=new_observation_or_reflection)
 
     def deteriorate(self):
@@ -1018,6 +1038,37 @@ class PersonMentalModel(MentalModel):
             "home": "home",
         }
         return attribute_to_belief_type[attribute]
+
+
+class WhereaboutsBelief(object):
+    """A person's mental model of another person's past whereabouts."""
+
+    def __init__(self, person_model, observation_or_reflection):
+        """Initialize a WhereaboutsBelief object."""
+        self.person_model = person_model
+        self.date = {}  # Where this person was when
+        # If there is an observation or reflection taking place, take note of where this
+        # person was at this time
+        if observation_or_reflection:
+            location_str = self.person_model.owner.location.name
+            location_obj = self.person_model.owner.location
+            day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+            self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
+                value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
+                feature_type="whereabouts", initial_evidence=observation_or_reflection,
+                predecessor=None, parent=None, object_itself=location_obj
+            )
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up this belief by adding in a new entry for the current date."""
+        location_str = self.person_model.owner.location.name
+        location_obj = self.person_model.owner.location
+        day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+        self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
+            value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
+            feature_type="whereabouts", initial_evidence=new_observation_or_reflection,
+            predecessor=None, parent=None, object_itself=location_obj
+        )
 
 
 class NameBelief(object):
