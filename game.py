@@ -118,14 +118,16 @@ class Game(object):
         # build up, and have them socialize with other people also at that location --
         # this will cause relationships to form/progress and knowledge to propagate
         for person in self.city.residents:
-            person.observe()
-            person.socialize()
+            if person.age > 3:
+                person.observe()
+                person.socialize()
         # Deteriorate people's mental models from time passing
         for person in self.city.residents:
             for thing in list(person.mind.mental_models):
                 person.mind.mental_models[thing].deteriorate()
             # But also have them reflect accurately on their own features
-            person.reflect()
+            if person.age > 3:
+                person.reflect()
 
     def _advance_time(self):
         """Advance time of day and date, if it's a new day."""

@@ -642,10 +642,14 @@ class Person(object):
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
                 "workplace": self.mind.mental_models[other_person].occupation.company,
+                "workplace address": self.mind.mental_models[other_person.occupation.company].address,  # Error if unemployed
+                "workplace block": self.mind.mental_models[other_person.occupation.company].block,
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
                 "home": self.mind.mental_models[other_person].home.name,
+                "home address": self.mind.mental_models[other_person.home].address,
+                "home block": self.mind.mental_models[other_person.home].block,
                 # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
