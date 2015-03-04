@@ -302,3 +302,16 @@ class Friendship(Relationship):
         @param preceded_by: An Acquaintance relationship that preceded this, if any.
         """
         super(Friendship, self).__init__(owner, subject, preceded_by)
+
+
+class Romance(Relationship):
+    """One person's conception of their romantic relationship with another person."""
+
+    def __init__(self, owner, subject, preceded_by):
+        """Initialize a Friendship object.
+
+        @param owner: The person whom this conception of the enmity belongs to.
+        @param subject: The other person to whom the conception pertains.
+        @param preceded_by: An Acquaintance relationship that preceded this, if any.
+        """
+        super(Romance, self).__init__(owner, subject, preceded_by)
