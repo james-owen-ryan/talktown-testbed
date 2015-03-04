@@ -429,6 +429,11 @@ class City(object):
                     unemployed_people.add(resident)
         return unemployed_people
 
+    @property
+    def random_person(self):
+        """Return a random person living in this city."""
+        return random.choice(list(self.residents))
+
     def workers_of_trade(self, occupation):
         """Return all population in the city who practice to given occupation.
 
