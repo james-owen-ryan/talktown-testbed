@@ -340,9 +340,13 @@ class City(object):
                 insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner)) 
 
             if (ns+sizeOfBlock <= size/2):            
-                insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
-            corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
-            self.lots.add(swCorner)
+                insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))  
+
+            
+            if (ns+sizeOfBlock <= size/2 or   ns+sizeOfBlock <= size/2):         
+                self.lots.add(swCorner)          
+                    
+            corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS')) 
             
             for ii in range(1,sizeOfBlock*configFile.n_buildings_per_block-1): 
                 blockNum = int(ii/2)
