@@ -658,11 +658,11 @@ class Person(object):
                 "middle name": self.mind.mental_models[other_person].middle_name,
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
-                "workplace": self.mind.mental_models[other_person].occupation.company,  # Will be name of the company
+                "workplace": str(self.mind.mental_models[other_person].occupation.company),  # Will be name of the company
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
-                "home": self.mind.mental_models[other_person].home,  # Will be the name of the residence
+                "home": str(self.mind.mental_models[other_person].home),  # Will be the name of the residence
                 # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
@@ -692,13 +692,32 @@ class Person(object):
             if self.mind.mental_models[other_person].home.mental_model:
                 features["home address"] = self.mind.mental_models[other_person].home.mental_model.address
                 features["home block"] = self.mind.mental_models[other_person].home.mental_model.block
-            if self.mind.mental_models[other_person].occupation.company.mental_model:
-                features["workplace address"] = (
-                    self.mind.mental_models[other_person].occupation.company.mental_model.address
+            else:
+                features["home address"] = None
+                features["home block"] = None
+            if self.mind.mental_models[other_person].occupation.company:
+                if self.mind.mental_models[other_person].occupation.company.mental_model:
+                    features["workplace address"] = (
+                        self.mind.mental_models[other_person].occupation.company.mental_model.address
+                    )
+                    features["workplace block"] = (
+                        self.mind.mental_models[other_person].occupation.company.mental_model.block
+                    )
+                else:
+                    features["workplace address"] = None
+                    features["workplace block"] = None
+            else:
+                features["workplace address"] = None
+                features["workplace block"] = None
+            # Where they were on the night in question -- this will have to be made more
+            # elegant once we allow the player to access where anyone was any given time
+            the_night_in_question = (self.game.ordinal_date_that_the_founder_dies, 1)
+            if the_night_in_question in self.mind.mental_models[other_person].whereabouts.date:
+                features["location that night"] = (
+                    str(self.mind.mental_models[other_person].whereabouts.date[the_night_in_question])
                 )
-                features["workplace block"] = (
-                    self.mind.mental_models[other_person].occupation.company.mental_model.block
-                )
+            else:
+                features["location that night"] = None
             return features[feature_type]
 
     def get_knowledge_about_place(self, place, feature_type):

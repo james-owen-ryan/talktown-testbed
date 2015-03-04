@@ -15,6 +15,9 @@ class Game(object):
         self.year = self.config.date_city_gets_founded[-1]
         self.true_year = self.config.date_city_gets_founded[-1]  # True year never gets changed during retconning
         self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
+        self.ordinal_date_that_the_founder_dies = (
+            datetime.date(*self.config.date_the_founder_dies).toordinal()
+        )
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.city = None
         # This gets incremented each time a new person is born/generated,
@@ -138,3 +141,26 @@ class Game(object):
             if datetime.date.fromordinal(self.ordinal_date) != self.year:
                 # Happy New Year
                 self.year += 1
+
+    def get_knowledge(self, owner_id, subject_id):
+        """Return this person's knowledge about another person's feature of the given type.
+
+        @param owner_id: The owner of this knowledge.
+        @param subject_id: The subject of this knowledge.
+        """
+        owner = next(r for r in self.city.residents if r.id == owner_id)
+        subject = next(r for r in self.city.residents if r.id == subject_id)
+        all_features_of_knowledge_about_a_person = [
+            'eye horizontal settedness', 'birthmark', 'job title', 'eye shape', 'hair color', 'head size',
+            'home', 'scar', 'sunglasses', 'tattoo', 'nose shape', 'job shift', 'ear angle', 'home block',
+            'mouth size', 'freckles', 'eye size', 'first name', 'skin color', 'ear size', 'middle name',
+            'nose size', 'home address', 'eye vertical settedness', 'facial hair style', 'hair length',
+            'eyebrow color', 'last name', 'head shape', 'eyebrow size', 'eye color', 'workplace', 'glasses',
+            'location that night'
+        ]
+        owners_knowledge_about_subject = set()
+        for feature in all_features_of_knowledge_about_a_person:
+            owners_knowledge_about_subject.add(
+                (feature, owner.get_knowledge_about_person(subject, feature))
+            )
+        return owners_knowledge_about_subject

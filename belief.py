@@ -1691,6 +1691,8 @@ class Facet(str):
             # to semantic relations like believing a person for whom you've developed a
             # mental model lives in a home for which you've developed a mental model
             self.mental_model = self.owner.mind.mental_models[object_itself]
+        else:
+            self.mental_model = None
         # Strength represents how confident owner is in this belief and is used to reduce
         # the chance of a belief facet deteriorating (by dividing the base chance of
         # deterioration by the strength of the facet)

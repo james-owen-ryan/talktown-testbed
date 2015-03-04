@@ -13,7 +13,8 @@ class Config(object):
                 #################
                 ##  WORLD GEN  ##
                 #################
-
+        # When to stop
+        self.date_the_founder_dies = (1980, 10, 18)
         # City generation
         self.loci = 3
         self.samples = 32
