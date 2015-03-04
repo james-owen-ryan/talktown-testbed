@@ -303,16 +303,13 @@ class City(object):
                 insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                
-                    if (ns+ii <= size/2):
-                        tract.addBlock(Blocks[(ew,ns+ii,'NS')],n_buildings_per_block,'W',0)
-                    if (ew+ii <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns,'EW')],n_buildings_per_block ,'S',0)
+                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],Numberings[(ew,ns+ii,'E')][n_buildings_per_block],'E',0)
+                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],Numberings[(ew+ii,ns,'N')][n_buildings_per_block] ,'N',0)
                     if (ew+sizeOfBlock <= size/2):
-                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],n_buildings_per_block,'E',0)
+                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],Numberings[(ew+sizeOfBlock,ns+ii,'W')][n_buildings_per_block],'W',0)
                     
                     if (ns+sizeOfBlock <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],n_buildings_per_block,'N',0)
+                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],Numberings[(ew+ii,ns+sizeOfBlock,'S')][n_buildings_per_block],'S',0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
@@ -335,18 +332,10 @@ class City(object):
             corners.add((ew,ns+sizeOfBlock,'EW',ew,ns+sizeOfBlock-1,'NS'))
             
             swCorner = Lot(self)
-            
-            if (ew+sizeOfBlock <= size/2):
-                insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner)) 
-
-            if (ns+sizeOfBlock <= size/2):            
-                insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))  
-
-            
-            if (ns+sizeOfBlock <= size/2 or   ns+sizeOfBlock <= size/2):         
-                self.lots.add(swCorner)          
-                    
-            corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS')) 
+            insertInto(lots,(ew+sizeOfBlock-1,ns+sizeOfBlock,'S'),(n_buildings_per_block-1,swCorner))  
+            insertInto(lots,(ew+sizeOfBlock,ns+sizeOfBlock-1,'W'),(n_buildings_per_block-1,swCorner))    
+            corners.add((ew+sizeOfBlock-1,ns+sizeOfBlock,'EW',ew+sizeOfBlock,ns+sizeOfBlock-1,'NS'))        
+            self.lots.add(swCorner)
             
             for ii in range(1,sizeOfBlock*configFile.n_buildings_per_block-1): 
                 blockNum = int(ii/2)

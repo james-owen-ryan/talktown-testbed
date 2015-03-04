@@ -17,10 +17,42 @@ class Face(object):
         self.mouth = Mouth(face=self)
         self.facial_hair = FacialHair(face=self)
         self.distinctive_features = DistinctiveFeatures(face=self)
+        self.faceStr = ""
+        
+        features = {
+            "skin color": self.skin.color,
+            "head size": self.head.size,
+            "head shape": self.head.shape,
+            "hair length": self.hair.length,
+            "hair color": self.hair.color,
+            "eyebrow size": self.eyebrows.size,
+            "eyebrow color": self.eyebrows.color,
+            "mouth size": self.mouth.size,
+            "ear size": self.ears.size,
+            "ear angle": self.ears.angle,
+            "nose size": self.nose.size,
+            "nose shape": self.nose.shape,
+            "eye size": self.eyes.size,
+            "eye shape": self.eyes.shape,
+            "eye color": self.eyes.color,
+            "eye horizontal settedness": self.eyes.horizontal_settedness,
+            "eye vertical settedness": self.eyes.vertical_settedness,
+            "facial hair style": self.facial_hair.style,
+            "freckles": self.distinctive_features.freckles,
+            "birthmark": self.distinctive_features.birthmark,
+            "scar": self.distinctive_features.scar,
+            "tattoo": self.distinctive_features.tattoo,  # From nurture
+            "glasses": self.distinctive_features.glasses,
+            "sunglasses": self.distinctive_features.sunglasses  # From nurture
+        }
+        for feature in features:
+            self.faceStr += feature + "\t" + features[feature] + "\t"
+
+        
 
     def __str__(self):
         """Return string representation."""
-        return "Face of {1}".format(self.person.name)
+        return "Face of {0}".format(self.person.name)
 
     def determine_facial_feature(self, feature_type):
         """Determine a person's facial feature, given their parents' and/or the population distribution.
