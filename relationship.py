@@ -29,7 +29,6 @@ class Relationship(object):
             self.charge = float(self.charge_increment)
             self.spark_increment = self._init_determine_initial_spark_increment()
             self.spark = float(self.spark_increment)
-            self.form_or_build_up_mental_model()
         elif preceded_by:
             preceded_by.succeeded_by = self
             self.compatibility = preceded_by.compatibility
@@ -235,20 +234,6 @@ class Relationship(object):
         )
         return spark_reduction_due_to_job_level_difference
 
-    def form_or_build_up_mental_model(self):
-        """Instantiate (or further fill in) a mental model of this person.
-
-        Note: The owner of this Acquaintance may already have a mental model of the subject,
-        even if they haven't met, from other people having told them about them.
-        """
-        observation = Observation(subject=self.subject, source=self.owner)
-        if self.subject not in self.owner.mind.mental_models:
-            PersonMentalModel(
-                owner=self.owner, subject=self.subject, observation_or_reflection=observation
-            )
-        else:
-            self.owner.mind.mental_models[self.subject].build_up(new_observation_or_reflection=observation)
-
     def progress_relationship(self):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
         config = self.owner.game.config
@@ -271,7 +256,6 @@ class Relationship(object):
             self.spark_increment * self.age_difference_effect_on_spark_increment *
             self.job_level_difference_effect_on_spark_increment
         )
-        self.form_or_build_up_mental_model()
         self.interacted_this_timestep = True
         # Call this method for the subject's own conception of this relationship
         # to update its attributes according to this interaction

@@ -9,8 +9,8 @@ import occupation
 from face import Face
 from routine import Routine
 from relationship import Acquaintance
-from knowledge import Reflection
-from belief import PersonMentalModel
+from knowledge import Reflection, Observation
+from belief import PersonMentalModel, DwellingPlaceModel, BusinessMentalModel
 
 
 class Person(object):
@@ -606,9 +606,6 @@ class Person(object):
             # CHANGE THIS TO THE HOME OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
             # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
             "home": self.home.name,
-            "home is apartment": "yes" if self.home.apartment else "no",
-            "home block": str(self.home.lot.block_address_is_on),
-            "home address": self.home.address,
             # Appearance
             "skin color": self.face.skin.color,
             "head size": self.face.head.size,
@@ -1087,6 +1084,29 @@ class Person(object):
             )
         else:
             self.mind.mental_models[self].build_up(new_observation_or_reflection=reflection)
+
+    def observe(self):
+        """Observe the place one is at and the people there."""
+        # for thing in set([self.location]) | self.location.people_here_now:
+        if self.location.type == "residence":
+            things = set([self.location]) | self.location.people_here_now
+        else:
+            things = self.location.people_here_now
+        for thing in things:
+            self._form_or_build_up_mental_model(subject=thing)
+
+    def _form_or_build_up_mental_model(self, subject):
+        """Instantiate (or further fill in) a mental model of a person or place."""
+        observation = Observation(subject=subject, source=self)
+        if subject not in self.mind.mental_models:
+            if subject.type == "person":
+                PersonMentalModel(owner=self, subject=subject, observation_or_reflection=observation)
+            elif subject.type == "residence":
+                DwellingPlaceModel(owner=self, subject=subject, observation=observation)
+            elif subject.type == "business":
+                BusinessMentalModel(owner=self, subject=subject, observation=observation)
+        else:
+            self.mind.mental_models[subject].build_up(new_observation_or_reflection=observation)
 
 
 class PersonExNihilo(Person):

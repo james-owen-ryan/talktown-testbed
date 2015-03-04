@@ -45,6 +45,15 @@ class DwellingPlace(object):
         list(initial_owners)[0].purchase_home(purchasers=initial_owners, home=self)
         # HomePurchase(subjects=initial_owners, home=self, realtor=None)
 
+    def get_feature(self, feature_type):
+        """Return this person's feature of the given type."""
+        features = {
+            "home is apartment": "yes" if self.apartment else "no",
+            "home block": str(self.lot.block_address_is_on),
+            "home address": self.address,
+        }
+        return features[feature_type]
+
 
 class Apartment(DwellingPlace):
     """An individual apartment unit in an apartment building in a city."""

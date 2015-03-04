@@ -113,15 +113,16 @@ class Game(object):
         # Have people go to the location they will be at this timestep
         for person in self.city.residents:
             person.routine.enact()
-        # Have people socialize with other people also at that location --
-        # this will cause relationships to form/progress, which in turn
-        # will cause knowledge to build up and to propagate
+        # Have people observe their surroundings, which will cause knowledge to
+        # build up, and have them socialize with other people also at that location --
+        # this will cause relationships to form/progress and knowledge to propagate
         for person in self.city.residents:
+            person.observe()
             person.socialize()
         # Deteriorate people's mental models from time passing
         for person in self.city.residents:
-            for other_person in person.mind.mental_models:
-                person.mind.mental_models[other_person].deteriorate()
+            for thing in person.mind.mental_models:
+                person.mind.mental_models[thing].deteriorate()
             # But also have them reflect accurately on their own features
             person.reflect()
 
