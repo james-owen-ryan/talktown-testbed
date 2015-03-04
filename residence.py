@@ -9,6 +9,7 @@ class DwellingPlace(object):
 
         @param lot: A Lot object representing the lot this building is on.
         """
+        self.type = "residence"
         self.city = lot.city
         self.city.dwelling_places.add(self)
         self.lot = lot

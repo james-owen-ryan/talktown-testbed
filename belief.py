@@ -6,86 +6,14 @@ from corpora import Names
 # TODO StreetMentalModel, BlockMentalModel, CityMentalModel?
 
 
-class BusinessMentalModel(object):
-    """A person's mental model of a business."""
+class MentalModel(object):
+    """A person's mental model of a person or place."""
 
-    def __init__(self, owner, subject, observation):
-        """Initialize a BusinessMentalModel object.
-
-        @param owner: The person who holds this belief.
-        @param subject: The building to whom this belief pertains.
-        """
-        self.owner = owner
-        self.subject = subject
-
-
-#### OBSERVING WHERE SOMEONE WORKS SHOULD ONLY COME FROM ACTUALLY OBSERVING, REP THE REST AS STATEMENT
-
-
-class DwellingPlaceModel(object):
-    """A person's mental model of a business."""
-
-    def __init__(self, owner, subject, observation):
-        """Initialize a BusinessMentalModel object.
-
-        @param owner: The person who holds this belief.
-        @param subject: The building to whom this belief pertains.
-        """
-        self.owner = owner
-        self.subject = subject
-
-        # put address, block, is_apartment on this instead of as attributes on a person
-
-
-class PersonMentalModel(object):
-    """A person's mental model of a person, representing everything she believes about her."""
-
-    def __init__(self, owner, subject, observation_or_reflection):
-        """Initialize a PersonMentalModel object.
-
-        @param owner: The person who holds this belief.
-        @param subject: The person to whom this belief pertains.
-        @param observation_or_reflection: The Observation or Reflection from which this
-                                          the beliefs composing this mental model originate.
-        """
+    def __init__(self, owner, subject):
+        """Initialize a MentalModel object."""
         self.owner = owner
         self.subject = subject
         self.owner.mind.mental_models[self.subject] = self
-        # Form beliefs about the person's name
-        self.name_belief = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
-        # Form beliefs about the person's work life
-        self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        # Form beliefs about the person's home
-        self.home = HomeBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        # Form beliefs about the person's face
-        self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-
-    def __str__(self):
-        """Return string representation."""
-        return "{0}'s mental model of {1}".format(self.owner.name, self.subject.name)
-
-    def build_up(self, new_observation_or_reflection):
-        """Build up a mental model from a new observation or reflection."""
-        self.name_belief.build_up(new_observation_or_reflection=new_observation_or_reflection)
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
-        self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
-        self.home.build_up(new_observation_or_reflection=new_observation_or_reflection)
-        self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
-
-    def deteriorate(self):
-        """Deteriorate a mental model from time passing."""
-        self.name_belief.deteriorate()
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
-        self.home.deteriorate()
-        self.occupation.deteriorate()
-        self.face.deteriorate()
 
     def insert_belief_facet(self, feature_type, evidence):
         """Insert a particular belief facet into this mental model (for when a person hears about another person)."""
@@ -112,13 +40,11 @@ class PersonMentalModel(object):
         config = self.owner.game.config
         if current_belief_facet != '' and current_belief_facet is not None:
             result = self._decide_how_knowledge_will_pollute_or_be_forgotten(config=config)
-            if result == 't' and any(p for p in self.owner.mind.mental_models if
-                                     p is not self.owner and p is not self.subject):  # Transference
-                # Note: the check on the owner's mental models is to make sure they
-                # actually have a mental model for a person other than themself to
-                # transfer the feature attribute from
+            entity_to_transfer_belief_facet_from = self._decide_entity_to_transfer_belief_facet_from()
+            if result == 't' and entity_to_transfer_belief_facet_from:  # Transference
                 belief_facet_obj = self._transfer_belief_facet(
-                    feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
+                    feature_type=feature_type, parent_knowledge_object=parent_knowledge_object,
+                    entity_being_transferred_from=entity_to_transfer_belief_facet_from
                 )
             elif result == 'm':  # Mutation
                 belief_facet_obj = self._mutate_belief_facet(
@@ -134,6 +60,239 @@ class PersonMentalModel(object):
                 feature_type=feature_type, parent_knowledge_object=parent_knowledge_object
             )
         return belief_facet_obj
+
+    def _concoct_belief_facet(self, feature_type, parent_knowledge_object):
+        """This method gets overridden by the subclasses to this base class."""
+        pass
+
+    def _mutate_belief_facet(self, feature_type, parent_knowledge_object, facet_being_mutated):
+        """This method gets overridden by the subclasses to this base class."""
+        pass
+
+    def _transfer_belief_facet(self, feature_type, parent_knowledge_object, entity_being_transferred_from):
+        """Cause a belief facet to change by transference."""
+        transferred_belief_facet = (
+            self.owner.mind.mental_models[entity_being_transferred_from].get_facet_to_this_belief_of_type(
+                feature_type=feature_type
+            )
+        )
+        feature_str = str(transferred_belief_facet)
+        transferred_object_itself = transferred_belief_facet.object_itself
+        transference = Transference(
+            subject=self.subject, source=self.owner, parent=parent_knowledge_object,
+            belief_facet_transferred_from=transferred_belief_facet
+        )
+        belief_facet_obj = Facet(
+            value=feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=transference, object_itself=transferred_object_itself
+        )
+        return belief_facet_obj
+
+    def _decide_entity_to_transfer_belief_facet_from(self):
+        """This method gets overridden by the subclasses to this base class."""
+        pass
+
+    def _forget_belief_facet(self, feature_type, parent_knowledge_object):
+        """Cause a belief facet to be forgotten."""
+        forgetting = Forgetting(subject=self.subject, source=self.owner, parent=parent_knowledge_object)
+        # Facets evidenced by a Forgetting should always have an empty string
+        # for their value
+        belief_facet_obj = Facet(
+            value='', owner=self.owner, subject=self.subject,
+            feature_type=feature_type, evidence=forgetting, object_itself=None
+        )
+        return belief_facet_obj
+
+    def _get_true_feature(self, feature_type):
+        true_feature_str = str(self.subject.get_feature(feature_type=feature_type))
+        return true_feature_str
+
+    @staticmethod
+    def _decide_how_knowledge_will_pollute_or_be_forgotten(config):
+        """Decide whether knowledge will succumb to degradation or transference or forgetting."""
+        x = random.random()
+        pollution_type_probabilities = config.memory_pollution_probabilities
+        result = next(  # See config.py to understand what this is doing
+            pollution_type[1] for pollution_type in pollution_type_probabilities if
+            pollution_type[0][0] <= x <= pollution_type[0][1]
+        )
+        return result
+
+    def _calculate_chance_feature_gets_remembered_perfectly(self, feature_type):
+        """Calculate the chance that owner perfectly remembers a feature about subject."""
+        config = self.owner.game.config
+        salience_of_the_feature = config.person_feature_salience[feature_type][0]
+        chance_it_gets_remembered_perfectly = self.owner.mind.memory * salience_of_the_feature
+        chance_floor = config.person_feature_salience[feature_type][1]
+        if chance_it_gets_remembered_perfectly < chance_floor:
+            chance_it_gets_remembered_perfectly = chance_floor
+        chance_cap = config.person_feature_salience[feature_type][2]
+        if chance_it_gets_remembered_perfectly > chance_cap:
+            chance_it_gets_remembered_perfectly = chance_cap
+        return chance_it_gets_remembered_perfectly
+
+
+class BusinessMentalModel(object):
+    """A person's mental model of a business."""
+
+    def __init__(self, owner, subject, observation):
+        """Initialize a BusinessMentalModel object.
+
+        @param owner: The person who holds this belief.
+        @param subject: The building to whom this belief pertains.
+        """
+        self.owner = owner
+        self.subject = subject
+
+
+class DwellingPlaceModel(object):
+    """A person's mental model of a business."""
+
+    def __init__(self, owner, subject, observation):
+        """Initialize a BusinessMentalModel object.
+
+        @param owner: The person who holds this belief.
+        @param subject: The building to whom this belief pertains.
+        """
+        self.owner = owner
+        self.subject = subject
+        self.apartment = self._init_home_facet(
+            feature_type="home is apartment", observation_or_reflection=observation_or_reflection
+        )
+        self.block = self._init_home_facet(
+            feature_type="home block", observation_or_reflection=observation_or_reflection
+        )
+        self.address = self._init_home_facet(
+            feature_type="home address", observation_or_reflection=observation_or_reflection
+        )
+
+    def _init_home_facet(self, feature_type, observation_or_reflection):
+        """Establish a belief, or lack of belief, pertaining to a person's home."""
+        if observation_or_reflection.type == "reflection":
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        # If you are observing the person at their home, build up a belief about that
+        elif self.person_model.owner.location is self.person_model.subject.home:
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        else:
+            # Build empty work facet -- having None for observation_or_reflection will automate this
+            home_facet = self.person_model.determine_belief_facet(
+                feature_type=feature_type, observation_or_reflection=None
+            )
+        return home_facet
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up the components of this belief by potentially filling in missing information
+        and/or repairing wrong information, or else by updating the evidence for already correct facets.
+        """
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                belief_facet = self.__dict__[feature]
+                if belief_facet is None or not belief_facet.accurate:
+                    feature_type = self.attribute_to_belief_type(attribute=feature)
+                    # Potentially make it accurate
+                    self.__dict__[feature] = (
+                        self.person_model.determine_belief_facet(
+                            feature_type=feature_type,
+                            observation_or_reflection=new_observation_or_reflection
+                        )
+                    )
+                else:
+                    # Belief facet is already accurate, but update its evidence to point to the new
+                    # observation or reflection (which will slow any potential deterioration) -- this
+                    # will also increment the strength of the belief facet, which will make it less
+                    # likely to deteriorate in this future
+                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
+    def deteriorate(self):
+        """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
+        config = self.person_model.owner.game.config
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                belief_facet = self.__dict__[feature]
+                if belief_facet is not None:
+                    feature_type_str = belief_facet.feature_type
+                else:
+                    feature_type_str = ''
+                # Determine the chance of memory deterioration, which starts from a base value
+                # that gets affected by the person's memory and the strength of the belief facet
+                chance_of_memory_deterioration = (
+                    config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
+                    self.person_model.owner.mind.memory /
+                    belief_facet.strength
+                )
+                if random.random() < chance_of_memory_deterioration:
+                    if belief_facet is None:
+                        parent_knowledge_object = None
+                    else:
+                        parent_knowledge_object = belief_facet.evidence
+                    # Instantiate a new belief facet that represents a deterioration of
+                    # the existing one (which itself may be a deterioration already)
+                    deteriorated_belief_facet = self.person_model.deteriorate_belief_facet(
+                        feature_type=belief_facet.feature_type,
+                        parent_knowledge_object=parent_knowledge_object,
+                        current_belief_facet=belief_facet
+                    )
+                    self.__dict__[feature] = deteriorated_belief_facet
+
+    @staticmethod
+    def attribute_to_belief_type(attribute):
+        """Return the belief type of an attribute."""
+        attribute_to_belief_type = {
+            "home": "home",
+            "apartment": "home is apartment",
+            "block": "home block",
+            "address": "home address"
+        }
+        return attribute_to_belief_type[attribute]
+
+
+class PersonMentalModel(MentalModel):
+    """A person's mental model of a person, representing everything she believes about her."""
+
+    def __init__(self, owner, subject, observation_or_reflection):
+        """Initialize a PersonMentalModel object.
+
+        @param owner: The person who holds this belief.
+        @param subject: The person to whom this belief pertains.
+        @param observation_or_reflection: The Observation or Reflection from which this
+                                          the beliefs composing this mental model originate.
+        """
+        super(PersonMentalModel, self).__init__(owner, subject)
+        self.name_belief = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        self.first_name, self.middle_name, self.last_name = (
+            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
+        )
+        self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        self.home = HomeBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+
+    def __str__(self):
+        """Return string representation."""
+        return "{0}'s mental model of {1}".format(self.owner.name, self.subject.name)
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up a mental model from a new observation or reflection."""
+        self.name_belief.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        self.first_name, self.middle_name, self.last_name = (
+            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
+        )
+        self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        self.home.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
+
+    def deteriorate(self):
+        """Deteriorate a mental model from time passing."""
+        self.name_belief.deteriorate()
+        self.first_name, self.middle_name, self.last_name = (
+            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
+        )
+        self.home.deteriorate()
+        self.occupation.deteriorate()
+        self.face.deteriorate()
 
     def _concoct_belief_facet(self, feature_type, parent_knowledge_object):
         """Concoct a new belief facet of the given type.
@@ -400,12 +559,8 @@ class PersonMentalModel(object):
         mutated_object_itself = None
         return mutated_feature_str, mutated_object_itself
 
-    def _transfer_belief_facet(self, feature_type, parent_knowledge_object):
-        """Cause a belief facet to change by transference.
-
-        TODO: Have transference be more likely to happen between similar people --
-        this requires an operationalized notion of how similar any two people are.
-        """
+    def _decide_entity_to_transfer_belief_facet_from(self):
+        """Decide a person to transfer a belief facet from."""
         # TODO make transference of a name feature be more likely for familiar names
         # TODO notion of person similarity should be at play here
         # Find a person to transfer from who is not owner or subject, and ideally who has
@@ -416,39 +571,16 @@ class PersonMentalModel(object):
                 person for person in self.owner.mind.mental_models if person.male == self.subject.male and
                 person is not self.subject and person is not self.owner
             )
-        else:
-            person_belief_will_transfer_from = random.sample(self.owner.mind.mental_models, 1)[0]
-        belief_facet_transferred_from = (
-            self.owner.mind.mental_models[person_belief_will_transfer_from].get_facet_to_this_belief_of_type(
-                feature_type=feature_type
+        elif any(p for p in self.owner.mind.mental_models if
+                 p.type == "person" and p is not self.owner and p is not self.subject):
+            person_belief_will_transfer_from = (
+                random.choice(
+                    [p for p in self.owner.mind.mental_models if p is not self.owner and p is not self.subject]
+                )
             )
-        )
-        feature_str = str(belief_facet_transferred_from)
-        transferred_object_itself = None  # MAKE SURE THIS ONLY PERTAINS TO APPEARANCE FEATURES
-        transference = Transference(
-            subject=self.subject, source=self.owner, parent=parent_knowledge_object,
-            belief_facet_transferred_from=belief_facet_transferred_from
-        )
-        belief_facet_obj = Facet(
-            value=feature_str, owner=self.owner, subject=self.subject,
-            feature_type=feature_type, evidence=transference, object_itself=transferred_object_itself
-        )
-        return belief_facet_obj
-
-    def _forget_belief_facet(self, feature_type, parent_knowledge_object):
-        """Cause a belief facet to be forgotten."""
-        forgetting = Forgetting(subject=self.subject, source=self.owner, parent=parent_knowledge_object)
-        # Facets evidenced by a Forgetting should always have an empty string
-        # for their value
-        belief_facet_obj = Facet(
-            value='', owner=self.owner, subject=self.subject,
-            feature_type=feature_type, evidence=forgetting, object_itself=None
-        )
-        return belief_facet_obj
-
-    def _get_true_feature(self, feature_type):
-        true_feature_str = str(self.subject.get_feature(feature_type=feature_type))
-        return true_feature_str
+        else:
+            person_belief_will_transfer_from = None
+        return person_belief_will_transfer_from
 
     def _get_true_feature_object(self, feature_type):
         true_feature_objects = {
@@ -458,30 +590,6 @@ class PersonMentalModel(object):
             return true_feature_objects[feature_type]
         else:
             return None
-
-    @staticmethod
-    def _decide_how_knowledge_will_pollute_or_be_forgotten(config):
-        """Decide whether knowledge will succumb to degradation or transference or forgetting."""
-        x = random.random()
-        pollution_type_probabilities = config.memory_pollution_probabilities
-        result = next(  # See config.py to understand what this is doing
-            pollution_type[1] for pollution_type in pollution_type_probabilities if
-            pollution_type[0][0] <= x <= pollution_type[0][1]
-        )
-        return result
-
-    def _calculate_chance_feature_gets_remembered_perfectly(self, feature_type):
-        """Calculate the chance that owner perfectly remembers a feature about subject."""
-        config = self.owner.game.config
-        salience_of_the_feature = config.person_feature_salience[feature_type][0]
-        chance_it_gets_remembered_perfectly = self.owner.mind.memory * salience_of_the_feature
-        chance_floor = config.person_feature_salience[feature_type][1]
-        if chance_it_gets_remembered_perfectly < chance_floor:
-            chance_it_gets_remembered_perfectly = chance_floor
-        chance_cap = config.person_feature_salience[feature_type][2]
-        if chance_it_gets_remembered_perfectly > chance_cap:
-            chance_it_gets_remembered_perfectly = chance_cap
-        return chance_it_gets_remembered_perfectly
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""

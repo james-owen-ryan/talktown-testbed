@@ -22,6 +22,7 @@ class Person(object):
         self.game = game
         self.id = self.game.current_person_id
         self.game.current_person_id += 1
+        self.type = "person"
         self.birth = birth
         if birth:
             self.city = self.birth.city

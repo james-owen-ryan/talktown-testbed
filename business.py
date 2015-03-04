@@ -18,6 +18,7 @@ class Business(object):
         @param owner: The owner of this business.
         """
         config = owner.game.config
+        self.type = "business"
         self.city = owner.city
         self.city.companies.add(self)
         if self.__class__ is ApartmentComplex:
