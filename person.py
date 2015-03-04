@@ -659,8 +659,6 @@ class Person(object):
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
                 "workplace": self.mind.mental_models[other_person].occupation.company,
-                "workplace address": self.mind.mental_models[other_person.occupation.company].address,  # Error if
-                "workplace block": self.mind.mental_models[other_person.occupation.company].block,      # unemployed?
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
@@ -693,6 +691,13 @@ class Person(object):
                 "glasses": self.mind.mental_models[other_person].face.distinctive_features.glasses,
                 "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
             }
+            if self.mind.mental_models[other_person].occupation.company:
+                features["workplace address"] = (
+                    self.mind.mental_models[other_person].occupation.company.mental_model.address
+                )
+                features["workplace block"] = (
+                    self.mind.mental_models[other_person].occupation.company.mental_model.block
+                )
             return features[feature_type]
 
     def get_knowledge_about_place(self, place, feature_type):
