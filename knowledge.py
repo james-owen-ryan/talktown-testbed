@@ -11,8 +11,6 @@ class Reflection(object):
         assert subject is source, "{} attempted to reflect about {}, who is not themself.".format(
             source.name, subject.name
         )
-        self.parent = None  # Will always be None
-        self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
 
@@ -26,8 +24,6 @@ class Observation(object):
         self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = None  # Will always be None
-        self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
 
@@ -48,8 +44,6 @@ class Concoction(object):
         self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = parent  # Will be None if concocted out of nowhere, else a Forgetting if that preceded it
-        self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
 
@@ -64,8 +58,6 @@ class Lie(object):
         self.subject = subject
         self.source = source
         self.recipient = recipient
-        self.parent = None  # Will always be None
-        self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
 
@@ -80,9 +72,6 @@ class Statement(object):
         self.subject = subject
         self.source = source
         self.recipient = recipient
-        self.parent = parent  # The knowledge object from which this directly descended
-        self.parent.children.add(self)
-        self.children = set()  # Other knowledge objects that descend from this
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
 
@@ -96,9 +85,6 @@ class Mutation(object):
         self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = parent  # The knowledge object from which this directly descended
-        self.parent.children.add(self)
-        self.children = set()  # Other knowledge objects that descend from this
         self.mutated_belief_str = mutated_belief_str
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
@@ -107,13 +93,11 @@ class Transference(object):
     """A transference by which a person unintentionally transposes another person's attribute onto their model
     of someone else."""
 
-    def __init__(self, subject, source, parent, belief_facet_transferred_from):
+    def __init__(self, subject, source, belief_facet_transferred_from):
         """Initialize a Transference object.
 
         @param subject: The person to whom this knowledge pertains.
         @param source: The person doing the transference.
-        @param parent: The Reflection, Observation, Concoction, Lie, or Statement that this
-                       Transference has mutated.
         @param belief_facet_transferred_from: The believed attribute of *another* person that mistakenly
                                       gets transferred as a believed attribute about subject.
         """
@@ -122,9 +106,6 @@ class Transference(object):
         self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = parent  # The knowledge object from which this directly descended
-        self.parent.children.add(self)
-        self.children = set()  # Other knowledge objects that descend from this
         self.attribute_transferred = belief_facet_transferred_from
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
@@ -137,21 +118,15 @@ class Forgetting(object):
     string.
     """
 
-    def __init__(self, subject, source, parent):
+    def __init__(self, subject, source):
         """Initialize a Forgetting object.
 
         @param subject: The person to whom this knowledge pertains.
         @param source: The person doing the forgetting.
-        @param parent: The Reflection, Observation, Concoction, Lie, or Statement that
-                       represents the final state of this piece of knowledge prior to it
-                       being terminated by this Forgetting.
         """
         self.type = "forgetting"
         self.location = source.location
         self.time = source.game.date
         self.subject = subject
         self.source = source
-        self.parent = parent  # The knowledge object from which this directly descended
-        self.parent.children.add(self)
-        self.children = set()  # Will always be empty set
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
