@@ -59,7 +59,7 @@ class MentalModel(object):
             belief_facet_obj = Facet(
                 value=true_feature_str, owner=self.owner, subject=self.subject,
                 feature_type=feature_type, initial_evidence=observation_or_reflection,
-                predecessor=None, object_itself=true_object_itself
+                predecessor=None, parent=None, object_itself=true_object_itself
             )
             return belief_facet_obj
 
@@ -113,7 +113,7 @@ class MentalModel(object):
         belief_facet_obj = Facet(
             value=feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=transference,
-            predecessor=current_belief_facet, object_itself=transferred_object_itself
+            predecessor=current_belief_facet, parent=None, object_itself=transferred_object_itself
         )
         return belief_facet_obj
 
@@ -129,7 +129,8 @@ class MentalModel(object):
         belief_facet_obj = Facet(
             value='', owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=forgetting,
-            predecessor=belief_facet_being_forgotten, object_itself=None
+            predecessor=belief_facet_being_forgotten, parent=belief_facet_being_forgotten,
+            object_itself=None
         )
         return belief_facet_obj
 
@@ -253,7 +254,7 @@ class BusinessMentalModel(MentalModel):
         belief_facet_object = Facet(
             value=concocted_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, object_itself=concocted_object_itself
+            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
         )
         return belief_facet_object
 
@@ -276,7 +277,8 @@ class BusinessMentalModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, object_itself=mutated_object_itself
+            predecessor=facet_being_mutated, parent=facet_being_mutated,
+            object_itself=mutated_object_itself
         )
         return belief_facet_obj
 
@@ -496,7 +498,7 @@ class DwellingPlaceModel(MentalModel):
         belief_facet_object = Facet(
             value=concocted_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, object_itself=concocted_object_itself
+            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
         )
         return belief_facet_object
 
@@ -522,7 +524,8 @@ class DwellingPlaceModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, object_itself=mutated_object_itself
+            predecessor=facet_being_mutated, parent=facet_being_mutated,
+            object_itself=mutated_object_itself
         )
         return belief_facet_obj
 
@@ -786,7 +789,7 @@ class PersonMentalModel(MentalModel):
         belief_facet_object = Facet(
             value=concocted_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, object_itself=concocted_object_itself
+            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
         )
         return belief_facet_object
 
@@ -852,7 +855,8 @@ class PersonMentalModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, object_itself=mutated_object_itself
+            predecessor=facet_being_mutated, parent=facet_being_mutated,
+            object_itself=mutated_object_itself
         )
         return belief_facet_obj
 
@@ -1588,7 +1592,7 @@ class Facet(str):
     """
 
     def __init__(self, value, owner, subject, feature_type, initial_evidence,
-                 predecessor, object_itself=None):
+                 predecessor, parent, object_itself=None):
         """Initialize a Facet object.
 
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
@@ -1598,7 +1602,14 @@ class Facet(str):
         @param feature_type: A string representing the type of feature this facet is about.
         @param initial_evidence: An information object that serves as the initial evidence for
                                  this being a facet of a person's belief.
-        @param predecessor: The predecessor belief facet that this person prior had, if any.
+        @param predecessor: The belief facet that this person had prior to this one, if any.
+        @param parent: The belief facet that beget this one -- will be the same as
+                       predecessor except for statements, in which case it will be the
+                       source of the statement's belief that they expressed to this person
+                       via the statement; 'parent.parent.parent' etc. is how you backtrack
+                       from any belief to its ultimate source; when the predecessor is None,
+                       it will also be None of course, and additionally it will be None when
+                       the predecessor is rooted in a Concoction or Transference.
         @param object_itself: The very object that this facet represents -- this is only
                               relevant in certain cases, e.g., in a belief facet about where
                               a person works, object_itself would be the Business object of
@@ -1611,6 +1622,7 @@ class Facet(str):
         self.subject = subject
         self.feature_type = feature_type
         self.predecessor = predecessor
+        self.parent = parent
         self.evidence = set([initial_evidence])
         initial_evidence.beliefs_evidenced.add(self)
         self.object_itself = object_itself
