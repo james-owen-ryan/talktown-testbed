@@ -573,7 +573,7 @@ class Person(object):
         return neighbors
 
     @property
-    def major_life_events(self):
+    def life_events(self):
         """Return the major events of this person's life."""
         events = [self.birth, self.adoption]
         events += self.moves
