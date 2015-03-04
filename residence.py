@@ -9,10 +9,14 @@ class DwellingPlace(object):
 
         @param lot: A Lot object representing the lot this building is on.
         """
+        self.type = "residence"
         self.city = lot.city
         self.city.dwelling_places.add(self)
         self.lot = lot
-        self.address = self.lot.address
+        if self.house:
+            self.address = self.lot.address
+        elif self.apartment:
+            self.address = ""  # Gets set by Apartment._init_generate_address()
         self.residents = set()
         self.former_residents = set()
         self.transactions = []
@@ -50,13 +54,11 @@ class Apartment(DwellingPlace):
         self.complex = apartment_complex
         self.unit_number = unit_number
         super(Apartment, self).__init__(lot, owners=(apartment_complex.owner.person,))
+        self.address = self._init_generate_address()
 
     def _init_generate_address(self):
         """Generate an address, given the lot building is on."""
-        index_of_street_address_will_be_on = random.randint(0, len(self.lot.streets)-1)
-        house_number = int(self.lot.house_numbers[index_of_street_address_will_be_on])
-        street = self.lot.streets[index_of_street_address_will_be_on]
-        return "{0} {1} (Unit #{2})".format(house_number, street, self.unit_number)
+        return "{0} (Unit #{1})".format(self.lot.address, self.unit_number)
 
 
 class House(DwellingPlace):

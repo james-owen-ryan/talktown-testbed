@@ -585,6 +585,7 @@ class Lot(object):
         # These get set by init_generate_address(), which gets called by City
         self.address = None
         self.street_address_is_on = None
+        self.block_address_is_on = None
 
     @property
     def population(self):
@@ -618,6 +619,7 @@ class Lot(object):
         street = self.streets[self.index_of_street_address_will_be_on]
         self.address = "{0} {1}".format(house_number, street.name)
         self.street_address_is_on = street
+        self.block_address_is_on = self.blocks[index_of_street_address_will_be_on]
 
 
 class Tract(Lot):

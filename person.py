@@ -22,6 +22,7 @@ class Person(object):
         self.game = game
         self.id = self.game.current_person_id
         self.game.current_person_id += 1
+        self.type = "person"
         self.birth = birth
         if birth:
             self.city = self.birth.city
@@ -595,6 +596,19 @@ class Person(object):
             "first name": self.first_name,
             "middle name": self.middle_name,
             "last name": self.last_name,
+            # Occupation
+            # CHANGE THIS TO THE BUSINESS OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
+            # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
+            "workplace": self.occupation.company.name if self.occupation else "None",
+            "job title": self.occupation.__class__.__name__ if self.occupation else "None",
+            "job shift": self.occupation.shift if self.occupation else "None",
+            # Home
+            # CHANGE THIS TO THE HOME OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
+            # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
+            "home": self.home.name,
+            "home is apartment": "yes" if self.home.apartment else "no",
+            "home block": str(self.home.lot.block_address_is_on),
+            "home address": self.home.address,
             # Appearance
             "skin color": self.face.skin.color,
             "head size": self.face.head.size,
@@ -629,6 +643,23 @@ class Person(object):
             return None
         else:
             features = {
+                # Name
+                "first name": self.mind.mental_models[other_person].first_name,
+                "middle name": self.mind.mental_models[other_person].middle_name,
+                "last name": self.mind.mental_models[other_person].last_name,
+                # Occupation
+                # CHANGE THIS TO THE OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
+                "workplace": self.mind.mental_models[other_person].occupation.workplace,
+                "job title": self.mind.mental_models[other_person].occupation.job_title,
+                "job shift": self.mind.mental_models[other_person].occupation.shift,
+                # Home
+                # CHANGE THIS TO THE HOME OBJECT ITSELF (OR ITS ID) ONCE WE ALLOW PLACES TO BE PUT INTO REFERENCE
+                # -- BUT ONCE YOU DO DO THIS, HAVE TO ACCOUNT FOR IT IN TERMS OF ATTRIBUTE Facet.accurate
+                "home": self.home.name,
+                "home is apartment": "yes" if self.home.apartment else "no",
+                "home block": str(self.home.lot.block_address_is_on),
+                "home address": self.home.address,
+                # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
                 "head shape": self.mind.mental_models[other_person].face.head.shape,

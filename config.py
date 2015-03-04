@@ -19,6 +19,8 @@ class Config(object):
         self.samples = 32
         self.size = 16
         self.n_buildings_per_block = 2
+        self.largest_possible_house_number = 799
+        self.smallest_possible_house_number = 100
         self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
@@ -857,6 +859,18 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
+        self.name_feature_types = ("first name", "middle name", "last name")
+        self.work_feature_types = ("workplace", "job title", "job shift")
+        self.home_feature_types = ("home", "home is apartment", "home block", "home address")
+        self.chance_someones_feature_comes_up_in_conversation_with_them = {
+            "first name":   0.80,
+            "last name":    0.40,
+            "workplace":    0.40,
+            "address":      0.35,  # Only notion of where they live right now, so higher than would be intuitive
+            "job shift":    0.35,
+            "job title":    0.30,
+            "middle name":  0.02,
+        }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
             # These values represent means (for someone with memory value of self.memory_mean),
@@ -877,18 +891,24 @@ class Config(object):
             "hair length":                  (0.80,  0.50,   0.95),
             "head size":                    (0.75,  0.45,   0.90),
             "head shape":                   (0.75,  0.45,   0.90),
+            "first name":                   (0.75,  0.45,   0.90),
             "eye horizontal settedness":    (0.70,  0.40,   0.90),
             "eye vertical settedness":      (0.70,  0.40,   0.90),
             "eye size":                     (0.67,  0.40,   0.90),
             "eye color":                    (0.67,  0.40,   0.90),
             "eye shape":                    (0.65,  0.35,   0.90),
             "mouth size":                   (0.60,  0.25,   0.80),
+            "workplace":                    (0.60,  0.25,   0.80),
+            "job shift":                    (0.60,  0.25,   0.80),
+            "last name":                    (0.55,  0.25,   0.75),
+            "job title":                    (0.55,  0.25,   0.75),
             "nose size":                    (0.45,  0.20,   0.70),
             "nose shape":                   (0.45,  0.20,   0.70),
             "eyebrow size":                 (0.45,  0.20,   0.70),
             "eyebrow color":                (0.45,  0.20,   0.70),
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
+            "middle name":                  (0.25,  0.05,   0.30),
         }
         # Chance of memory deterioration happening on a given timestep -- the chance
         # for each belief facet of it deteriorating on a given timestep (can be thought
@@ -904,23 +924,33 @@ class Config(object):
             "facial hair style":            0.08,
             "glasses":                      0.08,
             "sunglasses":                   0.08,
+            "job shift":                    0.08,
+            "first name":                   0.10,
+            "ear angle":                    0.10,
+            "workplace":                    0.10,
+            "home is apartment":            0.10,
+            "home":                         0.10,
+            "last name":                    0.15,
+            "job title":                    0.15,
             "freckles":                     0.15,
             "hair color":                   0.15,
             "hair length":                  0.15,
-            "head size":                    0.2,
-            "head shape":                   0.2,
+            "middle name":                  0.20,
+            "head size":                    0.20,
+            "head shape":                   0.20,
             "eye horizontal settedness":    0.25,
             "eye vertical settedness":      0.25,
             "eye size":                     0.25,
             "eye color":                    0.25,
             "eye shape":                    0.25,
+            "home block":                   0.25,
             "mouth size":                   0.35,
             "nose size":                    0.35,
             "nose shape":                   0.35,
             "eyebrow size":                 0.40,
             "eyebrow color":                0.40,
             "ear size":                     0.40,
-            "ear angle":                    0.10,
+            "home address":                 0.60,
             "":                             0.03,  # Chance of concoction, essentially
         }
         # Chance of certain types of memory deterioration -- note that these chances only
@@ -934,6 +964,10 @@ class Config(object):
         )
         self.memory_mutations = {
             # Probabilities specifying how feature values are likely to degrade
+            # NAMES [handled differently]
+            # WORK LIFE
+
+            # APPEARANCE
             "skin color": {
                 'black': (
                     ((0.0, 0.7), 'brown'),

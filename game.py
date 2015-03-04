@@ -17,10 +17,11 @@ class Game(object):
         self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.city = None
-        self._establish_setting()
-        self.time_of_day = "day"
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
+
+        self._establish_setting()
+        self.time_of_day = "day"
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
