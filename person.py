@@ -478,10 +478,10 @@ class Person(object):
     def nuclear_family(self):
         """Return this person's nuclear family."""
         nuclear_family = set([self])
-        if self.spouse:
+        if self.spouse and self.spouse.present:
             nuclear_family.add(self.spouse)
         for kid in self.spouse.kids & self.kids if self.spouse else self.kids:
-            if kid.home is self.home:
+            if kid.home is self.home and kid.present:
                 nuclear_family.add(kid)
         return nuclear_family
 
