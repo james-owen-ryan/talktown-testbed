@@ -42,8 +42,67 @@ class MentalModel(object):
                     # likely to deteriorate in this future
                     belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
-    def insert_belief_facet(self, feature_type, evidence):
-        """Insert a particular belief facet into this mental model (for when a person hears about another person)."""
+    def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence,
+                              parent_belief_facet):
+        """Consider new evidence that someone has given you.
+
+        If this new evidence is in regards to a feature type for which this person has
+        no existing belief, they will form a new belief and use this as its initial
+        evidence. If it is contrary to a belief this person already has, the
+        reasoning here will cause this person to either change their belief according
+        to this new evidence or to disregard this new evidence. If the new evidence
+        supports an existing belief, they will add this new evidence to their evidence
+        for that belief (which will strengthen it).
+
+        TODO: Include notions of how much you trust this person and how strong their
+        confidence in the belief is.
+
+        @param feature_type: A string for the type of feature to which this new evidence
+                             pertains.
+        @param feature_value: A string representing the value of this feature that the
+                              new evidence supports.
+        @param feature_object_itself: The feature object itself for knowledge that has that,
+                                      e.g., a belief of what dwelling place a person lives in.
+        @param new_evidence: A Statement or Lie object that reifies this new evidence.
+        @param parent_belief_facet: If the new evidence is a Statement, the belief facet that
+                                    the person delivering the statement is expressing by that
+                                    statement; if it's a Lie, None.
+        """
+        config = self.owner.game.config
+        command_to_access_my_current_belief = self.get_command_to_access_a_belief_facet(
+            feature_type=feature_type
+        )
+        if eval(command_to_access_my_current_belief) == feature_value:
+            # This new evidence supports an existing belief
+            command_to_attribute_new_evidence = (
+                command_to_access_my_current_belief + '.attribute_new_evidence(new_evidence=new_evidence)'
+            )
+            exec command_to_attribute_new_evidence
+        elif eval(command_to_access_my_current_belief) in (None, ''):
+            # You don't have an existing belief, so instantiate a new belief facet
+            # with this new evidence as its initial evidence
+            predecessor = ''  # Throwaway line to appease my IDE, which doesn't realize next line defines it
+            if eval(command_to_access_my_current_belief) == '':
+                exec('predecessor = ' + command_to_access_my_current_belief)
+            else:
+                predecessor = None
+            new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject, feature_type=feature_type,
+                              initial_evidence=new_evidence, predecessor=predecessor, parent=parent_belief_facet,
+                              object_itself=feature_object_itself)
+            exec(command_to_access_my_current_belief + ' = new_facet')
+        else:
+            # This new evidence contradicts an existing belief you have -- check if
+            # the strength of the new evidence exceeds the strength of your existing evidence;
+            # if it does, change your belief accordingly; if it doesn't, ignore it (TODO don't ignore it)
+            strength_of_new_evidence = config.strength_of_information_types[new_evidence.type]
+            strength_of_my_belief = eval(command_to_access_my_current_belief + '.strength')
+            if strength_of_new_evidence >= strength_of_my_belief:
+                predecessor = ''  # Throwaway line to appease my IDE, which doesn't realize next line defines it
+                exec('predecessor = ' + command_to_access_my_current_belief)
+                new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject,
+                                  feature_type=feature_type, initial_evidence=new_evidence, predecessor=predecessor,
+                                  parent=parent_belief_facet, object_itself=feature_object_itself)
+                exec(command_to_access_my_current_belief + ' = new_facet')
 
     def init_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
@@ -166,13 +225,17 @@ class MentalModel(object):
             chance_it_gets_remembered_perfectly = chance_cap
         return chance_it_gets_remembered_perfectly
 
+    @staticmethod
+    def get_command_to_access_a_belief_facet(feature_type):
+        """This method gets overridden by the subclasses to this base class."""
+        return ''
+
 
 class BusinessMentalModel(MentalModel):
     """A person's mental model of a business."""
 
     def __init__(self, owner, subject, observation):
         """Initialize a BusinessMentalModel object.
-
         @param owner: The person who holds this belief.
         @param subject: The building to whom this belief pertains.
         """
@@ -401,15 +464,6 @@ class BusinessMentalModel(MentalModel):
         }
         return attribute_to_belief_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "business block": "block",
-            "business address": "address",
-        }
-        return belief_type_to_attribute[belief_type]
-
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
         features = {
@@ -418,13 +472,21 @@ class BusinessMentalModel(MentalModel):
         }
         return features[feature_type]
 
+    @staticmethod
+    def get_command_to_access_a_belief_facet(feature_type):
+        """Return a command that will allow the belief facet for this feature type to be directly modified."""
+        feature_type_to_command = {
+            "business block": "self.block",
+            "business address": "self.address",
+        }
+        return feature_type_to_command[feature_type]
+
 
 class DwellingPlaceModel(MentalModel):
     """A person's mental model of a business."""
 
     def __init__(self, owner, subject, observation):
         """Initialize a DwellingPlaceMentalModel object.
-
         @param owner: The person who holds this belief.
         @param subject: The building to whom this belief pertains.
         """
@@ -666,16 +728,6 @@ class DwellingPlaceModel(MentalModel):
         }
         return attribute_to_belief_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "home is apartment": "apartment",
-            "home block": "block",
-            "home address": "address",
-        }
-        return belief_type_to_attribute[belief_type]
-
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
         features = {
@@ -685,13 +737,22 @@ class DwellingPlaceModel(MentalModel):
         }
         return features[feature_type]
 
+    @staticmethod
+    def get_command_to_access_a_belief_facet(feature_type):
+        """Return a command that will allow the belief facet for this feature type to be directly modified."""
+        feature_type_to_command = {
+            "home is apartment": "self.apartment",
+            "home block": "self.block",
+            "home address": "self.address",
+        }
+        return feature_type_to_command[feature_type]
+
 
 class PersonMentalModel(MentalModel):
     """A person's mental model of a person, representing everything she believes about her."""
 
     def __init__(self, owner, subject, observation_or_reflection):
         """Initialize a PersonMentalModel object.
-
         @param owner: The person who holds this belief.
         @param subject: The person to whom this belief pertains.
         @param observation_or_reflection: The Observation or Reflection from which this
@@ -749,7 +810,6 @@ class PersonMentalModel(MentalModel):
 
     def _build_up_other_belief_facets(self, new_observation_or_reflection):
         """Build up other beliefs facets that are components of this mental model.
-
         By other facets, I mean ones that don't get built up elsewhere, as, e.g.,
         facets to WorkBeliefs do."""
         for feature in ("home", ):
@@ -772,7 +832,6 @@ class PersonMentalModel(MentalModel):
 
     def _deteriorate_other_belief_facets(self):
         """Deteriorate other beliefs facets that are components of this mental model.
-
         By other facets, I mean ones that don't get deteriorated elsewhere, as, e.g.,
         facets to WorkBeliefs do.
         """
@@ -802,7 +861,6 @@ class PersonMentalModel(MentalModel):
 
     def _concoct_belief_facet(self, feature_type, current_belief_facet):
         """Concoct a new belief facet of the given type.
-
         This is done using the feature distributions that are used to generate the features
         themselves for people that don't have parents.
         """
@@ -1059,12 +1117,46 @@ class PersonMentalModel(MentalModel):
         return attribute_to_belief_type[attribute]
 
     @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "home": "home",
+    def get_command_to_access_a_belief_facet(feature_type):
+        """Return a command that will allow the belief facet for this feature type to be directly modified."""
+        feature_type_to_command = {
+            # Name
+            "first name": "self.first_name",
+            "middle name": "self.middle_name",
+            "last name": "self.last_name",
+            # Occupation
+            "workplace": "self.occupation.company",
+            "job title": "self.occupation.job_title",
+            "job shift": "self.occupation.shift",
+            # Home
+            "home": "self.home",
+            # Appearance
+            "skin color": "self.face.skin.color",
+            "head size": "self.face.head.size",
+            "head shape": "self.face.head.shape",
+            "hair length": "self.face.hair.length",
+            "hair color": "self.face.hair.color",
+            "eyebrow size": "self.face.eyebrows.size",
+            "eyebrow color": "self.face.eyebrows.color",
+            "mouth size": "self.face.mouth.size",
+            "ear size": "self.face.ears.size",
+            "ear angle": "self.face.ears.angle",
+            "nose size": "self.face.nose.size",
+            "nose shape": "self.face.nose.shape",
+            "eye size": "self.face.eyes.size",
+            "eye shape": "self.face.eyes.shape",
+            "eye color": "self.face.eyes.color",
+            "eye horizontal settedness": "self.face.eyes.horizontal_settedness",
+            "eye vertical settedness": "self.face.eyes.vertical_settedness",
+            "facial hair style": "self.face.facial_hair.style",
+            "freckles": "self.face.distinctive_features.freckles",
+            "birthmark": "self.face.distinctive_features.birthmark",
+            "scar": "self.face.distinctive_features.scar",
+            "tattoo": "self.face.distinctive_features.tattoo",
+            "glasses": "self.face.distinctive_features.glasses",
+            "sunglasses": "self.face.distinctive_features.sunglasses",
         }
-        return belief_type_to_attribute[belief_type]
+        return feature_type_to_command[feature_type]
 
 
 class WhereaboutsBelief(object):
@@ -1121,10 +1213,10 @@ class NameBelief(object):
             name_facet = self.person_model.init_belief_facet(
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )
-        elif random.random() < config.chance_someones_feature_comes_up_in_conversation_with_them[feature_type]:
-            name_facet = self.person_model.init_belief_facet(
-                feature_type=feature_type, observation_or_reflection=observation_or_reflection
-            )
+        # elif random.random() < config.chance_someones_feature_comes_up_in_conversation_with_them[feature_type]:
+        #     name_facet = self.person_model.init_belief_facet(
+        #         feature_type=feature_type, observation_or_reflection=observation_or_reflection
+        #     )
         else:
             # Build empty name facet -- having None for observation_or_reflection will automate this
             name_facet = self.person_model.init_belief_facet(
@@ -1191,16 +1283,6 @@ class NameBelief(object):
             "last_name": "last name"
         }
         return attribute_to_belief_type[attribute]
-
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "first name": "first_name",
-            "middle name": "middle_name",
-            "last name": "last_name"
-        }
-        return belief_type_to_attribute[belief_type]
 
 
 class WorkBelief(object):
@@ -1298,16 +1380,6 @@ class WorkBelief(object):
             "shift": "job shift"
         }
         return attribute_to_belief_type[attribute]
-
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "workplace": "company",
-            "job title": "job_title",
-            "job shift": "shift"
-        }
-        return belief_type_to_attribute[belief_type]
 
 
 class FaceBelief(object):
@@ -1409,7 +1481,6 @@ class SkinBelief(object):
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Skin object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1425,21 +1496,12 @@ class SkinBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "skin color": "color",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class HeadBelief(object):
     """A person's mental model of a person's head."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Head object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1459,22 +1521,12 @@ class HeadBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "head size": "size",
-            "head shape": "shape"
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class HairBelief(object):
     """A person's mental model of a person's hair (on his or her head)."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Hair object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1494,22 +1546,12 @@ class HairBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "hair length": "length",
-            "hair color": "color"
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class EyebrowsBelief(object):
     """A person's mental model of a person's eyebrows."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Eyebrows object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1529,22 +1571,12 @@ class EyebrowsBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "eyebrow size": "size",
-            "eyebrow color": "color"
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class MouthBelief(object):
     """A person's mental model of a person's mouth."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Mouth object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1560,21 +1592,12 @@ class MouthBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "mouth size": "size",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class EarsBelief(object):
     """A person's mental model of a person's ears."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize an Ears object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1594,22 +1617,12 @@ class EarsBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "ear size": "size",
-            "ear angle": "angle",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class NoseBelief(object):
     """A person's mental model of a person's nose."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a Nose object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1629,22 +1642,12 @@ class NoseBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "nose size": "size",
-            "nose shape": "shape",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class EyesBelief(object):
     """A person's mental model of a person's eyes."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize an Eyes object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1676,25 +1679,12 @@ class EyesBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "eye size": "size",
-            "eye shape": "shape",
-            "eye horizontal settedness": "horizontal_settedness",
-            "eye vertical settedness": "vertical_settedness",
-            "eye color": "color",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class FacialHairBelief(object):
     """A person's mental model of a person's facial hair."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a FacialHair style.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1710,21 +1700,12 @@ class FacialHairBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "facial hair style": "style",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class DistinctiveFeaturesBelief(object):
     """A person's mental model of a person's distinguishing features."""
 
     def __init__(self, face_belief, observation_or_reflection):
         """Initialize a DistinctiveFeatures object.
-
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
@@ -1760,23 +1741,9 @@ class DistinctiveFeaturesBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
-    @staticmethod
-    def belief_type_to_attribute(belief_type):
-        """Return the attribute associated with a belief type."""
-        belief_type_to_attribute = {
-            "freckles": "freckles",
-            "birthmark": "birthmark",
-            "scar": "scar",
-            "tattoo": "tattoo",
-            "glasses": "glasses",
-            "sunglasses": "sunglasses",
-        }
-        return belief_type_to_attribute[belief_type]
-
 
 class Facet(str):
     """A facet of one person's belief about a person that pertains to a specific feature.
-
     This class has a sister class in Face.Feature. While objects of the Feature class represent
     a person's facial feature *as it exists in reality*, with metadata about that feature, a Facet
     represents a person's facial feature *as it is modeled in the belief of a particular
@@ -1786,7 +1753,6 @@ class Facet(str):
     def __init__(self, value, owner, subject, feature_type, initial_evidence,
                  predecessor, parent, object_itself=None):
         """Initialize a Facet object.
-
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
                       attribute this represents.
         @param owner: The person to whom this belief facet belongs.

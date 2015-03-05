@@ -879,24 +879,24 @@ class Config(object):
         self.strength_of_information_types = {
             "reflection": 10,
             "observation": 5,
+            "statement": 4,
+            "lie": 4,
             "concoction": 3,
             "mutation": 3,
             "transference": 3,
             "forgetting": 3,
-            "statement": 2,
-            "lie": 2,
         }
         self.name_feature_types = ("first name", "middle name", "last name")
         self.work_feature_types = ("workplace", "job title", "job shift")
         self.home_feature_types = ("home",)
-        self.chance_someones_feature_comes_up_in_conversation_with_them = {
+        self.chance_someones_feature_comes_up_in_conversation_about_them = {
             "first name":   0.80,
             "last name":    0.40,
             "workplace":    0.40,
             "address":      0.35,  # Only notion of where they live right now, so higher than would be intuitive
             "job shift":    0.35,
             "job title":    0.30,
-            "middle name":  0.02,
+            "middle name":  0.01,
         }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
