@@ -889,15 +889,43 @@ class Config(object):
         self.name_feature_types = ("first name", "middle name", "last name")
         self.work_feature_types = ("workplace", "job title", "job shift")
         self.home_feature_types = ("home",)
-        self.chance_someones_feature_comes_up_in_conversation_about_them = {
-            "first name":   0.80,
-            "last name":    0.40,
-            "workplace":    0.40,
-            "address":      0.35,  # Only notion of where they live right now, so higher than would be intuitive
-            "job shift":    0.35,
-            "job title":    0.30,
-            "middle name":  0.01,
-        }
+        self.chance_someone_lies_floor = 0.02
+        self.chance_someone_lies_cap = 0.2
+        self.amount_of_people_people_talk_about_floor = 2
+        self.amount_of_people_people_talk_about_cap = 7
+        self.chance_someones_feature_comes_up_in_conversation_about_them = (
+            ("first name",                  0.98),
+            ("tattoo",                      0.70),
+            ("skin color",                  0.60),
+            ("scar",                        0.45),
+            ("birthmark",                   0.45),
+            ("last name",                   0.40),
+            ("workplace",                   0.40),
+            ("facial hair style",           0.40),
+            ("freckles",                    0.40),
+            ("job shift",                   0.35),
+            ("job title",                   0.30),
+            ("hair color",                  0.30),
+            ("glasses",                     0.30),
+            ("sunglasses",                  0.30),
+            ("hair length",                 0.25),
+            ("eye color",                   0.20),
+            ("eye horizontal settedness",   0.15),
+            ("eye vertical settedness",     0.15),
+            ("head size",                   0.15),
+            ("head shape",                  0.15),
+            ("eyebrow size",                0.15),
+            ("eyebrow color",               0.10),
+            ("mouth size",                  0.10),
+            ("ear size",                    0.10),
+            ("ear angle",                   0.10),
+            ("nose size",                   0.10),
+            ("nose shape",                  0.10),
+            ("eye size",                    0.10),
+            ("eye shape",                   0.10),
+            ("home",                        0.05),
+            ("middle name",                 0.01),
+        )
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
             # These values represent means (for someone with memory value of self.memory_mean),

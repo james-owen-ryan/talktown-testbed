@@ -770,7 +770,7 @@ class PersonMentalModel(MentalModel):
 
     def _init_home_facet(self, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's home."""
-        if observation_or_reflection.type == "reflection":
+        if observation_or_reflection and observation_or_reflection.type == "reflection":
             home_facet = self.init_belief_facet(
                 feature_type="home", observation_or_reflection=observation_or_reflection
             )
@@ -1209,14 +1209,10 @@ class NameBelief(object):
     def _init_name_facet(self, feature_type, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's name."""
         config = self.person_model.owner.game.config
-        if observation_or_reflection.type == "reflection":
+        if observation_or_reflection and observation_or_reflection.type == "reflection":
             name_facet = self.person_model.init_belief_facet(
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )
-        # elif random.random() < config.chance_someones_feature_comes_up_in_conversation_with_them[feature_type]:
-        #     name_facet = self.person_model.init_belief_facet(
-        #         feature_type=feature_type, observation_or_reflection=observation_or_reflection
-        #     )
         else:
             # Build empty name facet -- having None for observation_or_reflection will automate this
             name_facet = self.person_model.init_belief_facet(
@@ -1303,7 +1299,7 @@ class WorkBelief(object):
 
     def _init_work_facet(self, feature_type, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's work life."""
-        if observation_or_reflection.type == "reflection":
+        if observation_or_reflection and observation_or_reflection.type == "reflection":
             work_facet = self.person_model.init_belief_facet(
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )

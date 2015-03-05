@@ -74,6 +74,8 @@ class Statement(object):
         self.recipient = recipient
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
 
+        self.subject.game.s.append(self)
+
 
 class Mutation(object):
     """A mutation by which a person misremembers knowledge from time passing (i.e., changes an attribute's value)."""

@@ -9,8 +9,8 @@ import occupation
 from face import Face
 from routine import Routine
 from relationship import Acquaintance
-from knowledge import Reflection, Observation
-from belief import PersonMentalModel, DwellingPlaceModel, BusinessMentalModel
+from knowledge import Reflection, Observation, Lie, Statement
+from belief import *
 
 
 class Person(object):
@@ -696,7 +696,7 @@ class Person(object):
                 "glasses": self.mind.mental_models[other_person].face.distinctive_features.glasses,
                 "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
             }
-            if self.mind.mental_models[other_person].home.mental_model:
+            if self.mind.mental_models[other_person].home and self.mind.mental_models[other_person].home.mental_model:
                 features["home address"] = self.mind.mental_models[other_person].home.mental_model.address
                 features["home block"] = self.mind.mental_models[other_person].home.mental_model.block
             else:
@@ -1088,6 +1088,34 @@ class Person(object):
             final_desire_to_live_near_family = config.desire_to_live_near_family_cap
         return final_desire_to_live_near_family
 
+    def reflect(self):
+        """Reflect on one's own features."""
+        reflection = Reflection(subject=self, source=self)
+        if self not in self.mind.mental_models:
+            PersonMentalModel(
+                owner=self, subject=self, observation_or_reflection=reflection
+            )
+        else:
+            self.mind.mental_models[self].build_up(new_observation_or_reflection=reflection)
+
+    def observe(self):
+        """Observe the place one is at and the people there."""
+        for thing in set([self.location]) | self.location.people_here_now - set([self]):
+            self._form_or_build_up_mental_model(subject=thing)
+
+    def _form_or_build_up_mental_model(self, subject):
+        """Instantiate (or further fill in) a mental model of a person or place."""
+        observation = Observation(subject=subject, source=self)
+        if subject not in self.mind.mental_models:
+            if subject.type == "person":
+                PersonMentalModel(owner=self, subject=subject, observation_or_reflection=observation)
+            elif subject.type == "residence":
+                DwellingPlaceModel(owner=self, subject=subject, observation=observation)
+            elif subject.type == "business":
+                BusinessMentalModel(owner=self, subject=subject, observation=observation)
+        else:
+            self.mind.mental_models[subject].build_up(new_observation_or_reflection=observation)
+
     def socialize(self, missing_timesteps_to_account_for=1):
         """Socialize with nearby people."""
         for person in list(self.location.people_here_now):
@@ -1099,6 +1127,60 @@ class Person(object):
                     self.relationships[person].progress_relationship(
                         missing_days_to_account_for=missing_timesteps_to_account_for
                     )
+                    # If this is being called by the full-fidelity simulation,
+                    # have these two people exchange information with each other
+                    if missing_timesteps_to_account_for == 1:
+                        self._exchange_information(interlocutor=person)
+
+    def _exchange_information(self, interlocutor):
+        """Exchange information with this person."""
+        config = self.game.config
+        all_the_people_we_know_about = set(self.mind.mental_models) | set(interlocutor.mind.mental_models)
+        scores = {}
+        for other_person in all_the_people_we_know_about:
+            if other_person.type == "person":
+                salience_to_me = self.salience_of_person(person=other_person)
+                salience_to_them = interlocutor.salience_of_person(person=other_person)
+                scores[other_person] = salience_to_me + salience_to_them
+        how_many_people_we_talk_about = int(
+            self.personality.extroversion + interlocutor.personality.extroversion +
+            self.relationships[interlocutor].charge + interlocutor.relationships[self].charge
+        )
+        if how_many_people_we_talk_about < config.amount_of_people_people_talk_about_floor:
+            how_many_people_we_talk_about = config.amount_of_people_people_talk_about_floor
+        elif how_many_people_we_talk_about > config.amount_of_people_people_talk_about_cap:
+            how_many_people_we_talk_about = config.amount_of_people_people_talk_about_cap
+        people_we_will_talk_about = (
+            heapq.nlargest(how_many_people_we_talk_about, scores, key=scores.get)
+        )
+        for person in people_we_will_talk_about:
+            self._exchange_information_about_a_person(interlocutor=interlocutor, person_in_question=person)
+
+    def _exchange_information_about_a_person(self, interlocutor, person_in_question):
+        """Exchange information about a person."""
+        config = self.game.config
+        if person_in_question not in self.mind.mental_models:
+            PersonMentalModel(owner=self, subject=person_in_question, observation_or_reflection=None)
+        if person_in_question not in interlocutor.mind.mental_models:
+            PersonMentalModel(owner=interlocutor, subject=person_in_question, observation_or_reflection=None)
+        for me_or_interlocutor in (self, interlocutor):
+            talker = me_or_interlocutor
+            listener = self if talker is not self else interlocutor
+            statement = Statement(subject=person_in_question, source=talker, recipient=listener)
+            for feature_type_and_prob in config.chance_someones_feature_comes_up_in_conversation_about_them:
+                feature_type, prob = feature_type_and_prob
+                if random.random() < prob:
+                    if talker.get_knowledge_about_person(other_person=person_in_question, feature_type=feature_type):
+                        talker_belief_facet = (
+                            talker.mind.mental_models[person_in_question].get_facet_to_this_belief_of_type(
+                                feature_type=feature_type
+                            )
+                        )
+                        listener.mind.mental_models[person_in_question].consider_new_evidence(
+                            feature_type=feature_type, feature_value=str(talker_belief_facet),
+                            feature_object_itself=talker_belief_facet.object_itself, new_evidence=statement,
+                            parent_belief_facet=talker_belief_facet
+                        )
 
     def _decide_to_instigate_social_interaction(self, other_person):
         """Decide whether to instigate a social interaction with another person."""
@@ -1153,34 +1235,6 @@ class Person(object):
             config.chance_of_interaction_friendship_component if other_person in top_five_friends else 0.0
         )
         return friendship_component
-
-    def reflect(self):
-        """Reflect on one's own features."""
-        reflection = Reflection(subject=self, source=self)
-        if self not in self.mind.mental_models:
-            PersonMentalModel(
-                owner=self, subject=self, observation_or_reflection=reflection
-            )
-        else:
-            self.mind.mental_models[self].build_up(new_observation_or_reflection=reflection)
-
-    def observe(self):
-        """Observe the place one is at and the people there."""
-        for thing in set([self.location]) | self.location.people_here_now - set([self]):
-            self._form_or_build_up_mental_model(subject=thing)
-
-    def _form_or_build_up_mental_model(self, subject):
-        """Instantiate (or further fill in) a mental model of a person or place."""
-        observation = Observation(subject=subject, source=self)
-        if subject not in self.mind.mental_models:
-            if subject.type == "person":
-                PersonMentalModel(owner=self, subject=subject, observation_or_reflection=observation)
-            elif subject.type == "residence":
-                DwellingPlaceModel(owner=self, subject=subject, observation=observation)
-            elif subject.type == "business":
-                BusinessMentalModel(owner=self, subject=subject, observation=observation)
-        else:
-            self.mind.mental_models[subject].build_up(new_observation_or_reflection=observation)
 
     def salience_of_person(self, person):
         """Return how salient the other person is to this person."""
