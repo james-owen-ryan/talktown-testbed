@@ -55,14 +55,14 @@ class Game(object):
         # on which to build homes
         self._establish_city_infrastructure()
         # Now simulate to a month before gameplay
-        self.advance_timechunk(n_timesteps=51076)
-        # Now simulate at full fidelity for the remaining month
-        while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
-            self.advance_timestep()
-            print "{0} cycles remain until founder death".format(
-                self.ordinal_date_that_the_founder_dies-self.ordinal_date
-            )
-        # Now kill off the founder and select the lover
+        # self.advance_timechunk(n_timesteps=51076)
+        # # Now simulate at full fidelity for the remaining month
+        # while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
+        #     self.advance_timestep()
+        #     print "{0} cycles remain until founder death".format(
+        #         self.ordinal_date_that_the_founder_dies-self.ordinal_date
+        #     )
+        # # Now kill off the founder and select the lover
 
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.
@@ -147,6 +147,15 @@ class Game(object):
                     (feature, owner.get_knowledge_about_person(subject, feature))
                 )
         return owners_knowledge_about_subject
+
+    def get_people_a_person_knows_of(self, owner_id):
+        """Return the IDs for every person who a person knows about (has a mental model for)."""
+        owner = next(r for r in self.city.residents if r.id == owner_id)
+        ids_of_these_people = set([])
+        for person in owner.mind.mental_models:
+            if person.type == "person" and person is not owner:  # Not a mental model of a business or dwelling place
+                ids_of_these_people.add(person.id)
+        return ids_of_these_people
 
     def advance_timechunk(self, n_timesteps=51076):
         """Simulate the passing of a chunk of time at a lower fidelity than normal."""
@@ -255,4 +264,4 @@ class Game(object):
                 # Happy New Year
                 self.true_year += 1
                 self.year += 1
-                print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes)
+                print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
