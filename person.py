@@ -997,19 +997,16 @@ class Person(object):
         """
         home_and_lot_scores = self._rate_all_vacant_homes_and_vacant_lots()
         if len(home_and_lot_scores) >= 3:
-            try:
-                # Pick from top three
-                top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
-                if random.random() < 0.6:
-                    choice = top_three_choices[0]
-                elif random.random() < 0.9:
-                    choice = top_three_choices[1]
-                else:
-                    choice = top_three_choices[2]
-            except KeyError:  # Error when there are less than 3 empty homes and lots
-                choice = None
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
         elif home_and_lot_scores:
-            choice = home_and_lot_scores[0]
+            choice = list(home_and_lot_scores)[0]
         else:
             choice = None
         return choice
@@ -1461,4 +1458,9 @@ class PersonExNihilo(Person):
         self.city = self.game.city
         self.city.residents.add(self)
         new_home = self.secure_home()
-        self.move(new_home=new_home, reason=hiring_that_instigated_move)
+        # TODO PEOPLE ARE MOVING INTO OTHER PEOPLE'S HOMES AS DUCT TAPE
+        if not new_home:
+            someone_elses_home = random.choice(list(self.city.dwelling_places))
+            self.move(new_home=someone_elses_home, reason=hiring_that_instigated_move)
+        else:
+            self.move(new_home=new_home, reason=hiring_that_instigated_move)
