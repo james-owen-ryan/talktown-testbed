@@ -44,14 +44,14 @@ class Occupation(object):
         if not (isinstance(reason, Hiring) and reason.promotion):
             self.company.employees.remove(self)
             self.company.former_employees.add(self)
-        # If the person hasn't already been hired to a new position, set their
-        # occupation attribute to None
-        if self.person.occupation is self:
-            self.person.occupation = None
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
         position_that_is_now_vacant = self.__class__
         self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
+        # If the person hasn't already been hired to a new position, set their
+        # occupation attribute to None
+        if self.person.occupation is self:
+            self.person.occupation = None
 
 
 ##################################

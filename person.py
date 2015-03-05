@@ -725,6 +725,51 @@ class Person(object):
                 )
             else:
                 features["location that night"] = None
+            # Add in rep -- this is what shows up when the person comes up as an answer
+            # to a question
+            if other_person is self.significant_other:
+                rel_str = "My S.O."
+            elif other_person in self.extended_family:
+                rel = self.relation_to_me(person=other_person)
+                if rel:
+                    rel_str = "My {0}".format(rel.lower())
+                else:
+                    rel_str = "My relative"
+            elif other_person in self.friends:
+                rel_str = "My friend"
+            elif other_person in self.enemies:
+                rel_str = "My enemy"
+            elif other_person in self.acquaintances:
+                rel_str = "An acquaintance"
+            else:
+                ft = ['eye horizontal settedness', 'birthmark', 'job title', 'eye shape', 'hair color', 'head size',
+                     'home', 'scar', 'sunglasses', 'tattoo', 'nose shape', 'job shift', 'ear angle', 'mouth size',
+                     'freckles', 'eye size', 'first name', 'skin color', 'ear size', 'middle name', 'nose size',
+                     'eye vertical settedness', 'facial hair style', 'hair length', 'eyebrow color', 'last name',
+                     'head shape', 'eyebrow size', 'eye color', 'workplace', 'glasses']
+                evidence = set()
+                for f in ft:
+                    belief_facet = self.mind.mental_models[other_person].get_facet_to_this_belief_of_type(f)
+                    if belief_facet:
+                        evidence |= belief_facet.evidence
+                observations = [e for e in evidence if e.type == "observation"]
+                statements = [e for e in evidence if e.type == "statement"]
+                if observations:
+                    rel_str = "A person I last saw at {0}".format(observations[0].location.name)
+                elif statements:
+                    rel_str = "A person I heard about from {0}".format(statements[0].source.name)
+                else:
+                    rel_str = "A person I know about"
+            if features["first name"] and features["last name"]:
+                name_str = "whose name is {0} {1}".format(features["first name"], features["last name"])
+            elif features["first name"]:
+                name_str = "whose first name is {0}".format(features["first name"])
+            elif features["last name"]:
+                name_str = "whose last name is {0}".format(features["last name"])
+            else:
+                name_str = "whose name I don't know"
+            rep = "{0} {1}".format(rel_str, name_str)
+            features["rep"] = rep
             return features[feature_type]
 
     def get_knowledge_about_place(self, place, feature_type):

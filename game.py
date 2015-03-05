@@ -138,7 +138,7 @@ class Game(object):
             'mouth size', 'freckles', 'eye size', 'first name', 'skin color', 'ear size', 'middle name',
             'nose size', 'home address', 'eye vertical settedness', 'facial hair style', 'hair length',
             'eyebrow color', 'last name', 'head shape', 'eyebrow size', 'eye color', 'workplace', 'glasses',
-            'location that night'
+            'location that night', 'rep'
         ]
         owners_knowledge_about_subject = set()
         for feature in all_features_of_knowledge_about_a_person:

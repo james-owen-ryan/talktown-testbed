@@ -354,7 +354,13 @@ class Business(object):
         qualified = False
         level_of_this_position = config.job_levels[occupation_of_need]
         # Make sure they are not overqualified
-        if not (candidate.occupation and candidate.occupation.level >= level_of_this_position):
+        if candidate.occupation:
+            candidate_job_level = candidate.occupation.level
+        elif candidate.occupations:
+            candidate_job_level = max(candidate.occupations, key=lambda o: o.level).level
+        else:
+            candidate_job_level = 0
+        if not candidate_job_level >= level_of_this_position:
             # Make sure they have experience in the right industry, if that's
             # a requirement of this occupation
             prerequisite_industry = self.city.game.config.prerequisite_industries[occupation_of_need]

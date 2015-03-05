@@ -269,6 +269,12 @@ class BusinessConstruction(object):
                 business_type=self.business.__class__.__name__
             )
 
+    def __str__(self):
+        """Return string representation."""
+        return "Construction of {0} at {1} in {2}".format(
+            self.business, self.business.address, self.year
+        )
+
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
         config = self.subject.game.config
@@ -564,6 +570,7 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
+        print "{} just hired {} as {}".format(company.__class__, subject.name, occupation.__class__.__name__)
         self.year = subject.game.year
         self.subject = subject
         self.company = company
@@ -654,6 +661,12 @@ class HouseConstruction(object):
         for subject in self.subjects:
             subject.building_commissions.add(self)
 
+    def __str__(self):
+        """Return string representation."""
+        return "Construction of house at {0} in {1}".format(
+            self.house.address, self.year
+        )
+
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
         config = self.subjects[0].game.config
@@ -700,8 +713,8 @@ class Marriage(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{0}-year marriage between {1} and {2}".format(
-            self.duration, self.names_at_time_of_marriage[0], self.names_at_time_of_marriage[1]
+        return "Marriage between {0} and {1}".format(
+            self.names_at_time_of_marriage[0], self.names_at_time_of_marriage[1]
         )
 
     @property
