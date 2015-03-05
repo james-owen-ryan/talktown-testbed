@@ -111,6 +111,11 @@ class Game(object):
         )
         return date
 
+    @property
+    def random_person(self):
+        """Return a random person living in the city of this gameplay instance."""
+        return random.choice(list(self.city.residents))
+
     def advance_timestep(self):
         """Advance to the next day/night cycle."""
         self._advance_time()
