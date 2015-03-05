@@ -401,6 +401,15 @@ class BusinessMentalModel(MentalModel):
         }
         return attribute_to_belief_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "business block": "block",
+            "business address": "address",
+        }
+        return belief_type_to_attribute[belief_type]
+
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
         features = {
@@ -656,6 +665,16 @@ class DwellingPlaceModel(MentalModel):
             "address": "home address"
         }
         return attribute_to_belief_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "home is apartment": "apartment",
+            "home block": "block",
+            "home address": "address",
+        }
+        return belief_type_to_attribute[belief_type]
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
@@ -1039,6 +1058,14 @@ class PersonMentalModel(MentalModel):
         }
         return attribute_to_belief_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "home": "home",
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class WhereaboutsBelief(object):
     """A person's mental model of another person's past whereabouts."""
@@ -1165,6 +1192,16 @@ class NameBelief(object):
         }
         return attribute_to_belief_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "first name": "first_name",
+            "middle name": "middle_name",
+            "last name": "last_name"
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class WorkBelief(object):
     """A person's mental model of a person's work life."""
@@ -1261,6 +1298,16 @@ class WorkBelief(object):
             "shift": "job shift"
         }
         return attribute_to_belief_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "workplace": "company",
+            "job title": "job_title",
+            "job shift": "shift"
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class FaceBelief(object):
@@ -1378,6 +1425,14 @@ class SkinBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "skin color": "color",
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class HeadBelief(object):
     """A person's mental model of a person's head."""
@@ -1403,6 +1458,15 @@ class HeadBelief(object):
             "shape": "head shape"
         }
         return attribute_to_feature_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "head size": "size",
+            "head shape": "shape"
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class HairBelief(object):
@@ -1430,6 +1494,15 @@ class HairBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "hair length": "length",
+            "hair color": "color"
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class EyebrowsBelief(object):
     """A person's mental model of a person's eyebrows."""
@@ -1456,6 +1529,15 @@ class EyebrowsBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "eyebrow size": "size",
+            "eyebrow color": "color"
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class MouthBelief(object):
     """A person's mental model of a person's mouth."""
@@ -1477,6 +1559,14 @@ class MouthBelief(object):
             "size": "mouth size",
         }
         return attribute_to_feature_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "mouth size": "size",
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class EarsBelief(object):
@@ -1504,6 +1594,15 @@ class EarsBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "ear size": "size",
+            "ear angle": "angle",
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class NoseBelief(object):
     """A person's mental model of a person's nose."""
@@ -1529,6 +1628,15 @@ class NoseBelief(object):
             "shape": "nose shape",
         }
         return attribute_to_feature_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "nose size": "size",
+            "nose shape": "shape",
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class EyesBelief(object):
@@ -1568,6 +1676,18 @@ class EyesBelief(object):
         }
         return attribute_to_feature_type[attribute]
 
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "eye size": "size",
+            "eye shape": "shape",
+            "eye horizontal settedness": "horizontal_settedness",
+            "eye vertical settedness": "vertical_settedness",
+            "eye color": "color",
+        }
+        return belief_type_to_attribute[belief_type]
+
 
 class FacialHairBelief(object):
     """A person's mental model of a person's facial hair."""
@@ -1589,6 +1709,14 @@ class FacialHairBelief(object):
             "style": "facial hair style"
         }
         return attribute_to_feature_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "facial hair style": "style",
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class DistinctiveFeaturesBelief(object):
@@ -1631,6 +1759,19 @@ class DistinctiveFeaturesBelief(object):
             "sunglasses": "sunglasses",
         }
         return attribute_to_feature_type[attribute]
+
+    @staticmethod
+    def belief_type_to_attribute(belief_type):
+        """Return the attribute associated with a belief type."""
+        belief_type_to_attribute = {
+            "freckles": "freckles",
+            "birthmark": "birthmark",
+            "scar": "scar",
+            "tattoo": "tattoo",
+            "glasses": "glasses",
+            "sunglasses": "sunglasses",
+        }
+        return belief_type_to_attribute[belief_type]
 
 
 class Facet(str):
