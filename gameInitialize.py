@@ -9,3 +9,4 @@ people = gameInstance.city.residents
 houses = gameInstance.city.houses 
 apartments = gameInstance.city.apartment_complexes 
 businesses = gameInstance.city.other_businesses   
+
