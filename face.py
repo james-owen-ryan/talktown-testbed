@@ -215,7 +215,10 @@ class Skin(object):
                 skin_color = (
                     self.face.person.game.config.child_skin_color_given_parents[parent_skin_color_tuple]
                 )
-            self.color = skin_color
+            self.color = Feature(
+                value=skin_color, variant_id=int(random.random() * 1000),
+                inherited_from=None, exact_variant_inherited=False
+            )
         else:  # Generate from population distribution
             self.color = self.face.determine_facial_feature(feature_type="skin color")
 

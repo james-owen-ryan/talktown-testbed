@@ -234,7 +234,7 @@ class Relationship(object):
         )
         return spark_reduction_due_to_job_level_difference
 
-    def progress_relationship(self):
+    def progress_relationship(self, missing_days_to_account_for):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
         config = self.owner.game.config
         # Update data
@@ -242,25 +242,39 @@ class Relationship(object):
         self.where_they_last_met = self.owner.location  # Changes as appropriate
         self.when_they_last_met = self.owner.game.date
         # Progress charge, possibly leading to a Friendship or Enmity
-        self.charge += (
+        change_to_charge = (
             self.charge_increment * self.age_difference_effect_on_charge_increment *
             self.job_level_difference_effect_on_charge_increment
         )
+        change_to_charge *= missing_days_to_account_for
+        self.charge += change_to_charge
         if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
             Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
         elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
             Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
         # Progress spark, possibly leading to a
         self.spark_increment *= config.spark_decay_rate
-        self.spark += (
+        change_to_spark = (
             self.spark_increment * self.age_difference_effect_on_spark_increment *
             self.job_level_difference_effect_on_spark_increment
         )
+        change_to_spark *= missing_days_to_account_for
+        self.spark += change_to_spark
+        # TODO fix currently dumb way of 'proposing' and divorcing
+        if not self.owner.spouse and not self.subject.spouse and self.spark > 5:
+            if self.owner in self.subject.relationships:
+                if self.subject.relationships[self.owner].spark > 5:
+                    self.owner.marry(self.subject)
+            elif self.owner.spouse in self.owner.relationships:
+                if self.spark > self.owner.relationships[self.owner.spouse] * 2:
+                    self.owner.divorce(partner=self.owner.spouse)
         self.interacted_this_timestep = True
         # Call this method for the subject's own conception of this relationship
         # to update its attributes according to this interaction
         if not self.subject.relationships[self.owner].interacted_this_timestep:
-            self.subject.relationships[self.owner].progress_relationship()
+            self.subject.relationships[self.owner].progress_relationship(
+                missing_days_to_account_for=missing_days_to_account_for
+            )
 
 
 class Acquaintance(Relationship):

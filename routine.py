@@ -24,6 +24,8 @@ class Routine(object):
 
     def enact(self):
         """Enact this person's daily routine for a particular timestep."""
+        if self.person.location:
+            self.person.location.people_here_now.remove(self.person)
         self.person.location, self.working = self.decide_where_to_go()
         self.person.location.people_here_now.add(self.person)
 

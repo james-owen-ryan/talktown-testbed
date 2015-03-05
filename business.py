@@ -254,7 +254,7 @@ class Business(object):
         # momentarily have two occupations simultaneously
         new_position = occupation_of_need(person=selected_candidate, company=self, shift=shift)
         # Now instantiate a Hiring object to hold data about the hiring
-        hiring = Hiring(subject=selected_candidate, company=self, occupation=occupation_of_need)
+        hiring = Hiring(subject=selected_candidate, company=self, occupation=new_position)
         # Now terminate the person's former occupation, if any (which may cause
         # a hiring chain and this person's former position goes vacant and is filled,
         # and so forth); this has to happen after the new occupation is instantiated, or
@@ -339,8 +339,13 @@ class Business(object):
                 )
                 if person_is_qualified:
                     candidates.add(position.person)
-        # Consider unemployed (mostly young) people
-        candidates |= self.city.unemployed
+        # Consider unemployed (mostly young) people if they are qualified
+        for person in self.city.unemployed:
+            person_is_qualified = self._check_if_person_is_qualified_for_the_position(
+                candidate=person, occupation_of_need=occupation_of_need
+            )
+            if person_is_qualified:
+                candidates.add(person)
         return candidates
 
     def _check_if_person_is_qualified_for_the_position(self, candidate, occupation_of_need):
@@ -349,7 +354,7 @@ class Business(object):
         qualified = False
         level_of_this_position = config.job_levels[occupation_of_need]
         # Make sure they are not overqualified
-        if candidate.occupation.level < level_of_this_position:
+        if not (candidate.occupation and candidate.occupation.level >= level_of_this_position):
             # Make sure they have experience in the right industry, if that's
             # a requirement of this occupation
             prerequisite_industry = self.city.game.config.prerequisite_industries[occupation_of_need]
@@ -362,10 +367,10 @@ class Business(object):
             else:
                 qualified = True
         # Lastly, make sure they have been at their old job for at least a year
-        # if this isn't an entry-level position (otherwise people climb the ranks
-        # instantaneously)
+        # if they are already living in this city and this isn't an entry-level
+        # position (otherwise people climb the ranks instantaneously)
         if level_of_this_position > 1:
-            if candidate.occupation.years_experience < 1:
+            if candidate.city is self.city and (not candidate.occupation or candidate.occupation.years_experience < 1):
                 qualified = False
         return qualified
 
@@ -467,7 +472,10 @@ class Cemetery(Business):
 
     def inter_person(self, person):
         """Inter a new person by assigning them a plot in the graveyard."""
-        new_plot_number = max(self.plots) + 1
+        if not self.plots:
+            new_plot_number = 1
+        else:
+            new_plot_number = max(self.plots) + 1
         self.plots[new_plot_number] = person
         return new_plot_number
 

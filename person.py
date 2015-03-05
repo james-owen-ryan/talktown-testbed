@@ -97,6 +97,8 @@ class Person(object):
         self.grandsons = set()
         self.granddaughters = set()
         self.greatgrandchildren = set()
+        self.greatgrandsons = set()
+        self.greatgranddaughters = set()
         self.bio_parents = set()
         self.bio_grandparents = set()
         self.bio_siblings = set()
@@ -131,7 +133,8 @@ class Person(object):
         self.sexual_partners = set()
         # Prepare attributes pertaining to pregnancy
         self.impregnated_by = None
-        self.conception_date = None  # Year of conception
+        self.conception_year = None  # Year of conception
+        self.due_date = None  # Actual ordinal date 270 days from conception (currently)
         # Prepare attributes representing events in this person's life
         self.birth = birth
         self.adoption = None
@@ -159,7 +162,10 @@ class Person(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{0}, {1} years old".format(self.name, self.age)
+        if self.alive:
+            return "{0}, {1} years old".format(self.name, self.age)
+        else:
+            return "{0}, {1}-{2}".format(self.name, self.birth_year, self.death_year)
 
     @staticmethod
     def _init_sex():
@@ -448,7 +454,6 @@ class Person(object):
         A person's next of kin will make decisions about their estate and
         so forth upon the person's death.
         """
-        assert not self.alive, "{0} is dead, but a request was made for his next of kin."
         if self.spouse and self.spouse.present:
             next_of_kin = self.spouse
         elif self.mother and self.mother.present:
@@ -802,12 +807,17 @@ class Person(object):
         )
         if random.random() < chance_of_conception:
             female_partner.impregnated_by = self if female_partner is partner else partner
-            female_partner.conception_date = self.game.year
+            female_partner.conception_year = self.game.year
+            female_partner.due_date = self.game.ordinal_date + 270
 
     def marry(self, partner):
         """Marry partner."""
-        assert(self.present and partner.present), "{0} tried to marry {1}, but one of them is dead or departed."
-        event.Marriage(subjects=(self, partner))
+        # assert(self.present and partner.present), (
+        #     "{0} tried to marry {1}, but one of them is dead or departed.".format(self.id, partner.id)
+        # )
+        # TODO weird bug going on here
+        if self.present and partner.present:
+            event.Marriage(subjects=(self, partner))
 
     def divorce(self, partner):
         """Divorce partner."""
@@ -831,11 +841,24 @@ class Person(object):
     def die(self, cause_of_death):
         """Die and get interred at the local cemetery."""
         mortician = self.next_of_kin.contract_person_of_certain_occupation(occupation_in_question=occupation.Mortician)
-        mortician.occupation.inter_body(deceased=self, cause_of_death=cause_of_death)
+        if mortician:
+            mortician.occupation.inter_body(deceased=self, cause_of_death=cause_of_death)
+        else:  # This is probably the mortician themself dying
+            event.Death(subject=self, mortician=None, cause_of_death=cause_of_death)
+
+    def move_out_of_parents(self):
+        """Move out of parents' house."""
+        home_to_move_into = self.secure_home()
+        if home_to_move_into:
+            self.move(new_home=home_to_move_into, reason=None)
+        else:
+            self.depart_city()
 
     def move(self, new_home, reason):
         """Move to an apartment or home."""
         event.Move(subjects=tuple(self.nuclear_family), new_home=new_home, reason=reason)
+        self.location = self.home
+        self.home.people_here_now.add(self)
 
     def pay(self, payee, amount):
         """Pay someone (for services rendered)."""
@@ -974,14 +997,17 @@ class Person(object):
         """
         home_and_lot_scores = self._rate_all_vacant_homes_and_vacant_lots()
         if len(home_and_lot_scores) >= 3:
-            # Pick from top three
-            top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
-            if random.random() < 0.6:
-                choice = top_three_choices[0]
-            elif random.random() < 0.9:
-                choice = top_three_choices[1]
-            else:
-                choice = top_three_choices[2]
+            try:
+                # Pick from top three
+                top_three_choices = heapq.nlargest(3, home_and_lot_scores, key=home_and_lot_scores.get)
+                if random.random() < 0.6:
+                    choice = top_three_choices[0]
+                elif random.random() < 0.9:
+                    choice = top_three_choices[1]
+                else:
+                    choice = top_three_choices[2]
+            except KeyError:  # Error when there are less than 3 empty homes and lots
+                choice = None
         elif home_and_lot_scores:
             choice = home_and_lot_scores[0]
         else:
@@ -1062,15 +1088,17 @@ class Person(object):
             final_desire_to_live_near_family = config.desire_to_live_near_family_cap
         return final_desire_to_live_near_family
 
-    def socialize(self):
+    def socialize(self, missing_timesteps_to_account_for=1):
         """Socialize with nearby people."""
-        for person in self.location.people_here_now:
+        for person in list(self.location.people_here_now):
             if self._decide_to_instigate_social_interaction(other_person=person):
                 if person not in self.relationships:
                     Acquaintance(owner=self, subject=person, preceded_by=None)
                 if not self.relationships[person].interacted_this_timestep:
                     # Make sure they didn't already interact this timestep
-                    self.relationships[person].progress_relationship()
+                    self.relationships[person].progress_relationship(
+                        missing_days_to_account_for=missing_timesteps_to_account_for
+                    )
 
     def _decide_to_instigate_social_interaction(self, other_person):
         """Decide whether to instigate a social interaction with another person."""
@@ -1328,6 +1356,7 @@ class PersonExNihilo(Person):
         )
         self._init_retcon_marriage(spouse=spouse)
         self._init_retcon_births_of_children()
+        self.game.year = self.game.true_year
 
     def _init_retcon_marriage(self, spouse):
         """Jump back in time to instantiate a marriage that began outside the city."""
@@ -1358,7 +1387,7 @@ class PersonExNihilo(Person):
             # If someone is pregnant and due this year, have them give birth
             if self.pregnant or self.spouse.pregnant:
                 pregnant_one = self if self.pregnant else self.spouse
-                if pregnant_one.conception_date < year:
+                if pregnant_one.conception_year < year:
                     pregnant_one.give_birth()
             self.game.year = year
             chance_they_are_trying_to_conceive_this_year = (

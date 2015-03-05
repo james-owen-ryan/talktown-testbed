@@ -148,7 +148,7 @@ class Config(object):
             lambda years_married: 1.0 / (int(years_married) + 4)
         )
         # People finding new homes
-        self.penalty_for_having_to_build_a_home_vs_buying_one = 0.5  # i.e., relative desire to build
+        self.penalty_for_having_to_build_a_home_vs_buying_one = 0.1  # i.e., relative desire to build
         self.desire_to_live_near_family_base = 0.3  # Scale of -1 to 1; affected by personality
         self.desire_to_live_near_family_floor = -2
         self.desire_to_live_near_family_cap = 2
@@ -214,15 +214,15 @@ class Config(object):
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
             ApartmentComplex: {
-                'day': (Janitor, Manager),
+                'day': (Secretary, Secretary, Janitor, Manager),
                 'night': (Janitor,),
             },
             Bank: {
-                'day': (BankTeller, BankTeller, Manager),
+                'day': (Secretary, BankTeller, BankTeller, Manager),
                 'night': (Janitor,),
             },
             Bar: {
-                'day': (Bartender,),
+                'day': (Bartender, Bartender),
                 'night': (Bartender, Bartender, Manager),
             },
             Barbershop: {
@@ -230,7 +230,7 @@ class Config(object):
                 'night': (Cashier, HairStylist, Manager),
             },
             BusDepot: {
-                'day': (BusDriver, Manager),
+                'day': (Secretary, Secretary, BusDriver, Manager),
                 'night': (BusDriver,),
             },
             CityHall: {
@@ -242,20 +242,20 @@ class Config(object):
                     # Order matters for this one -- architect must come first to build the others'
                     # houses!
                     Architect, Secretary, ConstructionWorker, ConstructionWorker,
-                    ConstructionWorker, ConstructionWorker
+                    ConstructionWorker, ConstructionWorker, Secretary, ConstructionWorker, ConstructionWorker
                 ),
                 'night': (Janitor,),
             },
             DayCare: {
-                'day': (DayCareProvider, DayCareProvider),
+                'day': (DayCareProvider, DayCareProvider, DayCareProvider, DayCareProvider, DayCareProvider),
                 'night': (Janitor,),
             },
             OptometryClinic: {
-                'day': (Secretary, Nurse, Nurse, Manager, Optometrist),
+                'day': (Secretary, Secretary, Nurse, Nurse, Manager, Optometrist),
                 'night': (Janitor,),
             },
             FireStation: {
-                'day': (Secretary, Firefighter, Firefighter, FireChief),
+                'day': (Secretary, Secretary, Firefighter, Firefighter, FireChief),
                 'night': (Secretary, Firefighter),
             },
             Hospital: {
@@ -264,14 +264,14 @@ class Config(object):
             },
             Hotel: {
                 'day': (HotelMaid, HotelMaid, Concierge, Manager),
-                'night': (Manager,),
+                'night': (Manager, Concierge),
             },
             LawFirm: {
-                'day': (Secretary, Lawyer, Lawyer),
+                'day': (Secretary, Secretary, Secretary, Lawyer, Lawyer),
                 'night': (Janitor,),
             },
             PlasticSurgeryClinic: {
-                'day': (Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+                'day': (Secretary, Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
                 'night': (Janitor,),
             },
             PoliceStation: {
@@ -283,27 +283,27 @@ class Config(object):
                 'night': (Janitor,),
             },
             Restaurant: {
-                'day': (Cashier, Waiter, Manager),
+                'day': (Cashier, Waiter, Waiter, Waiter, Manager),
                 'night': (Cashier, Waiter, Waiter, Manager),
             },
             School: {
-                'day': (Teacher, Teacher, Nurse),
+                'day': (Janitor, Teacher, Teacher, Teacher, Teacher, Nurse, Nurse),
                 'night': (Janitor, Janitor)
             },
             Supermarket: {
-                'day': (Cashier, Cashier, Manager),
-                'night': (Cashier, Cashier, Manager),
+                'day': (Cashier, Cashier, Cashier, Cashier, Manager),
+                'night': (Cashier, Cashier, Cashier, Manager),
             },
             TattooParlor: {
-                'day': (Cashier, TattooArtist, Manager),
-                'night': (Cashier, TattooArtist, Manager),
+                'day': (Cashier, TattooArtist, TattooArtist, Manager),
+                'night': (Cashier, TattooArtist, TattooArtist, Manager),
             },
             TaxiDepot: {
                 'day': (TaxiDriver, Manager),
-                'night': (TaxiDriver,)
+                'night': (TaxiDriver, TaxiDriver)
             },
             University: {
-                'day': (Professor, Professor),
+                'day': (Janitor, Professor, Professor, Professor),
                 'night': (Janitor, Janitor)
             },
             Cemetery: {

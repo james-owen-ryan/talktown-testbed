@@ -14,13 +14,19 @@ class Adoption(object):
         @param subject: The adoptee.
         @param adoptive_parents: The adoptive parent(s).
         """
-        self.year = subject.year
+        self.year = subject.game.year
         self.city = adoptive_parents[0].city  # May be None if parents not in the city yet
         self.subject = subject
         self.subject.adoption = self  # Could there be multiple, actually?
         self.adoptive_parents = adoptive_parents
         for adoptive_parent in adoptive_parents:
             adoptive_parent.adoptions.append(self)
+
+    def __str__(self):
+        """Return string representation."""
+        return "Adoption of {0} by {1} in {2}".format(
+            self.subject.name, ' and '.join(ap.name for ap in self.adoptive_parents), self.year
+        )
 
 
 class Birth(object):
@@ -33,14 +39,17 @@ class Birth(object):
         self.biological_mother = mother
         self.mother = mother
         self.biological_father = mother.impregnated_by
-        self.father = self.mother.spouse if self.mother.spouse and self.mother.spouse.male else None
+        self.father = self.mother.spouse if self.mother.spouse and self.mother.spouse.male else self.biological_father
+        self.subject = Person(game=mother.game, birth=self)
         if self.father and self.father is not self.biological_father:
             self.adoption = Adoption(subject=self.subject, adoptive_parents=(self.father,))
-        self.subject = Person(game=mother.game, birth=self)
         if self.biological_father is self.mother.spouse:
             self.mother.marriage.children_produced.add(self.subject)
         self.doctor = doctor
         self._name_baby()
+        self._update_mother_attributes()
+        if self.mother.city:
+            self._take_baby_home()
         if self.doctor:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
             self.nurses =  set([
@@ -53,9 +62,16 @@ class Birth(object):
             self.hospital = None
             self.nurses = set()
 
+    def __str__(self):
+        """Return string representation."""
+        return "Birth of {0} in {1}".format(
+            self.subject.name, self.year
+        )
+
     def _update_mother_attributes(self):
         """Update attributes of the mother that are affected by this birth."""
         self.mother.conception_date = None
+        self.mother.due_date = None
         self.mother.impregnated_by = None
 
     def _name_baby(self):
@@ -198,6 +214,10 @@ class Birth(object):
             suffix = ''
         return suffix
 
+    def _take_baby_home(self):
+        """Take the baby home to the mother's house."""
+        self.subject.move(new_home=self.mother.home, reason=self)
+
     def _remunerate(self):
         """Have parents pay hospital for services rendered."""
         config = self.mother.game.config
@@ -278,23 +298,35 @@ class Death(object):
         """Initialize a Death object."""
         self.year = subject.game.year
         self.city = subject.city
-        self.subject = self.subject
+        self.subject = subject
+        self.subject.death_year = self.subject.game.year
+        self.subject.death = self
         self.cause = cause_of_death
         self.mortician = mortician
-        self.cemetery = self.mortician.company
+        self.cemetery = self.subject.city.cemetery
         self.next_of_kin = subject.next_of_kin
-        subject.city.population.remove(subject)
+        subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()
         self._vacate_job_position_of_the_deceased()
-        if self.city:
+        if mortician:
             # Death shouldn't be possibly outside the city, but I'm doing
             # this to be consistent with other event classes
             self._remunerate()
             self.cemetery_plot = self._inter_the_body()
-            self.mortician.bodies_interred.add(self)
+            self.mortician.body_interments.add(self)
         else:
             self.cemetery_plot = None
+        self.subject.home.residents.remove(self.subject)
+        self.subject.home.former_residents.add(self.subject)
+        self.subject.location.people_here_now.remove(self.subject)
+        self.subject.location = self.city.cemetery
+
+    def __str__(self):
+        """Return string representation."""
+        return "Death of {0} in {1}".format(
+            self.subject.name, self.year
+        )
 
     def _update_attributes_of_deceased_and_spouse(self):
         config = self.subject.game.config
@@ -337,10 +369,21 @@ class Departure(object):
         """Initialize a Departure object."""
         self.year = subject.game.year
         self.subject = subject
-        subject.city.population.remove(subject)
+        subject.city.residents.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
         self._vacate_job_position_of_the_departed()
+        if self.subject.location:
+            self.subject.location.people_here_now.remove(self.subject)
+            self.subject.location = None
+        self.subject.home.residents.remove(self.subject)
+        self.subject.home.former_residents.add(self.subject)
+
+    def __str__(self):
+        """Return string representation."""
+        return "Departure of {0} in {1}".format(
+            self.subject.name, self.year
+        )
 
     def _vacate_job_position_of_the_departed(self):
         """Vacate the departed's job position, if any."""
@@ -533,6 +576,12 @@ class Hiring(object):
             self.promotion = False
         self.occupation.hiring = self
 
+    def __str__(self):
+        """Return string representation."""
+        return "Hiring of {0} as {1} in {2}".format(
+            self.subject.name, self.occupation, self.year
+        )
+
 
 class HomePurchase(object):
     """A purchase of a home by a person or couple, with the help of a realtor."""
@@ -552,6 +601,13 @@ class HomePurchase(object):
             self.realtor.home_sales.add(self)
         else:  # No realtor when setting initial owners as people who built the home
             self.realty_firm = None
+
+    def __str__(self):
+        """Return string representation."""
+        return "Purchase of {0} at {1} by {2} in {3}".format(
+            "apartment" if self.home.apartment else "house", self.home.address,
+            " and ".join(s.name for s in self.subjects), self.year
+        )
 
     def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
@@ -715,8 +771,8 @@ class Marriage(object):
         This may require that they find a vacant lot to build a home on.
         """
         # If one of the newlyweds has their own place, have them move in there
-        if any(s for s in self.subjects if s is s.home.owner):
-            home_they_will_move_into = next(s for s in self.subjects if s is s.home.owner).home
+        if any(s for s in self.subjects if s in s.home.owners):
+            home_they_will_move_into = next(s for s in self.subjects if s in s.home.owners).home
         else:
             # If they both live at home, have them find a vacant home to move into
             # or a vacant lot to build on (it doesn't matter which person the method is
@@ -796,6 +852,13 @@ class Move(object):
             person.game.city.residents.add(person)
             # Update your patronized businesses given that these may now change
             person.routine.set_businesses_patronized()
+
+    def __str__(self):
+        """Return string representation."""
+        return "Move to {0} at {1} by {2} in {3}".format(
+            "apartment" if self.new_home.apartment else "house", self.new_home.address,
+            ", ".join(s.name for s in self.subjects), self.year
+        )
 
 
 class NameChange(object):

@@ -41,7 +41,7 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
-        if not isinstance(reason, Hiring) and reason.promotion:
+        if not (isinstance(reason, Hiring) and reason.promotion):
             self.company.employees.remove(self)
             self.company.former_employees.add(self)
         # If the person hasn't already been hired to a new position, set their
@@ -51,7 +51,7 @@ class Occupation(object):
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
         position_that_is_now_vacant = self.__class__
-        self.company.hire(occupation_of_need=position_that_is_now_vacant)
+        self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
 
 
 ##################################
