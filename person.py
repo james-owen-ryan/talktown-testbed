@@ -658,11 +658,13 @@ class Person(object):
                 "middle name": self.mind.mental_models[other_person].middle_name,
                 "last name": self.mind.mental_models[other_person].last_name,
                 # Occupation
-                "workplace": str(self.mind.mental_models[other_person].occupation.company),  # Will be name of the company
+                "workplace": (str(self.mind.mental_models[other_person].occupation.company) if  # Name of company
+                              self.mind.mental_models[other_person].occupation.company else None),
                 "job title": self.mind.mental_models[other_person].occupation.job_title,
                 "job shift": self.mind.mental_models[other_person].occupation.shift,
                 # Home
-                "home": str(self.mind.mental_models[other_person].home),  # Will be the name of the residence
+                "home": (str(self.mind.mental_models[other_person].home) if
+                         self.mind.mental_models[other_person].home else None),  # Will be the name of the residence
                 # Appearance
                 "skin color": self.mind.mental_models[other_person].face.skin.color,
                 "head size": self.mind.mental_models[other_person].face.head.size,
