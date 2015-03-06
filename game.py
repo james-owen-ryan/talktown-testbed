@@ -363,9 +363,11 @@ class Game(object):
                 self.year += 1
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
 
-    def pickle_state_components(self):
+    def pickle_state_components(self, filename_suffix="_day1"):
+        import pickle
+        # Generate people_dict
         people_dict = {}
-        for person in (self.random_person,):
+        for person in self.city.residents:
             faceStr = person.face.faceStr
             first_name = str(person.first_name)
             last_name = str(person.last_name)
@@ -397,9 +399,20 @@ class Game(object):
                                 (feature, owner.get_knowledge_about_person(subject, feature))
                             )
                     people_dict[person.id]["get_knowledge"][other_person.id] = owners_knowledge_about_subject
+        # Generate people_here_now_dict
         people_here_now_dict = {}
         for place in self.city.dwelling_places | self.city.companies:
             people_here_now_dict[place.id] = set([p.id for p in place.people_here_now])
+        # Pickle people_dict
+        f = open('/Users/jamesryan/Desktop/TOTT_states/people_dict' + filename_suffix + '.dat', 'wb')
+        pickle.dump(people_dict, f)
+        f.close()
+        # Pickle people_here_now_dict
+        f = open('/Users/jamesryan/Desktop/TOTT_states/people_here_now_dict' + filename_suffix + '.dat', 'wb')
+        pickle.dump(people_here_now_dict, f)
+        f.close()
+
+
 
 
 
