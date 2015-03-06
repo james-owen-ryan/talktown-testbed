@@ -214,23 +214,23 @@ class Config(object):
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
             ApartmentComplex: {
-                'day': (Secretary, Secretary, Janitor, Manager),
+                'day': (Secretary, Janitor, Manager),
                 'night': (Janitor,),
             },
             Bank: {
-                'day': (Secretary, BankTeller, BankTeller, Manager),
+                'day': (BankTeller, BankTeller, Manager),
                 'night': (Janitor,),
             },
             Bar: {
-                'day': (Bartender, Bartender),
+                'day': (Bartender,),
                 'night': (Bartender, Bartender, Manager),
             },
             Barbershop: {
-                'day': (Cashier, HairStylist, Manager),
+                'day': (HairStylist, Manager),
                 'night': (Cashier, HairStylist, Manager),
             },
             BusDepot: {
-                'day': (Secretary, Secretary, BusDriver, Manager),
+                'day': (Secretary, BusDriver, Manager),
                 'night': (BusDriver,),
             },
             CityHall: {
@@ -242,20 +242,19 @@ class Config(object):
                     # Order matters for this one -- architect must come first to build the others'
                     # houses!
                     Architect, Secretary, ConstructionWorker, ConstructionWorker,
-                    ConstructionWorker, ConstructionWorker, Secretary, ConstructionWorker, ConstructionWorker
                 ),
                 'night': (Janitor,),
             },
             DayCare: {
-                'day': (DayCareProvider, DayCareProvider, DayCareProvider, DayCareProvider, DayCareProvider),
+                'day': (DayCareProvider, DayCareProvider, DayCareProvider),
                 'night': (Janitor,),
             },
             OptometryClinic: {
-                'day': (Secretary, Secretary, Nurse, Nurse, Manager, Optometrist),
+                'day': (Secretary, Nurse, Optometrist),
                 'night': (Janitor,),
             },
             FireStation: {
-                'day': (Secretary, Secretary, Firefighter, Firefighter, FireChief),
+                'day': (Secretary, Firefighter, Firefighter, FireChief),
                 'night': (Secretary, Firefighter),
             },
             Hospital: {
@@ -267,11 +266,11 @@ class Config(object):
                 'night': (Manager, Concierge),
             },
             LawFirm: {
-                'day': (Secretary, Secretary, Secretary, Lawyer, Lawyer),
+                'day': (Secretary, Lawyer, Lawyer),
                 'night': (Janitor,),
             },
             PlasticSurgeryClinic: {
-                'day': (Secretary, Secretary, Nurse, Nurse, Manager, PlasticSurgeon),
+                'day': (Secretary, Nurse, PlasticSurgeon),
                 'night': (Janitor,),
             },
             PoliceStation: {
@@ -283,27 +282,27 @@ class Config(object):
                 'night': (Janitor,),
             },
             Restaurant: {
-                'day': (Cashier, Waiter, Waiter, Waiter, Manager),
+                'day': (Cashier, Waiter, Manager),
                 'night': (Cashier, Waiter, Waiter, Manager),
             },
             School: {
-                'day': (Janitor, Teacher, Teacher, Teacher, Teacher, Nurse, Nurse),
+                'day': (Janitor, Teacher, Teacher, Nurse),
                 'night': (Janitor, Janitor)
             },
             Supermarket: {
-                'day': (Cashier, Cashier, Cashier, Cashier, Manager),
-                'night': (Cashier, Cashier, Cashier, Manager),
+                'day': (Cashier, Cashier, Manager),
+                'night': (Cashier, Cashier, Manager),
             },
             TattooParlor: {
-                'day': (Cashier, TattooArtist, TattooArtist, Manager),
-                'night': (Cashier, TattooArtist, TattooArtist, Manager),
+                'day': (Cashier, TattooArtist),
+                'night': (Cashier, TattooArtist, Manager),
             },
             TaxiDepot: {
                 'day': (TaxiDriver, Manager),
-                'night': (TaxiDriver, TaxiDriver)
+                'night': (TaxiDriver,)
             },
             University: {
-                'day': (Janitor, Professor, Professor, Professor),
+                'day': (Professor, Professor),
                 'night': (Janitor, Janitor)
             },
             Cemetery: {
