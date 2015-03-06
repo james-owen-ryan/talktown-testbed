@@ -411,13 +411,3 @@ class Game(object):
         f = open('/Users/jamesryan/Desktop/TOTT_states/people_here_now_dict' + filename_suffix + '.dat', 'wb')
         pickle.dump(people_here_now_dict, f)
         f.close()
-
-
-
-
-
-
-
-
-
-
