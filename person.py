@@ -160,6 +160,8 @@ class Person(object):
         # Prepare attributes pertaining to exact location at a point
         self.location = None
 
+        self.where_when = set()  # TODO DELETE
+
     def __str__(self):
         """Return string representation."""
         if self.alive:
