@@ -21,6 +21,7 @@ class Game(object):
             datetime.date(*self.config.date_the_founder_dies).toordinal()
         )
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
+        self.lover = None
         self.city = None
         self.time_of_day = "day"
         self._establish_setting()
@@ -56,21 +57,23 @@ class Game(object):
         self._establish_city_infrastructure()
         # Now simulate to a week before gameplay  TODO
         self.advance_timechunk(n_timesteps=51122)
-        # Now simulate at full fidelity for the remaining month
-        while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
-            self.advance_timestep()
-            print "{0} days remain until founder death".format(
-                self.ordinal_date_that_the_founder_dies-self.ordinal_date
-            )
-        # Now kill off the founder and select the player character and lover
-        self.founder.die(cause_of_death="Natural causes")
-        self.pc = self._select_player_character()
-        self.pc_id = self.pc.id
-        self.lover = self._select_lover_character()
-        self.lover_id = self.lover.id
-        # Finally, determine the initial evidence about the lover's appearance
-        # that will be given to the player character (3/5 are true)
-        self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
+        # # Now simulate at full fidelity for the remaining month
+        # while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
+        #     self.advance_timestep()
+        #     print "{0} days remain until founder death".format(
+        #         self.ordinal_date_that_the_founder_dies-self.ordinal_date
+        #     )
+        # # Select the player character and lover
+        # self.pc = self._select_player_character()
+        # self.pc_id = self.pc.id
+        # self.lover = self._select_lover_character()
+        # self.lover_id = self.lover.id
+        # # Simulate the night in question, on which the founder dies
+        # self.advance_timestep()
+        # self.founder.die(cause_of_death="Natural causes")
+        # # Finally, determine the initial evidence about the lover's appearance
+        # # that will be given to the player character (3/5 are true)
+        # self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
 
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.
@@ -302,6 +305,9 @@ class Game(object):
     def advance_timestep(self):
         """Advance to the next day/night cycle."""
         self._advance_time()
+        this_is_the_night_in_question = (
+            self.ordinal_date == self.ordinal_date_that_the_founder_dies and self.time_of_day == "night"
+        )
         # Reset all Relationship interacted_this_timestep attributes
         for person in self.city.residents:
             for other_person in person.relationships:
@@ -309,6 +315,10 @@ class Game(object):
         # Have people go to the location they will be at this timestep
         for person in self.city.residents:
             person.routine.enact()
+            if this_is_the_night_in_question:
+                self.lover.location.people_here_now.remove(self.lover)
+                self.lover.location = self.founder.home
+                self.lover.location.people_here_now.add(self.lover)
         # Have people observe their surroundings, which will cause knowledge to
         # build up, and have them socialize with other people also at that location --
         # this will cause relationships to form/progress and knowledge to propagate
@@ -322,6 +332,21 @@ class Game(object):
                 person.mind.mental_models[thing].deteriorate()
             if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
                 person.reflect()
+                if person is self.lover:
+                    # Have them invent an alibi for where they were, in case
+                    # the PC encounters them and asks, in which case we don't
+                    # want them to just admit to being at the founder's home
+                    date = (self.ordinal_date_that_the_founder_dies, 1)
+                    if random.random() < 0.5:
+                        fake_alibi = person.home
+                    else:
+                        fake_alibi = random.choice(list(self.city.companies))
+                    fake_reflection = Reflection(subject=self.lover, source=self.lover)
+                    person.mind.mental_models[person].whereabouts.date[date] = Facet(
+                        value=fake_alibi.name, owner=self.lover, subject=self.lover,
+                        feature_type="whereabouts", initial_evidence=fake_reflection,
+                        predecessor=None, parent=None, object_itself=fake_alibi
+                    )
             # But also have them reflect accurately on their own features --
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:
