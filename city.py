@@ -72,18 +72,28 @@ class City(object):
     def getBlocks(self):
         outputBlocks = {}
         for block in self.blocks:
+            neighbors = []
+            for neighbor in block.neighbors:
+                neighbors.append(neighbor.id)
+            lots = []
+            for lot in block.lots:
+                lots.append(lot.id)
             outputBlocks[block.id] = {"street":block.street.id, 
-            "number":block.number,"coords":block.coords}
+            "number":block.number,"coords":block.coords,"lots":lots,"neighbors":neighbors}
         return outputBlocks
         
     def getLots(self):
         outputLots = {}
-        for lot in self.lots:
+        for lot in self.lots | self.tracts:
             buildingID = -1
             if lot.building is not None:
                 buildingID = lot.building.id
+            blockIds = []
+            for block in lot.blocks:
+                blockIds.append(block.id)
             outputLots[lot.id] = {"index_of_street_address_will_be_on":lot.index_of_street_address_will_be_on, 
                                     "building":buildingID,
+                                    "blocks":blockIds,
                                     "house_numbers":lot.house_numbers,
                                     "positionsInBlock":lot.positionsInBlock,
                                     "sidesOfStreet":lot.sidesOfStreet}

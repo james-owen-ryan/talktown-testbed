@@ -57,7 +57,8 @@ class Game(object):
         # on which to build homes
         self._establish_city_infrastructure()
         # Now simulate to a week before gameplay  TODO
-        self.advance_timechunk(n_timesteps=51122)
+        self.advance_timechunk(n_timesteps=5)
+       # self.advance_timechunk(n_timesteps=51122)
         # # Now simulate at full fidelity for the remaining month
         # while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
         #     self.advance_timestep()

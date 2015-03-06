@@ -11,9 +11,9 @@ houses = gameInstance.city.houses
 apartments = gameInstance.city.apartment_complexes 
 businesses = gameInstance.city.other_businesses   
 
-
-pickle.dumps(gameInstance.city.getLots())
-pickle.dumps(gameInstance.city.getBlocks())
-pickle.dumps(gameInstance.city.getApartments())
-pickle.dumps(gameInstance.city.getBusinesses())
-pickle.dumps(gameInstance.city.getStreets())
+pickle.dump(gameInstance.city.getLots(),open( "lots.dat", "wb" ))
+pickle.dump(gameInstance.city.getBlocks(),open( "blocks.dat", "wb" ))
+pickle.dump(gameInstance.city.getApartments(),open( "apartments.dat", "wb" ))
+pickle.dump(gameInstance.city.getBusinesses(),open( "businesses.dat", "wb" ))
+pickle.dump(gameInstance.city.getHouses(),open( "houses.dat", "wb" ))
+pickle.dump(gameInstance.city.getStreets(),open( "streets.dat", "wb" ))
