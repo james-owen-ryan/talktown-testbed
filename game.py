@@ -54,15 +54,23 @@ class Game(object):
         # each of these establishments will bring in workers who will find vacant lots
         # on which to build homes
         self._establish_city_infrastructure()
-        # Now simulate to a month before gameplay
-        # self.advance_timechunk(n_timesteps=51076)
-        # # Now simulate at full fidelity for the remaining month
-        # while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
-        #     self.advance_timestep()
-        #     print "{0} cycles remain until founder death".format(
-        #         self.ordinal_date_that_the_founder_dies-self.ordinal_date
-        #     )
-        # # Now kill off the founder and select the lover
+        # Now simulate to a week before gameplay  TODO
+        self.advance_timechunk(n_timesteps=51122)
+        # Now simulate at full fidelity for the remaining month
+        while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
+            self.advance_timestep()
+            print "{0} days remain until founder death".format(
+                self.ordinal_date_that_the_founder_dies-self.ordinal_date
+            )
+        # Now kill off the founder and select the player character and lover
+        self.founder.die(cause_of_death="Natural causes")
+        self.pc = self._select_player_character()
+        self.pc_id = self.pc.id
+        self.lover = self._select_lover_character()
+        self.lover_id = self.lover.id
+        # Finally, determine the initial evidence about the lover's appearance
+        # that will be given to the player character (3/5 are true)
+        self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
 
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.
@@ -103,6 +111,64 @@ class Game(object):
         # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
         #
         # 	- For these, have them potentially be started by reasoning over supply, need, etc.
+
+    def _select_player_character(self):
+        if any(k for k in self.founder.kids|self.founder.grandchildren if k.present):
+            player_character = next(
+                k for k in self.founder.kids|self.founder.grandchildren if k.present
+            )
+        player_character = random.choice([p for p in self.city.residents if p.adult])
+        return player_character
+
+    def _select_lover_character(self):
+        people_that_pc_doesnt_know_about = [
+            p for p in self.city.residents if p.adult and p not in self.pc.mind.mental_models and
+            p not in self.pc.relationships
+        ]
+        if people_that_pc_doesnt_know_about:
+            # Pick the person who the most *other* people do know about
+            lover = max(people_that_pc_doesnt_know_about, key=lambda z: len([
+                q for q in self.city.residents if z in q.mind.mental_models
+            ]
+            ))
+        else:
+            lover = random.choice([
+                person for person in self.city.residents if person.adult and person is not self.pc
+            ])
+        return lover
+
+    def _determine_initial_evidence_about_lover_appearance(self):
+        true_and_false_values = [True, True, True, False, False]
+        feature_types_of_initial_evidence = ["head shape", "hair color", "hair length", "eye color", "nose shape"]
+        random.shuffle(true_and_false_values)
+        initial_evidence = {}
+        for i in xrange(len(feature_types_of_initial_evidence)):
+            feature_type = feature_types_of_initial_evidence[i]
+            true_feature = str(self.lover.get_feature(feature_type=feature_type))
+            true_or_false = true_and_false_values[i]
+            if true_or_false is True:
+                initial_evidence[feature_type] = true_feature
+            else:
+                # Mutate the true feature into a false one
+                x = random.random()
+                mutated_feature = next(  # See config.py to understand what this is doing
+                    mutation[1] for mutation in self.config.memory_mutations[feature_type][true_feature] if
+                    mutation[0][0] <= x <= mutation[0][1]
+                )
+                initial_evidence[feature_type] = mutated_feature
+        if initial_evidence["hair length"] == "bald":
+            hair_str = "a bald head"
+        elif initial_evidence["hair length"] == "medium":
+            hair_str = "medium-length {0} hair".format(initial_evidence["hair color"])
+        else:
+            hair_str = "{0} {1} hair".format(initial_evidence["hair length"], initial_evidence["hair color"])
+        initial_evidence_str = (
+            "a {0} head, {1}, a {2} nose, and {3} eyes".format(
+                initial_evidence["head shape"], hair_str, initial_evidence["nose shape"],
+                initial_evidence["eye color"],
+            )
+        )
+        return initial_evidence, initial_evidence_str
 
     @property
     def date(self):
@@ -157,7 +223,7 @@ class Game(object):
                 ids_of_these_people.add(person.id)
         return ids_of_these_people
 
-    def advance_timechunk(self, n_timesteps=51076):
+    def advance_timechunk(self, n_timesteps=51122):
         """Simulate the passing of a chunk of time at a lower fidelity than normal."""
         last_simulated_day = self.ordinal_date
         for i in xrange(n_timesteps):
@@ -181,27 +247,30 @@ class Game(object):
                     if person.age > max(65, random.random() * 100):
                         if person is not self.founder:
                             person.die(cause_of_death="Natural causes")
-                    elif person.adult and not person.occupation:
-                        if random.random() < 0.05:
-                            self.consider_new_business_getting_constructed()
-                        elif random.random() > 0.98:
+                    elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
+                        if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
                             person.depart_city()
+                    elif person.adult and not person.occupation:
+                        if random.random() < 0.005:
+                            self.consider_new_business_getting_constructed()
+                        # elif random.random() > 0.70:
+                        #     person.depart_city()
                         elif person.age > 22:
                             person.college_graduate = True
                     elif person.age > 18 and person not in person.home.owners:
                         person.move_out_of_parents()
                 days_since_last_simulated_day = self.ordinal_date-last_simulated_day
                 # Reset all Relationship interacted_this_timestep attributes
-                for person in self.city.residents:
+                for person in list(self.city.residents):
                     for other_person in person.relationships:
                         person.relationships[other_person].interacted_this_timestep = False
                 # Have people go to the location they will be at this timestep
-                for person in self.city.residents:
+                for person in list(self.city.residents):
                     person.routine.enact()
                 # Have people observe their surroundings, which will cause knowledge to
                 # build up, and have them socialize with other people also at that location --
                 # this will cause relationships to form/progress and knowledge to propagate
-                for person in self.city.residents:
+                for person in list(self.city.residents):
                     if person.age > 3:
                         # person.observe()
                         person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
@@ -212,6 +281,7 @@ class Game(object):
             reasonable_frequencies = {
                 Bar: 5, Bank: 2, Barbershop: 2, Restaurant: 4, Supermarket: 2, OptometryClinic: 2,
                 LawFirm: 2, PlasticSurgeryClinic: 1, RealtyFirm: 2, TattooParlor: 2, ApartmentComplex: 5,
+                DayCare: 4,
             }
             weighted_business_types = []
             for business_type in reasonable_frequencies:
@@ -250,6 +320,8 @@ class Game(object):
         for person in self.city.residents:
             for thing in list(person.mind.mental_models):
                 person.mind.mental_models[thing].deteriorate()
+            if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
+                person.reflect()
             # But also have them reflect accurately on their own features --
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:

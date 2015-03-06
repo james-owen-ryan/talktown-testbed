@@ -406,6 +406,14 @@ class Person(object):
         return self.game.year - self.birth_year
 
     @property
+    def dead(self):
+        """Return whether this person is dead."""
+        if not self.alive:
+            return True
+        else:
+            return False
+
+    @property
     def adult(self):
         """Return whether this person is at least 18 years old."""
         return self.age >= 18
@@ -916,6 +924,9 @@ class Person(object):
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
         event.Departure(subject=self)
+        for person in self.nuclear_family - set([self]):
+            if person in self.city.residents:
+                event.Departure(subject=person)
 
     def contract_person_of_certain_occupation(self, occupation_in_question):
         """Find a person of a certain occupation.
@@ -1143,7 +1154,8 @@ class Person(object):
     def observe(self):
         """Observe the place one is at and the people there."""
         for thing in set([self.location]) | self.location.people_here_now - set([self]):
-            self._form_or_build_up_mental_model(subject=thing)
+            if random.random() < 0.75:
+                self._form_or_build_up_mental_model(subject=thing)
 
     def _form_or_build_up_mental_model(self, subject):
         """Instantiate (or further fill in) a mental model of a person or place."""
@@ -1160,19 +1172,21 @@ class Person(object):
 
     def socialize(self, missing_timesteps_to_account_for=1):
         """Socialize with nearby people."""
-        for person in list(self.location.people_here_now):
-            if self._decide_to_instigate_social_interaction(other_person=person):
-                if person not in self.relationships:
-                    Acquaintance(owner=self, subject=person, preceded_by=None)
-                if not self.relationships[person].interacted_this_timestep:
-                    # Make sure they didn't already interact this timestep
-                    self.relationships[person].progress_relationship(
-                        missing_days_to_account_for=missing_timesteps_to_account_for
-                    )
-                    # If this is being called by the full-fidelity simulation,
-                    # have these two people exchange information with each other
-                    if missing_timesteps_to_account_for == 1:
-                        self._exchange_information(interlocutor=person)
+        # TODO weird bug where people don't have a location
+        if self.location:
+            for person in list(self.location.people_here_now):
+                if self._decide_to_instigate_social_interaction(other_person=person):
+                    if person not in self.relationships:
+                        Acquaintance(owner=self, subject=person, preceded_by=None)
+                    if not self.relationships[person].interacted_this_timestep:
+                        # Make sure they didn't already interact this timestep
+                        self.relationships[person].progress_relationship(
+                            missing_days_to_account_for=missing_timesteps_to_account_for
+                        )
+                        # If this is being called by the full-fidelity simulation,
+                        # have these two people exchange information with each other
+                        if missing_timesteps_to_account_for == 1:
+                            self._exchange_information(interlocutor=person)
 
     def _exchange_information(self, interlocutor):
         """Exchange information with this person."""
@@ -1326,8 +1340,8 @@ class PersonExNihilo(Person):
         super(PersonExNihilo, self).__init__(game, birth=None)
         # Potentially overwrite sex set by Person.__init__()
         if spouse_already_generated:
-            self._override_sex(spouse=spouse_already_generated)
-            self._override_sexuality(spouse=spouse_already_generated)
+            self.male, self.female = self._override_sex(spouse=spouse_already_generated)
+            self.attracted_to_men, self.attracted_to_women = self._override_sexuality(spouse=spouse_already_generated)
         # Overwrite birth year set by Person.__init__()
         if this_person_is_the_founder:  # The person who founds the city -- there are special requirements for them
             self.game.founder = self

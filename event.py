@@ -311,7 +311,9 @@ class Death(object):
         self.mortician = mortician
         self.cemetery = self.subject.city.cemetery
         self.next_of_kin = subject.next_of_kin
-        subject.city.residents.remove(subject)
+        # TODO WTF????
+        if subject in self.city.residents:
+            subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()
         self._vacate_job_position_of_the_deceased()
@@ -323,9 +325,14 @@ class Death(object):
             self.mortician.body_interments.add(self)
         else:
             self.cemetery_plot = None
-        self.subject.home.residents.remove(self.subject)
+        # TODO WTF????
+        if self.subject in self.subject.home.residents:
+            self.subject.home.residents.remove(self.subject)
         self.subject.home.former_residents.add(self.subject)
-        self.subject.location.people_here_now.remove(self.subject)
+        # TODO WTF????
+        if self.subject.location:
+            if self.subject in self.subject.location.people_here_now:
+                self.subject.location.people_here_now.remove(self.subject)
         self.subject.location = self.city.cemetery
 
     def __str__(self):
@@ -375,14 +382,20 @@ class Departure(object):
         """Initialize a Departure object."""
         self.year = subject.game.year
         self.subject = subject
-        subject.city.residents.remove(subject)
+        # TODO WTF?????
+        if subject in subject.city.residents:
+            subject.city.residents.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
         self._vacate_job_position_of_the_departed()
         if self.subject.location:
-            self.subject.location.people_here_now.remove(self.subject)
+            # TODO WTF?????
+            if self.subject in self.subject.location.people_here_now:
+                self.subject.location.people_here_now.remove(self.subject)
             self.subject.location = None
-        self.subject.home.residents.remove(self.subject)
+        # TODO WTF?????
+        if self.subject in self.subject.home.residents:
+            self.subject.home.residents.remove(self.subject)
         self.subject.home.former_residents.add(self.subject)
 
     def __str__(self):
@@ -570,7 +583,7 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
-        print "{} just hired {} as {}".format(company.__class__, subject.name, occupation.__class__.__name__)
+        # print "{} just hired {} as {}".format(company.__class__, subject.name, occupation.__class__.__name__)
         self.year = subject.game.year
         self.subject = subject
         self.company = company
