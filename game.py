@@ -380,6 +380,7 @@ class Game(object):
                 "last_name": last_name,
                 "suffix": suffix,
                 "people_known_of": set([p.id for p in person.mind.mental_models if p.type == "person"]),
+                "location": person.location.id,
                 "get_knowledge": {}
             }
             for other_person in person.mind.mental_models:
