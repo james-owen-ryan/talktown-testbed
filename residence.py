@@ -9,8 +9,8 @@ class DwellingPlace(object):
 
         @param lot: A Lot object representing the lot this building is on.
         """
-        self.id = DwellingPlace.counter
-        DwellingPlace.counter += 1
+        self.id = owners[0].game.current_place_id
+        owners[0].game.current_place_id += 1
         self.type = "residence"
         self.city = lot.city
         self.city.dwelling_places.add(self)

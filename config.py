@@ -15,6 +15,7 @@ class Config(object):
                 #################
         # When to stop
         self.date_the_founder_dies = (1980, 10, 18)
+        self.date_city_gets_founded = (1910, 10, 18)  # Date world gen begins
         # City generation
         self.loci = 3
         self.samples = 32
@@ -25,7 +26,6 @@ class Config(object):
         self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
-        self.date_city_gets_founded = (1910, 10, 18)  # Date world gen begins
         self.public_institutions_started_upon_city_founding = (
             CityHall, Hospital, FireStation, PoliceStation, School, University, Park, Cemetery
         )

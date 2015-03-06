@@ -13,6 +13,7 @@ class Game(object):
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0
+        self.current_place_id = 0
         self.config = Config()
         self.year = self.config.date_city_gets_founded[0]
         self.true_year = self.config.date_city_gets_founded[0]  # True year never gets changed during retconning
@@ -398,7 +399,7 @@ class Game(object):
                             owners_knowledge_about_subject.add(
                                 (feature, owner.get_knowledge_about_person(subject, feature))
                             )
-                    people_dict[person.id]["get_knowledge"][other_person.id] = owners_knowledge_about_subject
+                    people_dict[person.id]["get_knowledge"][other_person.id] = str(owners_knowledge_about_subject)
         # Generate people_here_now_dict
         people_here_now_dict = {}
         for place in self.city.dwelling_places | self.city.companies:
