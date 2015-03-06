@@ -3,12 +3,14 @@ import random
 
 class DwellingPlace(object):
     """A dwelling place in a city."""
-
+    counter = 0
     def __init__(self, lot, owners):
         """Initialize a DwellingPlace object.
 
         @param lot: A Lot object representing the lot this building is on.
         """
+        self.id = DwellingPlace.counter
+        DwellingPlace.counter += 1
         self.type = "residence"
         self.city = lot.city
         self.city.dwelling_places.add(self)

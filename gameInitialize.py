@@ -12,4 +12,8 @@ apartments = gameInstance.city.apartment_complexes
 businesses = gameInstance.city.other_businesses   
 
 
-print gameInstance.city.getLots()
+pickle.dumps(gameInstance.city.getLots())
+pickle.dumps(gameInstance.city.getBlocks())
+pickle.dumps(gameInstance.city.getApartments())
+pickle.dumps(gameInstance.city.getBusinesses())
+pickle.dumps(gameInstance.city.getStreets())

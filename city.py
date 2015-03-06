@@ -72,20 +72,45 @@ class City(object):
     def getBlocks(self):
         outputBlocks = {}
         for block in self.blocks:
-            outputBlocks[block.id] = {"street":block.street, 
+            outputBlocks[block.id] = {"street":block.street.id, 
             "number":block.number,"coords":block.coords}
         return outputBlocks
         
     def getLots(self):
         outputLots = {}
         for lot in self.lots:
+            buildingID = -1
+            if lot.building is not None:
+                buildingID = lot.building.id
             outputLots[lot.id] = {"index_of_street_address_will_be_on":lot.index_of_street_address_will_be_on, 
-                                    "building":lot.building.id,
+                                    "building":buildingID,
                                     "house_numbers":lot.house_numbers,
                                     "positionsInBlock":lot.positionsInBlock,
                                     "sidesOfStreet":lot.sidesOfStreet}
         return outputLots
-            
+    def getHouses(self):
+        output = {}
+        for house in self.houses:
+            output[house.id] = {"address":house.address,"lot":house.lot.id}
+        return output
+    def getApartments(self):
+        output = {}
+        for apartment in self.apartment_complexes:
+            output[apartment.id] = {"address":apartment.name,"lot":apartment.lot.id}
+        return output
+    def getBusinesses(self):
+        output = {}
+        for business in self.other_businesses:
+            output[business.id] = {"address":business.name,"lot":business.lot.id}
+        return output
+    def getStreets(self):
+        output = {}
+        for street in self.streets:
+            output[street.id] = {"number":street.number,"name":street.name,
+                                    "startingBlock":street.startingBlock,
+                                    "endingBlock":street.endingBlock,
+                                    "direction":street.direction}
+        return output
     def dist_from_downtown(self,lot):
         
         return self.getDistFrom(lot,self.downtown)
@@ -497,9 +522,11 @@ class City(object):
 
 class Street(object):
     """A street in a city."""
-
+    counter = 0
     def __init__(self, city, number, direction, startingBlock, endingBlock):
         """Initialize a Street object."""
+        self.id = Street.counter
+        Street.counter += 1
         self.city = city
         self.number = number
         self.direction = direction  # Direction relative to the center of the city
