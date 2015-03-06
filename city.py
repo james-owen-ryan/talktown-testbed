@@ -68,7 +68,24 @@ class City(object):
         self.police_station = None
         self.school = None
         self.university = None
-
+        
+    def getBlocks(self):
+        outputBlocks = {}
+        for block in self.blocks:
+            outputBlocks[block.id] = {"street":block.street, 
+            "number":block.number,"coords":block.coords}
+        return outputBlocks
+        
+    def getLots(self):
+        outputLots = {}
+        for lot in self.lots:
+            outputLots[lot.id] = {"index_of_street_address_will_be_on":lot.index_of_street_address_will_be_on, 
+                                    "building":lot.building.id,
+                                    "house_numbers":lot.house_numbers,
+                                    "positionsInBlock":lot.positionsInBlock,
+                                    "sidesOfStreet":lot.sidesOfStreet}
+        return outputLots
+            
     def dist_from_downtown(self,lot):
         
         return self.getDistFrom(lot,self.downtown)
@@ -526,9 +543,11 @@ class Street(object):
 
 class Block(object):
     """A block on a street in a city."""
-
+    counter = 0
     def __init__(self, street, number,coords):
         """Initialize a Block object."""
+        self.id = Block.counter
+        Block.counter += 1
         self.street = street
         self.number = number
         self.lots = []
@@ -570,9 +589,11 @@ class Block(object):
 
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
-
+    counter = 0
     def __init__(self, city):
         """Initialize a Lot object."""
+        self.id = Lot.counter
+        Lot.counter += 1
         self.city = city
         self.streets = []
         self.blocks = []
