@@ -570,7 +570,7 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
-        print "{} just hired {} as {}".format(company.__class__, subject.name, occupation.__class__.__name__)
+        print "{0} just hired {1} as {2}".format(company.__class__, subject.name, occupation.__class__.__name__)
         self.year = subject.game.year
         self.subject = subject
         self.company = company
