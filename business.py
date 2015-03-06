@@ -17,6 +17,8 @@ class Business(object):
 
         @param owner: The owner of this business.
         """
+        self.id = owner.game.current_place_id
+        owner.game.current_place_id += 1
         config = owner.game.config
         self.type = "business"
         self.city = owner.city
