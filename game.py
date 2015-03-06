@@ -362,3 +362,6 @@ class Game(object):
                 self.true_year += 1
                 self.year += 1
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
+
+    def pickle_state_components(self):
+

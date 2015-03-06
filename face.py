@@ -48,8 +48,6 @@ class Face(object):
         for feature in features:
             self.faceStr += feature + "\t" + features[feature] + "\t"
 
-        
-
     def __str__(self):
         """Return string representation."""
         return "Face of {0}".format(self.person.name)
