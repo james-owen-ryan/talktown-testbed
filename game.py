@@ -23,9 +23,11 @@ class Game(object):
         )
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.lover = None
+        self.pc = None
         self.city = None
         self.time_of_day = "day"
         self._establish_setting()
+        self._sim_and_save_a_week_of_timesteps()
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
@@ -56,26 +58,25 @@ class Game(object):
         # each of these establishments will bring in workers who will find vacant lots
         # on which to build homes
         self._establish_city_infrastructure()
-        # Now simulate to a week before gameplay  TODO
-        self.advance_timechunk(n_timesteps=5)
-       # self.advance_timechunk(n_timesteps=51122)
-        # # Now simulate at full fidelity for the remaining month
-        # while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
-        #     self.advance_timestep()
-        #     print "{0} days remain until founder death".format(
-        #         self.ordinal_date_that_the_founder_dies-self.ordinal_date
-        #     )
-        # # Select the player character and lover
-        # self.pc = self._select_player_character()
-        # self.pc_id = self.pc.id
-        # self.lover = self._select_lover_character()
-        # self.lover_id = self.lover.id
-        # # Simulate the night in question, on which the founder dies
-        # self.advance_timestep()
-        # self.founder.die(cause_of_death="Natural causes")
-        # # Finally, determine the initial evidence about the lover's appearance
-        # # that will be given to the player character (3/5 are true)
-        # self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
+        # Now simulate to a week before gameplay
+        self.advance_timechunk(n_timesteps=51122)
+        # Now simulate at full fidelity for the remaining week
+        while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
+            self.advance_timestep()
+            print "{0} days remain until founder death".format(
+                self.ordinal_date_that_the_founder_dies-self.ordinal_date
+            )
+        # Select the player character and lover
+        self.pc = self._select_player_character()
+        self.pc_id = self.pc.id
+        self.lover = self._select_lover_character()
+        self.lover_id = self.lover.id
+        # Simulate the night in question, on which the founder dies
+        self.advance_timestep()
+        self.founder.die(cause_of_death="Natural causes")
+        # Finally, determine the initial evidence about the lover's appearance
+        # that will be given to the player character (3/5 are true)
+        self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
 
     def _produce_city_founder(self):
         """Produce the very rich person who will essentially start up this city.
@@ -131,11 +132,13 @@ class Game(object):
             p not in self.pc.relationships
         ]
         if people_that_pc_doesnt_know_about:
-            # Pick the person who the most *other* people do know about
-            lover = max(people_that_pc_doesnt_know_about, key=lambda z: len([
-                q for q in self.city.residents if z in q.mind.mental_models
-            ]
-            ))
+            n_people_that_know_this_person = {}
+            for person in people_that_pc_doesnt_know_about:
+                n_people_that_know_this_person[person] = (
+                    len([q for q in self.city.residents if person in q.mind.mental_models])
+                )
+            # Pick the person having closest to 70 people who know about them
+            lover = min(people_that_pc_doesnt_know_about, key=lambda z: abs(70-n_people_that_know_this_person[z]))
         else:
             lover = random.choice([
                 person for person in self.city.residents if person.adult and person is not self.pc
@@ -161,6 +164,8 @@ class Game(object):
                     mutation[0][0] <= x <= mutation[0][1]
                 )
                 initial_evidence[feature_type] = mutated_feature
+        if initial_evidence["hair color"] == "blonde":  # Don't make them assume female lover
+            initial_evidence["hair color"] = "blond(e)"
         if initial_evidence["hair length"] == "bald":
             hair_str = "a bald head"
         elif initial_evidence["hair length"] == "medium":
@@ -168,12 +173,29 @@ class Game(object):
         else:
             hair_str = "{0} {1} hair".format(initial_evidence["hair length"], initial_evidence["hair color"])
         initial_evidence_str = (
-            "a {0} head, {1}, a {2} nose, and {3} eyes".format(
+            "a {0}-shaped head, {1}, a {2} nose, and {3} eyes".format(
                 initial_evidence["head shape"], hair_str, initial_evidence["nose shape"],
                 initial_evidence["eye color"],
             )
         )
         return initial_evidence, initial_evidence_str
+
+    def _sim_and_save_a_week_of_timesteps(self):
+        # First, save out miscellaneous details necessary for gameplay
+        import pickle
+        meta = {
+            "lover": self.lover.id, "player char": self.pc.id, "founder name": self.founder.name,
+            "founder is male": self.founder.male, "initial evidence str": self.initial_evidence_str
+        }
+        pickle.dump(meta,  open('/Users/jamesryan/Desktop/TOTT_states/meta.dat', 'wb'))
+        filename_suffixes = [
+            "_day1", "_night1", "_day2", "_night2", "_day3", "_night3", "_day4", "_night4",
+            "_day5", "_night5", "_day6", "_night6", "_day7", "_night7"
+        ]
+        for suffix in filename_suffixes:
+            print "Simulating and saving data for timestep {0}".format(suffix[1:])
+            self.advance_timestep(timestep_during_gameplay=True)
+            self.save_data(filename_suffix=suffix)
 
     @property
     def date(self):
@@ -304,7 +326,7 @@ class Game(object):
             owner.city = self.city
             business_type(owner=owner)
 
-    def advance_timestep(self):
+    def advance_timestep(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""
         self._advance_time()
         this_is_the_night_in_question = (
@@ -316,39 +338,42 @@ class Game(object):
                 person.relationships[other_person].interacted_this_timestep = False
         # Have people go to the location they will be at this timestep
         for person in self.city.residents:
-            person.routine.enact()
-            if this_is_the_night_in_question:
-                self.lover.location.people_here_now.remove(self.lover)
-                self.lover.location = self.founder.home
-                self.lover.location.people_here_now.add(self.lover)
+            if not (timestep_during_gameplay and person is self.pc):  # Don't sim where the PC is
+                person.routine.enact()
+                if this_is_the_night_in_question:
+                    self.lover.location.people_here_now.remove(self.lover)
+                    self.lover.location = self.founder.home
+                    self.lover.location.people_here_now.add(self.lover)
         # Have people observe their surroundings, which will cause knowledge to
         # build up, and have them socialize with other people also at that location --
         # this will cause relationships to form/progress and knowledge to propagate
         for person in self.city.residents:
-            if person.age > 3:
-                person.observe()
-                person.socialize()
+            if not (timestep_during_gameplay and person is self.pc):
+                if person.age > 3:
+                    person.observe()
+                    person.socialize()
         # Deteriorate people's mental models from time passing
         for person in self.city.residents:
-            for thing in list(person.mind.mental_models):
-                person.mind.mental_models[thing].deteriorate()
-            if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
-                person.reflect()
-                if person is self.lover:
-                    # Have them invent an alibi for where they were, in case
-                    # the PC encounters them and asks, in which case we don't
-                    # want them to just admit to being at the founder's home
-                    date = (self.ordinal_date_that_the_founder_dies, 1)
-                    if random.random() < 0.5:
-                        fake_alibi = person.home
-                    else:
-                        fake_alibi = random.choice(list(self.city.companies))
-                    fake_reflection = Reflection(subject=self.lover, source=self.lover)
-                    person.mind.mental_models[person].whereabouts.date[date] = Facet(
-                        value=fake_alibi.name, owner=self.lover, subject=self.lover,
-                        feature_type="whereabouts", initial_evidence=fake_reflection,
-                        predecessor=None, parent=None, object_itself=fake_alibi
-                    )
+            if not (timestep_during_gameplay and person is self.pc):
+                for thing in list(person.mind.mental_models):
+                    person.mind.mental_models[thing].deteriorate()
+                if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
+                    person.reflect()
+                    if person is self.lover:
+                        # Have them invent an alibi for where they were, in case
+                        # the PC encounters them and asks, in which case we don't
+                        # want them to just admit to being at the founder's home
+                        date = (self.ordinal_date_that_the_founder_dies, 1)
+                        if random.random() < 0.5:
+                            fake_alibi = person.home
+                        else:
+                            fake_alibi = random.choice(list(self.city.companies))
+                        fake_reflection = Reflection(subject=self.lover, source=self.lover)
+                        person.mind.mental_models[person].whereabouts.date[date] = Facet(
+                            value=fake_alibi.name, owner=self.lover, subject=self.lover,
+                            feature_type="whereabouts", initial_evidence=fake_reflection,
+                            predecessor=None, parent=None, object_itself=fake_alibi
+                        )
             # But also have them reflect accurately on their own features --
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:
@@ -365,8 +390,21 @@ class Game(object):
                 self.year += 1
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
 
-    def pickle_state_components(self, filename_suffix="_day1"):
+    def save_data(self, filename_suffix="_day1"):
         import pickle
+        # Pickle up city and building stuff
+        streets = self.city.getStreets()
+        blocks = self.city.getBlocks()
+        lots = self.city.getLots()
+        businesses = self.city.getBusinesses()
+        apartments = self.city.getApartments()
+        houses = self.city.getHouses()
+        pickle.dump(streets, open('/Users/jamesryan/Desktop/TOTT_states/streets' + filename_suffix + '.dat', 'wb'))
+        pickle.dump(blocks, open('/Users/jamesryan/Desktop/TOTT_states/blocks' + filename_suffix + '.dat', 'wb'))
+        pickle.dump(lots, open('/Users/jamesryan/Desktop/TOTT_states/lots' + filename_suffix + '.dat', 'wb'))
+        pickle.dump(businesses, open('/Users/jamesryan/Desktop/TOTT_states/businesses' + filename_suffix + '.dat', 'wb'))
+        pickle.dump(apartments, open('/Users/jamesryan/Desktop/TOTT_states/apartments' + filename_suffix + '.dat', 'wb'))
+        pickle.dump(houses, open('/Users/jamesryan/Desktop/TOTT_states/houses' + filename_suffix + '.dat', 'wb'))
         # Generate people_dict
         people_dict = {}
         for person in self.city.residents:
@@ -399,18 +437,8 @@ class Game(object):
                     for feature in all_features_of_knowledge_about_a_person:
                         if owner.get_knowledge_about_person(subject, feature):
                             owners_knowledge_about_subject.add(
-                                (feature, owner.get_knowledge_about_person(subject, feature))
+                                (feature, str(owner.get_knowledge_about_person(subject, feature)))
                             )
-                    people_dict[person.id]["get_knowledge"][other_person.id] = str(owners_knowledge_about_subject)
-        # Generate people_here_now_dict
-        people_here_now_dict = {}
-        for place in self.city.dwelling_places | self.city.companies:
-            people_here_now_dict[place.id] = set([p.id for p in place.people_here_now])
+                    people_dict[person.id]["get_knowledge"][other_person.id] = owners_knowledge_about_subject
         # Pickle people_dict
-        f = open('/Users/jamesryan/Desktop/TOTT_states/people_dict' + filename_suffix + '.dat', 'wb')
-        pickle.dump(people_dict, f)
-        f.close()
-        # Pickle people_here_now_dict
-        f = open('/Users/jamesryan/Desktop/TOTT_states/people_here_now_dict' + filename_suffix + '.dat', 'wb')
-        pickle.dump(people_here_now_dict, f)
-        f.close()
+        pickle.dump(people_dict,  open('/Users/jamesryan/Desktop/TOTT_states/people' + filename_suffix + '.dat', 'wb'))

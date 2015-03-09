@@ -101,17 +101,22 @@ class City(object):
     def getHouses(self):
         output = {}
         for house in self.houses:
-            output[house.id] = {"address":house.address,"lot":house.lot.id}
+            people_here_now = set([p.id for p in house.people_here_now])
+            output[house.id] = {"address":house.address,"lot":house.lot.id, "people_here_now":people_here_now}
         return output
     def getApartments(self):
         output = {}
         for apartment in self.apartment_complexes:
-            output[apartment.id] = {"address":apartment.name,"lot":apartment.lot.id}
+            people_here_now = set([p.id for p in apartment.people_here_now])
+            for unit in apartment.units:
+                people_here_now |= set([q.id for q in unit.people_here_now])
+            output[apartment.id] = {"address":apartment.name,"lot":apartment.lot.id, "people_here_now":people_here_now}
         return output
     def getBusinesses(self):
         output = {}
         for business in self.other_businesses:
-            output[business.id] = {"address":business.name,"lot":business.lot.id}
+            people_here_now = set([p.id for p in business.people_here_now])
+            output[business.id] = {"address":business.name,"lot":business.lot.id, "people_here_now":people_here_now}
         return output
     def getStreets(self):
         output = {}
