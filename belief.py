@@ -1819,3 +1819,42 @@ class Facet(str):
         self.evidence.add(new_evidence)
         new_evidence.beliefs_evidenced.add(self)
         self.strength += self.owner.game.config.strength_of_information_types[new_evidence.type]
+        
+    def explore(self):
+        print '{} holds this belief from the following evidence:'.format(self.owner.first_name)
+        for i in xrange(len(list(self.evidence))):
+            if piece.type == 'reflection':
+                print '{}. A reflection {} had about him/herself on the {} at {}.'.format(
+                    i, self.owner.first_name, piece.time[0].lower()+piece.time[1:], piece.location.name
+                )
+            elif piece.type == 'observation':
+                print '{}. An observation {} made on the {} at {}.'.format(
+                    i, self.owner.first_name, piece.time[0].lower()+piece.time[1:], piece.location.name
+                )
+            elif piece.type == 'concoction':
+                print '{}. A confabulation of this knowledge by {} on the {} at {}.'.format(
+                    i, self.owner.name, piece.time[0].lower()+piece.time[1:], piece.location.name
+                )
+            elif piece.type == 'statement':
+                print '{}. A statement by {} on the {} at {}.'.format(
+                    i, piece.source.name, piece.time[0].lower()+piece.time[1:], piece.location.name
+                )
+            elif piece.type == 'lie':
+                print '{}. A lie by {} on the {} at {}.'.format(
+                    i, piece.source.name, piece.time[0].lower()+piece.time[1:], piece.location.name
+                )
+            elif piece.type == 'mutation':
+                print "{}. A mutation from the value '{}' that happened in {}'s mind on the {} at {}.'.format(
+                    i, piece.mutated_belief_str, self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
+                    piece.location.name
+                )
+            elif piece.type == 'transference':
+                print "{}. A belief about {} that transferred to become a belief about {} (in {}'s mind) on the {} at {}.'.format(
+                    i, piece.attribute_transferred.subject.name, self.subject.name, self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
+                    piece.location.name
+                )
+            elif piece.type == 'forgetting':
+                print "{}. A forgetting of the value '{}' that happened in {}'s mind on the {} at {}.'.format(
+                    i, str(self.parent), self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
+                    piece.location.name
+                )
