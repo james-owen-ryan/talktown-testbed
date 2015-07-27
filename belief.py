@@ -1844,17 +1844,17 @@ class Facet(str):
                     i, piece.source.name, piece.time[0].lower()+piece.time[1:], piece.location.name
                 )
             elif piece.type == 'mutation':
-                print "{}. A mutation from the value '{}' that happened in {}'s mind on the {} at {}.'.format(
+                print "{}. A mutation from the value '{}' that happened in {}'s mind on the {} at {}.".format(
                     i, piece.mutated_belief_str, self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
                     piece.location.name
                 )
             elif piece.type == 'transference':
-                print "{}. A belief about {} that transferred to become a belief about {} (in {}'s mind) on the {} at {}.'.format(
+                print "{}. A belief about {} that transferred to become a belief about {} (in {}'s mind) on the {} at {}.".format(
                     i, piece.attribute_transferred.subject.name, self.subject.name, self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
                     piece.location.name
                 )
             elif piece.type == 'forgetting':
-                print "{}. A forgetting of the value '{}' that happened in {}'s mind on the {} at {}.'.format(
+                print "{}. A forgetting of the value '{}' that happened in {}'s mind on the {} at {}.".format(
                     i, str(self.parent), self.owner.first_name, piece.time[0].lower()+piece.time[1:], 
                     piece.location.name
                 )
