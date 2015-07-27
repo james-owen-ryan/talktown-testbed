@@ -389,7 +389,7 @@ class Game(object):
                 # Happy New Year
                 self.true_year += 1
                 self.year += 1
-                print "Simulating {} (city pop. is {}".format(self.year, self.city.pop)
+                print "Simulating {} (city pop. is {})".format(self.year, self.city.pop)
 
     def save_data(self, filename_suffix="_day1"):
         import pickle
