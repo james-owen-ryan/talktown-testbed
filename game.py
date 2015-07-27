@@ -61,9 +61,10 @@ class Game(object):
         # Now simulate to a week before gameplay
         self.advance_timechunk(n_timesteps=51122)
         # Now simulate at full fidelity for the remaining week
+        print "Simulating the propagation of knowledge for one week prior to gameplay..."
         while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
             self.advance_timestep()
-            print "Simulating the propagation of knowledge for one week prior to gameplay: {0} days remain until founder death".format(
+            print "\t{0} days remain until founder death".format(
                 self.ordinal_date_that_the_founder_dies-self.ordinal_date
             )
         # Select the player character and lover
