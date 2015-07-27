@@ -1822,7 +1822,9 @@ class Facet(str):
         
     def explore(self):
         print '{} holds this belief from the following evidence:'.format(self.owner.first_name)
-        for i in xrange(len(list(self.evidence))):
+        evidence = list(self.evidence)
+        for i in xrange(len(evidence)):
+            piece = evidence[i]
             if piece.type == 'reflection':
                 print '{}. A reflection {} had about him/herself on the {} at {}.'.format(
                     i, self.owner.first_name, piece.time[0].lower()+piece.time[1:], piece.location.name
