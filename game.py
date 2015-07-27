@@ -27,7 +27,7 @@ class Game(object):
         self.city = None
         self.time_of_day = "day"
         self._establish_setting()
-        self._sim_and_save_a_week_of_timesteps()
+        # self._sim_and_save_a_week_of_timesteps()
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
@@ -63,7 +63,7 @@ class Game(object):
         # Now simulate at full fidelity for the remaining week
         while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
             self.advance_timestep()
-            print "{0} days remain until founder death".format(
+            print "Simulating the propagation of knowledge for one week prior to gameplay: {0} days remain until founder death".format(
                 self.ordinal_date_that_the_founder_dies-self.ordinal_date
             )
         # Select the player character and lover
@@ -388,7 +388,7 @@ class Game(object):
                 # Happy New Year
                 self.true_year += 1
                 self.year += 1
-                print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
+                print "Simulating {} (city pop. is {}; there are {} vacant lots and {} vacant homes".format(self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop)
 
     def save_data(self, filename_suffix="_day1"):
         import pickle
