@@ -937,18 +937,18 @@ class Config(object):
         self.amount_of_people_people_talk_about_cap = 7
         self.chance_someones_feature_comes_up_in_conversation_about_them = (
             ("first name",                  0.80),
-            ("tattoo",                      0.20),
-            ("skin color",                  0.20),
-            ("scar",                        0.15),
-            ("birthmark",                   0.15),
-            ("last name",                   0.15),
-            ("workplace",                   0.12),
+            ("workplace",                   0.50),
+            ("job title",                   0.30),
+            ("job shift",                   0.30),
+            ("last name",                   0.25),
+            ("tattoo",                      0.10),
+            ("skin color",                  0.10),
             ("hair color",                  0.08),
+            ("scar",                        0.05),
+            ("birthmark",                   0.05),
             ("home",                        0.05),
             ("facial hair style",           0.05),
             ("freckles",                    0.05),
-            ("job shift",                   0.05),
-            ("job title",                   0.05),
             ("glasses",                     0.05),
             ("sunglasses",                  0.05),
             ("head size",                   0.04),
@@ -1060,6 +1060,7 @@ class Config(object):
             ((0.7, 0.9), 'm'),  # Mutation
             ((0.9, 1.0), 't'),  # Transference
         )
+        self.chance_of_confabulation_on_a_given_timestep = 0.02
         self.memory_mutations = {
             # Probabilities specifying how feature values are likely to degrade
             # NAMES [handled differently]

@@ -193,7 +193,7 @@ class MentalModel(object):
                 belief_facet_obj = self._forget_belief_facet(
                     feature_type=feature_type, belief_facet_being_forgotten=current_belief_facet
                 )
-        else:
+        else:  # Confabulation
             belief_facet_obj = self._confabulate_belief_facet(
                 feature_type=feature_type, current_belief_facet=current_belief_facet
             )
@@ -338,16 +338,16 @@ class BusinessMentalModel(MentalModel):
                 if current_belief_facet is not None:
                     feature_type_str = current_belief_facet.feature_type
                     belief_facet_strength = current_belief_facet.strength
-                else:
+                    # Determine the chance of memory deterioration, which starts from a base value
+                    # that gets affected by the person's memory and the strength of the belief facet
+                    chance_of_memory_deterioration = (
+                        config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
+                        self.owner.mind.memory /
+                        belief_facet_strength
+                    )
+                else:  # Could still confabulate
                     feature_type_str = self.attribute_to_belief_type(attribute=feature)
-                    belief_facet_strength = 1
-                # Determine the chance of memory deterioration, which starts from a base value
-                # that gets affected by the person's memory and the strength of the belief facet
-                chance_of_memory_deterioration = (
-                    config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
-                    self.owner.mind.memory /
-                    belief_facet_strength
-                )
+                    chance_of_memory_deterioration = config.chance_of_confabulation_on_a_given_timestep
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
                     # the existing one (which itself may be a deterioration already) --
@@ -815,7 +815,7 @@ class PersonMentalModel(MentalModel):
         self.occupation = WorkBelief(person_model=self)
         self.face = FaceBelief(person_model=self)
         self.whereabouts = WhereaboutsBelief(person_model=self)
-        self.home = None
+        self.home = None  # Currently a straggler because there's only one facet component to it
         # Establish initial belief facets according to an initial observation/reflection
         if observation_or_reflection:
             self.name.establish(observation_or_reflection=observation_or_reflection)
