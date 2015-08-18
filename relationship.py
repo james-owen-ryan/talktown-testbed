@@ -34,14 +34,14 @@ class Relationship(object):
             self.compatibility = preceded_by.compatibility
             # Inherit the charge increment and current charge of the preceding Acquaintance
             self.charge_increment = float(preceded_by.charge_increment)
-            self.charge = 0
+            self.charge = preceded_by.charge
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
-            self.spark = 0
+            self.spark = preceded_by.spark
         # This attribute records whether the other person has already called the
         # progress_relationship() method of this object on this timestep -- it gets
         # set to True by progress_relationship() and then turned back to False by
-        # Game.advance_timestep()
+        # Game.enact_hi_fi_simulation()
         self.interacted_this_timestep = False
 
     def _init_get_compatibility(self):
@@ -173,6 +173,13 @@ class Relationship(object):
     def __str__(self):
         """Return string representation."""
         return "{0}'s {1} with {2}".format(self.owner.name, self.type, self.subject.name)
+
+    @property
+    def trust(self):
+        """A value representing how much owner trusts subject."""
+        config = self.owner.game.config
+        trust = config.function_to_determine_trust_charge_boost(charge=self.charge)
+        return trust
 
     @property
     def age_difference_effect_on_charge_increment(self):

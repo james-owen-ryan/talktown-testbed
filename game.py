@@ -21,13 +21,17 @@ class Game(object):
         self.ordinal_date_that_the_founder_dies = (
             datetime.date(*self.config.date_the_founder_dies).toordinal()
         )
+        # A game's event number allows the precise ordering of events that
+        # happened on the same timestep -- every time an event happens, it requests an
+        # event number from Game.assign_event_number(), which also increments the running counter
+        self.event_number = 0
         self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
         self.lover = None
         self.pc = None
         self.city = None
         self.time_of_day = "day"
-        self._establish_setting()
-        self._sim_and_save_a_week_of_timesteps()
+        # self._establish_setting()
+        # self._sim_and_save_a_week_of_timesteps()
 
     def _establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
@@ -59,10 +63,10 @@ class Game(object):
         # on which to build homes
         self._establish_city_infrastructure()
         # Now simulate to a week before gameplay
-        self.advance_timechunk(n_timesteps=51122)
+        self.enact_lo_fi_simulation(n_timesteps=51122)
         # Now simulate at full fidelity for the remaining week
         while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
-            self.advance_timestep()
+            self.enact_hi_fi_simulation()
             print "{0} days remain until founder death".format(
                 self.ordinal_date_that_the_founder_dies-self.ordinal_date
             )
@@ -72,7 +76,7 @@ class Game(object):
         self.lover = self._select_lover_character()
         self.lover_id = self.lover.id
         # Simulate the night in question, on which the founder dies
-        self.advance_timestep()
+        self.enact_hi_fi_simulation()
         self.founder.die(cause_of_death="Natural causes")
         # Finally, determine the initial evidence about the lover's appearance
         # that will be given to the player character (3/5 are true)
@@ -112,6 +116,7 @@ class Game(object):
             owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
             owner.city = self.city
             business(owner=owner)
+            owner.move_into_the_city(hiring_that_instigated_move=owner.occupation)
 
         # 7. eventually, have other people come in and start more of the following: OptometryClinic,
         # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
@@ -119,11 +124,12 @@ class Game(object):
         # 	- For these, have them potentially be started by reasoning over supply, need, etc.
 
     def _select_player_character(self):
-        if any(k for k in self.founder.kids|self.founder.grandchildren if k.present):
+        if any(k for k in self.founder.kids | self.founder.grandchildren if k.present):
             player_character = next(
-                k for k in self.founder.kids|self.founder.grandchildren if k.present
+                k for k in self.founder.kids | self.founder.grandchildren if k.present
             )
-        player_character = random.choice([p for p in self.city.residents if p.adult])
+        else:
+            player_character = random.choice([p for p in self.city.residents if p.adult])
         return player_character
 
     def _select_lover_character(self):
@@ -194,8 +200,13 @@ class Game(object):
         ]
         for suffix in filename_suffixes:
             print "Simulating and saving data for timestep {0}".format(suffix[1:])
-            self.advance_timestep(timestep_during_gameplay=True)
+            self.enact_hi_fi_simulation(timestep_during_gameplay=True)
             self.save_data(filename_suffix=suffix)
+
+    def assign_event_number(self):
+        """Assign an event number to some event, to allow for precise ordering of events that happened same timestep."""
+        self.event_number += 1
+        return self.event_number
 
     @property
     def date(self):
@@ -250,18 +261,24 @@ class Game(object):
                 ids_of_these_people.add(person.id)
         return ids_of_these_people
 
-    def advance_timechunk(self, n_timesteps=51122):
-        """Simulate the passing of a chunk of time at a lower fidelity than normal."""
+    def enact_lo_fi_simulation(self, n_timesteps=51122):
+        """Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay."""
         last_simulated_day = self.ordinal_date
         for i in xrange(n_timesteps):
             self._advance_time()
+            # Simulate births, even if this day will not actually be simulated
+            for person in list(self.city.residents):
+                if person.pregnant:
+                    if self.ordinal_date >= person.due_date:
+                        if self.time_of_day == 'day':
+                            if random.random() < 0.5:
+                                person.give_birth()
+                        else:
+                            person.give_birth()
             chance_of_a_day_being_simulated = 0.005
             if random.random() < chance_of_a_day_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
-                    if person.pregnant:
-                        if self.ordinal_date >= person.due_date:
-                            person.give_birth()
                     if person.marriage:
                         chance_they_are_trying_to_conceive_this_year = (
                             self.config.function_to_determine_chance_married_couple_are_trying_to_conceive(
@@ -274,9 +291,9 @@ class Game(object):
                     if person.age > max(65, random.random() * 100):
                         if person is not self.founder:
                             person.die(cause_of_death="Natural causes")
-                    elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
-                        if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
-                            person.depart_city()
+                    # elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
+                    #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
+                    #         person.depart_city()
                     elif person.adult and not person.occupation:
                         if random.random() < 0.005:
                             self.consider_new_business_getting_constructed()
@@ -298,9 +315,14 @@ class Game(object):
                 # build up, and have them socialize with other people also at that location --
                 # this will cause relationships to form/progress and knowledge to propagate
                 for person in list(self.city.residents):
-                    if person.age > 3:
-                        # person.observe()
-                        person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
+                    # Person may have married (during an earlier iteration of this loop) and
+                    # then immediately departed because the new couple could not find home,
+                    # so we still have to make sure they actually live in the city currently before
+                    # having them socialize
+                    if person in self.city.residents:
+                        if person.age > 3:
+                            # person.observe()
+                            person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
                 last_simulated_day = self.ordinal_date
 
     def consider_new_business_getting_constructed(self):
@@ -326,7 +348,7 @@ class Game(object):
             owner.city = self.city
             business_type(owner=owner)
 
-    def advance_timestep(self, timestep_during_gameplay=False):
+    def enact_hi_fi_simulation(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""
         self._advance_time()
         this_is_the_night_in_question = (
@@ -359,21 +381,21 @@ class Game(object):
                     person.mind.mental_models[thing].deteriorate()
                 if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
                     person.reflect()
-                    if person is self.lover:
-                        # Have them invent an alibi for where they were, in case
-                        # the PC encounters them and asks, in which case we don't
-                        # want them to just admit to being at the founder's home
-                        date = (self.ordinal_date_that_the_founder_dies, 1)
-                        if random.random() < 0.5:
-                            fake_alibi = person.home
-                        else:
-                            fake_alibi = random.choice(list(self.city.companies))
-                        fake_reflection = Reflection(subject=self.lover, source=self.lover)
-                        person.mind.mental_models[person].whereabouts.date[date] = Facet(
-                            value=fake_alibi.name, owner=self.lover, subject=self.lover,
-                            feature_type="whereabouts", initial_evidence=fake_reflection,
-                            predecessor=None, parent=None, object_itself=fake_alibi
-                        )
+                    # if person is self.lover:
+                    #     # Have them invent an alibi for where they were, in case
+                    #     # the PC encounters them and asks, in which case we don't
+                    #     # want them to just admit to being at the founder's home
+                    #     date = (self.ordinal_date_that_the_founder_dies, 1)
+                    #     if random.random() < 0.5:
+                    #         fake_alibi = person.home
+                    #     else:
+                    #         fake_alibi = random.choice(list(self.city.companies))
+                    #     fake_reflection = Reflection(subject=self.lover, source=self.lover)
+                    #     person.mind.mental_models[person].whereabouts.date[date] = Facet(
+                    #         value=fake_alibi.name, owner=self.lover, subject=self.lover,
+                    #         feature_type="whereabouts", initial_evidence=fake_reflection,
+                    #         predecessor=None, parent=None, object_itself=fake_alibi
+                    #     )
             # But also have them reflect accurately on their own features --
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:
@@ -442,3 +464,14 @@ class Game(object):
                     people_dict[person.id]["get_knowledge"][other_person.id] = owners_knowledge_about_subject
         # Pickle people_dict
         pickle.dump(people_dict,  open('/Users/jamesryan/Desktop/TOTT_states/people' + filename_suffix + '.dat', 'wb'))
+
+    def find(self, name):
+        """Return person living in this city with that name."""
+        if any(p for p in self.city.residents if p.name == name):
+            return next(p for p in self.city.residents if p.name == name)
+        else:
+            raise Exception('There is no one in {} named {}'.format(self.city.name, name))
+
+
+g = Game()
+g._establish_setting()

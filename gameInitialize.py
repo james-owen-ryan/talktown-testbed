@@ -3,7 +3,7 @@ from city import *
 from config import *
 import pickle
 gameInstance = Game()
-gameInstance.advance_timestep()
+gameInstance.enact_hi_fi_simulation()
 blocks = gameInstance.city.blocks
 lots = gameInstance.city.lots
 people = gameInstance.city.residents

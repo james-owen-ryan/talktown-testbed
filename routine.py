@@ -4,7 +4,10 @@ import random
 # TODO -- visiting methods don't take into account
 # whether the person they will visit is even home;
 # once we implement a telephone system, have them
-# call first, or have people invite people over too
+# call first, or have people invite people over too;
+# if someone does have someone over, whether they were
+# invited or not, the occasion should actually be
+# 'leisure', not 'home'
 
 
 class Routine(object):
@@ -24,35 +27,35 @@ class Routine(object):
 
     def enact(self):
         """Enact this person's daily routine for a particular timestep."""
-        if self.person.location:
-            self.person.location.people_here_now.remove(self.person)
-        self.person.location, self.working = self.decide_where_to_go()
-        self.person.location.people_here_now.add(self.person)
+        new_location, occasion = self.decide_where_to_go()
+        self.working = True if occasion == 'work' else False
+        self.person.go_to(destination=new_location, occasion=occasion)
 
     def decide_where_to_go(self):
-        """Return this person's daytime location, which is dynamic."""
+        """Return the location at which this person will spend the next timestep, as well as the
+        occasion for them doing so.
+        """
         config = self.person.game.config
-        working = False  # Keep track of this, because they could be going into work on an off-day (e.g., restaurant)
         if not self.person.adult:
             if self.person.game.time_of_day == "day":
-                location = self._go_to_school_or_daycare()
+                location, occasion = self._go_to_school_or_daycare(), 'school'
             else:
-                location = self.person.home  # Kids stay home at night
-            working = False
+                location, occasion = self.person.home, 'home'  # Kids stay home at night
         elif self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
             if random.random() < config.chance_someone_doesnt_have_to_work_some_day:
                 if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
-                    location = self._go_in_public()
+                    location, occasion = self._go_in_public()
                 else:
-                    location = self.person.home
+                    location, occasion = self.person.home, 'home'
             elif random.random() < config.chance_someone_calls_in_sick_to_work:
                 if random.random() < config.chance_someone_leaves_home_on_sick_day:
-                    location = self._go_in_public()
+                    location, occasion = self._go_in_public()
                 else:
-                    location = self.person.home
+                    location, occasion = self.person.home, 'home'
             else:
-                working = True
-                location = self.person.occupation.company
+                # We specifically note that they are working, because they could be going into
+                # their place of work on an off-day (e.g., restaurant)
+                location, occasion = self.person.occupation.company, 'work'
         else:
             chance_of_leaving_home = self.person.personality.extroversion
             if self.person.kids_at_home:
@@ -64,10 +67,10 @@ class Routine(object):
             elif chance_of_leaving_home > cap:
                 chance_of_leaving_home = cap
             if random.random() < chance_of_leaving_home:
-                location = self._go_in_public()
+                location, occasion = self._go_in_public()
             else:
-                location = self.person.home
-        return location, working
+                location, occasion = self.person.home, 'home'
+        return location, occasion
 
     def _go_to_school_or_daycare(self):
         """Return the school or day care that this child attends."""
@@ -81,18 +84,18 @@ class Routine(object):
         """Return the location in public that this person will go to."""
         config = self.person.game.config
         if random.random() < config.chance_someone_goes_on_errand_vs_visits_someone:
-            location = self._go_on_errand()
+            location, occasion = self._go_on_errand()
         else:
             person_they_will_visit = self._visit_someone()
             if person_they_will_visit:
-                location = person_they_will_visit.home
+                location, occasion = person_they_will_visit.home, 'leisure'
             else:
-                location = self.person.home
+                location, occasion = self.person.home, 'home'
         # In case something went wrong, e.g., there's no business of a type
         # that this person patronizes, just have them stay at home
         if not location:
-            location = self.person.home
-        return location
+            location, occasion = self.person.home, 'home'
+        return location, occasion
 
     def _go_on_errand(self):
         """Return the location associated with some errand this person will go on."""
@@ -115,7 +118,15 @@ class Routine(object):
                 e[0][0] <= x <= e[0][1]
             )[1]
         location = self.businesses_patronized[business_type_of_errand]
-        return location
+        # Determine whether the occasion is an errand or just leisure -- in the case of location
+        # being None, which happens if the person has no business of the given type that they
+        # patronize, simply set occasion to None, since _go_in_public() will end up having the
+        # person staying home anyway (and will change occasion to 'home')
+        if location:
+            occasion = config.business_type_to_occasion_for_visit[location.__class__.__name__]
+        else:
+            occasion = None
+        return location, occasion
 
     def _visit_someone(self):
         """Return the residence of the person who this person will go visit."""

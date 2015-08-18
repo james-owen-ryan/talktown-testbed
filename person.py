@@ -8,8 +8,9 @@ from mind import Mind
 import occupation
 from face import Face
 from routine import Routine
+from whereabouts import Whereabouts
 from relationship import Acquaintance
-from knowledge import Reflection, Observation, Lie, Statement
+from evidence import Reflection, Observation, Lie, Statement
 from belief import *
 
 
@@ -62,6 +63,9 @@ class Person(object):
         self.mind = Mind(person=self)
         # Set daily routine
         self.routine = Routine(person=self)
+        # Prepare Whereabouts object, which tracks a person's whereabouts at every
+        # timestep of their life
+        self.whereabouts = Whereabouts(person=self)
         # Prepare name attributes that get set by event.Birth._name_baby() (or PersonExNihilo._init_name())
         self.first_name = None
         self.middle_name = None
@@ -157,7 +161,8 @@ class Person(object):
         self.college_graduate = False
         # Prepare attributes pertaining to dynamic emotional considerations
         self.grieving = False  # After spouse dies
-        # Prepare attributes pertaining to exact location at a point
+        # Prepare attribute pertaining to exact location for the current timestep; this
+        # will always be modified by self.go_to()
         self.location = None
 
         self.where_when = set()  # TODO DELETE
@@ -358,6 +363,22 @@ class Person(object):
     def _init_money(self):
         """Determine how much money this person has to start with."""
         return 0
+
+    @property
+    def reflexive(self):
+        """Return appropriately gendered reflexive pronoun."""
+        if self.male:
+            return 'himself'
+        else:
+            return 'herself'
+
+    @property
+    def possessive(self):
+        """Return appropriately gendered possessive pronoun."""
+        if self.male:
+            return 'his'
+        else:
+            return 'her'
 
     @property
     def full_name(self):
@@ -618,7 +639,7 @@ class Person(object):
         events += [self.departure, self.death]
         while None in events:
             events.remove(None)
-        events.sort(key=lambda ev: ev.year)  # Sort chronologically
+        events.sort(key=lambda ev: ev.event_number)  # Sort chronologically
         return events
 
     def get_feature(self, feature_type):
@@ -660,7 +681,15 @@ class Person(object):
             "glasses": self.face.distinctive_features.glasses,
             "sunglasses": self.face.distinctive_features.sunglasses
         }
-        return features[feature_type]
+        # Have to do special thing for whereabouts, because they are indexed by date;
+        # specifically, we parse the feature type, which will look something like
+        # 'whereabouts 723099-1'
+        if 'whereabouts' in feature_type:
+            timestep = feature_type[12:]
+            ordinal_date, day_or_night = timestep.split('-')
+            return self.whereabouts.date[(int(ordinal_date), int(day_or_night))]
+        else:
+            return features[feature_type]
 
     def get_knowledge_about_person(self, other_person, feature_type):
         """Return this person's knowledge about another person's feature of the given type."""
@@ -669,9 +698,9 @@ class Person(object):
         else:
             features = {
                 # Name
-                "first name": self.mind.mental_models[other_person].first_name,
-                "middle name": self.mind.mental_models[other_person].middle_name,
-                "last name": self.mind.mental_models[other_person].last_name,
+                "first name": self.mind.mental_models[other_person].name.first_name,
+                "middle name": self.mind.mental_models[other_person].name.middle_name,
+                "last name": self.mind.mental_models[other_person].name.last_name,
                 # Occupation
                 "workplace": (str(self.mind.mental_models[other_person].occupation.company) if  # Name of company
                               self.mind.mental_models[other_person].occupation.company else None),
@@ -912,8 +941,16 @@ class Person(object):
     def move(self, new_home, reason):
         """Move to an apartment or home."""
         event.Move(subjects=tuple(self.nuclear_family), new_home=new_home, reason=reason)
-        self.location = self.home
-        self.home.people_here_now.add(self)
+
+    def go_to(self, destination, occasion=None):
+        """Go to destination and spend this timestep there."""
+        if self.location:  # People just being instantiated won't have a location yet
+            self.location.people_here_now.remove(self)
+        self.location = destination
+        if destination and self.alive:  # 'destination' will be None for Departures, and dead people go_to cemetery
+            destination.people_here_now.add(self)
+            # Update this person's whereabouts
+            self.whereabouts.record(occasion=occasion)
 
     def pay(self, payee, amount):
         """Pay someone (for services rendered)."""
@@ -926,7 +963,7 @@ class Person(object):
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
         event.Departure(subject=self)
-        for person in self.nuclear_family - set([self]):
+        for person in self.nuclear_family - {self}:
             if person in self.city.residents:
                 event.Departure(subject=person)
 
@@ -1155,8 +1192,8 @@ class Person(object):
 
     def observe(self):
         """Observe the place one is at and the people there."""
-        for thing in set([self.location]) | self.location.people_here_now - set([self]):
-            if random.random() < 0.75:
+        for thing in {self.location} | self.location.people_here_now - {self}:
+            if random.random() < self.game.config.chance_someone_observes_nearby_entity:
                 self._form_or_build_up_mental_model(subject=thing)
 
     def _form_or_build_up_mental_model(self, subject):
@@ -1174,21 +1211,21 @@ class Person(object):
 
     def socialize(self, missing_timesteps_to_account_for=1):
         """Socialize with nearby people."""
-        # TODO weird bug where people don't have a location
-        if self.location:
-            for person in list(self.location.people_here_now):
-                if self._decide_to_instigate_social_interaction(other_person=person):
-                    if person not in self.relationships:
-                        Acquaintance(owner=self, subject=person, preceded_by=None)
-                    if not self.relationships[person].interacted_this_timestep:
-                        # Make sure they didn't already interact this timestep
-                        self.relationships[person].progress_relationship(
-                            missing_days_to_account_for=missing_timesteps_to_account_for
-                        )
-                        # If this is being called by the full-fidelity simulation,
-                        # have these two people exchange information with each other
-                        if missing_timesteps_to_account_for == 1:
-                            self._exchange_information(interlocutor=person)
+        if not self.location:
+            raise Exception("{} tried to socialize, but they have no location currently.".format(self.name))
+        for person in list(self.location.people_here_now):
+            if self._decide_to_instigate_social_interaction(other_person=person):
+                if person not in self.relationships:
+                    Acquaintance(owner=self, subject=person, preceded_by=None)
+                if not self.relationships[person].interacted_this_timestep:
+                    # Make sure they didn't already interact this timestep
+                    self.relationships[person].progress_relationship(
+                        missing_days_to_account_for=missing_timesteps_to_account_for
+                    )
+                    # If this is being called by the full-fidelity simulation,
+                    # have these two people exchange information with each other
+                    if missing_timesteps_to_account_for == 1:
+                        self._exchange_information(interlocutor=person)
 
     def _exchange_information(self, interlocutor):
         """Exchange information with this person."""
@@ -1225,8 +1262,19 @@ class Person(object):
             talker = me_or_interlocutor
             listener = self if talker is not self else interlocutor
             statement = Statement(subject=person_in_question, source=talker, recipient=listener)
-            for feature_type_and_prob in config.chance_someones_feature_comes_up_in_conversation_about_them:
-                feature_type, prob = feature_type_and_prob
+            declaration = Declaration(subject=person_in_question, source=talker, recipient=listener)
+            # Potentially have someone eavesdrop -- TODO maybe affect this by whether eavesdropper knows subject
+            people_in_earshot = self.location.people_here_now - {talker, listener}
+            eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
+            if eavesdropper and random.random() < config.chance_someone_eavesdrops_statement_or_lie:
+                eavesdropping = Eavesdropping(
+                    subject=person_in_question, source=talker, recipient=listener, eavesdropper=eavesdropper
+                )
+                if person_in_question not in eavesdropper.mind.mental_models:
+                    PersonMentalModel(owner=eavesdropper, subject=person_in_question, observation_or_reflection=None)
+            else:
+                eavesdropping = None
+            for feature_type, prob in config.chance_someones_feature_comes_up_in_conversation_about_them:
                 if random.random() < prob:
                     if talker.get_knowledge_about_person(other_person=person_in_question, feature_type=feature_type):
                         talker_belief_facet = (
@@ -1234,16 +1282,31 @@ class Person(object):
                                 feature_type=feature_type
                             )
                         )
+                        # Attribute to the statement the strength of the talker's belief at this moment
+                        statement.teller_belief_strength[feature_type] = talker_belief_facet.strength
+                        if eavesdropping:
+                            eavesdropping.teller_belief_strength[feature_type] = talker_belief_facet.strength
+                        # Have the listener consider the new evidence
                         listener.mind.mental_models[person_in_question].consider_new_evidence(
                             feature_type=feature_type, feature_value=str(talker_belief_facet),
-                            feature_object_itself=talker_belief_facet.object_itself, new_evidence=statement,
-                            parent_belief_facet=talker_belief_facet
+                            feature_object_itself=talker_belief_facet.object_itself, new_evidence=statement
                         )
+                        # Have the talker reinforce their own belief by virtue of having just conveyed it
+                        talker.mind.mental_models[person_in_question].consider_new_evidence(
+                            feature_type=feature_type, feature_value=str(talker_belief_facet),
+                            feature_object_itself=talker_belief_facet.object_itself, new_evidence=declaration
+                        )
+                        # If someone is eavesdropping, have them consider the new evidence
+                        if eavesdropping:
+                            eavesdropper.mind.mental_models[person_in_question].consider_new_evidence(
+                                feature_type=feature_type, feature_value=str(talker_belief_facet),
+                                feature_object_itself=talker_belief_facet.object_itself, new_evidence=eavesdropping
+                            )
 
     def _decide_to_instigate_social_interaction(self, other_person):
         """Decide whether to instigate a social interaction with another person."""
         config = self.game.config
-        if other_person is self:
+        if other_person is self or other_person.age < 5:
             chance = 0.0
         else:
             extroversion_component = self._get_extroversion_component_to_chance_of_social_interaction()
@@ -1296,6 +1359,7 @@ class Person(object):
 
     def salience_of_person(self, person):
         """Return how salient the other person is to this person."""
+        # TODO, BOOST ACCORDING CHARGE AND SPARK
         config = self.game.config
         salience = 0
         # Score salience for this person's relationship to self
@@ -1401,11 +1465,13 @@ class PersonExNihilo(Person):
     def _init_name(self):
         """Generate a name for a primordial person who has no parents."""
         if self.male:
-            first_name = Name(value=Names.a_masculine_name(), progenitor=self, conceived_by=(), derived_from=())
-            middle_name = Name(value=Names.a_masculine_name(), progenitor=self, conceived_by=(), derived_from=())
+            first_name_rep = Names.a_masculine_name(year=self.birth_year)
+            middle_name_rep = Names.a_masculine_name(year=self.birth_year)
         else:
-            first_name = Name(value=Names.a_feminine_name(), progenitor=self, conceived_by=(), derived_from=())
-            middle_name = Name(value=Names.a_feminine_name(), progenitor=self, conceived_by=(), derived_from=())
+            first_name_rep = Names.a_feminine_name(year=self.birth_year)
+            middle_name_rep = Names.a_feminine_name(year=self.birth_year)
+        first_name = Name(value=first_name_rep, progenitor=self, conceived_by=(), derived_from=())
+        middle_name = Name(value=middle_name_rep, progenitor=self, conceived_by=(), derived_from=())
         last_name = Name(value=Names.any_surname(), progenitor=self, conceived_by=(), derived_from=())
         suffix = ''
         return first_name, middle_name, last_name, suffix

@@ -14,3 +14,6 @@
 
 [5] Shanhong Luo and Guangjian Zhang. "What Leads to Romantic Attraction: Similarity, Reciprocity,
         Security, or Beauty? Evidence From a Speed-Dating Study"
+
+[6] Wilson, R. M.; Gambrell, L. B.; and Pfeiffer, W. R. 1985. "The effects of retelling upon reading
+        comprehension and recall of text information". The Journal of Educational Research 78(4):216–220.

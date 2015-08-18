@@ -1,5 +1,5 @@
 import random
-from knowledge import *
+from evidence import *
 from corpora import Names
 
 
@@ -14,6 +14,12 @@ class MentalModel(object):
         self.owner = owner
         self.subject = subject
         self.owner.mind.mental_models[self.subject] = self
+        # This dictionary maps feature types (i.e., 'first name', 'hair color') to their
+        # trajectories, meaning a list of the belief facets they've held for that attribute of the
+        # subject in the order that they were held; facets may appear multiple times in the case
+        # that they were overtaken and then subsequently were reinstated; this attribute gets
+        # modified every time a new Facet object initializes or takes over
+        self.belief_trajectories = {}
 
     def __str__(self):
         """Return string representation."""
@@ -25,7 +31,7 @@ class MentalModel(object):
         strength of already correct facets.
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-            if feature != "subject" and feature != "owner":
+            if feature not in ("subject", "owner", "belief_trajectories"):
                 belief_facet = self.__dict__[feature]
                 if belief_facet is None or not belief_facet.accurate:
                     feature_type = self.attribute_to_belief_type(attribute=feature)
@@ -39,23 +45,21 @@ class MentalModel(object):
                     # Belief facet is already accurate, but update its evidence to point to the new
                     # observation or reflection (which will slow any potential deterioration) -- this
                     # will also increment the strength of the belief facet, which will make it less
-                    # likely to deteriorate in this future
+                    # likely to deteriorate in the future
                     belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
-    def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence,
-                              parent_belief_facet):
+    def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence):
         """Consider new evidence that someone has given you.
 
         If this new evidence is in regards to a feature type for which this person has
         no existing belief, they will form a new belief and use this as its initial
         evidence. If it is contrary to a belief this person already has, the
         reasoning here will cause this person to either change their belief according
-        to this new evidence or to disregard this new evidence. If the new evidence
-        supports an existing belief, they will add this new evidence to their evidence
-        for that belief (which will strengthen it).
-
-        TODO: Include notions of how much you trust this person and how strong their
-        confidence in the belief is.
+        to this new evidence or to attribute the new evidence to a challenger belief
+        (a belief that contradicts their currently held belief, but for which they still
+        keep track of and attribute evidence to). If the new evidence supports an existing
+        belief (challenger), they will add this new evidence to their evidence for that
+        belief (which will strengthen it).
 
         @param feature_type: A string for the type of feature to which this new evidence
                              pertains.
@@ -64,45 +68,87 @@ class MentalModel(object):
         @param feature_object_itself: The feature object itself for knowledge that has that,
                                       e.g., a belief of what dwelling place a person lives in.
         @param new_evidence: A Statement or Lie object that reifies this new evidence.
-        @param parent_belief_facet: If the new evidence is a Statement, the belief facet that
-                                    the person delivering the statement is expressing by that
-                                    statement; if it's a Lie, None.
         """
-        config = self.owner.game.config
         command_to_access_my_current_belief = self.get_command_to_access_a_belief_facet(
             feature_type=feature_type
         )
-        if eval(command_to_access_my_current_belief) == feature_value:
-            # This new evidence supports an existing belief
-            command_to_attribute_new_evidence = (
-                command_to_access_my_current_belief + '.attribute_new_evidence(new_evidence=new_evidence)'
-            )
-            exec command_to_attribute_new_evidence
-        elif eval(command_to_access_my_current_belief) in (None, ''):
+        current_belief_facet = eval(command_to_access_my_current_belief)
+        if current_belief_facet == feature_value:
+            # This new evidence supports an existing belief, so attribute it accordingly
+            current_belief_facet.attribute_new_evidence(new_evidence=new_evidence)
+        elif current_belief_facet is None or current_belief_facet == '':
             # You don't have an existing belief, so instantiate a new belief facet
             # with this new evidence as its initial evidence
-            predecessor = ''  # Throwaway line to appease my IDE, which doesn't realize next line defines it
-            if eval(command_to_access_my_current_belief) == '':
-                exec('predecessor = ' + command_to_access_my_current_belief)
-            else:
-                predecessor = None
-            new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject, feature_type=feature_type,
-                              initial_evidence=new_evidence, predecessor=predecessor, parent=parent_belief_facet,
-                              object_itself=feature_object_itself)
-            exec(command_to_access_my_current_belief + ' = new_facet')
+            new_belief_facet = Facet(
+                value=feature_value, owner=self.owner, subject=self.subject, feature_type=feature_type,
+                initial_evidence=new_evidence, object_itself=feature_object_itself
+            )
+            self.adopt_belief(new_belief_facet)
         else:
-            # This new evidence contradicts an existing belief you have -- check if
-            # the strength of the new evidence exceeds the strength of your existing evidence;
-            # if it does, change your belief accordingly; if it doesn't, ignore it (TODO don't ignore it)
-            strength_of_new_evidence = config.strength_of_information_types[new_evidence.type]
-            strength_of_my_belief = eval(command_to_access_my_current_belief + '.strength')
-            if strength_of_new_evidence >= strength_of_my_belief:
-                predecessor = ''  # Throwaway line to appease my IDE, which doesn't realize next line defines it
-                exec('predecessor = ' + command_to_access_my_current_belief)
-                new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject,
-                                  feature_type=feature_type, initial_evidence=new_evidence, predecessor=predecessor,
-                                  parent=parent_belief_facet, object_itself=feature_object_itself)
-                exec(command_to_access_my_current_belief + ' = new_facet')
+            # This new evidence contradicts an existing belief, consider it accordingly
+            self._consider_contradictory_evidence(
+                feature_type=feature_type, feature_value=feature_value,
+                feature_object_itself=feature_object_itself, new_evidence=new_evidence
+            )
+
+    def _consider_contradictory_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence):
+        """Consider new evidence that contradicts the currently held belief facet."""
+        # Access the currently held belief facet
+        command_to_access_my_current_belief = self.get_command_to_access_a_belief_facet(
+            feature_type=feature_type
+        )
+        current_belief_facet = eval(command_to_access_my_current_belief)
+        # Check if this evidence supports any challenger to the currently held belief facet
+        if any(challenger for challenger in current_belief_facet.challengers if challenger == feature_value):
+            # It does, so attribute this new evidence, which may cause this challenger to overtake
+            # the current belief (this will be determined by challenger.attribute_new_evidence())
+            challenger_this_evidence_supports = next(
+                challenger for challenger in current_belief_facet.challengers if challenger == feature_value
+            )
+            challenger_this_evidence_supports.attribute_new_evidence(new_evidence=new_evidence)
+        else:
+            # There is no challenger belief for this feature_value, so instantiate one (again, this
+            # may cause this new belief facet to overtake the current one)
+            new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject,
+                              feature_type=feature_type, initial_evidence=new_evidence,
+                              object_itself=feature_object_itself)
+
+    def adopt_belief(self, new_belief_facet, old_belief_facet=None):
+        """Adopt a new belief facet; if an old facet is being overtaken, update it accordingly."""
+        command_to_access_my_current_belief = self.get_command_to_access_a_belief_facet(
+            feature_type=new_belief_facet.feature_type
+        )
+        command_to_instantiate_new_belief_facet = command_to_access_my_current_belief + ' = new_belief_facet'
+        exec command_to_instantiate_new_belief_facet
+        # Update your belief trajectory
+        self._update_belief_trajectory(new_belief_facet=new_belief_facet)
+        # Attribute a predecessor (or lack thereof) to the new belief facet
+        new_belief_facet.predecessor = old_belief_facet
+        # Update the challenger status of the facet(s)
+        new_belief_facet.challenger = False
+        if old_belief_facet:
+            old_belief_facet.challenger = True
+        # Have the new facet inherit any challengers of the old facet (excluding itself)
+        if old_belief_facet:
+            new_belief_facet.challengers = set(old_belief_facet.challengers) - {new_belief_facet} | {old_belief_facet}
+            # Remove any challengers that are evidenced by a forgetting (I think this could
+            # only possibly be old_belief_facet), since we don't want future forgettings just
+            # being new evidence for these, since that doesn't make sense
+            if old_belief_facet == '':
+                new_belief_facet.challengers.remove(old_belief_facet)
+        else:
+            new_belief_facet.challengers = set()
+        # Remove all challengers to the old facet (if it's reinstated, it will inherit in this same way)
+        if old_belief_facet:
+            old_belief_facet.challengers = set()
+
+    def _update_belief_trajectory(self, new_belief_facet):
+        """Update the belief trajectory for feature_type by appending new_belief_facet to it."""
+        feature_type = new_belief_facet.feature_type
+        if feature_type not in self.belief_trajectories:
+            self.belief_trajectories[feature_type] = [new_belief_facet]
+        else:
+            self.belief_trajectories[feature_type].append(new_belief_facet)
 
     def init_belief_facet(self, feature_type, observation_or_reflection):
         """Determine a belief facet pertaining to a feature of the given type."""
@@ -118,7 +164,7 @@ class MentalModel(object):
             belief_facet_obj = Facet(
                 value=true_feature_str, owner=self.owner, subject=self.subject,
                 feature_type=feature_type, initial_evidence=observation_or_reflection,
-                predecessor=None, parent=None, object_itself=true_object_itself
+                object_itself=true_object_itself
             )
             return belief_facet_obj
 
@@ -144,12 +190,12 @@ class MentalModel(object):
                     feature_type=feature_type, belief_facet_being_forgotten=current_belief_facet
                 )
         else:
-            belief_facet_obj = self._concoct_belief_facet(
+            belief_facet_obj = self._confabulate_belief_facet(
                 feature_type=feature_type, current_belief_facet=current_belief_facet
             )
         return belief_facet_obj
 
-    def _concoct_belief_facet(self, feature_type, current_belief_facet):
+    def _confabulate_belief_facet(self, feature_type, current_belief_facet):
         """This method gets overridden by the subclasses to this base class."""
         pass
 
@@ -172,7 +218,7 @@ class MentalModel(object):
         belief_facet_obj = Facet(
             value=feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=transference,
-            predecessor=current_belief_facet, parent=None, object_itself=transferred_object_itself
+            object_itself=transferred_object_itself
         )
         return belief_facet_obj
 
@@ -188,7 +234,6 @@ class MentalModel(object):
         belief_facet_obj = Facet(
             value='', owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=forgetting,
-            predecessor=belief_facet_being_forgotten, parent=belief_facet_being_forgotten,
             object_itself=None
         )
         return belief_facet_obj
@@ -284,7 +329,7 @@ class BusinessMentalModel(MentalModel):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
         config = self.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-            if feature not in ("owner", "subject", "employees"):
+            if feature not in ("owner", "subject", "employees", "belief_trajectories"):
                 belief_facet = self.__dict__[feature]
                 if belief_facet is not None:
                     feature_type_str = belief_facet.feature_type
@@ -307,26 +352,26 @@ class BusinessMentalModel(MentalModel):
                     )
                     self.__dict__[feature] = deteriorated_belief_facet
 
-    def _concoct_belief_facet(self, feature_type, current_belief_facet):
-        """Concoct a facet to a belief about a dwelling place."""
+    def _confabulate_belief_facet(self, feature_type, current_belief_facet):
+        """Confabulate a facet to a belief about a dwelling place."""
         config = self.owner.game.config
-        concoction = Concoction(subject=self.subject, source=self.owner)
+        confabulation = Confabulation(subject=self.subject, source=self.owner)
         if feature_type == "business block":
             random_block = random.choice(list(self.owner.city.blocks))
-            concocted_feature_str = str(random_block)
-            concocted_object_itself = None
+            confabulated_feature_str = str(random_block)
+            confabulated_object_itself = None
         else:  # business address
             house_number = int(random.random() * config.largest_possible_house_number) + 1
             while house_number < config.smallest_possible_house_number:
                 house_number += int(random.random() * 500)
             house_number = min(house_number, config.largest_possible_house_number)
             random_street = random.choice(list(self.owner.city.streets))
-            concocted_feature_str = "{0} {1}".format(house_number, random_street)
-            concocted_object_itself = None
+            confabulated_feature_str = "{0} {1}".format(house_number, random_street)
+            confabulated_object_itself = None
         belief_facet_object = Facet(
-            value=concocted_feature_str, owner=self.owner, subject=self.subject,
-            feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
+            value=confabulated_feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, initial_evidence=confabulation,
+            object_itself=confabulated_object_itself
         )
         return belief_facet_object
 
@@ -349,7 +394,6 @@ class BusinessMentalModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, parent=facet_being_mutated,
             object_itself=mutated_object_itself
         )
         return belief_facet_obj
@@ -538,7 +582,7 @@ class DwellingPlaceModel(MentalModel):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
         config = self.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-            if feature not in ("owner", "subject", "residents"):
+            if feature not in ("owner", "subject", "residents", "belief_trajectories"):
                 belief_facet = self.__dict__[feature]
                 if belief_facet is not None:
                     feature_type_str = belief_facet.feature_type
@@ -561,17 +605,17 @@ class DwellingPlaceModel(MentalModel):
                     )
                     self.__dict__[feature] = deteriorated_belief_facet
 
-    def _concoct_belief_facet(self, feature_type, current_belief_facet):
-        """Concoct a facet to a belief about a dwelling place."""
+    def _confabulate_belief_facet(self, feature_type, current_belief_facet):
+        """Confabulate a facet to a belief about a dwelling place."""
         config = self.owner.game.config
-        concoction = Concoction(subject=self.subject, source=self.owner)
+        confabulation = Confabulation(subject=self.subject, source=self.owner)
         if feature_type == "home is apartment":
-            concocted_feature_str = random.choice(["yes", "no"])
-            concocted_object_itself = None
+            confabulated_feature_str = random.choice(["yes", "no"])
+            confabulated_object_itself = None
         elif feature_type == "home block":
             random_block = random.choice(list(self.owner.city.blocks))
-            concocted_feature_str = str(random_block)
-            concocted_object_itself = None
+            confabulated_feature_str = str(random_block)
+            confabulated_object_itself = None
         else:  # home address
             house_number = int(random.random() * config.largest_possible_house_number) + 1
             while house_number < config.smallest_possible_house_number:
@@ -580,14 +624,14 @@ class DwellingPlaceModel(MentalModel):
             random_street = random.choice(list(self.owner.city.streets))
             if random.random() > 0.5:
                 unit_number = int(random.random() * config.number_of_apartment_units_per_complex)
-                concocted_feature_str = "{0} {1} (Unit #{2})".format(house_number, random_street, unit_number)
+                confabulated_feature_str = "{0} {1} (Unit #{2})".format(house_number, random_street, unit_number)
             else:
-                concocted_feature_str = "{0} {1}".format(house_number, random_street)
-            concocted_object_itself = None
+                confabulated_feature_str = "{0} {1}".format(house_number, random_street)
+            confabulated_object_itself = None
         belief_facet_object = Facet(
-            value=concocted_feature_str, owner=self.owner, subject=self.subject,
-            feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
+            value=confabulated_feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, initial_evidence=confabulation,
+            object_itself=confabulated_object_itself
         )
         return belief_facet_object
 
@@ -613,7 +657,6 @@ class DwellingPlaceModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, parent=facet_being_mutated,
             object_itself=mutated_object_itself
         )
         return belief_facet_obj
@@ -759,10 +802,11 @@ class PersonMentalModel(MentalModel):
                                           the beliefs composing this mental model originate.
         """
         super(PersonMentalModel, self).__init__(owner, subject)
-        self.name_belief = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
+        self.name = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        # # It's more convenient (and feels more natural) to access name facets directly
+        # self.first_name, self.middle_name, self.last_name = (
+        #     self.name.first_name, self.name.middle_name, self.name.last_name
+        # )
         self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
         self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
         self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
@@ -788,10 +832,10 @@ class PersonMentalModel(MentalModel):
 
     def build_up(self, new_observation_or_reflection):
         """Build up a mental model from a new observation or reflection."""
-        self.name_belief.build_up(new_observation_or_reflection=new_observation_or_reflection)
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
+        self.name.build_up(new_observation_or_reflection=new_observation_or_reflection)
+        # self.first_name, self.middle_name, self.last_name = (
+        #     self.name.first_name, self.name.middle_name, self.name.last_name
+        # )
         self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.whereabouts.build_up(new_observation_or_reflection=new_observation_or_reflection)
@@ -799,10 +843,10 @@ class PersonMentalModel(MentalModel):
 
     def deteriorate(self):
         """Deteriorate a mental model from time passing."""
-        self.name_belief.deteriorate()
-        self.first_name, self.middle_name, self.last_name = (
-            self.name_belief.first_name, self.name_belief.middle_name, self.name_belief.last_name
-        )
+        self.name.deteriorate()
+        # self.first_name, self.middle_name, self.last_name = (
+        #     self.name.first_name, self.name.middle_name, self.name.last_name
+        # )
         self.occupation.deteriorate()
         self.face.deteriorate()
         # Manually deteriorate the home one (and other stragglers that may be defined later)
@@ -812,7 +856,7 @@ class PersonMentalModel(MentalModel):
         """Build up other beliefs facets that are components of this mental model.
         By other facets, I mean ones that don't get built up elsewhere, as, e.g.,
         facets to WorkBeliefs do."""
-        for feature in ("home", ):
+        for feature in ("home",):
             belief_facet = self.__dict__[feature]
             if belief_facet is None or not belief_facet.accurate:
                 feature_type = self.attribute_to_belief_type(attribute=feature)
@@ -859,70 +903,71 @@ class PersonMentalModel(MentalModel):
                 )
                 self.__dict__[feature] = deteriorated_belief_facet
 
-    def _concoct_belief_facet(self, feature_type, current_belief_facet):
-        """Concoct a new belief facet of the given type.
+    def _confabulate_belief_facet(self, feature_type, current_belief_facet):
+        """Confabulate a new belief facet of the given type.
         This is done using the feature distributions that are used to generate the features
         themselves for people that don't have parents.
         """
         config = self.owner.game.config
-        concoction = Concoction(subject=self.subject, source=self.owner)
+        confabulation = Confabulation(subject=self.subject, source=self.owner)
         if feature_type in config.name_feature_types:
-            concocted_feature_str = self._concoct_name_facet(feature_type=feature_type)
-            concocted_object_itself = None
+            confabulated_feature_str = self._confabulate_name_facet(feature_type=feature_type)
+            confabulated_object_itself = None
         elif feature_type in config.work_feature_types:
-            concocted_feature_str, concocted_object_itself = self._concoct_work_facet(feature_type=feature_type)
+            confabulated_feature_str, confabulated_object_itself = self._confabulate_work_facet(feature_type=feature_type)
         elif feature_type in config.home_feature_types:
-            concocted_feature_str, concocted_object_itself = self._concoct_home_facet(feature_type=feature_type)
+            confabulated_feature_str, confabulated_object_itself = self._confabulate_home_facet(feature_type=feature_type)
         else:  # Appearance feature
             if self.subject.male:
                 distribution = config.facial_feature_distributions_male[feature_type]
             else:
                 distribution = config.facial_feature_distributions_female[feature_type]
             x = random.random()
-            concocted_feature_str = next(  # See config.py to understand what this is doing
+            confabulated_feature_str = next(  # See config.py to understand what this is doing
                 feature_type[1] for feature_type in distribution if feature_type[0][0] <= x <= feature_type[0][1]
             )
-            concocted_object_itself = None
+            confabulated_object_itself = None
         belief_facet_object = Facet(
-            value=concocted_feature_str, owner=self.owner, subject=self.subject,
-            feature_type=feature_type, initial_evidence=concoction,
-            predecessor=current_belief_facet, parent=None, object_itself=concocted_object_itself
+            value=confabulated_feature_str, owner=self.owner, subject=self.subject,
+            feature_type=feature_type, initial_evidence=confabulation,
+            object_itself=confabulated_object_itself
         )
         return belief_facet_object
 
-    def _concoct_name_facet(self, feature_type):
-        """Concoct a facet to a belief about a person's name."""
+    def _confabulate_name_facet(self, feature_type):
+        """Confabulate a facet to a belief about a person's name."""
         if feature_type == "last name":
-            concocted_feature_str = Names.any_surname()
+            confabulated_feature_str = Names.any_surname()
         elif self.subject.male:
-            concocted_feature_str = Names.a_masculine_name()
+            # Confabulate a name that is appropriate given the subject's birth year
+            confabulated_feature_str = Names.a_masculine_name(year=self.subject.birth_year)
         else:
-            concocted_feature_str = Names.a_feminine_name()
-        return concocted_feature_str
+            confabulated_feature_str = Names.a_feminine_name(year=self.subject.birth_year)
+        return confabulated_feature_str
 
-    def _concoct_work_facet(self, feature_type):
-        """Concoct a facet to a belief about a person's work life."""
+    def _confabulate_work_facet(self, feature_type):
+        """Confabulate a facet to a belief about a person's work life."""
         if feature_type == "workplace":
-            concocted_company = random.choice(list(self.subject.city.companies))
-            concocted_feature_str = concocted_company.name
-            concocted_object_itself = concocted_company
+            confabulated_company = random.choice(list(self.subject.city.companies))
+            confabulated_feature_str = confabulated_company.name
+            confabulated_object_itself = confabulated_company
         elif feature_type == "job shift":
-            concocted_feature_str = random.choice(["day", "day", "night"])
-            concocted_object_itself = None
+            confabulated_feature_str = random.choice(["day", "day", "night"])
+            confabulated_object_itself = None
         else:   # job title
             random_company = random.choice(list(self.owner.city.companies))
             random_job_title = random.choice(list(random_company.employees)).__class__.__name__
-            concocted_feature_str = random_job_title
-            concocted_object_itself = None
-        return concocted_feature_str, concocted_object_itself
+            confabulated_feature_str = random_job_title
+            confabulated_object_itself = None
+        return confabulated_feature_str, confabulated_object_itself
 
-    def _concoct_home_facet(self, feature_type):
-        """Concoct a facet to a belief about a person's home."""
+    def _confabulate_home_facet(self, feature_type):
+        """Confabulate a facet to a belief about a person's home."""
         config = self.owner.game.config
-        concocted_home = random.choice(list(self.subject.city.dwelling_places))
-        concocted_feature_str = concocted_home.name
-        concocted_object_itself = concocted_home
-        return concocted_feature_str, concocted_object_itself
+        confabulated_home = random.choice(list(self.subject.city.dwelling_places))
+        confabulated_feature_str = confabulated_home.name
+        confabulated_object_itself = confabulated_home
+        return confabulated_feature_str, confabulated_object_itself
 
     def _mutate_belief_facet(self, feature_type, facet_being_mutated):
         """Mutate a belief facet."""
@@ -952,7 +997,6 @@ class PersonMentalModel(MentalModel):
         belief_facet_obj = Facet(
             value=mutated_feature_str, owner=self.owner, subject=self.subject,
             feature_type=feature_type, initial_evidence=mutation,
-            predecessor=facet_being_mutated, parent=facet_being_mutated,
             object_itself=mutated_object_itself
         )
         return belief_facet_obj
@@ -960,12 +1004,18 @@ class PersonMentalModel(MentalModel):
     def _mutate_name_belief_facet(self, feature_type, feature_being_mutated_from_str):
         """Mutate a belief facet pertaining to a person's name."""
         if feature_type in ("first name", "middle name"):
+            # Mutate to a name that sounds like the subject's name (shares the same first
+            # letter) and is appropriate given the subject's birth year
             if self.subject.male:
-                mutated_feature_str = Names.a_masculine_name_starting_with(letter=feature_being_mutated_from_str[0])
+                mutated_feature_str = Names.a_masculine_name_starting_with(
+                    letter=feature_being_mutated_from_str[0], year=self.subject.birth_year
+                )
             else:
-                mutated_feature_str = Names.a_masculine_name_starting_with(letter=feature_being_mutated_from_str[0])
+                mutated_feature_str = Names.a_feminine_name_starting_with(
+                    letter=feature_being_mutated_from_str[0], year=self.subject.birth_year
+                )
         else:
-            mutated_feature_str = Names.a_surname_starting_with(letter=feature_being_mutated_from_str[0])
+            mutated_feature_str = Names.a_surname_sounding_like(source_name=feature_being_mutated_from_str)
         return mutated_feature_str
 
     def _mutate_work_belief_facet(self, feature_type, facet_being_mutated):
@@ -1028,7 +1078,7 @@ class PersonMentalModel(MentalModel):
     def _mutate_home_belief_facet(self, feature_type, facet_being_mutated):
         """Mutate a belief facet pertaining to a person's home."""
         # TODO make this more realistic, e.g., mutate to a relative's house
-        # For now, only thing that makes sense is to just do the same thing as concocting a new home
+        # For now, only thing that makes sense is to just do the same thing as Confabulating a new home
         random_home = random.choice(list(self.subject.city.dwelling_places))
         mutated_feature_str = random_home.name
         mutated_object_itself = random_home
@@ -1071,9 +1121,9 @@ class PersonMentalModel(MentalModel):
         """Return the facet to this mental model of the given type."""
         features = {
             # Names
-            "first name": self.first_name,
-            "middle name": self.middle_name,
-            "last name": self.last_name,
+            "first name": self.name.first_name,
+            "middle name": self.name.middle_name,
+            "last name": self.name.last_name,
             # Work life
             "workplace": self.occupation.company,
             "job title": self.occupation.job_title,
@@ -1121,9 +1171,9 @@ class PersonMentalModel(MentalModel):
         """Return a command that will allow the belief facet for this feature type to be directly modified."""
         feature_type_to_command = {
             # Name
-            "first name": "self.first_name",
-            "middle name": "self.middle_name",
-            "last name": "self.last_name",
+            "first name": "self.name.first_name",
+            "middle name": "self.name.middle_name",
+            "last name": "self.name.last_name",
             # Occupation
             "workplace": "self.occupation.company",
             "job title": "self.occupation.job_title",
@@ -1156,7 +1206,16 @@ class PersonMentalModel(MentalModel):
             "glasses": "self.face.distinctive_features.glasses",
             "sunglasses": "self.face.distinctive_features.sunglasses",
         }
-        return feature_type_to_command[feature_type]
+        # Have to do special thing for whereabouts, because they are indexed by date;
+        # specifically, we parse the feature type, which will look something like
+        # 'whereabouts 723099-1'
+        if 'whereabouts' in feature_type:
+            timestep = feature_type[12:]
+            ordinal_date, day_or_night_bit = timestep.split('-')
+            tuple_string = '({}, {})'.format(ordinal_date, day_or_night_bit)
+            return 'self.whereabouts.date[{}]'.format(tuple_string)
+        else:
+            return feature_type_to_command[feature_type]
 
 
 class WhereaboutsBelief(object):
@@ -1172,10 +1231,12 @@ class WhereaboutsBelief(object):
             location_str = self.person_model.owner.location.name
             location_obj = self.person_model.owner.location
             day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+            # Generate a unique hash so that we can maintain a trajectory for this belief
+            feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
             self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
                 value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
-                feature_type="whereabouts", initial_evidence=observation_or_reflection,
-                predecessor=None, parent=None, object_itself=location_obj
+                feature_type=feature_type, initial_evidence=observation_or_reflection,
+                object_itself=location_obj
             )
 
     def build_up(self, new_observation_or_reflection):
@@ -1183,10 +1244,12 @@ class WhereaboutsBelief(object):
         location_str = self.person_model.owner.location.name
         location_obj = self.person_model.owner.location
         day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+        # Generate a unique hash so that we can maintain a trajectory for this belief
+        feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
         self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
             value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
-            feature_type="whereabouts", initial_evidence=new_observation_or_reflection,
-            predecessor=None, parent=None, object_itself=location_obj
+            feature_type=feature_type, initial_evidence=new_observation_or_reflection,
+            object_itself=location_obj
         )
 
 
@@ -1455,6 +1518,8 @@ class FaceBelief(object):
                             belief_facet_strength = belief_facet.strength
                         else:
                             feature_type_str = belief.attribute_to_feature_type(attribute=feature)
+                            belief_facet_strength = 1
+                        if belief_facet_strength < 1:
                             belief_facet_strength = 1
                         # Determine the chance of memory deterioration, which starts from a base value
                         # that gets affected by the person's memory and the strength of the belief facet
@@ -1739,15 +1804,9 @@ class DistinctiveFeaturesBelief(object):
 
 
 class Facet(str):
-    """A facet of one person's belief about a person that pertains to a specific feature.
-    This class has a sister class in Face.Feature. While objects of the Feature class represent
-    a person's facial feature *as it exists in reality*, with metadata about that feature, a Facet
-    represents a person's facial feature *as it is modeled in the belief of a particular
-    person*, with metadata about that specific belief.
-    """
+    """A facet of one person's mental model of a person (pertaining to a specific attribute)."""
 
-    def __init__(self, value, owner, subject, feature_type, initial_evidence,
-                 predecessor, parent, object_itself=None):
+    def __init__(self, value, owner, subject, feature_type, initial_evidence, object_itself=None):
         """Initialize a Facet object.
         @param value: A string representation of this facet, e.g., 'brown' as the Hair.color
                       attribute this represents.
@@ -1756,15 +1815,6 @@ class Facet(str):
         @param feature_type: A string representing the type of feature this facet is about.
         @param initial_evidence: An information object that serves as the initial evidence for
                                  this being a facet of a person's belief.
-        @param predecessor: What this person believed prior (i.e., the belief facet they had for
-                            this particular feature prior to this facet being instantiated).
-        @param parent: The belief facet that beget this one -- will be the same as
-                       predecessor except for statements, in which case it will be the
-                       source of the statement's belief that they expressed to this person
-                       via the statement; 'parent.parent.parent' etc. is how you backtrack
-                       from any belief to its ultimate source; when the predecessor is None,
-                       it will also be None of course, and additionally it will be None when
-                       the predecessor is rooted in a Concoction or Transference.
         @param object_itself: The very object that this facet represents -- this is only
                               relevant in certain cases, e.g., in a belief facet about where
                               a person works, object_itself would be the Business object of
@@ -1776,10 +1826,26 @@ class Facet(str):
         self.owner = owner
         self.subject = subject
         self.feature_type = feature_type
-        self.predecessor = predecessor
-        self.parent = parent
-        self.evidence = set([initial_evidence])
-        initial_evidence.beliefs_evidenced.add(self)
+        # Only currently held belief facets are attributed a predecessor -- if you are merely
+        # challenging some held facet, the latter is not your predecessor; the default value
+        # for .predecessor is None; this value gets changed by MentalModel.adopt_belief()
+        self.predecessor = None
+        # If there is a currently held belief facet for this feature type, this facet will be
+        # considered a challenger until some point at which the strength of its evidence exceeds
+        # the strength of the evidence of the currently held belief (which could be as early as
+        # during this initialization procedure, when .attribute_new_evidence() is called);
+        # challenger status may be revised from True to False by MentalModel.adopt_belief()
+        currently_held_belief = self._get_currently_held_belief()
+        self.challenger = True if currently_held_belief else False
+        # A belief facet's challengers are other potential beliefs (instantiated as other
+        # Facet objects) about this attribute for which the owner of this Facet has encountered
+        # evidence. If at any time the strength of the evidence for some challenger exceeds the
+        # strength of the evidence for the currently held belief, the owner will update their
+        # belief accordingly (by .attribute_new_evidence) and relegate this belief to challenger
+        # status. Upon adoption, a Facet that was a challenger inherits the challengers of
+        # its predecessor, excluding itself
+        self.challengers = set()  # Default value; may get changed by MentalModel.adopt_belief()
+        self.evidence = set()
         self.object_itself = object_itself
         if object_itself:
             # If owner hasn't yet formed a mental model of the subject, form one
@@ -1796,12 +1862,12 @@ class Facet(str):
             self.mental_model = self.owner.mind.mental_models[object_itself]
         else:
             self.mental_model = None
-        # Strength represents how confident owner is in this belief and is used to reduce
-        # the chance of a belief facet deteriorating (by dividing the base chance of
-        # deterioration by the strength of the facet)
-        self.strength = self.owner.game.config.strength_of_information_types[initial_evidence.type]
+        # Finally, attribute the initial evidence to this new belief facet, which may cause a
+        # currently held belief to shift to challenger status, and this new belief to the
+        # character's actual current belief
+        self.attribute_new_evidence(new_evidence=initial_evidence)
 
-    def __new__(cls, value, owner, subject, feature_type, initial_evidence, predecessor, parent, object_itself):
+    def __new__(cls, value, owner, subject, feature_type, initial_evidence, object_itself):
         """Do str stuff."""
         return str.__new__(cls, value)
 
@@ -1814,8 +1880,177 @@ class Facet(str):
         else:
             return False
 
+    @property
+    def strength(self):
+        """The strength of this particular belief at this particular timestep, given its evidence.
+
+        Strength represents how confident owner is in this belief and decays over time; it
+        is used to reduce the chance of a belief facet deteriorating (by dividing the base
+        chance of deterioration by the strength of the facet) -- it gets updated by
+        Facet.attribute_new_evidence().
+        """
+        strength = sum(self._determine_strength_of_a_piece_of_evidence(piece) for piece in self.evidence)
+        return strength
+
+    def _determine_strength_of_a_piece_of_evidence(self, evidence):
+        """Determine the strength of a particular piece of evidence.
+
+        This method takes into account how much the owner trusts the source of the
+        evidence and how strong the source's belief was at the time that conveyed it
+        to owner, in the case of propagation evidence types, as well as how long ago
+        the evidence was instantiated.
+        """
+        config = self.owner.game.config
+        if evidence.adjusted_strength:
+            strength = evidence.adjusted_strength
+        else:
+            strength = config.base_strength_of_evidence_types[evidence.type]
+            # If evidence is a type of propagation, alter the strength according to...
+            if evidence.type in ('statement', 'lie', 'eavesdropping'):
+                # ...the owner's trust value for the source
+                if evidence.source in self.owner.relationships:
+                    strength *= self.owner.relationships[evidence.source].trust
+                else:
+                    # They eavesdropped the source and don't actually have a relationship with them
+                    strength *= config.trust_someone_has_for_random_person_they_eavesdrop
+                # ...the strength of the source's belief at the time of telling
+                if evidence.type == 'lie':
+                    teller_belief_strength = random.randint(1, 300)  # TODO maybe model lying ability here?
+                else:
+                    teller_belief_strength = evidence.teller_belief_strength[self.feature_type]
+                if teller_belief_strength < 0:
+                    # TODO explore how negative teller_belief_strength is even possible
+                    teller_belief_strength = config.minimum_teller_belief_strength
+                source_belief_strength_multiplier = config.function_to_determine_teller_strength_boost(
+                    teller_belief_strength=teller_belief_strength
+                )
+                strength *= source_belief_strength_multiplier
+        # Decay the strength of this evidence given how long ago it occurred. Note that this
+        # will cause adjusted strengths to be considerably decayed, since their very adjustment
+        # already was decayed according to how long ago the evidence was encountered relative to
+        # the time of adjustment; this seems realistic, however, because if someone forgets some
+        # piece of evidence, that should considerably penalize the strength of that evidence
+        for day in xrange(self.owner.game.ordinal_date-evidence.ordinal_date):
+            strength *= config.decay_rate_of_evidence_per_timestep
+        return strength
+
+    def adjust_strength_of_forgotten_evidence(self, total_strength_of_supplanter):
+        """Adjust the strength of forgotten evidence.
+
+        This method is called when the belief represented by this Facet is forgotten,
+        or more precisely, is supplanted by a piece of evidence with a deterioration type.
+        It adjusts the strength of the total evidence of a forgotten belief facet so that
+        its strength is equal to the strength of the new Facet supported by some kind of
+        deterioration. This allows a character to temporarily forget something but later,
+        upon encountering new evidence supporting the forgotten belief, remember that they
+        had previously believed it and then reinstate it again.
+        """
+        # Survey the evidence supporting this belief to determine the current actual strength
+        # of each piece -- we keep track of these values in a dictionary so that we don't
+        # carry out this computation twice in this method (once to determine the multiplier,
+        # again to actually adjust the strength of each piece of evidence)
+        actual_current_strength_of_each_piece_of_evidence = {}
+        for piece in self.evidence:
+            actual_current_strength = self._determine_strength_of_a_piece_of_evidence(evidence=piece)
+            actual_current_strength_of_each_piece_of_evidence[piece] = actual_current_strength
+        # Determine the multiplier that will allow us to adjust the strength of each piece
+        # of evidence supporting this belief facet such that its adjusted total strength
+        # will become (nearly) equal to the total strength of the new deteriorated belief
+        cumulative_strength_of_this_belief = sum(actual_current_strength_of_each_piece_of_evidence.values())
+        try:
+            multiplier = float(total_strength_of_supplanter) / (cumulative_strength_of_this_belief-1)
+        except ZeroDivisionError:
+            multiplier = 0.01
+        for piece in self.evidence:
+            piece.adjusted_strength = actual_current_strength_of_each_piece_of_evidence[piece] * multiplier
+
     def attribute_new_evidence(self, new_evidence):
         """Attribute new evidence that supports this belief facet."""
         self.evidence.add(new_evidence)
         new_evidence.beliefs_evidenced.add(self)
-        self.strength += self.owner.game.config.strength_of_information_types[new_evidence.type]
+        # If this is a challenger belief facet, check for whether this belief is now stronger
+        # than the character's currently held belief, in which case it will lose its challenger
+        # status and the old belief will be attributed as merely a challenger to this belief
+        # facet (this is all done by MentalModel.adopt_belief); additionally, if new_evidence
+        # is a deterioration/observation, this will automatically take over, since a
+        # deterioration/observation always wins (and indeed the chance of deterioration
+        # occurring is determined probabilistically according to the strength of the previously
+        # held belief, so in a sense it has already been determined to be 'stronger')
+        if self.challenger:
+            currently_held_belief = self._get_currently_held_belief()
+            assert currently_held_belief, (
+                "{}'s belief facet '{}' for {}'s {} has been wrongly attributed challenger status, i.e, "
+                "there is no currently held belief for that facet.".format(
+                    self.owner.name, self, self.subject.name, self.feature_type
+                )
+            )
+            assert currently_held_belief is not self, (
+                "A belief facet currently held by {} for feature type '{}' (about subject {}) "
+                "was attributed challenger status.".format(
+                    self.owner.name, self.feature_type, self.subject.name
+                )
+            )
+            automatically_take_over_because_deterioration_or_observation = (
+                'reflection', 'observation', 'confabulation', 'mutation', 'transference', 'forgetting'
+            )
+            strength_of_this_belief_facet = self.strength
+            # If this belief facet is now stronger than the currently held one, revise your belief
+            if (strength_of_this_belief_facet > currently_held_belief.strength or
+                    new_evidence.type in automatically_take_over_because_deterioration_or_observation):
+                mental_model = self.owner.mind.mental_models[self.subject]
+                mental_model.adopt_belief(
+                    old_belief_facet=currently_held_belief, new_belief_facet=self
+                )
+                # If the new evidence is a type of deterioration, adjust the strength of the evidence
+                # supporting the belief that is being supplanted (check docstring for
+                # adjust_strength_of_forgotten_evidence() to read more about what this is all about)
+                if new_evidence.type in automatically_take_over_because_deterioration_or_observation:
+                    currently_held_belief.adjust_strength_of_forgotten_evidence(
+                        total_strength_of_supplanter=strength_of_this_belief_facet
+                    )
+
+    def _get_currently_held_belief(self):
+        """Return the belief facet that is currently held for this feature type; if none, return None."""
+        mental_model = self.owner.mind.mental_models[self.subject]
+        command_to_access_currently_held_belief = mental_model.get_command_to_access_a_belief_facet(
+            feature_type=self.feature_type
+        )
+        # Have to swap out 'self' in this command, because the return value for
+        # mental_model.get_command_to_access_a_belief_facet() is relative to mental model
+        # being referenceable by 'self'
+        command_to_access_currently_held_belief = (
+            command_to_access_currently_held_belief.replace('self', 'mental_model')
+        )
+        try:
+            currently_held_belief = eval(command_to_access_currently_held_belief)
+        except AttributeError:
+            # This error gets raised when the mental model has not even been fully constructed
+            # yet -- i.e., this is one of the initial belief facets that will make up the initial
+            # mental model, so attribute hierarchies like MentalModel.Face.Hair.Color are not even
+            # constructed yet (and thus cannot be accessed); in this case, we can safely assert that
+            # there is no currently held belief for this attribute
+            currently_held_belief = None
+        except KeyError:
+            # This error gets raised when an attempt is made (by evaluating command_to_access_
+            # currently_held_belief) to access a non-existent whereabouts belief; i.e., the
+            # command will specify accessing a WhereaboutsBelief.date dictionary with a key for
+            # the timestep in question, but if this person did not already hold some belief about
+            # subject's whereabouts on that timestep, then a KeyError will be raised, since there
+            # will be no entry in the dictionary associated with that key;  in this case, we can
+            # safely assert that there is no currently held belief for this attribute
+            assert 'whereabouts' in self.feature_type, (
+                "A KeyError was raised outside of the context of an attempt to access a "
+                "non-existent whereabouts belief."
+            )
+            currently_held_belief = None
+        return currently_held_belief
+
+    def why(self):
+        """Pretty-print why this character holds this particular belief."""
+        print "\n{} believes {}'s {} is {} because of the following evidence:\n".format(
+            self.owner.name, self.subject.name, self.feature_type, self
+        )
+        all_evidence_supporting_belief = list(self.evidence)
+        all_evidence_supporting_belief.sort(key=lambda piece: piece.event_number)
+        for piece in all_evidence_supporting_belief:
+            print '--{}'.format(piece)

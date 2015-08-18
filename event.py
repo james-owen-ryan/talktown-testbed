@@ -5,7 +5,23 @@ from corpora import Names
 from residence import House
 
 
-class Adoption(object):
+# TODO ARE RETCONNED EVENTS GETTING APPROPRIATE DATES ATTRIBUTED?
+
+
+class Event(object):
+    """A superclass that all event subclasses inherit from."""
+
+    def __init__(self, game):
+        """Initialize an Event object."""
+        self.year = game.year
+        self.date = game.date
+        self.ordinal_date = game.ordinal_date
+        # Also request and attribute an event number, so that we can later
+        # determine the precise ordering of events that happen on the same timestep
+        self.event_number = game.assign_event_number()
+
+
+class Adoption(Event):
     """An adoption of a child by a person(s) who is/are not their biological parent."""
 
     def __init__(self, subject, adoptive_parents):
@@ -14,7 +30,7 @@ class Adoption(object):
         @param subject: The adoptee.
         @param adoptive_parents: The adoptive parent(s).
         """
-        self.year = subject.game.year
+        super(Adoption, self).__init__(game=subject.game)
         self.city = adoptive_parents[0].city  # May be None if parents not in the city yet
         self.subject = subject
         self.subject.adoption = self  # Could there be multiple, actually?
@@ -29,12 +45,12 @@ class Adoption(object):
         )
 
 
-class Birth(object):
+class Birth(Event):
     """A birth of a person."""
 
     def __init__(self, mother, doctor):
         """Initialize a Birth object."""
-        self.year = mother.game.year
+        super(Birth, self).__init__(game=mother.game)
         self.city = mother.city
         self.biological_mother = mother
         self.mother = mother
@@ -141,7 +157,10 @@ class Birth(object):
             first_name = first_name_namegiver.first_name
         else:
             first_name_namegiver = None
-            first_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
+            if self.subject.male:
+                first_name_rep = Names.a_masculine_name(year=self.year)
+            else:
+                first_name_rep = Names.a_feminine_name(year=self.year)
             first_name = Name(
                 value=first_name_rep, progenitor=self.subject, conceived_by=self.subject.parents, derived_from=()
             )
@@ -155,7 +174,10 @@ class Birth(object):
             middle_name = middle_name_namegiver.first_name
         else:
             middle_name_namegiver = None
-            middle_name_rep = Names.a_masculine_name() if self.subject.male else Names.a_feminine_name()
+            if self.subject.male:
+                middle_name_rep = Names.a_masculine_name(year=self.year)
+            else:
+                middle_name_rep = Names.a_feminine_name(year=self.year)
             middle_name = Name(
                 value=middle_name_rep, progenitor=self.subject, conceived_by=self.subject.parents, derived_from=()
             )
@@ -235,7 +257,7 @@ class Birth(object):
             )
 
 
-class BusinessConstruction(object):
+class BusinessConstruction(Event):
     """Construction of the building where a business is headquartered.
 
     This must be preceded by the business being founded -- the business makes the
@@ -246,7 +268,7 @@ class BusinessConstruction(object):
 
     def __init__(self, subject, business, architect):
         """Initialize a BusinessConstruction object."""
-        self.year = subject.game.year
+        super(BusinessConstruction, self).__init__(game=subject.game)
         self.subject = subject
         self.architect = architect
         self.business = business
@@ -297,15 +319,15 @@ class BusinessConstruction(object):
             )
 
 
-class Death(object):
+class Death(Event):
     """A death of a person in the city."""
 
     def __init__(self, subject, mortician, cause_of_death):
         """Initialize a Death object."""
-        self.year = subject.game.year
+        super(Death, self).__init__(game=subject.game)
         self.city = subject.city
         self.subject = subject
-        self.subject.death_year = self.subject.game.year
+        self.subject.death_year = self.year
         self.subject.death = self
         self.cause = cause_of_death
         self.mortician = mortician
@@ -315,7 +337,7 @@ class Death(object):
         if subject in self.city.residents:
             subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
-        self._update_attributes_of_deceased_and_spouse()
+        self._update_attributes_of_deceased_and_spouse()  # Must come before self.subject.go_to()
         self._vacate_job_position_of_the_deceased()
         if mortician:
             # Death shouldn't be possibly outside the city, but I'm doing
@@ -330,10 +352,7 @@ class Death(object):
             self.subject.home.residents.remove(self.subject)
         self.subject.home.former_residents.add(self.subject)
         # TODO WTF????
-        if self.subject.location:
-            if self.subject in self.subject.location.people_here_now:
-                self.subject.location.people_here_now.remove(self.subject)
-        self.subject.location = self.city.cemetery
+        self.subject.go_to(destination=self.city.cemetery)
 
     def __str__(self):
         """Return string representation."""
@@ -375,27 +394,19 @@ class Death(object):
         )
 
 
-class Departure(object):
+class Departure(Event):
     """A departure by which someone leaves the city (i.e., leaves the simulation)."""
 
     def __init__(self, subject):
         """Initialize a Departure object."""
-        self.year = subject.game.year
+        super(Departure, self).__init__(game=subject.game)
         self.subject = subject
-        # TODO WTF?????
-        if subject in subject.city.residents:
-            subject.city.residents.remove(subject)
+        subject.city.residents.remove(subject)
         subject.city.departed.add(subject)
         subject.departure = self
         self._vacate_job_position_of_the_departed()
-        if self.subject.location:
-            # TODO WTF?????
-            if self.subject in self.subject.location.people_here_now:
-                self.subject.location.people_here_now.remove(self.subject)
-            self.subject.location = None
-        # TODO WTF?????
-        if self.subject in self.subject.home.residents:
-            self.subject.home.residents.remove(self.subject)
+        self.subject.go_to(destination=None)
+        self.subject.home.residents.remove(self.subject)
         self.subject.home.former_residents.add(self.subject)
 
     def __str__(self):
@@ -410,12 +421,12 @@ class Departure(object):
             self.subject.occupation.terminate(reason=self)
 
 
-class Divorce(object):
+class Divorce(Event):
     """A divorce between two people in the city."""
 
     def __init__(self, subjects, lawyer):
         """Initialize a divorce object."""
-        self.year = subjects[0].game.year
+        super(Divorce, self).__init__(game=subjects[0].game)
         self.city = subjects[0].city
         self.subjects = subjects
         self.lawyer = lawyer
@@ -575,7 +586,7 @@ class Divorce(object):
             )
 
 
-class Hiring(object):
+class Hiring(Event):
     """A hiring of a person by a company to serve in a specific occupational role.
 
     TODO: Add in data about who they beat out for the job.
@@ -583,7 +594,7 @@ class Hiring(object):
 
     def __init__(self, subject, company, occupation):
         """Initialize a Hiring object."""
-        self.year = subject.game.year
+        super(Hiring, self).__init__(game=subject.game)
         self.subject = subject
         self.company = company
         self.old_occupation = subject.occupation
@@ -602,12 +613,12 @@ class Hiring(object):
         )
 
 
-class HomePurchase(object):
+class HomePurchase(Event):
     """A purchase of a home by a person or couple, with the help of a realtor."""
 
     def __init__(self, subjects, home, realtor):
         """Initialize a HomePurchase object."""
-        self.year = subjects[0].game.year
+        super(HomePurchase, self).__init__(game=subjects[0].game)
         self.city = subjects[0].city
         self.subjects = subjects
         self.home = home
@@ -650,12 +661,12 @@ class HomePurchase(object):
         )
 
 
-class HouseConstruction(object):
+class HouseConstruction(Event):
     """Construction of a house."""
 
     def __init__(self, subjects, architect, lot):
         """Initialize a HouseConstruction object."""
-        self.year = subjects[0].game.year
+        super(HouseConstruction, self).__init__(game=subjects[0].game)
         self.subjects = subjects
         self.architect = architect
         self.house = House(lot=lot, construction=self)
@@ -701,12 +712,12 @@ class HouseConstruction(object):
             )
 
 
-class Marriage(object):
+class Marriage(Event):
     """A marriage between two people in the city."""
 
     def __init__(self, subjects):
         """Initialize a Marriage object."""
-        self.year = subjects[0].game.year
+        super(Marriage, self).__init__(game=subjects[0].game)
         self.city = subjects[0].city
         self.subjects = subjects
         self.names_at_time_of_marriage = (self.subjects[0].name, self.subjects[1].name)
@@ -849,12 +860,12 @@ class Marriage(object):
         return choice
 
 
-class Move(object):
+class Move(Event):
     """A move from one home into another, or from no home to a home."""
 
     def __init__(self, subjects, new_home, reason):
         """Initialize a Move object."""
-        self.year = subjects[0].game.year
+        super(Move, self).__init__(game=subjects[0].game)
         self.subjects = subjects
         self.old_home = self.subjects[0].home  # May be None if newborn or person moved from outside the city
         self.new_home = new_home
@@ -875,6 +886,8 @@ class Move(object):
             # Add yourself to city residents, if you moved from outside the city
             person.city = person.game.city
             person.game.city.residents.add(person)
+            # Go to your new home
+            person.go_to(destination=new_home, occasion='home')
             # Update your patronized businesses given that these may now change
             person.routine.set_businesses_patronized()
 
@@ -886,12 +899,12 @@ class Move(object):
         )
 
 
-class NameChange(object):
+class NameChange(Event):
     """A (legal) name change someone makes."""
 
     def __init__(self, subject, new_last_name, reason, lawyer):
         """Initialize a NameChange object."""
-        self.year = subject.game.year
+        super(NameChange, self).__init__(game=subject.game)
         self.city = subject.city
         self.subject = subject
         self.old_last_name = subject.last_name
@@ -931,6 +944,3 @@ class NameChange(object):
             payee=self.lawyer.person,
             amount=config.compensations[service_rendered][self.lawyer.__class__]
         )
-
-
-

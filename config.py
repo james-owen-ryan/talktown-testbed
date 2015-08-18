@@ -59,7 +59,7 @@ class Config(object):
         }
         self.chance_someone_leaves_home_on_day_off_cap = {
             # The actual chance is a person's extroversion, but these represent
-            # the minimum chance. (Keep in mind, they currently will be spending
+            # the maximum chance. (Keep in mind, they currently will be spending
             # the entire day/night cycle at some particular place in public
             "day": 0.7, "night": 0.5
         }
@@ -99,6 +99,24 @@ class Config(object):
                 ((0.99, 1.00), 'Cemetery'),
             ),
         }
+        self.business_type_to_occasion_for_visit = {
+            'Bar': 'leisure',
+            'Hotel': 'leisure',
+            'Park': 'leisure',
+            'Restaurant': 'leisure',
+            'Bank': 'errand',
+            'Barbershop': 'errand',
+            'BusDepot': 'errand',
+            'Cemetery': 'errand',
+            'OptometryClinic': 'errand',
+            'PlasticSurgeryClinic': 'errand',
+            'Supermarket': 'errand',
+            'TattooParlor': 'errand',
+            'TaxiDepot': 'errand',
+            'University': 'errand',
+        }
+        self.errand_business_types = ('Supermarket', 'Bank', 'BusDepot', 'Cemetery', 'TaxiDepot', 'University')
+        self.leisure_business_types = ('Restaurant', 'Park', 'Bar', 'Hotel')
         self.chance_someone_gets_a_haircut_some_day = 0.02
         self.chance_someone_gets_contacts_or_glasses = 0.002
         self.chance_someone_gets_a_tattoo_some_day = 0.001  # Face tattoo, of course
@@ -875,16 +893,41 @@ class Config(object):
         self.salience_job_level_boost = (
             lambda job_level: job_level * 1
         )
-        self.strength_of_information_types = {
-            "reflection": 10,
-            "observation": 5,
-            "statement": 4,
-            "lie": 4,
-            "concoction": 3,
+        self.chance_someone_observes_nearby_entity = 0.75
+        self.chance_someone_eavesdrops_statement_or_lie = 0.05
+        self.base_strength_of_evidence_types = {
+            "reflection": 9999,
+            "observation": 20,
+            "statement": 5,
+            "lie": 5,
+            "eavesdropping": 5,
+            "confabulation": 3,
             "mutation": 3,
             "transference": 3,
-            "forgetting": 3,
+            "declaration": 2,
+            "forgetting": -1,
         }
+        self.decay_rate_of_evidence_per_timestep = 0.95  # Lose 5% of strength every day
+        three_fourths_strength_of_firsthand_observation = (
+            self.base_strength_of_evidence_types['observation'] /
+            self.base_strength_of_evidence_types["statement"] *
+            0.75
+        )
+        self.function_to_determine_trust_charge_boost = (
+            # Min of 0.5, max equal to 3/4 strength of a firsthand observation, all else 1 + (charge/2500.)
+            lambda charge: max(0.5, min(1 + (max(0.1, charge)/2500), three_fourths_strength_of_firsthand_observation))
+        )
+        self.minimum_teller_belief_strength = 1.0
+        self.function_to_determine_teller_strength_boost = (
+            # Min of 0.25, max of 1.5, and the denominator of 15.0 makes 225 equal to a 1.0 boost;
+            # the max(0.1, teller_belief_strength) term is there to prevent a negative number being
+            # passed to math.sqrt, which raises a 'math domain error'
+            lambda teller_belief_strength: max(0.25, min(math.sqrt(max(0.1, teller_belief_strength))/15.0, 1.5))
+        )
+        self.trust_someone_has_for_random_person_they_eavesdrop = 0.5
+        self.function_to_determine_evidence_boost_for_strength_of_teller_belief = (
+            lambda teller_belief_strength: teller_belief_strength
+        )
         self.name_feature_types = ("first name", "middle name", "last name")
         self.work_feature_types = ("workplace", "job title", "job shift")
         self.home_feature_types = ("home",)
@@ -893,37 +936,37 @@ class Config(object):
         self.amount_of_people_people_talk_about_floor = 2
         self.amount_of_people_people_talk_about_cap = 7
         self.chance_someones_feature_comes_up_in_conversation_about_them = (
-            ("first name",                  0.98),
-            ("tattoo",                      0.70),
-            ("skin color",                  0.60),
-            ("scar",                        0.45),
-            ("birthmark",                   0.45),
-            ("last name",                   0.40),
-            ("workplace",                   0.40),
-            ("facial hair style",           0.40),
-            ("freckles",                    0.40),
-            ("job shift",                   0.35),
-            ("job title",                   0.30),
-            ("hair color",                  0.30),
-            ("glasses",                     0.30),
-            ("sunglasses",                  0.30),
-            ("hair length",                 0.25),
-            ("eye color",                   0.20),
-            ("eye horizontal settedness",   0.15),
-            ("eye vertical settedness",     0.15),
-            ("head size",                   0.15),
-            ("head shape",                  0.15),
-            ("eyebrow size",                0.15),
-            ("eyebrow color",               0.10),
-            ("mouth size",                  0.10),
-            ("ear size",                    0.10),
-            ("ear angle",                   0.10),
-            ("nose size",                   0.10),
-            ("nose shape",                  0.10),
-            ("eye size",                    0.10),
-            ("eye shape",                   0.10),
+            ("first name",                  0.80),
+            ("tattoo",                      0.20),
+            ("skin color",                  0.20),
+            ("scar",                        0.15),
+            ("birthmark",                   0.15),
+            ("last name",                   0.15),
+            ("workplace",                   0.12),
+            ("hair color",                  0.08),
             ("home",                        0.05),
-            ("middle name",                 0.01),
+            ("facial hair style",           0.05),
+            ("freckles",                    0.05),
+            ("job shift",                   0.05),
+            ("job title",                   0.05),
+            ("glasses",                     0.05),
+            ("sunglasses",                  0.05),
+            ("head size",                   0.04),
+            ("hair length",                 0.03),
+            ("eye color",                   0.03),
+            ("eye horizontal settedness",   0.02),
+            ("eye vertical settedness",     0.02),
+            ("head shape",                  0.02),
+            ("eyebrow size",                0.02),
+            ("eyebrow color",               0.02),
+            ("mouth size",                  0.02),
+            ("ear size",                    0.02),
+            ("ear angle",                   0.02),
+            ("nose size",                   0.02),
+            ("nose shape",                  0.02),
+            ("eye size",                    0.02),
+            ("eye shape",                   0.02),
+            ("middle name",                 0.005),
         )
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
@@ -1006,7 +1049,7 @@ class Config(object):
             "ear size":                     0.40,
             "home address":                 0.60,
             "business address":             0.65,
-            "":                             0.03,  # Chance of concoction, essentially
+            "":                             0.03,  # Chance of confabulation, essentially
         }
         # Chance of certain types of memory deterioration -- note that these chances only
         # get reference when it's already been decided that some piece of knowledge
@@ -1531,5 +1574,4 @@ class Config(object):
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0
         self.charge_threshold_enmity = -15.0
-
 
