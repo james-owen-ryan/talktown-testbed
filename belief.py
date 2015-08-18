@@ -113,9 +113,11 @@ class MentalModel(object):
         else:
             # There is no challenger belief for this feature_value, so instantiate one (again, this
             # may cause this new belief facet to overtake the current one)
-            new_facet = Facet(value=feature_value, owner=self.owner, subject=self.subject,
-                              feature_type=feature_type, initial_evidence=new_evidence,
-                              object_itself=feature_object_itself)
+            Facet(
+                value=feature_value, owner=self.owner, subject=self.subject,
+                feature_type=feature_type, initial_evidence=new_evidence,
+                object_itself=feature_object_itself
+            )
 
     def adopt_belief(self, new_belief_facet, old_belief_facet=None):
         """Adopt a new belief facet; if an old facet is being overtaken, update it accordingly."""
@@ -182,8 +184,8 @@ class MentalModel(object):
             )
             if result == 't' and entity_to_transfer_belief_facet_from:  # Transference
                 belief_facet_obj = self._transfer_belief_facet(
-                    feature_type=feature_type, entity_being_transferred_from=entity_to_transfer_belief_facet_from,
-                    current_belief_facet=current_belief_facet
+                    feature_type=feature_type,
+                    entity_being_transferred_from=entity_to_transfer_belief_facet_from
                 )
             elif result == 'm':  # Mutation
                 belief_facet_obj = self._mutate_belief_facet(
@@ -191,7 +193,7 @@ class MentalModel(object):
                 )
             else:  # Forgetting
                 belief_facet_obj = self._forget_belief_facet(
-                    feature_type=feature_type, belief_facet_being_forgotten=current_belief_facet
+                    feature_type=feature_type
                 )
         else:  # Confabulation
             belief_facet_obj = self._confabulate_belief_facet(
@@ -207,7 +209,7 @@ class MentalModel(object):
         """This method gets overridden by the subclasses to this base class."""
         pass
 
-    def _transfer_belief_facet(self, feature_type, entity_being_transferred_from, current_belief_facet):
+    def _transfer_belief_facet(self, feature_type, entity_being_transferred_from):
         """Cause a belief facet to change by transference."""
         transferred_belief_facet = (
             self.owner.mind.mental_models[entity_being_transferred_from].get_facet_to_this_belief_of_type(
@@ -230,7 +232,7 @@ class MentalModel(object):
         """This method gets overridden by the subclasses to this base class."""
         pass
 
-    def _forget_belief_facet(self, feature_type, belief_facet_being_forgotten):
+    def _forget_belief_facet(self, feature_type):
         """Cause a belief facet to be forgotten."""
         forgetting = Forgetting(subject=self.subject, source=self.owner)
         # Facets evidenced by a Forgetting should always have an empty string
@@ -923,9 +925,13 @@ class PersonMentalModel(MentalModel):
             confabulated_feature_str = self._confabulate_name_facet(feature_type=feature_type)
             confabulated_object_itself = None
         elif feature_type in config.work_feature_types:
-            confabulated_feature_str, confabulated_object_itself = self._confabulate_work_facet(feature_type=feature_type)
+            confabulated_feature_str, confabulated_object_itself = self._confabulate_work_facet(
+                feature_type=feature_type
+            )
         elif feature_type in config.home_feature_types:
-            confabulated_feature_str, confabulated_object_itself = self._confabulate_home_facet(feature_type=feature_type)
+            confabulated_feature_str, confabulated_object_itself = self._confabulate_home_facet(
+                feature_type=feature_type
+            )
         else:  # Appearance feature
             if self.subject.male:
                 distribution = config.facial_feature_distributions_male[feature_type]
@@ -933,7 +939,8 @@ class PersonMentalModel(MentalModel):
                 distribution = config.facial_feature_distributions_female[feature_type]
             x = random.random()
             confabulated_feature_str = next(  # See config.py to understand what this is doing
-                feature_type[1] for feature_type in distribution if feature_type[0][0] <= x <= feature_type[0][1]
+                feature_type[1] for feature_type in distribution if
+                feature_type[0][0] <= x <= feature_type[0][1]
             )
             confabulated_object_itself = None
         belief_facet_object = Facet(
