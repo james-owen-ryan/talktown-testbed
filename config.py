@@ -905,7 +905,7 @@ class Config(object):
             "mutation": 3,
             "transference": 3,
             "declaration": 2,
-            "forgetting": -1,
+            "forgetting": 0.001,
         }
         self.decay_rate_of_evidence_per_timestep = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (

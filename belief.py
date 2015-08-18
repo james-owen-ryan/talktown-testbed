@@ -32,21 +32,23 @@ class MentalModel(object):
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature not in ("subject", "owner", "belief_trajectories"):
-                belief_facet = self.__dict__[feature]
-                if belief_facet is None or not belief_facet.accurate:
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is None or not current_belief_facet.accurate:
                     feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Potentially make it accurate
-                    self.__dict__[feature] = (
-                        self.init_belief_facet(
-                            feature_type=feature_type, observation_or_reflection=new_observation_or_reflection
-                        )
+                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                    # if a Facet object is instantiated, it will automatically be adopted because
+                    # it's initial evidence will be a reflection or observation; specifically,
+                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                    self.init_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
                     )
                 else:
                     # Belief facet is already accurate, but update its evidence to point to the new
                     # observation or reflection (which will slow any potential deterioration) -- this
                     # will also increment the strength of the belief facet, which will make it less
                     # likely to deteriorate in the future
-                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence):
         """Consider new evidence that someone has given you.
@@ -78,12 +80,14 @@ class MentalModel(object):
             current_belief_facet.attribute_new_evidence(new_evidence=new_evidence)
         elif current_belief_facet is None or current_belief_facet == '':
             # You don't have an existing belief, so instantiate a new belief facet
-            # with this new evidence as its initial evidence
-            new_belief_facet = Facet(
+            # with this new evidence as its initial evidence -- this Facet will automatically
+            # be adopted because it is this character's first belief about this attribute;
+            # specifically, this will happen by a series of method calls starting with
+            # Facet.init()
+            Facet(
                 value=feature_value, owner=self.owner, subject=self.subject, feature_type=feature_type,
                 initial_evidence=new_evidence, object_itself=feature_object_itself
             )
-            self.adopt_belief(new_belief_facet)
         else:
             # This new evidence contradicts an existing belief, consider it accordingly
             self._consider_contradictory_evidence(
@@ -126,10 +130,10 @@ class MentalModel(object):
         new_belief_facet.predecessor = old_belief_facet
         # Update the challenger status of the facet(s)
         new_belief_facet.challenger = False
-        if old_belief_facet:
+        if old_belief_facet is not None:  # Could be '', in the case of a forgetting
             old_belief_facet.challenger = True
         # Have the new facet inherit any challengers of the old facet (excluding itself)
-        if old_belief_facet:
+        if old_belief_facet is not None:
             new_belief_facet.challengers = set(old_belief_facet.challengers) - {new_belief_facet} | {old_belief_facet}
             # Remove any challengers that are evidenced by a forgetting (I think this could
             # only possibly be old_belief_facet), since we don't want future forgettings just
@@ -139,7 +143,7 @@ class MentalModel(object):
         else:
             new_belief_facet.challengers = set()
         # Remove all challengers to the old facet (if it's reinstated, it will inherit in this same way)
-        if old_belief_facet:
+        if old_belief_facet is not None:
             old_belief_facet.challengers = set()
 
     def _update_belief_trajectory(self, new_belief_facet):
@@ -330,10 +334,10 @@ class BusinessMentalModel(MentalModel):
         config = self.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature not in ("owner", "subject", "employees", "belief_trajectories"):
-                belief_facet = self.__dict__[feature]
-                if belief_facet is not None:
-                    feature_type_str = belief_facet.feature_type
-                    belief_facet_strength = belief_facet.strength
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is not None:
+                    feature_type_str = current_belief_facet.feature_type
+                    belief_facet_strength = current_belief_facet.strength
                 else:
                     feature_type_str = self.attribute_to_belief_type(attribute=feature)
                     belief_facet_strength = 1
@@ -346,11 +350,13 @@ class BusinessMentalModel(MentalModel):
                 )
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
-                    # the existing one (which itself may be a deterioration already)
-                    deteriorated_belief_facet = self.deteriorate_belief_facet(
-                        feature_type=feature_type_str, current_belief_facet=belief_facet
+                    # the existing one (which itself may be a deterioration already) --
+                    # when the facet object's init() method is called, it will call
+                    # attribute_new_evidence(), which will automatically call adopt_belief()
+                    # because its initial evidence will be of a deterioration type
+                    self.deteriorate_belief_facet(
+                        feature_type=feature_type_str, current_belief_facet=current_belief_facet
                     )
-                    self.__dict__[feature] = deteriorated_belief_facet
 
     def _confabulate_belief_facet(self, feature_type, current_belief_facet):
         """Confabulate a facet to a belief about a dwelling place."""
@@ -583,10 +589,10 @@ class DwellingPlaceModel(MentalModel):
         config = self.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature not in ("owner", "subject", "residents", "belief_trajectories"):
-                belief_facet = self.__dict__[feature]
-                if belief_facet is not None:
-                    feature_type_str = belief_facet.feature_type
-                    belief_facet_strength = belief_facet.strength
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is not None:
+                    feature_type_str = current_belief_facet.feature_type
+                    belief_facet_strength = current_belief_facet.strength
                 else:
                     feature_type_str = self.attribute_to_belief_type(attribute=feature)
                     belief_facet_strength = 1
@@ -599,11 +605,13 @@ class DwellingPlaceModel(MentalModel):
                 )
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
-                    # the existing one (which itself may be a deterioration already)
-                    deteriorated_belief_facet = self.deteriorate_belief_facet(
-                        feature_type=feature_type_str, current_belief_facet=belief_facet
+                    # the existing one (which itself may be a deterioration already) --
+                    # when the facet object's init() method is called, it will call
+                    # attribute_new_evidence(), which will automatically call adopt_belief()
+                    # because its initial evidence will be of a deterioration type
+                    self.deteriorate_belief_facet(
+                        feature_type=feature_type_str, current_belief_facet=current_belief_facet
                     )
-                    self.__dict__[feature] = deteriorated_belief_facet
 
     def _confabulate_belief_facet(self, feature_type, current_belief_facet):
         """Confabulate a facet to a belief about a dwelling place."""
@@ -802,15 +810,19 @@ class PersonMentalModel(MentalModel):
                                           the beliefs composing this mental model originate.
         """
         super(PersonMentalModel, self).__init__(owner, subject)
-        self.name = NameBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        # # It's more convenient (and feels more natural) to access name facets directly
-        # self.first_name, self.middle_name, self.last_name = (
-        #     self.name.first_name, self.name.middle_name, self.name.last_name
-        # )
-        self.occupation = WorkBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        self.face = FaceBelief(person_model=self, observation_or_reflection=observation_or_reflection)
-        self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
-        self.whereabouts = WhereaboutsBelief(person_model=self, observation_or_reflection=observation_or_reflection)
+        # Prepare the belief hierarchy encapsulated by this object
+        self.name = NameBelief(person_model=self)
+        self.occupation = WorkBelief(person_model=self)
+        self.face = FaceBelief(person_model=self)
+        self.whereabouts = WhereaboutsBelief(person_model=self)
+        self.home = None
+        # Establish initial belief facets according to an initial observation/reflection
+        if observation_or_reflection:
+            self.name.establish(observation_or_reflection=observation_or_reflection)
+            self.occupation.establish(observation_or_reflection=observation_or_reflection)
+            self.face.establish(observation_or_reflection=observation_or_reflection)
+            self.whereabouts.establish(observation_or_reflection=observation_or_reflection)
+            self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
 
     def _init_home_facet(self, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's home."""
@@ -833,9 +845,6 @@ class PersonMentalModel(MentalModel):
     def build_up(self, new_observation_or_reflection):
         """Build up a mental model from a new observation or reflection."""
         self.name.build_up(new_observation_or_reflection=new_observation_or_reflection)
-        # self.first_name, self.middle_name, self.last_name = (
-        #     self.name.first_name, self.name.middle_name, self.name.last_name
-        # )
         self.occupation.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.face.build_up(new_observation_or_reflection=new_observation_or_reflection)
         self.whereabouts.build_up(new_observation_or_reflection=new_observation_or_reflection)
@@ -844,9 +853,6 @@ class PersonMentalModel(MentalModel):
     def deteriorate(self):
         """Deteriorate a mental model from time passing."""
         self.name.deteriorate()
-        # self.first_name, self.middle_name, self.last_name = (
-        #     self.name.first_name, self.name.middle_name, self.name.last_name
-        # )
         self.occupation.deteriorate()
         self.face.deteriorate()
         # Manually deteriorate the home one (and other stragglers that may be defined later)
@@ -857,22 +863,23 @@ class PersonMentalModel(MentalModel):
         By other facets, I mean ones that don't get built up elsewhere, as, e.g.,
         facets to WorkBeliefs do."""
         for feature in ("home",):
-            belief_facet = self.__dict__[feature]
-            if belief_facet is None or not belief_facet.accurate:
+            current_belief_facet = self.__dict__[feature]
+            if current_belief_facet is None or not current_belief_facet.accurate:
                 feature_type = self.attribute_to_belief_type(attribute=feature)
-                # Potentially make it accurate
-                self.__dict__[feature] = (
-                    self.init_belief_facet(
-                        feature_type=feature_type,
-                        observation_or_reflection=new_observation_or_reflection
-                    )
+                # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                # if a Facet object is instantiated, it will automatically be adopted because
+                # it's initial evidence will be a reflection or observation; specifically,
+                # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                self.init_belief_facet(
+                    feature_type=feature_type,
+                    observation_or_reflection=new_observation_or_reflection
                 )
             else:
                 # Belief facet is already accurate, but update its evidence to point to the new
                 # observation or reflection (which will slow any potential deterioration) -- this
                 # will also increment the strength of the belief facet, which will make it less
                 # likely to deteriorate in this future
-                belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def _deteriorate_other_belief_facets(self):
         """Deteriorate other beliefs facets that are components of this mental model.
@@ -881,10 +888,10 @@ class PersonMentalModel(MentalModel):
         """
         config = self.owner.game.config
         for feature in ("home",):
-            belief_facet = self.__dict__[feature]
-            if belief_facet is not None:
-                feature_type_str = belief_facet.feature_type
-                belief_facet_strength = belief_facet.strength
+            current_belief_facet = self.__dict__[feature]
+            if current_belief_facet is not None:
+                feature_type_str = current_belief_facet.feature_type
+                belief_facet_strength = current_belief_facet.strength
             else:
                 feature_type_str = self.attribute_to_belief_type(attribute=feature)
                 belief_facet_strength = 1
@@ -897,11 +904,13 @@ class PersonMentalModel(MentalModel):
             )
             if random.random() < chance_of_memory_deterioration:
                 # Instantiate a new belief facet that represents a deterioration of
-                # the existing one (which itself may be a deterioration already)
-                deteriorated_belief_facet = self.deteriorate_belief_facet(
-                    feature_type=feature_type_str, current_belief_facet=belief_facet
+                # the existing one (which itself may be a deterioration already) --
+                # when the facet object's init() method is called, it will call
+                # attribute_new_evidence(), which will automatically call adopt_belief()
+                # because its initial evidence will be of a deterioration type
+                self.deteriorate_belief_facet(
+                    feature_type=feature_type_str, current_belief_facet=current_belief_facet
                 )
-                self.__dict__[feature] = deteriorated_belief_facet
 
     def _confabulate_belief_facet(self, feature_type, current_belief_facet):
         """Confabulate a new belief facet of the given type.
@@ -1221,23 +1230,25 @@ class PersonMentalModel(MentalModel):
 class WhereaboutsBelief(object):
     """A person's mental model of another person's past whereabouts."""
 
-    def __init__(self, person_model, observation_or_reflection):
+    def __init__(self, person_model):
         """Initialize a WhereaboutsBelief object."""
         self.person_model = person_model
         self.date = {}  # Where this person was when
+
+    def establish(self, observation_or_reflection):
+        """Establish an initial belief facet in response to an initial observation/reflection."""
         # If there is an observation or reflection taking place, take note of where this
         # person was at this time
-        if observation_or_reflection:
-            location_str = self.person_model.owner.location.name
-            location_obj = self.person_model.owner.location
-            day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
-            # Generate a unique hash so that we can maintain a trajectory for this belief
-            feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
-            self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
-                value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
-                feature_type=feature_type, initial_evidence=observation_or_reflection,
-                object_itself=location_obj
-            )
+        location_str = self.person_model.owner.location.name
+        location_obj = self.person_model.owner.location
+        day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+        # Generate a unique hash so that we can maintain a trajectory for this belief
+        feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
+        self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
+            value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
+            feature_type=feature_type, initial_evidence=observation_or_reflection,
+            object_itself=location_obj
+        )
 
     def build_up(self, new_observation_or_reflection):
         """Build up this belief by adding in a new entry for the current date."""
@@ -1256,9 +1267,15 @@ class WhereaboutsBelief(object):
 class NameBelief(object):
     """A person's mental model of a person's name."""
 
-    def __init__(self, person_model, observation_or_reflection):
+    def __init__(self, person_model):
         """Initialize a NameBelief object."""
         self.person_model = person_model
+        self.first_name = None
+        self.middle_name = None
+        self.last_name = None
+
+    def establish(self, observation_or_reflection):
+        """Establish initial belief facets in response to an initial observation/reflection."""
         self.first_name = self._init_name_facet(
             feature_type="first name", observation_or_reflection=observation_or_reflection
         )
@@ -1289,32 +1306,33 @@ class NameBelief(object):
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                belief_facet = self.__dict__[feature]
-                if belief_facet is None or not belief_facet.accurate:
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is None or not current_belief_facet.accurate:
                     feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Potentially make it accurate
-                    self.__dict__[feature] = (
-                        self.person_model.init_belief_facet(
-                            feature_type=feature_type,
-                            observation_or_reflection=new_observation_or_reflection
-                        )
+                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                    # if a Facet object is instantiated, it will automatically be adopted because
+                    # it's initial evidence will be a reflection or observation; specifically,
+                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                    self.person_model.init_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
                     )
                 else:
                     # Belief facet is already accurate, but update its evidence to point to the new
                     # observation or reflection (which will slow any potential deterioration) -- this
                     # will also increment the strength of the belief facet, which will make it less
                     # likely to deteriorate in this future
-                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
         config = self.person_model.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                belief_facet = self.__dict__[feature]
-                if belief_facet is not None:
-                    feature_type_str = belief_facet.feature_type
-                    belief_facet_strength = belief_facet.strength
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is not None:
+                    feature_type_str = current_belief_facet.feature_type
+                    belief_facet_strength = current_belief_facet.strength
                 else:
                     feature_type_str = self.attribute_to_belief_type(attribute=feature)
                     belief_facet_strength = 1
@@ -1327,11 +1345,13 @@ class NameBelief(object):
                 )
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
-                    # the existing one (which itself may be a deterioration already)
-                    deteriorated_belief_facet = self.person_model.deteriorate_belief_facet(
-                        feature_type=feature_type_str, current_belief_facet=belief_facet
+                    # the existing one (which itself may be a deterioration already) --
+                    # when the facet object's init() method is called, it will call
+                    # attribute_new_evidence(), which will automatically call adopt_belief()
+                    # because its initial evidence will be of a deterioration type
+                    self.person_model.deteriorate_belief_facet(
+                        feature_type=feature_type_str, current_belief_facet=current_belief_facet
                     )
-                    self.__dict__[feature] = deteriorated_belief_facet
 
     @staticmethod
     def attribute_to_belief_type(attribute):
@@ -1347,9 +1367,15 @@ class NameBelief(object):
 class WorkBelief(object):
     """A person's mental model of a person's work life."""
 
-    def __init__(self, person_model, observation_or_reflection):
+    def __init__(self, person_model):
         """Initialize a WorkBelief object."""
         self.person_model = person_model
+        self.company = None
+        self.job_title = None
+        self.shift = None
+
+    def establish(self, observation_or_reflection):
+        """Establish initial belief facets in response to an initial observation/reflection."""
         self.company = self._init_work_facet(  # Will have company object as 'object_itself' attribute on Facet
             feature_type="workplace", observation_or_reflection=observation_or_reflection
         )
@@ -1386,32 +1412,33 @@ class WorkBelief(object):
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                belief_facet = self.__dict__[feature]
-                if belief_facet is None or not belief_facet.accurate:
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is None or not current_belief_facet.accurate:
                     feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Potentially make it accurate
-                    self.__dict__[feature] = (
-                        self.person_model.init_belief_facet(
-                            feature_type=feature_type,
-                            observation_or_reflection=new_observation_or_reflection
-                        )
+                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                    # if a Facet object is instantiated, it will automatically be adopted because
+                    # it's initial evidence will be a reflection or observation; specifically,
+                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                    self.person_model.init_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
                     )
                 else:
                     # Belief facet is already accurate, but update its evidence to point to the new
                     # observation or reflection (which will slow any potential deterioration) -- this
                     # will also increment the strength of the belief facet, which will make it less
                     # likely to deteriorate in this future
-                    belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
         config = self.person_model.owner.game.config
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                belief_facet = self.__dict__[feature]
-                if belief_facet is not None:
-                    feature_type_str = belief_facet.feature_type
-                    belief_facet_strength = belief_facet.strength
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is not None:
+                    feature_type_str = current_belief_facet.feature_type
+                    belief_facet_strength = current_belief_facet.strength
                 else:
                     feature_type_str = self.attribute_to_belief_type(attribute=feature)
                     belief_facet_strength = 1
@@ -1424,11 +1451,13 @@ class WorkBelief(object):
                 )
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
-                    # the existing one (which itself may be a deterioration already)
-                    deteriorated_belief_facet = self.person_model.deteriorate_belief_facet(
-                        feature_type=feature_type_str, current_belief_facet=belief_facet
+                    # the existing one (which itself may be a deterioration already) --
+                    # when the facet object's init() method is called, it will call
+                    # attribute_new_evidence(), which will automatically call adopt_belief()
+                    # because its initial evidence will be of a deterioration type
+                    self.person_model.deteriorate_belief_facet(
+                        feature_type=feature_type_str, current_belief_facet=current_belief_facet
                     )
-                    self.__dict__[feature] = deteriorated_belief_facet
 
     @staticmethod
     def attribute_to_belief_type(attribute):
@@ -1444,39 +1473,28 @@ class WorkBelief(object):
 class FaceBelief(object):
     """A person's mental model of a person's face."""
 
-    def __init__(self, person_model, observation_or_reflection):
+    def __init__(self, person_model):
         """Initialize a FaceBelief object."""
+        # Prepare the structure of this belief hierarchy
         self.person_model = person_model
-        self.skin = SkinBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.head = HeadBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.hair = HairBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.eyebrows = EyebrowsBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.eyes = EyesBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.ears = EarsBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.nose = NoseBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.mouth = MouthBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.facial_hair = FacialHairBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
-        self.distinctive_features = DistinctiveFeaturesBelief(
-            face_belief=self, observation_or_reflection=observation_or_reflection
-        )
+        self.skin = SkinBelief(face_belief=self)
+        self.head = HeadBelief(face_belief=self)
+        self.hair = HairBelief(face_belief=self)
+        self.eyebrows = EyebrowsBelief(face_belief=self)
+        self.eyes = EyesBelief(face_belief=self)
+        self.ears = EarsBelief(face_belief=self)
+        self.nose = NoseBelief(face_belief=self)
+        self.mouth = MouthBelief(face_belief=self)
+        self.facial_hair = FacialHairBelief(face_belief=self)
+        self.distinctive_features = DistinctiveFeaturesBelief(face_belief=self)
+
+    def establish(self, observation_or_reflection):
+        """Establish initial belief facets in response to an initial observation/reflection."""
+        for belief in (
+            self.skin, self.head, self.hair, self.eyebrows, self.eyes, self.ears,
+            self.nose, self.mouth, self.facial_hair, self.distinctive_features
+        ):
+            belief.establish(observation_or_reflection=observation_or_reflection)
 
     def build_up(self, new_observation_or_reflection):
         """Build up the components of this belief by potentially filling in missing information
@@ -1490,7 +1508,7 @@ class FaceBelief(object):
                         belief_facet = belief.__dict__[feature]
                         if belief_facet is None or not belief_facet.accurate:
                             feature_type = belief.attribute_to_feature_type(attribute=feature)
-                            # Potentially make it accurate
+                            # Adopt a new, accurate belief facet (unless init_belief_facet returns None)
                             belief.__dict__[feature] = (
                                 belief.face_belief.person_model.init_belief_facet(
                                     feature_type=feature_type,
@@ -1540,11 +1558,15 @@ class FaceBelief(object):
 class SkinBelief(object):
     """A person's mental model of a person's skin."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Skin object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.color = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.color = self.face_belief.person_model.init_belief_facet(
             feature_type="skin color", observation_or_reflection=observation_or_reflection
         )
@@ -1561,11 +1583,16 @@ class SkinBelief(object):
 class HeadBelief(object):
     """A person's mental model of a person's head."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Head object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+        self.shape = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="head size", observation_or_reflection=observation_or_reflection
         )
@@ -1586,11 +1613,16 @@ class HeadBelief(object):
 class HairBelief(object):
     """A person's mental model of a person's hair (on his or her head)."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Hair object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.length = None
+        self.color = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.length = self.face_belief.person_model.init_belief_facet(
             feature_type="hair length", observation_or_reflection=observation_or_reflection
         )
@@ -1611,11 +1643,16 @@ class HairBelief(object):
 class EyebrowsBelief(object):
     """A person's mental model of a person's eyebrows."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Eyebrows object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+        self.color = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="eyebrow size", observation_or_reflection=observation_or_reflection
         )
@@ -1636,11 +1673,15 @@ class EyebrowsBelief(object):
 class MouthBelief(object):
     """A person's mental model of a person's mouth."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Mouth object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="mouth size", observation_or_reflection=observation_or_reflection
         )
@@ -1657,11 +1698,16 @@ class MouthBelief(object):
 class EarsBelief(object):
     """A person's mental model of a person's ears."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize an Ears object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+        self.angle = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="ear size", observation_or_reflection=observation_or_reflection
         )
@@ -1682,11 +1728,16 @@ class EarsBelief(object):
 class NoseBelief(object):
     """A person's mental model of a person's nose."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a Nose object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+        self.shape = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="nose size", observation_or_reflection=observation_or_reflection
         )
@@ -1707,11 +1758,19 @@ class NoseBelief(object):
 class EyesBelief(object):
     """A person's mental model of a person's eyes."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize an Eyes object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.size = None
+        self.shape = None
+        self.horizontal_settedness = None
+        self.vertical_settedness = None
+        self.color = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.size = self.face_belief.person_model.init_belief_facet(
             feature_type="eye size", observation_or_reflection=observation_or_reflection
         )
@@ -1744,11 +1803,15 @@ class EyesBelief(object):
 class FacialHairBelief(object):
     """A person's mental model of a person's facial hair."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a FacialHair style.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.style = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.style = self.face_belief.person_model.init_belief_facet(
             feature_type="facial hair style", observation_or_reflection=observation_or_reflection
         )
@@ -1765,11 +1828,20 @@ class FacialHairBelief(object):
 class DistinctiveFeaturesBelief(object):
     """A person's mental model of a person's distinguishing features."""
 
-    def __init__(self, face_belief, observation_or_reflection):
+    def __init__(self, face_belief):
         """Initialize a DistinctiveFeatures object.
         @param face_belief: The FaceBelief of which this belief is a component.
         """
         self.face_belief = face_belief
+        self.freckles = None
+        self.birthmark = None
+        self.scar = None
+        self.tattoo = None
+        self.glasses = None
+        self.sunglasses = None
+
+    def establish(self, observation_or_reflection):
+        """Build up according to an observation or reflection."""
         self.freckles = self.face_belief.person_model.init_belief_facet(
             feature_type="freckles", observation_or_reflection=observation_or_reflection
         )
@@ -1836,7 +1908,14 @@ class Facet(str):
         # during this initialization procedure, when .attribute_new_evidence() is called);
         # challenger status may be revised from True to False by MentalModel.adopt_belief()
         currently_held_belief = self._get_currently_held_belief()
-        self.challenger = True if currently_held_belief else False
+        self.challenger = False if currently_held_belief is None else True
+        if not self.challenger:
+            # This is the character's first belief facet regarding this attribute -- have
+            # it be adopted immediately
+            mental_model = self.owner.mind.mental_models[self.subject]
+            mental_model.adopt_belief(
+                new_belief_facet=self, old_belief_facet=None
+            )
         # A belief facet's challengers are other potential beliefs (instantiated as other
         # Facet objects) about this attribute for which the owner of this Facet has encountered
         # evidence. If at any time the strength of the evidence for some challenger exceeds the
@@ -1918,9 +1997,6 @@ class Facet(str):
                     teller_belief_strength = random.randint(1, 300)  # TODO maybe model lying ability here?
                 else:
                     teller_belief_strength = evidence.teller_belief_strength[self.feature_type]
-                if teller_belief_strength < 0:
-                    # TODO explore how negative teller_belief_strength is even possible
-                    teller_belief_strength = config.minimum_teller_belief_strength
                 source_belief_strength_multiplier = config.function_to_determine_teller_strength_boost(
                     teller_belief_strength=teller_belief_strength
                 )
@@ -1978,7 +2054,7 @@ class Facet(str):
         # held belief, so in a sense it has already been determined to be 'stronger')
         if self.challenger:
             currently_held_belief = self._get_currently_held_belief()
-            assert currently_held_belief, (
+            assert currently_held_belief is not None, (
                 "{}'s belief facet '{}' for {}'s {} has been wrongly attributed challenger status, i.e, "
                 "there is no currently held belief for that facet.".format(
                     self.owner.name, self, self.subject.name, self.feature_type
@@ -1999,7 +2075,7 @@ class Facet(str):
                     new_evidence.type in automatically_take_over_because_deterioration_or_observation):
                 mental_model = self.owner.mind.mental_models[self.subject]
                 mental_model.adopt_belief(
-                    old_belief_facet=currently_held_belief, new_belief_facet=self
+                    new_belief_facet=self, old_belief_facet=currently_held_belief
                 )
                 # If the new evidence is a type of deterioration, adjust the strength of the evidence
                 # supporting the belief that is being supplanted (check docstring for
