@@ -1357,6 +1357,10 @@ class Person(object):
         )
         return friendship_component
 
+    def update_social_network(self):
+        """"""
+
+
     def salience_of_person(self, person):
         """Return how salient the other person is to this person."""
         # TODO, BOOST ACCORDING CHARGE AND SPARK
@@ -1385,9 +1389,6 @@ class Person(object):
             salience += config.salience_of_other_people["love interest"]
         elif person is self.significant_other:
             salience += config.salience_of_other_people["significant other"]
-        # TODO DELETE THIS?
-        elif person is self.game.lover:
-            salience += 20
         # Boost salience for this person's job level
         if person.occupation:
             salience += config.salience_job_level_boost(job_level=person.occupation.level)
