@@ -126,15 +126,17 @@ class Person(object):
         # Set familial attributes; update those of family members
         self._init_familial_attributes()
         self._init_update_familial_attributes_of_family_members()
-        # Prepare attributes representing this person's interpersonal relationships.
+        # Prepare attributes representing this person's romantic relationships
         self.spouse = None
         self.widowed = False
         self.relationships = {}
-        self.first_met = {}
-        self.last_saw = {}
+        self.sexual_partners = set()
+        # Prepare attributes representing this person's social relationships
+        self.acquaintances = set()
+        self.friends = set()
+        self.enemies = set()
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
-        self.sexual_partners = set()
         # Prepare attributes pertaining to pregnancy
         self.impregnated_by = None
         self.conception_year = None  # Year of conception
@@ -471,14 +473,6 @@ class Person(object):
             return False
 
     @property
-    def parents(self):
-        """Return parents.
-
-        The @property decorator is used so that this attribute can be dynamic to adoption.
-        """
-        return set([parent for parent in (self.mother, self.father) if parent])
-
-    @property
     def next_of_kin(self):
         """Return next of kin.
 
@@ -505,10 +499,17 @@ class Person(object):
             )
         return next_of_kin
 
+    def get_parents(self):
+        """Return parents.
+
+        A getter method is used so that this attribute can be dynamic to adoption.
+        """
+        return set([parent for parent in (self.mother, self.father) if parent])
+
     @property
     def nuclear_family(self):
         """Return this person's nuclear family."""
-        nuclear_family = set([self])
+        nuclear_family = {self}
         if self.spouse and self.spouse.present:
             nuclear_family.add(self.spouse)
         for kid in self.spouse.kids & self.kids if self.spouse else self.kids:
@@ -521,14 +522,6 @@ class Person(object):
         """Return kids of this person that live with them, if any."""
         kids_at_home = [k for k in self.kids if k.home is self.home]
         return kids_at_home
-
-    @property
-    def friends(self):
-        """Return the friends this person has (in their own conception)."""
-        friends = [
-            person for person in self.relationships if self.relationships[person].type == "friendship"
-        ]
-        return friends
 
     @property
     def best_friend(self):
@@ -573,22 +566,6 @@ class Person(object):
         else:
             significant_other = None
         return significant_other
-
-    @property
-    def enemies(self):
-        """Return the enemies this person has (in their own conception)."""
-        enemies = [
-            person for person in self.relationships if self.relationships[person].type == "enmity"
-        ]
-        return enemies
-
-    @property
-    def acquaintances(self):
-        """Return the acquaintances this person has."""
-        acquaintances = [
-            person for person in self.relationships if self.relationships[person].type == "acquaintance"
-        ]
-        return acquaintances
 
     @property
     def coworkers(self):
@@ -1359,6 +1336,7 @@ class Person(object):
 
     def update_social_network(self):
         """"""
+
 
 
     def salience_of_person(self, person):

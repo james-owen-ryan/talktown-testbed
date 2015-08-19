@@ -1,5 +1,10 @@
 from belief import *
 
+# TODO dating and attendant nuances (after break-up, do they go back to previous relationship
+# or do they become enemies?)
+
+# TODO make proposing, general romantic progressions better
+
 
 class Relationship(object):
     """A social and/or romantic relationship between two people."""
@@ -102,7 +107,6 @@ class Relationship(object):
 
         TODO: Have this be affected by physical appearance.
         """
-        config = self.owner.game.config
         # Make sure this person isn't a family member of owner, is the sex
         # that owner is attracted to, and both are adults
         if self.subject in self.owner.extended_family:
@@ -295,6 +299,7 @@ class Acquaintance(Relationship):
         @param preceded_by: A Kinship relationship that preceded this, if any.
         """
         super(Acquaintance, self).__init__(owner, subject, preceded_by)
+        owner.acquaintances.add(subject)
         if self.owner not in self.subject.relationships:
             Acquaintance(owner=self.subject, subject=self.owner, preceded_by=None)
 
@@ -307,9 +312,11 @@ class Enmity(Relationship):
 
         @param owner: The person whom this conception of the enmity belongs to.
         @param subject: The other person to whom the conception pertains.
-        @param preceded_by: An Acquaintance relationship that preceded this, if any.
+        @param preceded_by: An Acquaintance relationship that preceded this.
         """
         super(Enmity, self).__init__(owner, subject, preceded_by)
+        owner.acquaintances.remove(subject)
+        owner.enemies.add(subject)
 
 
 class Friendship(Relationship):
@@ -323,6 +330,8 @@ class Friendship(Relationship):
         @param preceded_by: An Acquaintance relationship that preceded this, if any.
         """
         super(Friendship, self).__init__(owner, subject, preceded_by)
+        owner.acquaintances.remove(subject)
+        owner.friends.add(subject)
 
 
 class Romance(Relationship):
@@ -333,6 +342,6 @@ class Romance(Relationship):
 
         @param owner: The person whom this conception of the enmity belongs to.
         @param subject: The other person to whom the conception pertains.
-        @param preceded_by: An Acquaintance relationship that preceded this, if any.
+        @param preceded_by: A different type of relationship that preceded this, if any.
         """
         super(Romance, self).__init__(owner, subject, preceded_by)
