@@ -292,7 +292,7 @@ class Game(object):
                         if random.random() < chance_they_are_trying_to_conceive_this_year:
                             person.have_sex(partner=person.spouse, protection=False)
                     if person.age > max(72, random.random() * 100):
-                        # TODO make this era-accurate
+                        # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
                         if person is not self.founder:
                             person.die(cause_of_death="Natural causes")
                     elif person.age > max(65, random.random() * 100):
