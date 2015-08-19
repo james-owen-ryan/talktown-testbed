@@ -43,6 +43,10 @@ class Relationship(object):
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
             self.spark = preceded_by.spark
+        # This attribute holds all people with whom owner's relationship has changed
+        # on a timestep; at the end of the timestep, owner will update the salience of
+        # this person to them
+        self.owner.salience_update_queue.add(subject)
         # This attribute records whether the other person has already called the
         # progress_relationship() method of this object on this timestep -- it gets
         # set to True by progress_relationship() and then turned back to False by

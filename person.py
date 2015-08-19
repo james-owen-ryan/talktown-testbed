@@ -1,5 +1,6 @@
 import random
 import heapq
+import datetime
 from corpora import Names
 import event
 from name import Name
@@ -34,15 +35,25 @@ class Person(object):
             self.mother = birth.mother
             self.biological_father = birth.biological_father
             self.father = birth.father
-            # Set year of birth
+            self.parents = {self.mother, self.father}
+            # Set date of birth
             self.birth_year = birth.year
+            self.birthday = (birth.month, birth.day)
+            # Set attributes pertaining to age
+            self.age = 0
+            self.adult = False
         else:  # PersonExNihilo
             self.city = None
             self.biological_mother = None
             self.mother = None
             self.biological_father = None
             self.father = None
+            self.parents = set()
             self.birth_year = None  # Gets set by PersonExNihilo.__init__()
+            self.birthday = (None, None)  # Gets set by PersonExNihilo._get_random_birthday()
+            # Set attributes pertaining to age
+            self.age = None  # Will get initialized by PersonExNihilo.__init__()
+            self.adult = True if self.age >= 18 else False
         # Set sex
         self.male, self.female = self._init_sex()
         self.tag = ''  # Allows players to tag characters with arbitrary strings
@@ -135,8 +146,18 @@ class Person(object):
         self.acquaintances = set()
         self.friends = set()
         self.enemies = set()
+        self.neighbors = set()
+        self.former_neighbors = set()
+        self.coworkers = set()
+        self.former_coworkers = set()
+        self.best_friend = None
+        self.worst_enemy = None
+        self.love_interest = None
+        self.significant_other = None
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
+        self.salience_of_other_people = {}  # Maps potentially every other person to their salience to this person
+        self.salience_update_queue = set()  # Gets initialized by _init_determine_salience_of_every_other_person()
         # Prepare attributes pertaining to pregnancy
         self.impregnated_by = None
         self.conception_year = None  # Year of conception
@@ -166,8 +187,6 @@ class Person(object):
         # Prepare attribute pertaining to exact location for the current timestep; this
         # will always be modified by self.go_to()
         self.location = None
-
-        self.where_when = set()  # TODO DELETE
 
     def __str__(self):
         """Return string representation."""
@@ -252,7 +271,7 @@ class Person(object):
 
     def _init_biological_immediate_family(self):
         """Populate lists representing this person's immediate."""
-        self.bio_parents = set([self.biological_mother, self.biological_father])
+        self.bio_parents = {self.biological_mother, self.biological_father}
         self.bio_grandparents = self.biological_father.parents | self.biological_mother.parents
         self.bio_siblings = self.biological_father.kids | self.biological_mother.kids
         self.bio_full_siblings = self.biological_father.kids & self.biological_mother.kids
@@ -297,8 +316,10 @@ class Person(object):
         """Update familial attributes of myself and family members."""
         for member in self.immediate_family:
             member.immediate_family.add(self)
+            member.salience_update_queue.add(self)
         for member in self.extended_family:
             member.extended_family.add(self)
+            member.salience_update_queue.add(self)
         # Update for gender-specific familial attributes
         if self.male:
             for g in self.greatgrandparents:
@@ -361,6 +382,15 @@ class Person(object):
             hs.half_siblings.add(self)
         for c in self.cousins:
             c.cousins.add(self)
+
+    def _init_determine_salience_of_every_other_person(self):
+        """Determine an initial salience value for every other person who ever lived in this city."""
+        for person in self.city.residents:
+            self.salience_of_other_people[person] = self._salience_of_person(person=person)
+        for person in self.city.departed:
+            self.salience_of_other_people[person] = self._salience_of_person(person=person)
+        for person in self.city.deceased:
+            self.salience_of_other_people[person] = self._salience_of_person(person=person)
 
     def _init_money(self):
         """Determine how much money this person has to start with."""
@@ -426,22 +456,12 @@ class Person(object):
         return nametag
 
     @property
-    def age(self):
-        """Return whether this person is at least 18 years old."""
-        return self.game.year - self.birth_year
-
-    @property
     def dead(self):
         """Return whether this person is dead."""
         if not self.alive:
             return True
         else:
             return False
-
-    @property
-    def adult(self):
-        """Return whether this person is at least 18 years old."""
-        return self.age >= 18
 
     @property
     def pregnant(self):
@@ -499,13 +519,6 @@ class Person(object):
             )
         return next_of_kin
 
-    def get_parents(self):
-        """Return parents.
-
-        A getter method is used so that this attribute can be dynamic to adoption.
-        """
-        return set([parent for parent in (self.mother, self.father) if parent])
-
     @property
     def nuclear_family(self):
         """Return this person's nuclear family."""
@@ -520,11 +533,10 @@ class Person(object):
     @property
     def kids_at_home(self):
         """Return kids of this person that live with them, if any."""
-        kids_at_home = [k for k in self.kids if k.home is self.home]
+        kids_at_home = {k for k in self.kids if k.home is self.home}
         return kids_at_home
 
-    @property
-    def best_friend(self):
+    def get_best_friend(self):
         """Return this person's best friend, if any."""
         if self.relationships:
             best_friend = max(self.relationships, key=lambda f: self.relationships[f].charge)
@@ -534,8 +546,7 @@ class Person(object):
             best_friend = None
         return best_friend
 
-    @property
-    def worst_enemy(self):
+    def get_worst_enemy(self):
         """Return this person's worst enemy."""
         if self.relationships:
             worst_enemy = min(self.relationships, key=lambda f: self.relationships[f].charge)
@@ -545,8 +556,7 @@ class Person(object):
             worst_enemy = None
         return worst_enemy
 
-    @property
-    def love_interest(self):
+    def get_love_interest(self):
         """Return this person's strongest love interest, if any."""
         if any(r for r in self.relationships if self.relationships[r].spark > 0):
             strongest_love_interest = max(self.relationships.keys(), key=lambda r: self.relationships[r].spark)
@@ -556,8 +566,7 @@ class Person(object):
             strongest_love_interest = None
         return strongest_love_interest
 
-    @property
-    def significant_other(self):
+    def get_significant_other(self):
         """Return this person's strongest significant other, if any."""
         if self.spouse:
             significant_other = self.spouse
@@ -566,41 +575,6 @@ class Person(object):
         else:
             significant_other = None
         return significant_other
-
-    @property
-    def coworkers(self):
-        """Return this person's coworkers."""
-        if self.occupation:
-            coworkers = set([e.person for e in self.occupation.company.employees]) - set([self])
-        else:
-            coworkers = set()
-        return coworkers
-
-    @property
-    def neighbors(self):
-        """Return this person's neighbors, i.e., people living or working on neighboring lots."""
-        neighbors = set()
-        # Get all people living on neighboring lots
-        for lot in self.home.lot.neighboring_lots:
-            if lot.building:
-                neighbors |= lot.building.residents
-        # If you live in an apartment complex, add in the other people who live
-        # in it too (these won't be captured by the above command)
-        if self.home.apartment:
-            neighbors_in_the_same_complex = self.home.complex.residents - self.home.residents
-            neighbors |= neighbors_in_the_same_complex
-        return neighbors
-
-    @property
-    def neighbors_and_their_neighbors(self):
-        """Return this person's neighbors, as well as those people's neighbors."""
-        neighbors = self.home.lot.neighboring_residents_and_their_neighboring_residents
-        # If you live in an apartment complex, add in the other people who live
-        # in it too (these won't be captured by the above command)
-        if self.home.apartment:
-            neighbors_in_the_same_complex = self.home.complex.residents - self.home.residents
-            neighbors |= neighbors_in_the_same_complex
-        return neighbors
 
     @property
     def life_events(self):
@@ -937,6 +911,13 @@ class Person(object):
             self.money -= amount
         payee.money += amount
 
+    def retire(self):
+        """Retire from an occupation."""
+        if self.occupation:
+            event.Retirement(subject=self)
+        else:
+            pass  # Allows this to be called in a stupid but convenient manner
+
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
         event.Departure(subject=self)
@@ -1206,26 +1187,46 @@ class Person(object):
 
     def _exchange_information(self, interlocutor):
         """Exchange information with this person."""
+        # TODO HAVE PEOPLE EXCHANGE INFORMATION ABOUT LANDMARKS AS WELL
         config = self.game.config
-        all_the_people_we_know_about = set(self.mind.mental_models) | set(interlocutor.mind.mental_models)
-        scores = {}
-        for other_person in all_the_people_we_know_about:
-            if other_person.type == "person":
-                salience_to_me = self.salience_of_person(person=other_person)
-                salience_to_them = interlocutor.salience_of_person(person=other_person)
-                scores[other_person] = salience_to_me + salience_to_them
+        # Decide how many people they'll talk about -- this depends on both parties'
+        # extroversion personality components and how good of friends they are
         how_many_people_we_talk_about = int(
-            self.personality.extroversion + interlocutor.personality.extroversion +
-            self.relationships[interlocutor].charge + interlocutor.relationships[self].charge
+            self.personality.extroversion +
+            interlocutor.personality.extroversion +
+            2 if interlocutor in self.friends else 0 +
+            2 if self in interlocutor.friends else 0 +
+            1 if interlocutor is self.best_friend else 0 +
+            1 if self is interlocutor.best_friend else 0
         )
         if how_many_people_we_talk_about < config.amount_of_people_people_talk_about_floor:
             how_many_people_we_talk_about = config.amount_of_people_people_talk_about_floor
-        elif how_many_people_we_talk_about > config.amount_of_people_people_talk_about_cap:
-            how_many_people_we_talk_about = config.amount_of_people_people_talk_about_cap
-        people_we_will_talk_about = (
-            heapq.nlargest(how_many_people_we_talk_about, scores, key=scores.get)
-        )
-        for person in people_we_will_talk_about:
+        # Figure out the N most salient people, where N = how_many_people_we_talk_about
+        all_the_people_we_know_about = set(self.mind.mental_models) | set(interlocutor.mind.mental_models)
+        if how_many_people_we_talk_about < len(all_the_people_we_know_about):
+            how_many_people_we_talk_about = len(all_the_people_we_know_about)
+        top_n_most_salient_people = []
+        minimum_salience_to_enter_current_top_n = 0.0
+        for other_person in all_the_people_we_know_about:
+            if other_person.type == "person":
+                try:
+                    salience_to_me = self.salience_of_other_people[other_person]
+                except KeyError:
+                    salience_to_me = 0.0
+                try:
+                    salience_to_them = interlocutor.salience_of_other_people[other_person]
+                except KeyError:
+                    salience_to_them = 0.0
+                total_salience = salience_to_me + salience_to_them
+                if total_salience > minimum_salience_to_enter_current_top_n:
+                    # Add this person to top N
+                    top_n_most_salient_people.append((total_salience, other_person))
+                    # If this means there's now more than N people in the top N, remove
+                    # the least salient person and update the minimum threshold for entry
+                    if len(top_n_most_salient_people) > how_many_people_we_talk_about:
+                        top_n_most_salient_people.remove(min(top_n_most_salient_people))
+                        minimum_salience_to_enter_current_top_n = min(top_n_most_salient_people)[0]
+        for person in top_n_most_salient_people:
             self._exchange_information_about_a_person(interlocutor=interlocutor, person_in_question=person)
 
     def _exchange_information_about_a_person(self, interlocutor, person_in_question):
@@ -1287,15 +1288,16 @@ class Person(object):
             chance = 0.0
         else:
             extroversion_component = self._get_extroversion_component_to_chance_of_social_interaction()
+            # If this person knows other_person, we look at their relationship to determine
+            # how its strength will factor into the decision; if they don't know this person,
+            # we then factor in this person's openness to experience instead
             if other_person not in self.relationships:
-                friendship_component = 0.0
-                openness_component = self._get_openness_component_to_chance_of_social_interaction()
+                friendship_or_openness_component = self._get_openness_component_to_chance_of_social_interaction()
             else:
-                openness_component = 0.0
-                friendship_component = self._get_friendship_component_to_chance_of_social_interaction(
+                friendship_or_openness_component = self._get_friendship_component_to_chance_of_social_interaction(
                     other_person=other_person
                 )
-            chance = extroversion_component + openness_component + friendship_component
+            chance = extroversion_component + friendship_or_openness_component
             if chance < config.chance_someone_instigates_interaction_with_other_person_floor:
                 chance = config.chance_someone_instigates_interaction_with_other_person_floor
             elif chance > config.chance_someone_instigates_interaction_with_other_person_cap:
@@ -1328,27 +1330,68 @@ class Person(object):
     def _get_friendship_component_to_chance_of_social_interaction(self, other_person):
         """Return the effect of an existing friendship on the chance of instigating social interaction."""
         config = self.game.config
-        top_five_friends = heapq.nlargest(5, self.relationships, key=lambda p: self.relationships[p].charge)
-        friendship_component = (
-            config.chance_of_interaction_friendship_component if other_person in top_five_friends else 0.0
-        )
+        friendship_component = 0.0
+        if other_person in self.friends:
+            friendship_component += config.chance_of_interaction_friendship_component
+        if other_person is self.best_friend:
+            friendship_component += config.chance_of_interaction_best_friend_component
         return friendship_component
 
-    def update_social_network(self):
-        """"""
+    def update(self):
+        """Update this person at the end of a timestep."""
+        self._grow_older()
+        self._update_social_network()
+        self._update_salience_values()
 
+    def _grow_older(self):
+        """Check if it's this persons birth day; if it is, age them."""
+        if self.birthday == (self.game.month, self.game.day):
+            self.age = self.game.true_year - self.birth_year
+            if self.age == 18:
+                self.adult = True
 
+    def _update_social_network(self):
+        """Update this person's social network to account for all charge/spark changes on a simulated timestep."""
+        # Potentially attribute new best friend
+        new_best_friend = self.get_best_friend()
+        if new_best_friend is not self.best_friend:
+            self.best_friend = new_best_friend
+            self.salience_update_queue.add(new_best_friend)
+        # Potentially attribute new worst enemy
+        new_worst_enemy = self.get_worst_enemy()
+        if new_worst_enemy is not self.worst_enemy:
+            self.worst_enemy = new_worst_enemy
+            self.salience_update_queue.add(new_worst_enemy)
+        # Potentially attribute new love interest
+        new_love_interest = self.get_love_interest()
+        if new_love_interest is not self.love_interest:
+            self.love_interest = new_love_interest
+            self.salience_update_queue.add(new_love_interest)
+        # Potentially attribute new significant other
+        new_significant_other = self.get_significant_other()
+        if new_significant_other is not self.significant_other:
+            self.significant_other = new_significant_other
+            self.salience_update_queue.add(new_significant_other)
 
-    def salience_of_person(self, person):
+    def _update_salience_values(self):
+        """Update the salience of all people with whom your relationship has changed."""
+        for person in self.salience_update_queue:
+            self.salience_of_other_people[person] = self._salience_of_person(person=person)
+        self.salience_update_queue = set()
+
+    def _salience_of_person(self, person):
         """Return how salient the other person is to this person."""
-        # TODO, BOOST ACCORDING CHARGE AND SPARK
         config = self.game.config
         salience = 0
         # Score salience for this person's relationship to self
-        if person is self:
-            salience += config.salience_of_other_people["self"]
         if person in self.acquaintances:
             salience += config.salience_of_other_people["acquaintance"]
+        if person in self.former_neighbors:
+            salience += config.salience_of_other_people["former neighbor"]
+        if person in self.former_coworkers:
+            salience += config.salience_of_other_people["former coworker"]
+        if person in self.neighbors:
+            salience += config.salience_of_other_people["neighbor"]
         if person in self.coworkers:
             salience += config.salience_of_other_people["coworker"]
         if person in self.extended_family:
@@ -1367,6 +1410,8 @@ class Person(object):
             salience += config.salience_of_other_people["love interest"]
         elif person is self.significant_other:
             salience += config.salience_of_other_people["significant other"]
+        elif person is self:
+            salience += config.salience_of_other_people["self"]
         # Boost salience for this person's job level
         if person.occupation:
             salience += config.salience_job_level_boost(job_level=person.occupation.level)
@@ -1399,6 +1444,10 @@ class PersonExNihilo(Person):
         else:
             job_level = self.game.config.job_levels[job_opportunity_impetus]
             self.birth_year = self._init_birth_year(job_level=job_level)
+        # Set age given birth year that was attributed
+        self.age = self.game.true_year - self.birth_year
+        # Determine a random birthday
+        self.birthday = self._get_random_birthday()
         # Since they don't have a parent to name them, generate a name for this person (if
         # they get married outside the city, this will still potentially change, as normal)
         self.first_name, self.middle_name, self.last_name, self.suffix = (
@@ -1422,6 +1471,22 @@ class PersonExNihilo(Person):
             )
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
+
+    def _get_random_birthday(self):
+        """Return a randomly chosen birthday.
+
+        Note: In a rare example of me not oversimulating, this method wrongly assumes a
+        uniform distribution of birthdays and will never return a February 29 birthday
+        (due to the attendant trouble of having to then make sure the person was indeed
+        born on a leap year).
+        """
+        ordinal_date_on_jan_1_of_birth_year = datetime.date(self.birth_year, 1, 1).toordinal()
+        ordinal_date_of_random_birth_day_that_year = (
+            ordinal_date_on_jan_1_of_birth_year + random.randint(0, 365)
+        )
+        datetime_object = datetime.date.fromordinal(ordinal_date_of_random_birth_day_that_year)
+        birthday = (datetime_object.month, datetime_object.day)
+        return birthday
 
     @staticmethod
     def _override_sex(spouse):

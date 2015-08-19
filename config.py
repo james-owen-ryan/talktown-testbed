@@ -131,7 +131,8 @@ class Config(object):
         self.chance_of_interaction_extroversion_component_cap = 0.7
         self.chance_of_interaction_openness_component_floor = 0.01
         self.chance_of_interaction_openness_component_cap = 0.7
-        self.chance_of_interaction_friendship_component = 0.7  # Boost to chance if person in top five friends
+        self.chance_of_interaction_friendship_component = 0.5  # Boost to chance if person is a friend
+        self.chance_of_interaction_best_friend_component = 0.2  # Boost to chance if person is a best friend
         self.chance_someone_instigates_interaction_with_other_person_floor = 0.05
         self.chance_someone_instigates_interaction_with_other_person_cap = 0.95
         # Marriage
@@ -878,7 +879,10 @@ class Config(object):
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
         self.salience_of_other_people = {
-            "acquaintance": 1,
+            "acquaintance": 0.5,
+            "former neighbor": 0.75,
+            "former coworker": 1.0,
+            "neighbor": 1.25,
             "coworker": 1.5,
             "extended family": 1.5,
             "friend": 2,
@@ -887,7 +891,7 @@ class Config(object):
             "love interest": 3,
             "best friend": 3,
             "worst enemy": 3,
-            "significant other": 4,
+            "significant other": 5,
             "self": 10,
         }
         self.salience_job_level_boost = (
@@ -934,7 +938,7 @@ class Config(object):
         self.chance_someone_lies_floor = 0.02
         self.chance_someone_lies_cap = 0.2
         self.amount_of_people_people_talk_about_floor = 2
-        self.amount_of_people_people_talk_about_cap = 7
+        # self.amount_of_people_people_talk_about_cap = 7  # CAP IS NOW NATURALLY AT 7
         self.chance_someones_feature_comes_up_in_conversation_about_them = (
             ("first name",                  0.80),
             ("workplace",                   0.50),

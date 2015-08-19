@@ -27,6 +27,14 @@ class Occupation(object):
         # Set industry and what industry a potential applicant must come from to be hired for this occupation
         self.industry = person.game.config.industries[self.__class__]
         self.prerequisite_industry = person.game.config.prerequisite_industries[self.__class__]
+        # Update the .coworkers attribute of all former coworkers to reflect this change
+        self.person.coworkers = {employee.person for employee in self.company.employees} - {self.person}
+        for coworker in self.person.coworkers:
+            coworker.coworkers.add(self.person)
+        # Add to the salience update queues of everyone involved
+        for employee in self.company.employees:
+            self.person.salience_update_queue.add(employee.person)
+            employee.person.salience_update_queue.add(self.person)
 
     def __str__(self):
         """Return string representation."""
@@ -41,9 +49,22 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
+        # If this isn't an in-house promotion, update a bunch of attributes
         if not (isinstance(reason, Hiring) and reason.promotion):
             self.company.employees.remove(self)
             self.company.former_employees.add(self)
+            # Update the .coworkers attribute of everyone involved to reflect this change
+            self.person.coworkers = set()
+            for employee in self.company.employees:
+                employee.person.coworkers.remove(self.person)
+            # Update the .former_coworkers attribute of everyone involved to reflect this change
+            for employee in self.company.employees:
+                self.person.former_coworkers.add(employee.person)
+                employee.person.former_coworkers.add(self.person)
+            # Add to the salience update queues of everyone involved
+            for employee in self.company.employees:
+                self.person.salience_update_queue.add(employee.person)
+                employee.person.salience_update_queue.add(self.person)
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
         position_that_is_now_vacant = self.__class__

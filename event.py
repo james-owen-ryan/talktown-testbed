@@ -7,6 +7,8 @@ from residence import House
 
 # TODO ARE RETCONNED EVENTS GETTING APPROPRIATE DATES ATTRIBUTED?
 
+# TODO ACTUALLY HAVE ADOPTIONS AND MAKE SURE THEY PROPERLY UPDATE SALIENCE
+
 
 class Event(object):
     """A superclass that all event subclasses inherit from."""
@@ -14,6 +16,8 @@ class Event(object):
     def __init__(self, game):
         """Initialize an Event object."""
         self.year = game.year
+        self.month = game.month
+        self.day = game.day
         self.date = game.date
         self.ordinal_date = game.ordinal_date
         # Also request and attribute an event number, so that we can later
@@ -408,6 +412,18 @@ class Departure(Event):
         self.subject.go_to(destination=None)
         self.subject.home.residents.remove(self.subject)
         self.subject.home.former_residents.add(self.subject)
+        # Update .neighbor attributes for subject and for their now former neighbors
+        self._update_neighbor_attributes()
+
+    def _update_neighbor_attributes(self):
+        """Update the neighbor attributes of the people moving and their new and former neighbors"""
+        # Remove the departed from all their old neighbor's .neighbors attribute
+        for old_neighbor in self.subject.neighbors:
+            old_neighbor.neighbors.remove(self.subject)
+            old_neighbor.former_neighbors.add(self.subject)
+            self.subject.former_neighbors.add(old_neighbor)
+        # Set the departed's .neighbors attribute to the empty set
+        self.subject.neighbors = set()
 
     def __str__(self):
         """Return string representation."""
@@ -444,6 +460,9 @@ class Divorce(Event):
             self._remunerate()
         else:
             self.law_firm = None
+        # Add each subject to the other's salience update queue
+        self.subjects[0].salience_update_queue.add(self.subjects[1])
+        self.subjects[1].salience_update_queue.add(self.subjects[0])
 
     def __str__(self):
         """Return string representation."""
@@ -712,6 +731,24 @@ class HouseConstruction(Event):
             )
 
 
+class LayOff(Event):
+    """A laying off of a person by a company that is going out of business."""
+
+    def __init__(self, subject, company, occupation):
+        """Initialize a LayOff object."""
+        super(LayOff, self).__init__(game=subject.game)
+        self.subject = subject
+        self.company = company
+        self.occupation = occupation
+        self.occupation.terminate(reason=self)
+
+    def __str__(self):
+        """Return string representation."""
+        return "Laying off of {} as {} in {} in {}".format(
+            self.subject.name, self.occupation, self.year
+        )
+
+
 class Marriage(Event):
     """A marriage between two people in the city."""
 
@@ -733,6 +770,9 @@ class Marriage(Event):
             # If they're not in the city yet (marriage between two PersonsExNihilo during
             # world generation), living arrangements will be made once they move into it
         self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
+        # Add each subject to the other's salience update queue
+        self.subjects[0].salience_update_queue.add(self.subjects[1])
+        self.subjects[1].salience_update_queue.add(self.subjects[0])
 
     def __str__(self):
         """Return string representation."""
@@ -890,6 +930,50 @@ class Move(Event):
             person.go_to(destination=new_home, occasion='home')
             # Update your patronized businesses given that these may now change
             person.routine.set_businesses_patronized()
+        # Update .neighbor attributes for subjects, as well as their new and now former neighbors
+        self._update_neighbor_attributes()
+
+    def _update_neighbor_attributes(self):
+        """Update the neighbor attributes of the people moving and their new and former neighbors"""
+        movers = set(self.subjects)
+        # Collect all now former neighbors
+        old_neighbors = set()
+        for mover in movers:
+            old_neighbors |= mover.neighbors
+        # Update all movers' and old neighbors' .former_neighbors attributes
+        for mover in movers:
+            for this_movers_old_neighbor in mover.neighbors:
+                this_movers_old_neighbor.former_neighbors.add(mover)
+                mover.former_neighbors.add(this_movers_old_neighbor)
+                # Also add to salience update queues
+                this_movers_old_neighbor.salience_update_queue.add(mover)
+                mover.salience_update_queue.add(this_movers_old_neighbor)
+        # Remove movers and their old neighbors from one another's .neighbors attributes
+        for mover in movers:
+            mover.former_neighbors |= mover.neighbors
+        for old_neighbor in old_neighbors:
+            old_neighbor.neighbors -= movers
+        # Update the movers' .neighbors attributes by...
+        new_neighbors = set()
+        # ...surveying all people living on neighboring lots
+        for lot in self.new_home.lot.neighboring_lots:
+            if lot.building:
+                new_neighbors |= lot.building.residents
+        # ...surveying other people in the apartment complex, if new_home is an apartment unit;
+        # note that we have to check whether the apartment even has units left, because this
+        # method may be called for someone moving into the ApartmentComplex before it has even
+        # been fully instantiated (i.e., someone hired to start working there moves into it before
+        # its init() call has finished)
+        if self.new_home.apartment:
+            neighbors_in_the_same_complex = self.new_home.complex.residents - movers
+            new_neighbors |= neighbors_in_the_same_complex
+        for mover in movers:
+            mover.neighbors = set(new_neighbors)
+            mover.salience_update_queue |= set(new_neighbors)
+        # Finally, update the .neighbors attribute of all new neighbors
+        for new_neighbor in new_neighbors:
+            new_neighbor.neighbors |= movers
+            new_neighbor.salience_update_queue |= movers
 
     def __str__(self):
         """Return string representation."""
@@ -943,4 +1027,24 @@ class NameChange(Event):
         self.subject.pay(
             payee=self.lawyer.person,
             amount=config.compensations[service_rendered][self.lawyer.__class__]
+        )
+
+
+class Retirement(Event):
+    """A retirement by which a person ceases some occupation."""
+
+    def __init__(self, subject):
+        """Initialize a Retirement object."""
+        super(Retirement, self).__init__(game=subject.game)
+        self.subject = subject
+        self.subject.retired = True
+        self.occupation = self.subject.occupation
+        self.company = self.subject.occupation.company
+        self.occupation.terminus = self
+        self.subject.occupation.terminate(reason=self)
+
+    def __str__(self):
+        """Return string representation."""
+        return "Retirement of {} as {} in {}".format(
+            self.subject.name, self.occupation, self.year
         )

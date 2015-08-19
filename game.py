@@ -18,9 +18,13 @@ class Game(object):
         self.year = self.config.date_city_gets_founded[0]
         self.true_year = self.config.date_city_gets_founded[0]  # True year never gets changed during retconning
         self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
+        self.month = datetime.date(*self.config.date_city_gets_founded).month
+        self.day = datetime.date(*self.config.date_city_gets_founded).day
         self.ordinal_date_that_the_founder_dies = (
             datetime.date(*self.config.date_the_founder_dies).toordinal()
         )
+        self.time_of_day = "day"
+        self.date = self._get_date()
         # A game's event number allows the precise ordering of events that
         # happened on the same timestep -- every time an event happens, it requests an
         # event number from Game.assign_event_number(), which also increments the running counter
@@ -29,7 +33,7 @@ class Game(object):
         self.lover = None
         self.pc = None
         self.city = None
-        self.time_of_day = "day"
+
         # self._establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
 
@@ -208,8 +212,7 @@ class Game(object):
         self.event_number += 1
         return self.event_number
 
-    @property
-    def date(self):
+    def _get_date(self):
         """Return the current full date."""
         year = datetime.date.fromordinal(self.ordinal_date).year
         month = datetime.date.fromordinal(self.ordinal_date).month
@@ -288,9 +291,12 @@ class Game(object):
                         chance_they_are_trying_to_conceive_this_year /= chance_of_a_day_being_simulated*365
                         if random.random() < chance_they_are_trying_to_conceive_this_year:
                             person.have_sex(partner=person.spouse, protection=False)
-                    if person.age > max(65, random.random() * 100):
+                    if person.age > max(72, random.random() * 100):
+                        # TODO make this era-accurate
                         if person is not self.founder:
                             person.die(cause_of_death="Natural causes")
+                    elif person.age > max(65, random.random() * 100):
+                        person.retire()
                     # elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
                     #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
                     #         person.depart_city()
@@ -406,11 +412,15 @@ class Game(object):
         self.time_of_day = "night" if self.time_of_day == "day" else "day"
         if self.time_of_day == "day":
             self.ordinal_date += 1
-            if datetime.date.fromordinal(self.ordinal_date).year != self.year:
+            new_date_tuple = datetime.date.fromordinal(self.ordinal_date)
+            if new_date_tuple.year != self.year:
                 # Happy New Year
-                self.true_year += 1
-                self.year += 1
+                self.true_year = new_date_tuple.year
+                self.year = new_date_tuple.year
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
+            self.month = new_date_tuple.month
+            self.day = new_date_tuple.day
+        self.date = self._get_date()
 
     def save_data(self, filename_suffix="_day1"):
         import pickle

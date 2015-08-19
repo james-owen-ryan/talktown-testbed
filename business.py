@@ -403,6 +403,10 @@ class ApartmentComplex(Business):
 
         @param owner: The owner of this business.
         """
+        # Have to do this to allow .residents to be able to return a value before
+        # this object has its units attributed -- this is because new employees
+        # hired to work here may actually move in during the larger init() call
+        self.units = []
         super(ApartmentComplex, self).__init__(owner)
         self.units = self._init_apartment_units()
 
@@ -419,7 +423,7 @@ class ApartmentComplex(Business):
     @property
     def residents(self):
         """Return the employees that work here and residents that live here."""
-        residents = set([employee.person for employee in self.employees])
+        residents = {employee.person for employee in self.employees}
         for unit in self.units:
             residents |= unit.residents
         return residents
