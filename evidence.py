@@ -9,7 +9,7 @@ class PieceOfEvidence(object):
         self.ordinal_date = source.game.ordinal_date
         # Also request and attribute an event number, so that we can later
         # determine the precise ordering of events that happen on the same timestep
-        self.event_number = source.game.assign_event_number()
+        self.event_number = source.game.assign_event_number(new_event=self)
         self.subject = subject
         self.source = source
         self.recipient = None  # Will get overwritten in case of Lie, Statement, Declaration, Eavesdropping

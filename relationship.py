@@ -27,7 +27,7 @@ class Relationship(object):
         self.when_they_last_met = self.owner.game.date
         self.total_interactions = 0
         # Set this as the primary relationship owner has with subject
-        self.owner.relationships[self.subject] = self
+        owner.relationships[self.subject] = self
         if not preceded_by:
             self.compatibility = self._init_get_compatibility()
             self.charge_increment = self._init_determine_charge_increment()
@@ -43,10 +43,6 @@ class Relationship(object):
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
             self.spark = preceded_by.spark
-        # This attribute holds all people with whom owner's relationship has changed
-        # on a timestep; at the end of the timestep, owner will update the salience of
-        # this person to them
-        self.owner.salience_update_queue.add(subject)
         # This attribute records whether the other person has already called the
         # progress_relationship() method of this object on this timestep -- it gets
         # set to True by progress_relationship() and then turned back to False by
@@ -306,6 +302,11 @@ class Acquaintance(Relationship):
         owner.acquaintances.add(subject)
         if self.owner not in self.subject.relationships:
             Acquaintance(owner=self.subject, subject=self.owner, preceded_by=None)
+        # Update the salience value owner has for subject (not vice versa, because relationships
+        # are unidirectional)
+        owner.update_salience_of(
+            subject, change=owner.game.config.salience_increment_from_relationship_change['acquaintance']
+        )
 
 
 class Enmity(Relationship):
@@ -321,6 +322,11 @@ class Enmity(Relationship):
         super(Enmity, self).__init__(owner, subject, preceded_by)
         owner.acquaintances.remove(subject)
         owner.enemies.add(subject)
+        # Update the salience value owner has for subject (not vice versa, because relationships
+        # are unidirectional)
+        owner.update_salience_of(
+            subject, change=owner.game.config.salience_increment_from_relationship_change['enemy']
+        )
 
 
 class Friendship(Relationship):
@@ -336,6 +342,11 @@ class Friendship(Relationship):
         super(Friendship, self).__init__(owner, subject, preceded_by)
         owner.acquaintances.remove(subject)
         owner.friends.add(subject)
+        # Update the salience value owner has for subject (not vice versa, because relationships
+        # are unidirectional)
+        owner.update_salience_of(
+            subject, change=owner.game.config.salience_increment_from_relationship_change['friend']
+        )
 
 
 class Romance(Relationship):
@@ -349,3 +360,8 @@ class Romance(Relationship):
         @param preceded_by: A different type of relationship that preceded this, if any.
         """
         super(Romance, self).__init__(owner, subject, preceded_by)
+        # Update the salience value owner has for subject (not vice versa, because relationships
+        # are unidirectional)
+        owner.update_salience_of(
+            subject, change=owner.game.config.salience_increment_from_relationship_change['romance']
+        )

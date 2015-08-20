@@ -157,7 +157,7 @@ class Person(object):
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
         self.salience_of_other_people = {}  # Maps potentially every other person to their salience to this person
-        self.salience_update_queue = set()  # Gets initialized by _init_determine_salience_of_every_other_person()
+        self._init_salience_values()
         # Prepare attributes pertaining to pregnancy
         self.impregnated_by = None
         self.conception_year = None  # Year of conception
@@ -172,6 +172,7 @@ class Person(object):
         self.moves = []  # From one home to another
         self.name_changes = []
         self.building_commissions = set()  # Constructions of houses or buildings that they commissioned
+        self.retirement = None
         self.departure = None  # Leaving the city, i.e., leaving the simulation
         self.death = None
         # Set and prepare attributes pertaining to business affairs
@@ -314,12 +315,17 @@ class Person(object):
 
     def _init_update_familial_attributes_of_family_members(self):
         """Update familial attributes of myself and family members."""
+        config = self.game.config
         for member in self.immediate_family:
             member.immediate_family.add(self)
-            member.salience_update_queue.add(self)
+            member.update_salience_of(
+                entity=self, change=config.salience_increment_from_relationship_change["immediate family"]
+            )
         for member in self.extended_family:
             member.extended_family.add(self)
-            member.salience_update_queue.add(self)
+            member.update_salience_of(
+                entity=self, change=config.salience_increment_from_relationship_change["extended family"]
+            )
         # Update for gender-specific familial attributes
         if self.male:
             for g in self.greatgrandparents:
@@ -383,14 +389,24 @@ class Person(object):
         for c in self.cousins:
             c.cousins.add(self)
 
-    def _init_determine_salience_of_every_other_person(self):
-        """Determine an initial salience value for every other person who ever lived in this city."""
-        for person in self.city.residents:
-            self.salience_of_other_people[person] = self._salience_of_person(person=person)
-        for person in self.city.departed:
-            self.salience_of_other_people[person] = self._salience_of_person(person=person)
-        for person in self.city.deceased:
-            self.salience_of_other_people[person] = self._salience_of_person(person=person)
+    def _init_salience_values(self):
+        """Determine an initial salience value for every other person associated with this newborn."""
+        config = self.game.config
+        for person in self.ancestors:
+            self.update_salience_of(
+                entity=person, change=config.salience_increment_from_relationship_change["ancestor"]
+            )
+        for person in self.extended_family:
+            self.update_salience_of(
+                entity=person, change=config.salience_increment_from_relationship_change["extended family"]
+            )
+        for person in self.immediate_family:
+            self.update_salience_of(
+                entity=person, change=config.salience_increment_from_relationship_change["immediate family"]
+            )
+        self.update_salience_of(
+            entity=self, change=config.salience_increment_from_relationship_change["self"]
+        )
 
     def _init_money(self):
         """Determine how much money this person has to start with."""
@@ -587,6 +603,8 @@ class Person(object):
         events += self.divorces
         events += self.name_changes
         events += list(self.building_commissions)
+        if self.retirement:
+            events.append(self.retirement)
         events += [self.departure, self.death]
         while None in events:
             events.remove(None)
@@ -1207,16 +1225,12 @@ class Person(object):
             how_many_people_we_talk_about = len(all_the_people_we_know_about)
         top_n_most_salient_people = []
         minimum_salience_to_enter_current_top_n = 0.0
+        my_salience_of_other_people = self.salience_of_other_people
+        interlocutor_salience_of_other_people = interlocutor.salience_of_other_people
         for other_person in all_the_people_we_know_about:
             if other_person.type == "person":
-                try:
-                    salience_to_me = self.salience_of_other_people[other_person]
-                except KeyError:
-                    salience_to_me = 0.0
-                try:
-                    salience_to_them = interlocutor.salience_of_other_people[other_person]
-                except KeyError:
-                    salience_to_them = 0.0
+                salience_to_me = my_salience_of_other_people.get(other_person, 0.0)  # 0.0 if they aren't in the dict
+                salience_to_them = interlocutor_salience_of_other_people.get(other_person, 0.0)
                 total_salience = salience_to_me + salience_to_them
                 if total_salience > minimum_salience_to_enter_current_top_n:
                     # Add this person to top N
@@ -1226,11 +1240,12 @@ class Person(object):
                     if len(top_n_most_salient_people) > how_many_people_we_talk_about:
                         top_n_most_salient_people.remove(min(top_n_most_salient_people))
                         minimum_salience_to_enter_current_top_n = min(top_n_most_salient_people)[0]
-        for person in top_n_most_salient_people:
+        for salience, person in top_n_most_salient_people:
             self._exchange_information_about_a_person(interlocutor=interlocutor, person_in_question=person)
 
     def _exchange_information_about_a_person(self, interlocutor, person_in_question):
         """Exchange information about a person."""
+        # TODO HAVE SALIENCE OF THIS PERSON TO THE TALKERS AFFECT HOW MUCH THEY SAY ABOUT THEM
         config = self.game.config
         if person_in_question not in self.mind.mental_models:
             PersonMentalModel(owner=self, subject=person_in_question, observation_or_reflection=None)
@@ -1339,11 +1354,9 @@ class Person(object):
 
     def update(self):
         """Update this person at the end of a timestep."""
-        self._grow_older()
         self._update_social_network()
-        self._update_salience_values()
 
-    def _grow_older(self):
+    def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
         if self.birthday == (self.game.month, self.game.day):
             self.age = self.game.true_year - self.birth_year
@@ -1352,70 +1365,50 @@ class Person(object):
 
     def _update_social_network(self):
         """Update this person's social network to account for all charge/spark changes on a simulated timestep."""
+        config = self.game.config
         # Potentially attribute new best friend
         new_best_friend = self.get_best_friend()
-        if new_best_friend is not self.best_friend:
+        if new_best_friend and new_best_friend is not self.best_friend:
+            salience_change = config.salience_increment_from_relationship_change['best friend']
+            old_best_friend = self.best_friend
+            if old_best_friend:
+                self.update_salience_of(entity=old_best_friend, change=-salience_change)  # Notice the minus sign
+            self.update_salience_of(entity=new_best_friend, change=salience_change)
             self.best_friend = new_best_friend
-            self.salience_update_queue.add(new_best_friend)
         # Potentially attribute new worst enemy
         new_worst_enemy = self.get_worst_enemy()
-        if new_worst_enemy is not self.worst_enemy:
+        if new_worst_enemy and new_worst_enemy is not self.worst_enemy:
+            salience_change = config.salience_increment_from_relationship_change['worst enemy']
+            old_worst_enemy = self.worst_enemy
+            if old_worst_enemy:
+                self.update_salience_of(entity=old_worst_enemy, change=-salience_change)
+            self.update_salience_of(entity=new_worst_enemy, change=salience_change)
             self.worst_enemy = new_worst_enemy
-            self.salience_update_queue.add(new_worst_enemy)
         # Potentially attribute new love interest
         new_love_interest = self.get_love_interest()
-        if new_love_interest is not self.love_interest:
+        if new_love_interest and new_love_interest is not self.love_interest:
+            salience_change = config.salience_increment_from_relationship_change['love interest']
+            old_love_interest = self.love_interest
+            if old_love_interest:
+                self.update_salience_of(entity=old_love_interest, change=-salience_change)
+            self.update_salience_of(entity=new_love_interest, change=salience_change)
             self.love_interest = new_love_interest
-            self.salience_update_queue.add(new_love_interest)
         # Potentially attribute new significant other
         new_significant_other = self.get_significant_other()
-        if new_significant_other is not self.significant_other:
+        if new_significant_other and new_significant_other is not self.significant_other:
+            salience_change = config.salience_increment_from_relationship_change['significant other']
+            old_significant_other = self.significant_other
+            if old_significant_other:
+                self.update_salience_of(entity=old_significant_other, change=-salience_change)
+            self.update_salience_of(entity=new_significant_other, change=salience_change)
             self.significant_other = new_significant_other
-            self.salience_update_queue.add(new_significant_other)
 
-    def _update_salience_values(self):
-        """Update the salience of all people with whom your relationship has changed."""
-        for person in self.salience_update_queue:
-            self.salience_of_other_people[person] = self._salience_of_person(person=person)
-        self.salience_update_queue = set()
-
-    def _salience_of_person(self, person):
-        """Return how salient the other person is to this person."""
-        config = self.game.config
-        salience = 0
-        # Score salience for this person's relationship to self
-        if person in self.acquaintances:
-            salience += config.salience_of_other_people["acquaintance"]
-        if person in self.former_neighbors:
-            salience += config.salience_of_other_people["former neighbor"]
-        if person in self.former_coworkers:
-            salience += config.salience_of_other_people["former coworker"]
-        if person in self.neighbors:
-            salience += config.salience_of_other_people["neighbor"]
-        if person in self.coworkers:
-            salience += config.salience_of_other_people["coworker"]
-        if person in self.extended_family:
-            salience += config.salience_of_other_people["extended family"]
-        elif person in self.immediate_family:
-            salience += config.salience_of_other_people["immediate family"]
-        if person in self.friends:
-            salience += config.salience_of_other_people["friend"]
-        if person in self.enemies:
-            salience += config.salience_of_other_people["enemy"]
-        if person is self.best_friend:
-            salience += config.salience_of_other_people["best friend"]
-        elif person is self.worst_enemy:
-            salience += config.salience_of_other_people["worst enemy"]
-        elif person is self.love_interest:
-            salience += config.salience_of_other_people["love interest"]
-        elif person is self.significant_other:
-            salience += config.salience_of_other_people["significant other"]
-        elif person is self:
-            salience += config.salience_of_other_people["self"]
-        # Boost salience for this person's job level
-        if person.occupation:
-            salience += config.salience_job_level_boost(job_level=person.occupation.level)
-        return salience
+    def update_salience_of(self, entity, change):
+        """Increment your salience value for entity by change."""
+        try:
+            self.salience_of_other_people[entity] += change
+        except KeyError:
+            self.salience_of_other_people[entity] = change
 
 
 class PersonExNihilo(Person):

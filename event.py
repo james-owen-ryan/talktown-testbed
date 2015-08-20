@@ -22,7 +22,7 @@ class Event(object):
         self.ordinal_date = game.ordinal_date
         # Also request and attribute an event number, so that we can later
         # determine the precise ordering of events that happen on the same timestep
-        self.event_number = game.assign_event_number()
+        self.event_number = game.assign_event_number(new_event=self)
 
 
 class Adoption(Event):
@@ -460,9 +460,6 @@ class Divorce(Event):
             self._remunerate()
         else:
             self.law_firm = None
-        # Add each subject to the other's salience update queue
-        self.subjects[0].salience_update_queue.add(self.subjects[1])
-        self.subjects[1].salience_update_queue.add(self.subjects[0])
 
     def __str__(self):
         """Return string representation."""
@@ -705,9 +702,15 @@ class HouseConstruction(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Construction of house at {0} in {1}".format(
-            self.house.address, self.year
-        )
+        subjects_str = ', '.join(s.name for s in self.subjects)
+        if self.construction_firm:
+            return "Construction of house at {} by {} for {} in {}".format(
+                self.house.address, self.construction_firm, subjects_str, self.year
+            )
+        else:
+            return "Construction of house at {} for {} in {}".format(
+                self.house.address, subjects_str, self.year
+            )
 
     def _remunerate(self):
         """Have client pay construction firm for services rendered."""
@@ -770,9 +773,6 @@ class Marriage(Event):
             # If they're not in the city yet (marriage between two PersonsExNihilo during
             # world generation), living arrangements will be made once they move into it
         self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
-        # Add each subject to the other's salience update queue
-        self.subjects[0].salience_update_queue.add(self.subjects[1])
-        self.subjects[1].salience_update_queue.add(self.subjects[0])
 
     def __str__(self):
         """Return string representation."""
@@ -931,10 +931,19 @@ class Move(Event):
             # Update your patronized businesses given that these may now change
             person.routine.set_businesses_patronized()
         # Update .neighbor attributes for subjects, as well as their new and now former neighbors
-        self._update_neighbor_attributes()
+        self._update_mover_and_neighbor_attributes()
 
-    def _update_neighbor_attributes(self):
+    def _update_mover_and_neighbor_attributes(self):
         """Update the neighbor attributes of the people moving and their new and former neighbors"""
+        # Collect relevant salience increments (because attribute accessing is expensive)
+        config = self.subjects[0].game.config
+        salience_change_for_former_neighbor = (
+            config.salience_increment_from_relationship_change['former neighbor'] -
+            config.salience_increment_from_relationship_change['neighbor']
+        )
+        salience_change_for_new_neighbor = (
+            config.salience_increment_from_relationship_change['neighbor']
+        )
         movers = set(self.subjects)
         # Collect all now former neighbors
         old_neighbors = set()
@@ -945,9 +954,13 @@ class Move(Event):
             for this_movers_old_neighbor in mover.neighbors:
                 this_movers_old_neighbor.former_neighbors.add(mover)
                 mover.former_neighbors.add(this_movers_old_neighbor)
-                # Also add to salience update queues
-                this_movers_old_neighbor.salience_update_queue.add(mover)
-                mover.salience_update_queue.add(this_movers_old_neighbor)
+                # Also update salience values
+                this_movers_old_neighbor.update_salience_of(
+                    entity=mover, change=salience_change_for_former_neighbor
+                )
+                mover.update_salience_of(
+                    entity=this_movers_old_neighbor, change=salience_change_for_former_neighbor
+                )
         # Remove movers and their old neighbors from one another's .neighbors attributes
         for mover in movers:
             mover.former_neighbors |= mover.neighbors
@@ -967,13 +980,13 @@ class Move(Event):
         if self.new_home.apartment:
             neighbors_in_the_same_complex = self.new_home.complex.residents - movers
             new_neighbors |= neighbors_in_the_same_complex
+        # Update the .neighbors attribute of all new neighbors, as well as salience values
         for mover in movers:
-            mover.neighbors = set(new_neighbors)
-            mover.salience_update_queue |= set(new_neighbors)
-        # Finally, update the .neighbors attribute of all new neighbors
-        for new_neighbor in new_neighbors:
-            new_neighbor.neighbors |= movers
-            new_neighbor.salience_update_queue |= movers
+            for new_neighbor in new_neighbors:
+                mover.neighbors.add(new_neighbor)
+                mover.update_salience_of(entity=new_neighbor, change=salience_change_for_new_neighbor)
+                new_neighbor.neighbors.add(mover)
+                new_neighbor.update_salience_of(entity=mover, change=salience_change_for_new_neighbor)
 
     def __str__(self):
         """Return string representation."""
@@ -1038,6 +1051,7 @@ class Retirement(Event):
         super(Retirement, self).__init__(game=subject.game)
         self.subject = subject
         self.subject.retired = True
+        self.subject.retirement = self
         self.occupation = self.subject.occupation
         self.company = self.subject.occupation.company
         self.occupation.terminus = self

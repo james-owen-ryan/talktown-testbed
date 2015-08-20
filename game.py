@@ -25,19 +25,31 @@ class Game(object):
         )
         self.time_of_day = "day"
         self.date = self._get_date()
+        # Prepare a listing of all in-game events, which will facilitate debugging later
+        self.events = []
         # A game's event number allows the precise ordering of events that
         # happened on the same timestep -- every time an event happens, it requests an
         # event number from Game.assign_event_number(), which also increments the running counter
         self.event_number = 0
-        self.founder = None  # The person who founds the city -- gets set by self._establish_setting()
+        self.founder = None  # The person who founds the city -- gets set by self.establish_setting()
         self.lover = None
         self.pc = None
         self.city = None
 
-        # self._establish_setting()
+        # self.establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
 
-    def _establish_setting(self):
+    @property
+    def random_person(self):
+        """Return a random person living in the city of this gameplay instance."""
+        return random.choice(list(self.city.residents))
+
+    def recent_events(self):
+        """Pretty-print the last five in-game events."""
+        for recent_event in self.events[-5:]:
+            print recent_event
+
+    def establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
         # Generate a city plan
         self.city = City(self)  # TEMP for testing only
@@ -110,7 +122,11 @@ class Game(object):
     def _build_apartment_complexes_downtown(self):
         """Build multiple apartment complexes downtown."""
         for _ in xrange(self.config.number_of_apartment_complexes_founder_builds_downtown):
-            ApartmentComplex(owner=self.founder)
+            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
+            owner.city = self.city
+            ApartmentComplex(owner=owner)
+            owner.move_into_the_city(hiring_that_instigated_move=owner.occupation)
+            # ApartmentComplex(owner=self.founder)
 
     def _establish_city_infrastructure(self):
         """Build the essential public institutions that will serve as the city's infrastructure."""
@@ -207,8 +223,12 @@ class Game(object):
             self.enact_hi_fi_simulation(timestep_during_gameplay=True)
             self.save_data(filename_suffix=suffix)
 
-    def assign_event_number(self):
-        """Assign an event number to some event, to allow for precise ordering of events that happened same timestep."""
+    def assign_event_number(self, new_event):
+        """Assign an event number to some event, to allow for precise ordering of events that happened same timestep.
+
+        Also add the event to a listing of all in-game events; this facilitates debugging.
+        """
+        self.events.append(new_event)
         self.event_number += 1
         return self.event_number
 
@@ -225,11 +245,6 @@ class Game(object):
             self.time_of_day.title(), month_ordinals_to_names[month], day, year
         )
         return date
-
-    @property
-    def random_person(self):
-        """Return a random person living in the city of this gameplay instance."""
-        return random.choice(list(self.city.residents))
 
     def get_knowledge(self, owner_id, subject_id):
         """Return this person's knowledge about another person's feature of the given type.
@@ -329,6 +344,9 @@ class Game(object):
                         if person.age > 3:
                             # person.observe()
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
+                # Finally, have everyone update their social networks and salience values
+                for person in self.city.residents:
+                    person.update()
                 last_simulated_day = self.ordinal_date
 
     def consider_new_business_getting_constructed(self):
@@ -368,10 +386,10 @@ class Game(object):
         for person in self.city.residents:
             if not (timestep_during_gameplay and person is self.pc):  # Don't sim where the PC is
                 person.routine.enact()
-                if this_is_the_night_in_question:
-                    self.lover.location.people_here_now.remove(self.lover)
-                    self.lover.location = self.founder.home
-                    self.lover.location.people_here_now.add(self.lover)
+                # if this_is_the_night_in_question:
+                #     self.lover.location.people_here_now.remove(self.lover)
+                #     self.lover.location = self.founder.home
+                #     self.lover.location.people_here_now.add(self.lover)
         # Have people observe their surroundings, which will cause knowledge to
         # build up, and have them socialize with other people also at that location --
         # this will cause relationships to form/progress and knowledge to propagate
@@ -420,7 +438,11 @@ class Game(object):
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
             self.month = new_date_tuple.month
             self.day = new_date_tuple.day
-        self.date = self._get_date()
+            self.date = self._get_date()
+            for person in self.city.residents:
+                person.grow_older()
+        else:
+            self.date = self._get_date()
 
     def save_data(self, filename_suffix="_day1"):
         import pickle
@@ -478,10 +500,17 @@ class Game(object):
     def find(self, name):
         """Return person living in this city with that name."""
         if any(p for p in self.city.residents if p.name == name):
-            return next(p for p in self.city.residents if p.name == name)
+            people_named_this = [p for p in self.city.residents if p.name == name]
+            if len(people_named_this) > 1:
+                print '\nWarning: Multiple {} residents are named {}; returning a complete list\n'.format(
+                    self.city.name, name
+                )
+                return people_named_this
+            else:
+                return people_named_this[0]
         else:
             raise Exception('There is no one in {} named {}'.format(self.city.name, name))
 
 
 g = Game()
-g._establish_setting()
+g.establish_setting()

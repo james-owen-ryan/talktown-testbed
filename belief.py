@@ -518,11 +518,10 @@ class BusinessMentalModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
-        features = {
-            "business block": self.block,
-            "business address": self.address
-        }
-        return features[feature_type]
+        if feature_type == "business block":
+            return self.block
+        elif feature_type == "business address":
+            return self.address
 
     @staticmethod
     def get_command_to_access_a_belief_facet(feature_type):
@@ -783,12 +782,12 @@ class DwellingPlaceModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
-        features = {
-            "home is apartment": self.apartment,
-            "home block": self.block,
-            "home address": self.address
-        }
-        return features[feature_type]
+        if feature_type == "home is apartment":
+            return self.apartment
+        elif feature_type == "home block":
+            return self.block
+        elif feature_type == "home address":
+            return self.address
 
     @staticmethod
     def get_command_to_access_a_belief_facet(feature_type):
@@ -1124,55 +1123,81 @@ class PersonMentalModel(MentalModel):
         return person_belief_will_transfer_from
 
     def _get_true_feature_object(self, feature_type):
-        true_feature_objects = {
-            "workplace": self.subject.occupation.company if self.subject.occupation else None,
-            "home": self.subject.home
-        }
-        if feature_type in true_feature_objects:
-            return true_feature_objects[feature_type]
+        if feature_type == "workplace":
+            return self.subject.occupation.company if self.subject.occupation else None
+        elif feature_type == "home":
+            return self.subject.home
         else:
             return None
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
-        features = {
-            # Names
-            "first name": self.name.first_name,
-            "middle name": self.name.middle_name,
-            "last name": self.name.last_name,
-            # Work life
-            "workplace": self.occupation.company,
-            "job title": self.occupation.job_title,
-            "job shift": self.occupation.shift,
-            # Home
-            "home": self.home,
-            # Appearance
-            "skin color": self.face.skin.color,
-            "head size": self.face.head.size,
-            "head shape": self.face.head.shape,
-            "hair length": self.face.hair.length,
-            "hair color": self.face.hair.color,
-            "eyebrow size": self.face.eyebrows.size,
-            "eyebrow color": self.face.eyebrows.color,
-            "mouth size": self.face.mouth.size,
-            "ear size": self.face.ears.size,
-            "ear angle": self.face.ears.angle,
-            "nose size": self.face.nose.size,
-            "nose shape": self.face.nose.shape,
-            "eye size": self.face.eyes.size,
-            "eye shape": self.face.eyes.shape,
-            "eye color": self.face.eyes.color,
-            "eye horizontal settedness": self.face.eyes.horizontal_settedness,
-            "eye vertical settedness": self.face.eyes.vertical_settedness,
-            "facial hair style": self.face.facial_hair.style,
-            "freckles": self.face.distinctive_features.freckles,
-            "birthmark": self.face.distinctive_features.birthmark,
-            "scar": self.face.distinctive_features.scar,
-            "tattoo": self.face.distinctive_features.tattoo,
-            "glasses": self.face.distinctive_features.glasses,
-            "sunglasses": self.face.distinctive_features.sunglasses
-        }
-        return features[feature_type]
+        # Names
+        if feature_type == "first name":
+            return self.name.first_name
+        elif feature_type == "middle name":
+            return self.name.middle_name
+        elif feature_type == "last name":
+            return self.name.last_name
+        # Work life
+        elif feature_type == "workplace":
+            return self.occupation.company
+        elif feature_type == "job title":
+            return self.occupation.job_title
+        elif feature_type == "job shift":
+            return self.occupation.shift
+        # Home
+        elif feature_type == "home":
+            return self.home
+        # Appearance
+        elif feature_type == "skin color":
+            return self.face.skin.color
+        elif feature_type == "head size":
+            return self.face.head.size
+        elif feature_type == "head shape":
+            return self.face.head.shape
+        elif feature_type == "hair length":
+            return self.face.hair.length
+        elif feature_type == "hair color":
+            return self.face.hair.color
+        elif feature_type == "eyebrow size":
+            return self.face.eyebrows.size
+        elif feature_type == "eyebrow color":
+            return self.face.eyebrows.color
+        elif feature_type == "mouth size":
+            return self.face.mouth.size
+        elif feature_type == "ear size":
+            return self.face.ears.size
+        elif feature_type == "ear angle":
+            return self.face.ears.angle
+        elif feature_type == "nose size":
+            return self.face.nose.size
+        elif feature_type == "nose shape":
+            return self.face.nose.shape
+        elif feature_type == "eye size":
+            return self.face.eyes.size
+        elif feature_type == "eye shape":
+            return self.face.eyes.shape
+        elif feature_type == "eye color":
+            return self.face.eyes.color
+        elif feature_type == "eye horizontal settedness":
+            return self.face.eyes.horizontal_settedness
+        elif feature_type == "eye vertical settedness":
+            return self.face.eyes.vertical_settedness
+        elif feature_type == "facial hair style":
+            return self.face.facial_hair.style
+        elif feature_type == "freckles":
+            return self.face.distinctive_features.freckles
+        elif feature_type == "birthmark":
+            return self.face.distinctive_features.birthmark
+        elif feature_type == "scar":
+            return self.face.distinctive_features.scar
+        elif feature_type == "tattoo":
+            return self.face.distinctive_features.tattoo
+        elif feature_type == "glasses":
+            return self.face.distinctive_features.glasses
+        elif feature_type == "sunglasses":
+            return self.face.distinctive_features.sunglasses
 
     @staticmethod
     def attribute_to_belief_type(attribute):

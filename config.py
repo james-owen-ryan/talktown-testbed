@@ -406,6 +406,7 @@ class Config(object):
         }
         # Job levels of various occupations (indexed by their class names)
         self.job_levels = {
+            None: 0,  # Unemployed
             Cashier: 1,
             Janitor: 1,
             HotelMaid: 1,
@@ -878,24 +879,26 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
-        self.salience_of_other_people = {
+        self.salience_increment_from_relationship_change = {
             "acquaintance": 0.5,
             "former neighbor": 0.75,
             "former coworker": 1.0,
             "neighbor": 1.25,
             "coworker": 1.5,
+            "descendant": 1.5,
+            "ancestor": 1.5,
             "extended family": 1.5,
             "friend": 2,
             "enemy": 2,
             "immediate family": 2,
             "love interest": 3,
-            "best friend": 3,
-            "worst enemy": 3,
+            "best friend": 1,  # Remember, this is a boost on top of the value for friend
+            "worst enemy": 1,
             "significant other": 5,
             "self": 10,
         }
         self.salience_job_level_boost = (
-            lambda job_level: job_level * 1
+            lambda job_level: job_level * 0.35
         )
         self.chance_someone_observes_nearby_entity = 0.75
         self.chance_someone_eavesdrops_statement_or_lie = 0.05

@@ -21,20 +21,30 @@ class Occupation(object):
         self.terminus = None  # Changed by self.terminate
         # Note: self.person.occupation gets set by Business.hire(), because there's
         # a really tricky pipeline that has to be maintained
-        self.person.occupations.append(self)
-        # Set job level of this occupation
+        person.occupations.append(self)
         self.level = person.game.config.job_levels[self.__class__]
         # Set industry and what industry a potential applicant must come from to be hired for this occupation
         self.industry = person.game.config.industries[self.__class__]
         self.prerequisite_industry = person.game.config.prerequisite_industries[self.__class__]
-        # Update the .coworkers attribute of all former coworkers to reflect this change
-        self.person.coworkers = {employee.person for employee in self.company.employees} - {self.person}
-        for coworker in self.person.coworkers:
-            coworker.coworkers.add(self.person)
-        # Add to the salience update queues of everyone involved
-        for employee in self.company.employees:
-            self.person.salience_update_queue.add(employee.person)
-            employee.person.salience_update_queue.add(self.person)
+        # Update the .coworkers attribute of this person and their new coworkers
+        person.coworkers = set()  # Wash out their former coworkers, if any
+        person.coworkers = {employee.person for employee in self.company.employees} - {person}
+        for coworker in person.coworkers:
+            coworker.coworkers.add(person)
+        # Update relevant salience values for this person and their new coworkers
+        salience_change_for_new_coworker = (
+            self.person.game.config.salience_increment_from_relationship_change['coworker']
+        )
+        for coworker in person.coworkers:
+            person.update_salience_of(entity=coworker, change=salience_change_for_new_coworker)
+            coworker.update_salience_of(entity=person, change=salience_change_for_new_coworker)
+        # Update the salience value for this person held by everyone else in the city to
+        # reflect their new job level
+        boost_in_salience_for_this_job_level = self.person.game.config.salience_job_level_boost(
+            job_level=self.level
+        )
+        for resident in company.city.residents:
+            resident.update_salience_of(entity=self.person, change=boost_in_salience_for_this_job_level)
 
     def __str__(self):
         """Return string representation."""
@@ -49,30 +59,51 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
+        self.company.employees.remove(self)
+        self.company.former_employees.add(self)
         # If this isn't an in-house promotion, update a bunch of attributes
-        if not (isinstance(reason, Hiring) and reason.promotion):
-            self.company.employees.remove(self)
-            self.company.former_employees.add(self)
-            # Update the .coworkers attribute of everyone involved to reflect this change
-            self.person.coworkers = set()
+        in_house_promotion = (isinstance(reason, Hiring) and reason.promotion)
+        if not in_house_promotion:
+            # Update the .coworkers attribute of the person's now former coworkers
             for employee in self.company.employees:
                 employee.person.coworkers.remove(self.person)
             # Update the .former_coworkers attribute of everyone involved to reflect this change
             for employee in self.company.employees:
                 self.person.former_coworkers.add(employee.person)
                 employee.person.former_coworkers.add(self.person)
-            # Add to the salience update queues of everyone involved
+            # Update all relevant salience values for everyone involved
+            config = self.person.game.config
+            change_in_salience_for_former_coworker = (
+                config.salience_increment_from_relationship_change["former coworker"] -
+                config.salience_increment_from_relationship_change["coworker"]
+            )
             for employee in self.company.employees:
-                self.person.salience_update_queue.add(employee.person)
-                employee.person.salience_update_queue.add(self.person)
+                employee.person.update_salience_of(
+                    entity=self, change=change_in_salience_for_former_coworker
+                )
+                self.person.update_salience_of(
+                    entity=employee.person, change=change_in_salience_for_former_coworker
+                )
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
         position_that_is_now_vacant = self.__class__
         self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
-        # If the person hasn't already been hired to a new position, set their
-        # occupation attribute to None
+        # If the person hasn't already been hired to a new position, set their occupation
+        # attribute to None
         if self.person.occupation is self:
             self.person.occupation = None
+        # If this person is retiring, set their .coworkers to the empty set
+        if reason.__class__.__name__ == "Retirement":
+            self.person.coworkers = set()
+        else:
+            # If they're not retiring, decrement their salience to everyone else
+            # commensurate to the job level of this position
+            change_in_salience_for_this_job_level = self.person.game.config.salience_job_level_boost(
+                job_level=self.level
+            )
+            for resident in self.company.city.residents:
+                # Note the minus sign here
+                resident.update_salience_of(entity=self.person, change=-change_in_salience_for_this_job_level)
 
 
 ##################################
