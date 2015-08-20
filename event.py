@@ -84,8 +84,9 @@ class Birth(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Birth of {0} in {1}".format(
-            self.subject.name, self.year
+        return "Birth of {} {} {} in {}".format(
+            self.subject.first_name, self.subject.middle_name,
+            self.subject.maiden_name, self.year
         )
 
     def _update_mother_attributes(self):
@@ -417,11 +418,27 @@ class Departure(Event):
 
     def _update_neighbor_attributes(self):
         """Update the neighbor attributes of the people moving and their new and former neighbors"""
-        # Remove the departed from all their old neighbor's .neighbors attribute
-        for old_neighbor in self.subject.neighbors:
-            old_neighbor.neighbors.remove(self.subject)
-            old_neighbor.former_neighbors.add(self.subject)
-            self.subject.former_neighbors.add(old_neighbor)
+        # Prepare the salience increment at play here, because attribute accessing
+        # is expensive
+        config = self.subject.game.config
+        salience_change_for_former_neighbor = (
+            config.salience_increment_from_relationship_change['former neighbor'] -
+            config.salience_increment_from_relationship_change['neighbor']
+        )
+        # Remove the departed from all their old neighbor's .neighbors attribute...
+        subject = self.subject
+        for old_neighbor in subject.neighbors:
+            old_neighbor.neighbors.remove(subject)
+            old_neighbor.former_neighbors.add(subject)
+            subject.former_neighbors.add(old_neighbor)
+            # ...and update the relevant salience values (because people still living in the
+            # city may discuss this person)
+            old_neighbor.update_salience_of(
+                entity=subject, change=salience_change_for_former_neighbor
+            )
+            subject.update_salience_of(
+                entity=old_neighbor, change=salience_change_for_former_neighbor
+            )
         # Set the departed's .neighbors attribute to the empty set
         self.subject.neighbors = set()
 
@@ -776,8 +793,8 @@ class Marriage(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Marriage between {0} and {1}".format(
-            self.names_at_time_of_marriage[0], self.names_at_time_of_marriage[1]
+        return "Marriage between {} and {} in {}".format(
+            self.names_at_time_of_marriage[0], self.names_at_time_of_marriage[1], self.year
         )
 
     @property
@@ -871,6 +888,7 @@ class Marriage(Event):
                 if kid.present and kid.home is spouse1.home:
                     family_members_that_will_move.add(kid)
         if home_they_will_move_into is not spouse2.home:
+            family_members_that_will_move.add(spouse2)
             # Have (non-adult) children of spouse1, if any, also move too
             for kid in spouse2.kids:
                 if kid.present and not kid.marriage and kid.home is spouse2.home:
@@ -1023,8 +1041,8 @@ class NameChange(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Name change by which {0} became known as {1}".format(
-            self.old_name, self.new_name
+        return "Name change by which {} became known as {} in {}".format(
+            self.old_name, self.new_name, self.year
         )
 
     def _remunerate(self):
