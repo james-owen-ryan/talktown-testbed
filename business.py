@@ -422,8 +422,8 @@ class ApartmentComplex(Business):
 
     @property
     def residents(self):
-        """Return the employees that work here and residents that live here."""
-        residents = {employee.person for employee in self.employees}
+        """Return the residents that live here."""
+        residents = set()
         for unit in self.units:
             residents |= unit.residents
         return residents
