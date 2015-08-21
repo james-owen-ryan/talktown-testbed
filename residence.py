@@ -19,6 +19,7 @@ class DwellingPlace(object):
             self.address = self.lot.address
         elif self.apartment:
             self.address = ""  # Gets set by Apartment._init_generate_address()
+        self.block = self.lot.block_address_is_on
         self.residents = set()
         self.former_residents = set()
         self.transactions = []
@@ -48,12 +49,12 @@ class DwellingPlace(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
-        features = {
-            "home is apartment": "yes" if self.apartment else "no",
-            "home block": str(self.lot.block_address_is_on),
-            "home address": self.address,
-        }
-        return features[feature_type]
+        if feature_type == "home is apartment":
+            return "yes" if self.apartment else "no"
+        elif feature_type == "home block":
+            return self.block
+        elif feature_type == "home address":
+            return self.address
 
 
 class Apartment(DwellingPlace):

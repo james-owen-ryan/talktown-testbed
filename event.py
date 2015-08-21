@@ -66,6 +66,11 @@ class Birth(Event):
         if self.biological_father is self.mother.spouse:
             self.mother.marriage.children_produced.add(self.subject)
         self.doctor = doctor
+        # Update the game's listing of all people's birthdays
+        try:
+            mother.game.birthdays[(self.month, self.day)].add(self.subject)
+        except KeyError:
+            mother.game.birthdays[(self.month, self.day)] = {self.subject}
         self._name_baby()
         self._update_mother_attributes()
         if self.mother.city:
@@ -94,6 +99,7 @@ class Birth(Event):
         self.mother.conception_date = None
         self.mother.due_date = None
         self.mother.impregnated_by = None
+        self.mother.pregnant = False
 
     def _name_baby(self):
         """Name the baby.
@@ -102,26 +108,46 @@ class Birth(Event):
         first or middle name.
         """
         config = self.subject.game.config
-        if self.subject.male and random.random() < config.chance_son_inherits_fathers_exact_name:
-            self.subject.first_name = self.father.first_name
-            self.subject.middle_name = self.father.middle_name
-            self.subject.suffix = self._get_suffix()
-            self.subject.named_for = self.father, self.father,
+        baby = self.subject
+        if (
+            random.random() < config.chance_son_inherits_fathers_exact_name and
+            baby.male and
+            not(any(bro for bro in baby.brothers if bro.first_name == self.father.first_name))
+        ):
+            # Name the son after his father
+            baby.first_name = self.father.first_name
+            baby.middle_name = self.father.middle_name
+            baby.suffix = self._get_suffix()
+            baby.named_for = (self.father, self.father)
         else:
-            if self.subject.male:
+            if baby.male:
                 potential_namegivers = self._get_potential_male_namegivers()
             else:
                 potential_namegivers = self._get_potential_female_namegivers()
-            self.subject.first_name, first_name_namegiver = (
+            # Make sure person doesn't end up with a sibling's name or their mother's name
+            off_limits_names = {
+                p.first_name for p in {baby.mother} | baby.siblings
+            }
+            potential_first_name, first_name_namegiver = (
                 self._decide_first_name(potential_namegivers=potential_namegivers)
             )
-            self.subject.middle_name, middle_name_namegiver = (
+            while potential_first_name in off_limits_names:
+                potential_first_name, first_name_namegiver = (
+                    self._decide_first_name(potential_namegivers=[])
+                )
+            baby.first_name = potential_first_name
+            potential_middle_name, middle_name_namegiver = (
                 self._decide_middle_name(potential_namegivers=potential_namegivers)
             )
-            self.subject.suffix = ''
-            self.subject.named_for = first_name_namegiver, middle_name_namegiver,
-        self.subject.last_name = self._decide_last_name()
-        self.subject.maiden_name = self.subject.last_name
+            while potential_middle_name == baby.first_name:
+                potential_middle_name, middle_name_namegiver = (
+                    self._decide_middle_name(potential_namegivers=[])
+                )
+            baby.middle_name = potential_middle_name
+            baby.suffix = ''
+            baby.named_for = (first_name_namegiver, middle_name_namegiver)
+        baby.last_name = self._decide_last_name()
+        baby.maiden_name = baby.last_name
 
     def _decide_last_name(self):
         """Return what will be the baby's last name."""
@@ -235,10 +261,7 @@ class Birth(Event):
             '': 'II', 'II': 'III', 'III': 'IV', 'IV': 'V', 'V': 'VI',
             'VI': 'VII', 'VII': 'VIII', 'VIII': 'IX', 'IX': 'X'
         }
-        if son.full_name_without_suffix == father.full_name_without_suffix:
-            suffix = increment_suffix[father.suffix]
-        else:
-            suffix = ''
+        suffix = increment_suffix[father.suffix]
         return suffix
 
     def _take_baby_home(self):
@@ -373,6 +396,7 @@ class Death(Event):
             widow.marriage.terminus = self
             widow.marriage = None
             widow.spouse = None
+            widow.significant_other = None
             widow.widowed = True
             widow.grieving = True
             widow.chance_of_remarrying = config.function_to_derive_chance_spouse_changes_name_back(
@@ -492,6 +516,8 @@ class Divorce(Event):
         spouse2.marriage = None
         spouse1.spouse = None
         spouse2.spouse = None
+        spouse1.significant_other = None  # TODO WHAT IF THEY HAD A MISTRESS (also update Death then [new widows])
+        spouse2.significant_other = None
         spouse1.divorces.append(self)
         spouse2.divorces.append(self)
         spouse1.immediate_family.remove(spouse2)
@@ -809,13 +835,14 @@ class Marriage(Event):
     def _update_newlywed_attributes(self):
         """Update newlywed attributes that pertain to marriage concerns."""
         spouse1, spouse2 = self.subjects
-        config = spouse1.game.config
         spouse1.marriage = self
         spouse2.marriage = self
         spouse1.marriages.append(self)
         spouse2.marriages.append(self)
         spouse1.spouse = spouse2
         spouse2.spouse = spouse1
+        spouse1.significant_other = spouse2
+        spouse2.significant_other = spouse1
         spouse1.immediate_family.add(spouse2)
         spouse2.immediate_family.add(spouse1)
         spouse1.extended_family |= spouse2.extended_family
@@ -967,9 +994,12 @@ class Move(Event):
         old_neighbors = set()
         for mover in movers:
             old_neighbors |= mover.neighbors
-        # Update all movers' and old neighbors' .former_neighbors attributes
+        # Update the old neighbors' .neighbors and .former_neighbors attributes (no need
+        # to update the movers' .neighbors attributes in this loop as those will be totally
+        # overwritten below)
         for mover in movers:
             for this_movers_old_neighbor in mover.neighbors:
+                this_movers_old_neighbor.neighbors.remove(mover)
                 this_movers_old_neighbor.former_neighbors.add(mover)
                 mover.former_neighbors.add(this_movers_old_neighbor)
                 # Also update salience values
@@ -979,11 +1009,6 @@ class Move(Event):
                 mover.update_salience_of(
                     entity=this_movers_old_neighbor, change=salience_change_for_former_neighbor
                 )
-        # Remove movers and their old neighbors from one another's .neighbors attributes
-        for mover in movers:
-            mover.former_neighbors |= mover.neighbors
-        for old_neighbor in old_neighbors:
-            old_neighbor.neighbors -= movers
         # Update the movers' .neighbors attributes by...
         new_neighbors = set()
         # ...surveying all people living on neighboring lots
@@ -998,10 +1023,13 @@ class Move(Event):
         if self.new_home.apartment:
             neighbors_in_the_same_complex = self.new_home.complex.residents - movers
             new_neighbors |= neighbors_in_the_same_complex
+        # Make sure none of the residents you will be moving in with were included (e.g.,
+        # in the case of a baby being brought home)
+        new_neighbors -= self.new_home.residents
         # Update the .neighbors attribute of all new neighbors, as well as salience values
         for mover in movers:
+            mover.neighbors = set(new_neighbors)
             for new_neighbor in new_neighbors:
-                mover.neighbors.add(new_neighbor)
                 mover.update_salience_of(entity=new_neighbor, change=salience_change_for_new_neighbor)
                 new_neighbor.neighbors.add(mover)
                 new_neighbor.update_salience_of(entity=mover, change=salience_change_for_new_neighbor)

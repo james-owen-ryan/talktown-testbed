@@ -17,8 +17,9 @@ class Whereabouts(object):
 
     def record(self, occasion):
         """Record this character's current whereabouts by instantiating a Whereabout object."""
-        ordinal_date = self.person.game.ordinal_date
-        day_or_night_bit = 0 if self.person.game.time_of_day == 'day' else 1
+        game = self.person.game
+        ordinal_date = game.ordinal_date
+        day_or_night_bit = 0 if game.time_of_day == 'day' else 1
         timestep_key = (ordinal_date, day_or_night_bit)
         self.date[timestep_key] = Whereabout(person=self.person, occasion=occasion)
 

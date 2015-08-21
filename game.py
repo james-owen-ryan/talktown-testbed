@@ -25,16 +25,20 @@ class Game(object):
         )
         self.time_of_day = "day"
         self.date = self._get_date()
+        self.city = None
         # Prepare a listing of all in-game events, which will facilitate debugging later
         self.events = []
         # A game's event number allows the precise ordering of events that
         # happened on the same timestep -- every time an event happens, it requests an
         # event number from Game.assign_event_number(), which also increments the running counter
         self.event_number = 0
+        # Prepare a listing of all people born on each day -- this is used to
+        # age people on their birthdays
+        self.birthdays = {}
+        # Prepare various Talk of the Town variables
         self.founder = None  # The person who founds the city -- gets set by self.establish_setting()
         self.lover = None
         self.pc = None
-        self.city = None
 
         # self.establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
@@ -282,6 +286,7 @@ class Game(object):
     def enact_lo_fi_simulation(self, n_timesteps=51122):
         """Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay."""
         last_simulated_day = self.ordinal_date
+        chance_of_a_day_being_simulated = 0.005
         for i in xrange(n_timesteps):
             self._advance_time()
             # Simulate births, even if this day will not actually be simulated
@@ -293,7 +298,6 @@ class Game(object):
                                 person.give_birth()
                         else:
                             person.give_birth()
-            chance_of_a_day_being_simulated = 0.005
             if random.random() < chance_of_a_day_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
@@ -310,7 +314,7 @@ class Game(object):
                         # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
                         if person is not self.founder:
                             person.die(cause_of_death="Natural causes")
-                    elif person.age > max(65, random.random() * 100):
+                    elif person.occupation and person.age > max(65, random.random() * 100):
                         person.retire()
                     # elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
                     #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
@@ -344,9 +348,6 @@ class Game(object):
                         if person.age > 3:
                             # person.observe()
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
-                # Finally, have everyone update their social networks and salience values
-                for person in self.city.residents:
-                    person.update()
                 last_simulated_day = self.ordinal_date
 
     def consider_new_business_getting_constructed(self):
@@ -375,9 +376,16 @@ class Game(object):
     def enact_hi_fi_simulation(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""
         self._advance_time()
-        this_is_the_night_in_question = (
-            self.ordinal_date == self.ordinal_date_that_the_founder_dies and self.time_of_day == "night"
-        )
+        # this_is_the_night_in_question = (
+        #     self.ordinal_date == self.ordinal_date_that_the_founder_dies and self.time_of_day == "night"
+        # )
+        # Decay all beliefs from the time passing since yesterday
+        if self.time_of_day == "day":
+            # NOTE: COULD PROBABLY SPEED UP THINGS IN POLISHED GAME BY
+            # PUTTING CODE FOR THIS ROUTINE DIRECTLY HERE
+            for person in self.city.residents:
+                for belief in person.all_belief_facets:
+                    belief.decay_strength()
         # Reset all Relationship interacted_this_timestep attributes
         for person in self.city.residents:
             for other_person in person.relationships:
@@ -439,8 +447,13 @@ class Game(object):
             self.month = new_date_tuple.month
             self.day = new_date_tuple.day
             self.date = self._get_date()
-            for person in self.city.residents:
-                person.grow_older()
+            # Age any present (not dead, not departed) character whose birthday is today
+            if (self.month, self.day) not in self.birthdays:
+                self.birthdays[(self.month, self.day)] = set()
+            else:
+                for person in self.birthdays[(self.month, self.day)]:
+                    if person.present:
+                        person.grow_older()
         else:
             self.date = self._get_date()
 

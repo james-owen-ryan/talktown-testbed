@@ -49,6 +49,7 @@ class Business(object):
         # Set address
         self.address = self.lot.address
         self.street_address_is_on = self.lot.street_address_is_on
+        self.block = self.lot.block_address_is_on
         # This gets set by self._init_get_named()
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
@@ -388,11 +389,10 @@ class Business(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
-        features = {
-            "business block": str(self.lot.block_address_is_on),
-            "business address": self.address,
-        }
-        return features[feature_type]
+        if feature_type == "business block":
+            return self.block
+        elif feature_type == "business address":
+            return self.address
 
 
 class ApartmentComplex(Business):

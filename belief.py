@@ -1928,6 +1928,7 @@ class Facet(str):
         """
         super(Facet, self).__init__()
         self.owner = owner
+        self.owner.all_belief_facets.add(self)  # Used to make batch calls to decay_strength()
         self.subject = subject
         self.feature_type = feature_type
         # Only currently held belief facets are attributed a predecessor -- if you are merely
@@ -1973,6 +1974,10 @@ class Facet(str):
             self.mental_model = self.owner.mind.mental_models[object_itself]
         else:
             self.mental_model = None
+        # The strength of a belief will increment commensurately to the strength of each
+        # new piece of evidence that gets attributed (by attribute_new_evidence) and will
+        # decay as time passes (by decay_strength)
+        self.strength = 0.0
         # Finally, attribute the initial evidence to this new belief facet, which may cause a
         # currently held belief to shift to challenger status, and this new belief to the
         # character's actual current belief
@@ -1991,91 +1996,16 @@ class Facet(str):
         else:
             return False
 
-    @property
-    def strength(self):
-        """The strength of this particular belief at this particular timestep, given its evidence.
-
-        Strength represents how confident owner is in this belief and decays over time; it
-        is used to reduce the chance of a belief facet deteriorating (by dividing the base
-        chance of deterioration by the strength of the facet) -- it gets updated by
-        Facet.attribute_new_evidence().
-        """
-        strength = sum(self._determine_strength_of_a_piece_of_evidence(piece) for piece in self.evidence)
-        return strength
-
-    def _determine_strength_of_a_piece_of_evidence(self, evidence):
-        """Determine the strength of a particular piece of evidence.
-
-        This method takes into account how much the owner trusts the source of the
-        evidence and how strong the source's belief was at the time that conveyed it
-        to owner, in the case of propagation evidence types, as well as how long ago
-        the evidence was instantiated.
-        """
-        config = self.owner.game.config
-        if evidence.adjusted_strength:
-            strength = evidence.adjusted_strength
-        else:
-            strength = config.base_strength_of_evidence_types[evidence.type]
-            # If evidence is a type of propagation, alter the strength according to...
-            if evidence.type in ('statement', 'lie', 'eavesdropping'):
-                # ...the owner's trust value for the source
-                if evidence.source in self.owner.relationships:
-                    strength *= self.owner.relationships[evidence.source].trust
-                else:
-                    # They eavesdropped the source and don't actually have a relationship with them
-                    strength *= config.trust_someone_has_for_random_person_they_eavesdrop
-                # ...the strength of the source's belief at the time of telling
-                if evidence.type == 'lie':
-                    teller_belief_strength = random.randint(1, 300)  # TODO maybe model lying ability here?
-                else:
-                    teller_belief_strength = evidence.teller_belief_strength[self.feature_type]
-                source_belief_strength_multiplier = config.function_to_determine_teller_strength_boost(
-                    teller_belief_strength=teller_belief_strength
-                )
-                strength *= source_belief_strength_multiplier
-        # Decay the strength of this evidence given how long ago it occurred. Note that this
-        # will cause adjusted strengths to be considerably decayed, since their very adjustment
-        # already was decayed according to how long ago the evidence was encountered relative to
-        # the time of adjustment; this seems realistic, however, because if someone forgets some
-        # piece of evidence, that should considerably penalize the strength of that evidence
-        for day in xrange(self.owner.game.ordinal_date-evidence.ordinal_date):
-            strength *= config.decay_rate_of_evidence_per_timestep
-        return strength
-
-    def adjust_strength_of_forgotten_evidence(self, total_strength_of_supplanter):
-        """Adjust the strength of forgotten evidence.
-
-        This method is called when the belief represented by this Facet is forgotten,
-        or more precisely, is supplanted by a piece of evidence with a deterioration type.
-        It adjusts the strength of the total evidence of a forgotten belief facet so that
-        its strength is equal to the strength of the new Facet supported by some kind of
-        deterioration. This allows a character to temporarily forget something but later,
-        upon encountering new evidence supporting the forgotten belief, remember that they
-        had previously believed it and then reinstate it again.
-        """
-        # Survey the evidence supporting this belief to determine the current actual strength
-        # of each piece -- we keep track of these values in a dictionary so that we don't
-        # carry out this computation twice in this method (once to determine the multiplier,
-        # again to actually adjust the strength of each piece of evidence)
-        actual_current_strength_of_each_piece_of_evidence = {}
-        for piece in self.evidence:
-            actual_current_strength = self._determine_strength_of_a_piece_of_evidence(evidence=piece)
-            actual_current_strength_of_each_piece_of_evidence[piece] = actual_current_strength
-        # Determine the multiplier that will allow us to adjust the strength of each piece
-        # of evidence supporting this belief facet such that its adjusted total strength
-        # will become (nearly) equal to the total strength of the new deteriorated belief
-        cumulative_strength_of_this_belief = sum(actual_current_strength_of_each_piece_of_evidence.values())
-        try:
-            multiplier = float(total_strength_of_supplanter) / (cumulative_strength_of_this_belief-1)
-        except ZeroDivisionError:
-            multiplier = 0.01
-        for piece in self.evidence:
-            piece.adjusted_strength = actual_current_strength_of_each_piece_of_evidence[piece] * multiplier
+    def decay_strength(self):
+        """Decay the strength of this belief due to time passing."""
+        self.strength *= self.owner.game.config.decay_rate_of_belief_strength_per_day
 
     def attribute_new_evidence(self, new_evidence):
         """Attribute new evidence that supports this belief facet."""
         self.evidence.add(new_evidence)
         new_evidence.beliefs_evidenced.add(self)
+        # Adjust the strength of this belief commensurately to the strength of this new evidence
+        self.strength += new_evidence.determine_strength(feature_type=self.feature_type)
         # If this is a challenger belief facet, check for whether this belief is now stronger
         # than the character's currently held belief, in which case it will lose its challenger
         # status and the old belief will be attributed as merely a challenger to this belief
@@ -2101,21 +2031,19 @@ class Facet(str):
             automatically_take_over_because_deterioration_or_observation = (
                 'reflection', 'observation', 'confabulation', 'mutation', 'transference', 'forgetting'
             )
-            strength_of_this_belief_facet = self.strength
             # If this belief facet is now stronger than the currently held one, revise your belief
-            if (strength_of_this_belief_facet > currently_held_belief.strength or
+            if (self.strength > currently_held_belief.strength or
                     new_evidence.type in automatically_take_over_because_deterioration_or_observation):
                 mental_model = self.owner.mind.mental_models[self.subject]
                 mental_model.adopt_belief(
                     new_belief_facet=self, old_belief_facet=currently_held_belief
                 )
-                # If the new evidence is a type of deterioration, adjust the strength of the evidence
-                # supporting the belief that is being supplanted (check docstring for
-                # adjust_strength_of_forgotten_evidence() to read more about what this is all about)
+                # If the new evidence is a type of deterioration, adjust the strength of the belief
+                # that is being supplanted so that it just just less than the strength of this belief;
+                # this allows forgotten beliefs to be 'remembered' when new evidence supporting them is
+                # encountered
                 if new_evidence.type in automatically_take_over_because_deterioration_or_observation:
-                    currently_held_belief.adjust_strength_of_forgotten_evidence(
-                        total_strength_of_supplanter=strength_of_this_belief_facet
-                    )
+                    currently_held_belief.strength = self.strength-1
 
     def _get_currently_held_belief(self):
         """Return the belief facet that is currently held for this feature type; if none, return None."""

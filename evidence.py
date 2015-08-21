@@ -1,3 +1,6 @@
+import random
+
+
 class PieceOfEvidence(object):
     """A superclass that all evidence subclasses inherit from."""
 
@@ -16,14 +19,7 @@ class PieceOfEvidence(object):
         self.eavesdropper = None  # Will get overwritten in case of Eavesdropping
         self.attribute_transferred = None  # Will get overwritten in case of Transference
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
-        # Adjusted strength gets set by Belief.Facet.adjust_strength_of_forgotten_evidence() when
-        # a piece of evidence is forgotten, or more precisely, is supplanted by a piece of evidence
-        # with a deterioration type. It's used to adjust the strength of the total evidence of a
-        # forgotten belief facet so that its strength is equal to the strength of the new Facet supported
-        # by some kind of deterioration. This allows a character to temporarily forget something but
-        # later, upon encountering new evidence supporting the forgotten belief, remember that they had
-        # previously believed it and then reinstate it again.
-        self.adjusted_strength = None
+        self.base_strength = None  # Used to hold partial results of determine_strength()
 
     def __str__(self):
         """Return string representation."""
@@ -75,6 +71,44 @@ class PieceOfEvidence(object):
             return "{}'s forgetting of knowledge about {} {}".format(
                 self.source.name, self.subject.name, location_and_time
             )
+
+    def determine_strength(self, feature_type):
+        """Determine the strength of a particular piece of evidence.
+
+        This method takes into account how much the recipient trusts the source of the
+        evidence and how strong the source's belief is (at this timestep, i.e., the time
+        of it being conveyed to the recipient).
+        """
+        config = self.source.game.config
+        source, recipient, subject = self.source, self.recipient, self.subject
+        this_is_propagation = self.type in ('statement', 'lie', 'eavesdropping')
+        if not self.base_strength:
+            base_strength = config.base_strength_of_evidence_types[self.type]
+            # If evidence is a type of propagation, alter the strength according to
+            # recipient's trust value for the source
+            if this_is_propagation:
+                if source in recipient.relationships:
+                    base_strength *= recipient.relationships[source].trust
+                else:
+                    # Recipient eavesdropped the source and don't actually have a relationship with them
+                    base_strength *= config.trust_someone_has_for_random_person_they_eavesdrop
+            self.base_strength = base_strength
+        # If evidence is a type of propagation, alter the strength according to
+        # the strength of the source's belief at the time of telling
+        if this_is_propagation:
+            if self.type == 'lie':
+                teller_belief_strength = random.randint(1, 300)  # TODO maybe model lying ability here?
+            else:
+                teller_belief_facet = source.mind.mental_models[subject].get_facet_to_this_belief_of_type(
+                    feature_type=feature_type
+                )
+                teller_belief_strength = teller_belief_facet.strength
+            source_belief_strength_multiplier = config.function_to_determine_teller_strength_boost(
+                teller_belief_strength=teller_belief_strength
+            )
+            return self.base_strength*source_belief_strength_multiplier
+        else:
+            return self.base_strength
 
 
 class Reflection(PieceOfEvidence):
@@ -130,10 +164,6 @@ class Lie(PieceOfEvidence):
         """Initialize a Lie object."""
         super(Lie, self).__init__(subject=subject, source=source)
         self.recipient = recipient
-        # This dictionary maps feature types that come up during a lie to
-        # the teller's perceived strength of belief, at time of the lie,
-        # i.e., how strongly they sold the lie
-        self.teller_belief_strength = {}
 
 
 class Statement(PieceOfEvidence):
@@ -143,9 +173,6 @@ class Statement(PieceOfEvidence):
         """Initialize a Statement object."""
         super(Statement, self).__init__(subject=subject, source=source)
         self.recipient = recipient
-        # This dictionary maps feature types that come up during a statement to the teller's
-        # strength of belief, at time of the statement, regarding that feature type
-        self.teller_belief_strength = {}
 
 
 class Declaration(PieceOfEvidence):
@@ -168,9 +195,6 @@ class Eavesdropping(PieceOfEvidence):
         super(Eavesdropping, self).__init__(subject=subject, source=source)
         self.recipient = recipient
         self.eavesdropper = eavesdropper
-        # This dictionary maps feature types that come up during a statement to the teller's
-        # strength of belief, at time of the statement, regarding that feature type
-        self.teller_belief_strength = {}
 
 
 class Mutation(PieceOfEvidence):

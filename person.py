@@ -38,7 +38,7 @@ class Person(object):
             self.parents = {self.mother, self.father}
             # Set date of birth
             self.birth_year = birth.year
-            self.birthday = (birth.month, birth.day)
+            self.birthday = (birth.month, birth.day)  # This gets added to Game.birthdays by Birth.__init__(0
             # Set attributes pertaining to age
             self.age = 0
             self.adult = False
@@ -154,11 +154,15 @@ class Person(object):
         self.worst_enemy = None
         self.love_interest = None
         self.significant_other = None
+        self.charge_of_best_friend = 0.0  # These get used to track changes to a person's major relationships
+        self.charge_of_worst_enemy = 0.0
+        self.spark_of_love_interest = 0.0
         self.talked_to_this_year = set()
         self.befriended_this_year = set()
         self.salience_of_other_people = {}  # Maps potentially every other person to their salience to this person
         self._init_salience_values()
         # Prepare attributes pertaining to pregnancy
+        self.pregnant = False
         self.impregnated_by = None
         self.conception_year = None  # Year of conception
         self.due_date = None  # Actual ordinal date 270 days from conception (currently)
@@ -188,6 +192,8 @@ class Person(object):
         # Prepare attribute pertaining to exact location for the current timestep; this
         # will always be modified by self.go_to()
         self.location = None
+        # Prepare attributes pertaining to this person's knowledge
+        self.all_belief_facets = set()  # Used to make batch calls to Facet.decay_strength()
 
     def __str__(self):
         """Return string representation."""
@@ -480,14 +486,6 @@ class Person(object):
             return False
 
     @property
-    def pregnant(self):
-        """Return whether this person is pregnant."""
-        if self.impregnated_by:
-            return True
-        else:
-            return False
-
-    @property
     def queer(self):
         """Return whether this person is not heterosexual."""
         if self.male and self.attracted_to_men:
@@ -552,46 +550,6 @@ class Person(object):
         kids_at_home = {k for k in self.kids if k.home is self.home}
         return kids_at_home
 
-    def get_best_friend(self):
-        """Return this person's best friend, if any."""
-        if self.relationships:
-            best_friend = max(self.relationships, key=lambda f: self.relationships[f].charge)
-            if self.relationships[best_friend].charge < 0:
-                best_friend = None
-        else:
-            best_friend = None
-        return best_friend
-
-    def get_worst_enemy(self):
-        """Return this person's worst enemy."""
-        if self.relationships:
-            worst_enemy = min(self.relationships, key=lambda f: self.relationships[f].charge)
-            if self.relationships[worst_enemy].charge < 0:
-                worst_enemy = None
-        else:
-            worst_enemy = None
-        return worst_enemy
-
-    def get_love_interest(self):
-        """Return this person's strongest love interest, if any."""
-        if any(r for r in self.relationships if self.relationships[r].spark > 0):
-            strongest_love_interest = max(self.relationships.keys(), key=lambda r: self.relationships[r].spark)
-            if self.relationships[strongest_love_interest].spark < 0:
-                strongest_love_interest = None
-        else:
-            strongest_love_interest = None
-        return strongest_love_interest
-
-    def get_significant_other(self):
-        """Return this person's strongest significant other, if any."""
-        if self.spouse:
-            significant_other = self.spouse
-        elif any(r for r in self.relationships if self.relationships[r].type == "romance"):
-            significant_other = next(r for r in self.relationships if self.relationships[r].type == "romance")
-        else:
-            significant_other = None
-        return significant_other
-
     @property
     def life_events(self):
         """Return the major events of this person's life."""
@@ -613,186 +571,200 @@ class Person(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
-        features = {
-            # Name
-            "first name": self.first_name,
-            "middle name": self.middle_name,
-            "last name": self.last_name,
-            # Occupation
-            "workplace": self.occupation.company.name if self.occupation else "None",
-            "job title": self.occupation.__class__.__name__ if self.occupation else "None",
-            "job shift": self.occupation.shift if self.occupation else "None",
-            # Home
-            "home": self.home.name,
-            # Appearance
-            "skin color": self.face.skin.color,
-            "head size": self.face.head.size,
-            "head shape": self.face.head.shape,
-            "hair length": self.face.hair.length,
-            "hair color": self.face.hair.color,
-            "eyebrow size": self.face.eyebrows.size,
-            "eyebrow color": self.face.eyebrows.color,
-            "mouth size": self.face.mouth.size,
-            "ear size": self.face.ears.size,
-            "ear angle": self.face.ears.angle,
-            "nose size": self.face.nose.size,
-            "nose shape": self.face.nose.shape,
-            "eye size": self.face.eyes.size,
-            "eye shape": self.face.eyes.shape,
-            "eye color": self.face.eyes.color,
-            "eye horizontal settedness": self.face.eyes.horizontal_settedness,
-            "eye vertical settedness": self.face.eyes.vertical_settedness,
-            "facial hair style": self.face.facial_hair.style,
-            "freckles": self.face.distinctive_features.freckles,
-            "birthmark": self.face.distinctive_features.birthmark,
-            "scar": self.face.distinctive_features.scar,
-            "tattoo": self.face.distinctive_features.tattoo,
-            "glasses": self.face.distinctive_features.glasses,
-            "sunglasses": self.face.distinctive_features.sunglasses
-        }
+        # Name
+        if feature_type == "first name":
+            return self.first_name
+        elif feature_type == "middle name":
+            return self.middle_name
+        elif feature_type == "last name":
+            return self.last_name
+        # Occupation
+        elif feature_type == "workplace":
+            return "None" if not self.occupation else self.occupation.company.name  # Name of company
+        elif feature_type == "job title":
+            return "None" if not self.occupation else self.occupation.__class__.__name__
+        elif feature_type == "job shift":
+            return "None" if not self.occupation else self.occupation.shift
+        elif feature_type == "workplace address":
+            return "None" if not self.occupation else self.occupation.company.address
+        elif feature_type == "workplace block":
+            return "None" if not self.occupation else self.occupation.company.block
+        # Home
+        elif feature_type == "home":
+            return self.home.name
+        elif feature_type == "home address":
+            return self.home.address
+        elif feature_type == "home block":
+            return self.home.block
+        # Appearance
+        elif feature_type == "skin color":
+            return self.face.skin.color
+        elif feature_type == "head size":
+            return self.face.head.size
+        elif feature_type == "head shape":
+            return self.face.head.shape
+        elif feature_type == "hair length":
+            return self.face.hair.length
+        elif feature_type == "hair color":
+            return self.face.hair.color
+        elif feature_type == "eyebrow size":
+            return self.face.eyebrows.size
+        elif feature_type == "eyebrow color":
+            return self.face.eyebrows.color
+        elif feature_type == "mouth size":
+            return self.face.mouth.size
+        elif feature_type == "ear size":
+            return self.face.ears.size
+        elif feature_type == "ear angle":
+            return self.face.ears.angle
+        elif feature_type == "nose size":
+            return self.face.nose.size
+        elif feature_type == "nose shape":
+            return self.face.nose.shape
+        elif feature_type == "eye size":
+            return self.face.eyes.size
+        elif feature_type == "eye shape":
+            return self.face.eyes.shape
+        elif feature_type == "eye color":
+            return self.face.eyes.color
+        elif feature_type == "eye horizontal settedness":
+            return self.face.eyes.horizontal_settedness
+        elif feature_type == "eye vertical settedness":
+            return self.face.eyes.vertical_settedness
+        elif feature_type == "facial hair style":
+            return self.face.facial_hair.style
+        elif feature_type == "freckles":
+            return self.face.distinctive_features.freckles
+        elif feature_type == "birthmark":
+            return self.face.distinctive_features.birthmark
+        elif feature_type == "scar":
+            return self.face.distinctive_features.scar
+        elif feature_type == "tattoo":
+            return self.face.distinctive_features.tattoo
+        elif feature_type == "glasses":
+            return self.face.distinctive_features.glasses
+        elif feature_type == "sunglasses":
+            return self.face.distinctive_features.sunglasses
         # Have to do special thing for whereabouts, because they are indexed by date;
         # specifically, we parse the feature type, which will look something like
         # 'whereabouts 723099-1'
-        if 'whereabouts' in feature_type:
+        elif 'whereabouts' in feature_type:
             timestep = feature_type[12:]
             ordinal_date, day_or_night = timestep.split('-')
-            return self.whereabouts.date[(int(ordinal_date), int(day_or_night))]
-        else:
-            return features[feature_type]
+            whereabout_object = self.whereabouts.date[(int(ordinal_date), int(day_or_night))]
+            return whereabout_object.location.name
 
     def get_knowledge_about_person(self, other_person, feature_type):
         """Return this person's knowledge about another person's feature of the given type."""
         if other_person not in self.mind.mental_models:
             return None
-        else:
-            features = {
-                # Name
-                "first name": self.mind.mental_models[other_person].name.first_name,
-                "middle name": self.mind.mental_models[other_person].name.middle_name,
-                "last name": self.mind.mental_models[other_person].name.last_name,
-                # Occupation
-                "workplace": (str(self.mind.mental_models[other_person].occupation.company) if  # Name of company
-                              self.mind.mental_models[other_person].occupation.company else None),
-                "job title": self.mind.mental_models[other_person].occupation.job_title,
-                "job shift": self.mind.mental_models[other_person].occupation.shift,
-                # Home
-                "home": (str(self.mind.mental_models[other_person].home) if
-                         self.mind.mental_models[other_person].home else None),  # Will be the name of the residence
-                # Appearance
-                "skin color": self.mind.mental_models[other_person].face.skin.color,
-                "head size": self.mind.mental_models[other_person].face.head.size,
-                "head shape": self.mind.mental_models[other_person].face.head.shape,
-                "hair length": self.mind.mental_models[other_person].face.hair.length,
-                "hair color": self.mind.mental_models[other_person].face.hair.color,
-                "eyebrow size": self.mind.mental_models[other_person].face.eyebrows.size,
-                "eyebrow color": self.mind.mental_models[other_person].face.eyebrows.color,
-                "mouth size": self.mind.mental_models[other_person].face.mouth.size,
-                "ear size": self.mind.mental_models[other_person].face.ears.size,
-                "ear angle": self.mind.mental_models[other_person].face.ears.angle,
-                "nose size": self.mind.mental_models[other_person].face.nose.size,
-                "nose shape": self.mind.mental_models[other_person].face.nose.shape,
-                "eye size": self.mind.mental_models[other_person].face.eyes.size,
-                "eye shape": self.mind.mental_models[other_person].face.eyes.shape,
-                "eye color": self.mind.mental_models[other_person].face.eyes.color,
-                "eye horizontal settedness": self.mind.mental_models[other_person].face.eyes.horizontal_settedness,
-                "eye vertical settedness": self.mind.mental_models[other_person].face.eyes.vertical_settedness,
-                "facial hair style": self.mind.mental_models[other_person].face.facial_hair.style,
-                "freckles": self.mind.mental_models[other_person].face.distinctive_features.freckles,
-                "birthmark": self.mind.mental_models[other_person].face.distinctive_features.birthmark,
-                "scar": self.mind.mental_models[other_person].face.distinctive_features.scar,
-                "tattoo": self.mind.mental_models[other_person].face.distinctive_features.tattoo,
-                "glasses": self.mind.mental_models[other_person].face.distinctive_features.glasses,
-                "sunglasses": self.mind.mental_models[other_person].face.distinctive_features.sunglasses
-            }
-            if self.mind.mental_models[other_person].home and self.mind.mental_models[other_person].home.mental_model:
-                features["home address"] = self.mind.mental_models[other_person].home.mental_model.address
-                features["home block"] = self.mind.mental_models[other_person].home.mental_model.block
+        # Name
+        elif feature_type == "first name":
+            return self.mind.mental_models[other_person].name.first_name
+        elif feature_type == "middle name":
+            return self.mind.mental_models[other_person].name.middle_name
+        elif feature_type == "last name":
+            return self.mind.mental_models[other_person].name.last_name
+        # Occupation
+        elif feature_type == "workplace":
+            return (self.mind.mental_models[other_person].occupation.company if  # Name of company
+                    self.mind.mental_models[other_person].occupation.company else None)
+        elif feature_type == "job title":
+            return self.mind.mental_models[other_person].occupation.job_title
+        elif feature_type == "job shift":
+            return self.mind.mental_models[other_person].occupation.shift
+        elif feature_type == "workplace address":
+            if (self.mind.mental_models[other_person].occupation.company and
+                    self.mind.mental_models[other_person].occupation.company.mental_model):
+                return self.mind.mental_models[other_person].occupation.company.mental_model.address
             else:
-                features["home address"] = None
-                features["home block"] = None
-            if self.mind.mental_models[other_person].occupation.company:
-                if self.mind.mental_models[other_person].occupation.company.mental_model:
-                    features["workplace address"] = (
-                        self.mind.mental_models[other_person].occupation.company.mental_model.address
-                    )
-                    features["workplace block"] = (
-                        self.mind.mental_models[other_person].occupation.company.mental_model.block
-                    )
-                else:
-                    features["workplace address"] = None
-                    features["workplace block"] = None
+                return None
+        elif feature_type == "workplace block":
+            if (self.mind.mental_models[other_person].occupation.company and
+                    self.mind.mental_models[other_person].occupation.company.mental_model):
+                return self.mind.mental_models[other_person].occupation.company.mental_model.block
             else:
-                features["workplace address"] = None
-                features["workplace block"] = None
-            # Where they were on the night in question -- this will have to be made more
-            # elegant once we allow the player to access where anyone was any given time
-            the_night_in_question = (self.game.ordinal_date_that_the_founder_dies, 1)
-            if the_night_in_question in self.mind.mental_models[other_person].whereabouts.date:
-                features["location that night"] = (
-                    str(self.mind.mental_models[other_person].whereabouts.date[the_night_in_question])
-                )
+                return None
+        # Home
+        elif feature_type == "home":
+            return (str(self.mind.mental_models[other_person].home) if  # Name of residence
+                    self.mind.mental_models[other_person].home else None)
+        elif feature_type == "home address":
+            if (self.mind.mental_models[other_person].home and
+                    self.mind.mental_models[other_person].home.mental_model):
+                return self.mind.mental_models[other_person].home.mental_model.address
             else:
-                features["location that night"] = None
-            # Add in rep -- this is what shows up when the person comes up as an answer
-            # to a question
-            if other_person is self.significant_other:
-                rel_str = "My S.O."
-            elif other_person in self.extended_family:
-                rel = self.relation_to_me(person=other_person)
-                if rel:
-                    rel_str = "My {0}".format(rel.lower())
-                else:
-                    rel_str = "My relative"
-            elif other_person in self.friends:
-                rel_str = "My friend"
-            elif other_person in self.enemies:
-                rel_str = "My enemy"
-            elif other_person in self.acquaintances:
-                rel_str = "An acquaintance"
+                return None
+        elif feature_type == "home block":
+            if (self.mind.mental_models[other_person].home and
+                    self.mind.mental_models[other_person].home.mental_model):
+                return self.mind.mental_models[other_person].home.mental_model.block
             else:
-                ft = ['eye horizontal settedness', 'birthmark', 'job title', 'eye shape', 'hair color', 'head size',
-                     'home', 'scar', 'sunglasses', 'tattoo', 'nose shape', 'job shift', 'ear angle', 'mouth size',
-                     'freckles', 'eye size', 'first name', 'skin color', 'ear size', 'middle name', 'nose size',
-                     'eye vertical settedness', 'facial hair style', 'hair length', 'eyebrow color', 'last name',
-                     'head shape', 'eyebrow size', 'eye color', 'workplace', 'glasses']
-                evidence = set()
-                for f in ft:
-                    belief_facet = self.mind.mental_models[other_person].get_facet_to_this_belief_of_type(f)
-                    if belief_facet:
-                        evidence |= belief_facet.evidence
-                observations = [e for e in evidence if e.type == "observation"]
-                statements = [e for e in evidence if e.type == "statement"]
-                if observations:
-                    rel_str = "A person I last saw at {0}".format(observations[0].location.name)
-                elif statements:
-                    rel_str = "A person I heard about from {0}".format(statements[0].source.name)
-                else:
-                    rel_str = "A person I know about"
-            if features["first name"] and features["last name"]:
-                name_str = "whose name is {0} {1}".format(features["first name"], features["last name"])
-            elif features["first name"]:
-                name_str = "whose first name is {0}".format(features["first name"])
-            elif features["last name"]:
-                name_str = "whose last name is {0}".format(features["last name"])
-            else:
-                name_str = "whose name I don't know"
-            rep = "{0} {1}".format(rel_str, name_str)
-            features["rep"] = rep
-            return features[feature_type]
+                return None
+        # Appearance
+        elif feature_type == "skin color":
+            return self.mind.mental_models[other_person].face.skin.color
+        elif feature_type == "head size":
+            return self.mind.mental_models[other_person].face.head.size
+        elif feature_type == "head shape":
+            return self.mind.mental_models[other_person].face.head.shape
+        elif feature_type == "hair length":
+            return self.mind.mental_models[other_person].face.hair.length
+        elif feature_type == "hair color":
+            return self.mind.mental_models[other_person].face.hair.color
+        elif feature_type == "eyebrow size":
+            return self.mind.mental_models[other_person].face.eyebrows.size
+        elif feature_type == "eyebrow color":
+            return self.mind.mental_models[other_person].face.eyebrows.color
+        elif feature_type == "mouth size":
+            return self.mind.mental_models[other_person].face.mouth.size
+        elif feature_type == "ear size":
+            return self.mind.mental_models[other_person].face.ears.size
+        elif feature_type == "ear angle":
+            return self.mind.mental_models[other_person].face.ears.angle
+        elif feature_type == "nose size":
+            return self.mind.mental_models[other_person].face.nose.size
+        elif feature_type == "nose shape":
+            return self.mind.mental_models[other_person].face.nose.shape
+        elif feature_type == "eye size":
+            return self.mind.mental_models[other_person].face.eyes.size
+        elif feature_type == "eye shape":
+            return self.mind.mental_models[other_person].face.eyes.shape
+        elif feature_type == "eye color":
+            return self.mind.mental_models[other_person].face.eyes.color
+        elif feature_type == "eye horizontal settedness":
+            return self.mind.mental_models[other_person].face.eyes.horizontal_settedness
+        elif feature_type == "eye vertical settedness":
+            return self.mind.mental_models[other_person].face.eyes.vertical_settedness
+        elif feature_type == "facial hair style":
+            return self.mind.mental_models[other_person].face.facial_hair.style
+        elif feature_type == "freckles":
+            return self.mind.mental_models[other_person].face.distinctive_features.freckles
+        elif feature_type == "birthmark":
+            return self.mind.mental_models[other_person].face.distinctive_features.birthmark
+        elif feature_type == "scar":
+            return self.mind.mental_models[other_person].face.distinctive_features.scar
+        elif feature_type == "tattoo":
+            return self.mind.mental_models[other_person].face.distinctive_features.tattoo
+        elif feature_type == "glasses":
+            return self.mind.mental_models[other_person].face.distinctive_features.glasses
+        elif feature_type == "sunglasses":
+            return self.mind.mental_models[other_person].face.distinctive_features.sunglasses
 
     def get_knowledge_about_place(self, place, feature_type):
         """Return this person's knowledge about this place's feature of the given type."""
         if place not in self.mind.mental_models:
             return None
-        else:
-            features = {
-                "home is apartment": "yes" if self.mind.mental_models[place].apartment else "no",
-                "home block": self.mind.mental_models[place].block,
-                "home address": self.mind.mental_models[place].block,
-                "business block": self.mind.mental_models[place].block,
-                "business address": self.mind.mental_models[place].block,
-            }
-            return features[feature_type]
+        elif feature_type == "home is apartment":
+            return "yes" if self.mind.mental_models[place].apartment else "no"
+        elif feature_type == "business block":
+            return self.mind.mental_models[place].block
+        elif feature_type == "business address":
+            return self.mind.mental_models[place].address
+        elif feature_type == "home block":
+            return self.mind.mental_models[place].block
+        elif feature_type == "home address":
+            return self.mind.mental_models[place].address
 
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
@@ -862,6 +834,7 @@ class Person(object):
             female_partner.impregnated_by = self if female_partner is partner else partner
             female_partner.conception_year = self.game.year
             female_partner.due_date = self.game.ordinal_date + 270
+            female_partner.pregnant = True
 
     def marry(self, partner):
         """Marry partner."""
@@ -931,10 +904,7 @@ class Person(object):
 
     def retire(self):
         """Retire from an occupation."""
-        if self.occupation:
-            event.Retirement(subject=self)
-        else:
-            pass  # Allows this to be called in a stupid but convenient manner
+        event.Retirement(subject=self)
 
     def depart_city(self):
         """Depart the city (and thus the simulation), never to return."""
@@ -1204,8 +1174,6 @@ class Person(object):
                         self._exchange_information(interlocutor=person)
 
     def _exchange_information(self, interlocutor):
-        """Exchange information with this person."""
-        # TODO HAVE PEOPLE EXCHANGE INFORMATION ABOUT LANDMARKS AS WELL
         config = self.game.config
         # Decide how many people they'll talk about -- this depends on both parties'
         # extroversion personality components and how good of friends they are
@@ -1219,31 +1187,28 @@ class Person(object):
         )
         if how_many_people_we_talk_about < config.amount_of_people_people_talk_about_floor:
             how_many_people_we_talk_about = config.amount_of_people_people_talk_about_floor
-        # Figure out the N most salient people, where N = how_many_people_we_talk_about
+        # Figure out the N most salient people, where N = how_many_people_we_talk_about (or
+        # the how many total people these guys know about, if that's less)
         all_the_people_we_know_about = set(self.mind.mental_models) | set(interlocutor.mind.mental_models)
-        if how_many_people_we_talk_about < len(all_the_people_we_know_about):
-            how_many_people_we_talk_about = len(all_the_people_we_know_about)
-        top_n_most_salient_people = []
-        minimum_salience_to_enter_current_top_n = 0.0
-        my_salience_of_other_people = self.salience_of_other_people
+        my_salience_of_other_people = self.salience_of_other_people  # Attribute accessing is slow -- make local vars
         interlocutor_salience_of_other_people = interlocutor.salience_of_other_people
-        for other_person in all_the_people_we_know_about:
-            if other_person.type == "person":
-                salience_to_me = my_salience_of_other_people.get(other_person, 0.0)  # 0.0 if they aren't in the dict
-                salience_to_them = interlocutor_salience_of_other_people.get(other_person, 0.0)
-                total_salience = salience_to_me + salience_to_them
-                if total_salience > minimum_salience_to_enter_current_top_n:
-                    # Add this person to top N
-                    top_n_most_salient_people.append((total_salience, other_person))
-                    # If this means there's now more than N people in the top N, remove
-                    # the least salient person and update the minimum threshold for entry
-                    if len(top_n_most_salient_people) > how_many_people_we_talk_about:
-                        top_n_most_salient_people.remove(min(top_n_most_salient_people))
-                        minimum_salience_to_enter_current_top_n = min(top_n_most_salient_people)[0]
-        for salience, person in top_n_most_salient_people:
-            self._exchange_information_about_a_person(interlocutor=interlocutor, person_in_question=person)
+        salience_scores = {
+            # Using .get(entity, 0.0) means 0.0 will be returned if entity is not in that dictionary -- i.e.,
+            # it creates a default salience value of 0.0 for cases where a person has no salience value for someone
+            entity: my_salience_of_other_people.get(entity, 0.0)+interlocutor_salience_of_other_people.get(entity, 0.0)
+            for entity in all_the_people_we_know_about if entity.type == "person"
+        }
+        people_we_will_talk_about = (
+            heapq.nlargest(how_many_people_we_talk_about, salience_scores, key=salience_scores.get)
+        )
+        for subject_of_conversation in people_we_will_talk_about:
+            self._exchange_information_about_a_person(
+                interlocutor=interlocutor,
+                person_in_question=subject_of_conversation,
+                total_salience_of_that_person=salience_scores[subject_of_conversation]
+            )
 
-    def _exchange_information_about_a_person(self, interlocutor, person_in_question):
+    def _exchange_information_about_a_person(self, interlocutor, person_in_question, total_salience_of_that_person):
         """Exchange information about a person."""
         # TODO HAVE SALIENCE OF THIS PERSON TO THE TALKERS AFFECT HOW MUCH THEY SAY ABOUT THEM
         config = self.game.config
@@ -1275,10 +1240,6 @@ class Person(object):
                                 feature_type=feature_type
                             )
                         )
-                        # Attribute to the statement the strength of the talker's belief at this moment
-                        statement.teller_belief_strength[feature_type] = talker_belief_facet.strength
-                        if eavesdropping:
-                            eavesdropping.teller_belief_strength[feature_type] = talker_belief_facet.strength
                         # Have the listener consider the new evidence
                         listener.mind.mental_models[person_in_question].consider_new_evidence(
                             feature_type=feature_type, feature_value=str(talker_belief_facet),
@@ -1352,63 +1313,17 @@ class Person(object):
             friendship_component += config.chance_of_interaction_best_friend_component
         return friendship_component
 
-    def update(self):
-        """Update this person at the end of a timestep."""
-        self._update_social_network()
-
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
-        if self.birthday == (self.game.month, self.game.day):
-            self.age = self.game.true_year - self.birth_year
-            if self.age == 18:
-                self.adult = True
-
-    def _update_social_network(self):
-        """Update this person's social network to account for all charge/spark changes on a simulated timestep."""
-        config = self.game.config
-        # Potentially attribute new best friend
-        new_best_friend = self.get_best_friend()
-        if new_best_friend and new_best_friend is not self.best_friend:
-            salience_change = config.salience_increment_from_relationship_change['best friend']
-            old_best_friend = self.best_friend
-            if old_best_friend:
-                self.update_salience_of(entity=old_best_friend, change=-salience_change)  # Notice the minus sign
-            self.update_salience_of(entity=new_best_friend, change=salience_change)
-            self.best_friend = new_best_friend
-        # Potentially attribute new worst enemy
-        new_worst_enemy = self.get_worst_enemy()
-        if new_worst_enemy and new_worst_enemy is not self.worst_enemy:
-            salience_change = config.salience_increment_from_relationship_change['worst enemy']
-            old_worst_enemy = self.worst_enemy
-            if old_worst_enemy:
-                self.update_salience_of(entity=old_worst_enemy, change=-salience_change)
-            self.update_salience_of(entity=new_worst_enemy, change=salience_change)
-            self.worst_enemy = new_worst_enemy
-        # Potentially attribute new love interest
-        new_love_interest = self.get_love_interest()
-        if new_love_interest and new_love_interest is not self.love_interest:
-            salience_change = config.salience_increment_from_relationship_change['love interest']
-            old_love_interest = self.love_interest
-            if old_love_interest:
-                self.update_salience_of(entity=old_love_interest, change=-salience_change)
-            self.update_salience_of(entity=new_love_interest, change=salience_change)
-            self.love_interest = new_love_interest
-        # Potentially attribute new significant other
-        new_significant_other = self.get_significant_other()
-        if new_significant_other and new_significant_other is not self.significant_other:
-            salience_change = config.salience_increment_from_relationship_change['significant other']
-            old_significant_other = self.significant_other
-            if old_significant_other:
-                self.update_salience_of(entity=old_significant_other, change=-salience_change)
-            self.update_salience_of(entity=new_significant_other, change=salience_change)
-            self.significant_other = new_significant_other
+        self.age = self.game.true_year - self.birth_year
+        if self.age == 18:
+            self.adult = True
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
-        try:
-            self.salience_of_other_people[entity] += change
-        except KeyError:
-            self.salience_of_other_people[entity] = change
+        self.salience_of_other_people[entity] = (
+            self.salience_of_other_people.get(entity, 0.0) + change
+        )
 
 
 class PersonExNihilo(Person):
@@ -1439,8 +1354,14 @@ class PersonExNihilo(Person):
             self.birth_year = self._init_birth_year(job_level=job_level)
         # Set age given birth year that was attributed
         self.age = self.game.true_year - self.birth_year
-        # Determine a random birthday
+        if self.age >= 18:
+            self.adult = True
+        # Determine a random birthday and add it to the game's listing of all characters' birthdays
         self.birthday = self._get_random_birthday()
+        try:
+            game.birthdays[self.birthday].add(self)
+        except KeyError:
+            game.birthdays[self.birthday] = {self}
         # Since they don't have a parent to name them, generate a name for this person (if
         # they get married outside the city, this will still potentially change, as normal)
         self.first_name, self.middle_name, self.last_name, self.suffix = (

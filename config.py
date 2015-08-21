@@ -914,7 +914,7 @@ class Config(object):
             "declaration": 2,
             "forgetting": 0.001,
         }
-        self.decay_rate_of_evidence_per_timestep = 0.95  # Lose 5% of strength every day
+        self.decay_rate_of_belief_strength_per_day = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (
             self.base_strength_of_evidence_types['observation'] /
             self.base_strength_of_evidence_types["statement"] *

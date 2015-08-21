@@ -32,6 +32,7 @@ class Relationship(object):
             self.compatibility = self._init_get_compatibility()
             self.charge_increment = self._init_determine_charge_increment()
             self.charge = float(self.charge_increment)
+            self.trust = owner.game.config.function_to_determine_trust_charge_boost(charge=self.charge)
             self.spark_increment = self._init_determine_initial_spark_increment()
             self.spark = float(self.spark_increment)
         elif preceded_by:
@@ -40,6 +41,7 @@ class Relationship(object):
             # Inherit the charge increment and current charge of the preceding Acquaintance
             self.charge_increment = float(preceded_by.charge_increment)
             self.charge = preceded_by.charge
+            self.trust = preceded_by.trust
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
             self.spark = preceded_by.spark
@@ -176,14 +178,7 @@ class Relationship(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{0}'s {1} with {2}".format(self.owner.name, self.type, self.subject.name)
-
-    @property
-    def trust(self):
-        """A value representing how much owner trusts subject."""
-        config = self.owner.game.config
-        trust = config.function_to_determine_trust_charge_boost(charge=self.charge)
-        return trust
+        return "{}'s {} with {}".format(self.owner.name, self.type, self.subject.name)
 
     @property
     def age_difference_effect_on_charge_increment(self):
@@ -247,11 +242,15 @@ class Relationship(object):
 
     def progress_relationship(self, missing_days_to_account_for):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""
+        # Attribute accessing is expensive -- set local variables
         config = self.owner.game.config
+        owner = self.owner
+        subject = self.subject
+        charge = self.charge
         # Update data
         self.total_interactions += 1
-        self.where_they_last_met = self.owner.location  # Changes as appropriate
-        self.when_they_last_met = self.owner.game.date
+        self.where_they_last_met = owner.location  # Changes as appropriate
+        self.when_they_last_met = owner.game.date
         # Progress charge, possibly leading to a Friendship or Enmity
         change_to_charge = (
             self.charge_increment * self.age_difference_effect_on_charge_increment *
@@ -259,10 +258,12 @@ class Relationship(object):
         )
         change_to_charge *= missing_days_to_account_for
         self.charge += change_to_charge
-        if self.type != "friendship" and self.charge > config.charge_threshold_friendship:
-            Friendship(owner=self.owner, subject=self.subject, preceded_by=self)
-        elif self.type != "enmity" and self.charge < config.charge_threshold_enmity:
-            Enmity(owner=self.owner, subject=self.subject, preceded_by=self)
+        if self.type != "friendship" and charge > config.charge_threshold_friendship:
+            Friendship(owner=owner, subject=subject, preceded_by=self)
+        elif self.type != "enmity" and charge < config.charge_threshold_enmity:
+            Enmity(owner=owner, subject=subject, preceded_by=self)
+        # Progress trust according to new charge  TODO MAKE TRUST COMPUTATION RICHER
+        self.trust = owner.game.config.function_to_determine_trust_charge_boost(charge=self.charge)
         # Progress spark, possibly leading to a
         self.spark_increment *= config.spark_decay_rate
         change_to_spark = (
@@ -271,21 +272,75 @@ class Relationship(object):
         )
         change_to_spark *= missing_days_to_account_for
         self.spark += change_to_spark
+        # Check if subject is now owner's new best friend, worst enemy, or love interest; if
+        # so, update accordingly
+        self._update_social_network()
         # TODO fix currently dumb way of 'proposing' and divorcing
-        if not self.owner.spouse and not self.subject.spouse and self.spark > 5:
-            if self.owner in self.subject.relationships:
-                if self.subject.relationships[self.owner].spark > 5:
-                    self.owner.marry(self.subject)
-            elif self.owner.spouse in self.owner.relationships:
-                if self.spark > self.owner.relationships[self.owner.spouse] * 2:
-                    self.owner.divorce(partner=self.owner.spouse)
+        if not owner.spouse and not subject.spouse and self.spark > 5:
+            if owner in subject.relationships:
+                if subject.relationships[owner].spark > 5:
+                    owner.marry(subject)
+            elif owner.spouse in owner.relationships:
+                if self.spark > owner.relationships[owner.spouse] * 2:
+                    owner.divorce(partner=owner.spouse)
         self.interacted_this_timestep = True
         # Call this method for the subject's own conception of this relationship
         # to update its attributes according to this interaction
-        if not self.subject.relationships[self.owner].interacted_this_timestep:
-            self.subject.relationships[self.owner].progress_relationship(
+        if not subject.relationships[owner].interacted_this_timestep:
+            subject.relationships[owner].progress_relationship(
                 missing_days_to_account_for=missing_days_to_account_for
             )
+
+    def _update_social_network(self):
+        """Check if this person is your new best friend, worst enemy, or love interest; if so, update accordingly."""
+        config = self.owner.game.config
+        owner, subject = self.owner, self.subject
+        charge, spark = self.charge, self.spark
+        # Potentially attribute new best friend
+        if charge > owner.charge_of_best_friend and subject is not owner.best_friend:
+            salience_change = config.salience_increment_from_relationship_change['best friend']
+            old_best_friend = owner.best_friend
+            if old_best_friend:
+                owner.update_salience_of(entity=old_best_friend, change=-salience_change)  # Notice the minus sign
+            owner.update_salience_of(entity=subject, change=salience_change)
+            owner.best_friend = subject
+            owner.charge_of_best_friend = charge
+        # Potentially remove now former best friend if charge dropped below 0
+        elif subject is owner.best_friend and charge < 0.0:
+            salience_change = config.salience_increment_from_relationship_change['best friend']
+            owner.update_salience_of(entity=subject, change=-salience_change)
+            owner.best_friend = None
+            owner.charge_of_best_friend = 0.0
+        # Potentially attribute new worst enemy
+        if self.charge < owner.charge_of_worst_enemy and subject is not owner.worst_enemy:
+            salience_change = config.salience_increment_from_relationship_change['worst enemy']
+            old_worst_enemy = owner.worst_enemy
+            if old_worst_enemy:
+                owner.update_salience_of(entity=old_worst_enemy, change=-salience_change)
+            owner.update_salience_of(entity=subject, change=salience_change)
+            owner.worst_enemy = subject
+            owner.charge_of_worst_enemy = self.charge
+        # Potentially remove now former worst enemy if charge climbed above 0
+        elif subject is owner.worst_enemy and charge > 0.0:
+            salience_change = config.salience_increment_from_relationship_change['worst_enemy']
+            owner.update_salience_of(entity=subject, change=-salience_change)
+            owner.worst_enemy = None
+            owner.charge_of_worst_enemy = 0.0
+        # Potentially attribute new love interest
+        if self.spark > owner.spark_of_love_interest and subject is not owner.love_interest:
+            salience_change = config.salience_increment_from_relationship_change['love interest']
+            old_love_interest = owner.love_interest
+            if old_love_interest:
+                owner.update_salience_of(entity=old_love_interest, change=-salience_change)
+            owner.update_salience_of(entity=subject, change=salience_change)
+            owner.love_interest = subject
+            owner.spark_of_love_interest = self.spark
+        # Potentially remove now former love interest if spark dropped below 0
+        elif subject is owner.love_interest and spark < 0.0:
+            salience_change = config.salience_increment_from_relationship_change['love interest']
+            owner.update_salience_of(entity=subject, change=-salience_change)
+            owner.love_interest = None
+            owner.spark_of_love_interest = 0.0
 
 
 class Acquaintance(Relationship):
@@ -365,3 +420,5 @@ class Romance(Relationship):
         owner.update_salience_of(
             subject, change=owner.game.config.salience_increment_from_relationship_change['romance']
         )
+        owner.significant_other = subject
+        # TODO AUTOMATICALLY CALL SUBJECT.ROMANCE RIGHT? ROMANCE CAN'T BE UNIDIRECTIONAL, right?
