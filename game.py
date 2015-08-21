@@ -24,7 +24,7 @@ class Game(object):
             datetime.date(*self.config.date_the_founder_dies).toordinal()
         )
         self.time_of_day = "day"
-        self.date = self._get_date()
+        self.date = self.get_date()
         self.city = None
         # Prepare a listing of all in-game events, which will facilitate debugging later
         self.events = []
@@ -33,8 +33,10 @@ class Game(object):
         # event number from Game.assign_event_number(), which also increments the running counter
         self.event_number = 0
         # Prepare a listing of all people born on each day -- this is used to
-        # age people on their birthdays
-        self.birthdays = {}
+        # age people on their birthdays; we start with (2, 29) initialized because
+        # we need to perform a check every March 1 to ensure that all leap-year babies
+        # celebrate their birthday that day on non-leap years
+        self.birthdays = {(2, 29): set()}
         # Prepare various Talk of the Town variables
         self.founder = None  # The person who founds the city -- gets set by self.establish_setting()
         self.lover = None
@@ -236,16 +238,31 @@ class Game(object):
         self.event_number += 1
         return self.event_number
 
-    def _get_date(self):
-        """Return the current full date."""
-        year = datetime.date.fromordinal(self.ordinal_date).year
-        month = datetime.date.fromordinal(self.ordinal_date).month
-        day = datetime.date.fromordinal(self.ordinal_date).day
+    @staticmethod
+    def get_random_day_of_year(year):
+        """Return a randomly chosen day in the given year."""
+        ordinal_date_on_jan_1_of_this_year = datetime.date(year, 1, 1).toordinal()
+        ordinal_date = (
+            ordinal_date_on_jan_1_of_this_year + random.randint(0, 365)
+        )
+        datetime_object = datetime.date.fromordinal(ordinal_date)
+        month, day = datetime_object.month, datetime_object.day
+        return month, day, ordinal_date
+
+    def get_date(self, ordinal_date=None):
+        """Return a pretty-printed date for ordinal date."""
+        if not ordinal_date:
+            ordinal_date = self.ordinal_date
+        year = datetime.date.fromordinal(ordinal_date).year
+        month = datetime.date.fromordinal(ordinal_date).month
+        day = datetime.date.fromordinal(ordinal_date).day
         month_ordinals_to_names = {
             1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June", 7: "July",
             8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
         }
-        date = "{0} of {1} {2}, {3}".format(
+        date = "{} of {} {}, {}".format(
+            # Note: for retconning, the time of day will always be whatever the actual time of day
+            # is at the beginning of the true simulation ("day", I assume), but this shouldn't matter
             self.time_of_day.title(), month_ordinals_to_names[month], day, year
         )
         return date
@@ -446,7 +463,7 @@ class Game(object):
                 print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
             self.month = new_date_tuple.month
             self.day = new_date_tuple.day
-            self.date = self._get_date()
+            self.date = self.get_date()
             # Age any present (not dead, not departed) character whose birthday is today
             if (self.month, self.day) not in self.birthdays:
                 self.birthdays[(self.month, self.day)] = set()
@@ -454,8 +471,14 @@ class Game(object):
                 for person in self.birthdays[(self.month, self.day)]:
                     if person.present:
                         person.grow_older()
+                # Don't forget leap-year babies
+                if (self.month, self.day) == (3, 1):
+                    for person in self.birthdays[(2, 29)]:
+                        if person.present:
+                            person.grow_older()
+
         else:
-            self.date = self._get_date()
+            self.date = self.get_date()
 
     def save_data(self, filename_suffix="_day1"):
         import pickle

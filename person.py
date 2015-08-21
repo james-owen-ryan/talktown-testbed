@@ -50,7 +50,7 @@ class Person(object):
             self.father = None
             self.parents = set()
             self.birth_year = None  # Gets set by PersonExNihilo.__init__()
-            self.birthday = (None, None)  # Gets set by PersonExNihilo._get_random_birthday()
+            self.birthday = (None, None)  # Gets set by PersonExNihilo.get_random_day_of_year()
             # Set attributes pertaining to age
             self.age = None  # Will get initialized by PersonExNihilo.__init__()
             self.adult = True if self.age >= 18 else False
@@ -1394,12 +1394,8 @@ class PersonExNihilo(Person):
         (due to the attendant trouble of having to then make sure the person was indeed
         born on a leap year).
         """
-        ordinal_date_on_jan_1_of_birth_year = datetime.date(self.birth_year, 1, 1).toordinal()
-        ordinal_date_of_random_birth_day_that_year = (
-            ordinal_date_on_jan_1_of_birth_year + random.randint(0, 365)
-        )
-        datetime_object = datetime.date.fromordinal(ordinal_date_of_random_birth_day_that_year)
-        birthday = (datetime_object.month, datetime_object.day)
+        month, day, _ = self.game.get_random_day_of_year(year=self.birth_year)
+        birthday = (month, day)
         return birthday
 
     @staticmethod
