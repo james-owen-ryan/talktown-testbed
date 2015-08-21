@@ -1234,6 +1234,7 @@ class Person(object):
                 eavesdropping = None
             for feature_type, prob in config.chance_someones_feature_comes_up_in_conversation_about_them:
                 if random.random() < prob:
+                    # Have talker convey information about feature_type of person_in_question
                     if talker.get_knowledge_about_person(other_person=person_in_question, feature_type=feature_type):
                         talker_belief_facet = (
                             talker.mind.mental_models[person_in_question].get_facet_to_this_belief_of_type(
