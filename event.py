@@ -5,7 +5,7 @@ from corpora import Names
 from residence import House
 
 
-# TODO ARE RETCONNED EVENTS GETTING APPROPRIATE DATES ATTRIBUTED?
+# TODO HOW TO GIVE RETCONNED EVENTS PROPERLY ORDERED EVENT NUMBERS?
 
 # TODO ACTUALLY HAVE ADOPTIONS AND MAKE SURE THEY PROPERLY UPDATE SALIENCE
 
@@ -16,10 +16,14 @@ class Event(object):
     def __init__(self, game):
         """Initialize an Event object."""
         self.year = game.year
-        self.month = game.month
-        self.day = game.day
-        self.date = game.date
-        self.ordinal_date = game.ordinal_date
+        if self.year < game.city.founded:  # This event is being retconned; generate a random day
+            self.month, self.day, self.ordinal_date = game.get_random_day_of_year(year=self.year)
+            self.date = game.get_date(ordinal_date=self.ordinal_date)
+        else:
+            self.month = game.month
+            self.day = game.day
+            self.ordinal_date = game.ordinal_date
+            self.date = game.date
         # Also request and attribute an event number, so that we can later
         # determine the precise ordering of events that happen on the same timestep
         self.event_number = game.assign_event_number(new_event=self)
