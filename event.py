@@ -536,6 +536,13 @@ class Divorce(Event):
             spouse2.cousins | spouse2.nieces | spouse2.nephews
         )
         self._have_divorcees_fall_out_of_love(divorcees=self.subjects, config=config)
+        # Update salience values
+        salience_change = (
+            spouse1.game.config.salience_increment_from_relationship_change['significant other'] +
+            spouse1.game.config.salience_increment_from_relationship_change['immediate family']
+        )
+        spouse1.update_salience_of(entity=spouse2, change=-salience_change)  # Notice the minus sign
+        spouse2.update_salience_of(entity=spouse1, change=-salience_change)
 
     @staticmethod
     def _have_divorcees_fall_out_of_love(divorcees, config):
@@ -849,9 +856,16 @@ class Marriage(Event):
         spouse2.significant_other = spouse1
         spouse1.immediate_family.add(spouse2)
         spouse2.immediate_family.add(spouse1)
-        spouse1.extended_family |= spouse2.extended_family
+        spouse1.extended_family |= spouse2.extended_family  # TODO THIS IS NOT TOTALLY ACCURATE
         spouse2.extended_family |= spouse1.extended_family
         self._cease_grieving_of_former_spouses(newlyweds=self.subjects)
+        # Update salience values
+        salience_change = (
+            spouse1.game.config.salience_increment_from_relationship_change['significant other'] +
+            spouse1.game.config.salience_increment_from_relationship_change['immediate family']
+        )
+        spouse1.update_salience_of(entity=spouse2, change=salience_change)
+        spouse2.update_salience_of(entity=spouse1, change=salience_change)
 
     @staticmethod
     def _cease_grieving_of_former_spouses(newlyweds):
@@ -920,7 +934,7 @@ class Marriage(Event):
                     family_members_that_will_move.add(kid)
         if home_they_will_move_into is not spouse2.home:
             family_members_that_will_move.add(spouse2)
-            # Have (non-adult) children of spouse1, if any, also move too
+            # Have (non-adult) children of spouse2, if any, also move too
             for kid in spouse2.kids:
                 if kid.present and not kid.marriage and kid.home is spouse2.home:
                     family_members_that_will_move.add(kid)
