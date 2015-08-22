@@ -769,40 +769,110 @@ class Person(object):
     def relation_to_me(self, person):
         """Return the primary (immediate) familial relation to another person, if any."""
         if person in self.greatgrandparents:
-            if person.male:
-                relation = 'Greatgrandfather'
-            else:
-                relation = 'Greatgrandmother'
+            return 'greatgrandfather' if person.male else 'greatgrandmother'
         elif person in self.grandparents:
-            if person.male:
-                relation = 'Grandfather'
-            else:
-                relation = 'Grandmother'
+            return 'grandfather' if person.male else 'grandmother'
         elif person is self.father:
-            relation = 'Father'
+            return 'father'
         elif person is self.mother:
-            relation = 'Mother'
+            return 'mother'
         elif person in self.aunts:
-            relation = 'Aunt'
+            return 'aunt'
         elif person in self.uncles:
-            relation = 'Uncle'
+            return 'uncle'
         elif person in self.brothers:
-            relation = 'Brother'
+            return 'brother'
         elif person in self.sisters:
-            relation = 'Sister'
+            return 'sister'
         elif person in self.cousins:
-            relation = 'Cousin'
+            return 'cousin'
         elif person in self.sons:
-            relation = 'Son'
+            return 'son'
         elif person in self.daughters:
-            relation = 'Daughter'
+            return 'daughter'
         elif person in self.nephews:
-            relation = 'Nephew'
+            return 'nephew'
         elif person in self.nieces:
-            relation = 'Niece'
+            return 'niece'
+        elif person is self.spouse:
+            return 'husband' if person.male else 'wife'
+        elif person.spouse in self.siblings:
+            return 'brother in law' if person.male else 'sister in law'
+        elif person.spouse in self.kids:
+            return 'son in law' if person.male else 'daughter in law'
+        elif person in self.spouse.parents:
+            return 'father in law' if person.male else 'mother in law'
+        elif person in self.spouse.sons:
+            return 'stepson'
+        elif person in self.spouse.daughters:
+            return 'stepdaughter'
+        elif self.mother and person is self.mother.spouse:
+            return 'stepfather' if person.male else 'stepmother'
+        elif self.father and person is self.father.spouse:
+            return 'stepfather' if person.male else 'stepmother'
+        elif person is self.best_friend:
+            return 'best friend'
+        elif person is self.worst_enemy:
+            return 'worst enemy'
+        elif person is self.significant_other:
+            return 'boyfriend' if person.male else 'girlfriend'
+        # elif person is self.love_interest:  # Commented out because no one would say this
+        #     return 'love interest'
+        elif person in self.coworkers:
+            return 'coworker'
+        elif person in self.enemies:
+            return 'enemy'
+        elif any(p for p in self.parents if person is p.significant_other):
+            p = next(p for p in self.parents if person is p.significant_other)
+            return "{}'s {}".format(
+                'father' if p.male else 'mother', 'boyfriend' if person.male else 'girlfriend'
+            )
+        elif any(k for k in self.kids if person is k.significant_other):
+            k = next(k for k in self.kids if person is k.significant_other)
+            return "{}'s {}".format(
+                'son' if k.male else 'daughter', 'boyfriend' if person.male else 'girlfriend'
+            )
+        elif any(s for s in self.siblings if person is s.significant_other):
+            s = next(s for s in self.siblings if person is s.significant_other)
+            return "{}'s {}".format(
+                'brother' if s.male else 'sister', 'boyfriend' if person.male else 'girlfriend'
+            )
+        elif self.spouse and person is self.spouse.best_friend:
+            return "{}'s best friend".format('husband' if self.spouse.male else 'wife')
+        elif self.mother and person is self.mother.best_friend:
+            return "mother's best friend"
+        elif self.father and person is self.father.best_friend:
+            return "father's best friend"
+        elif any(s for s in self.siblings if person is s.best_friend):
+            s = next(s for s in self.siblings if person is s.best_friend)
+            return "{}'s best friend".format('brother' if s.male else 'sister')
+        elif any(k for k in self.kids if person is k.best_friend):
+            k = next(k for k in self.kids if person is k.best_friend)
+            return "{}'s best friend".format('son' if k.male else 'daughter')
+        elif self.spouse and person in self.spouse.coworkers:
+            return "{}'s coworker".format('husband' if self.spouse.male else 'wife')
+        elif self.mother and person in self.mother.coworkers:
+            return "mother's coworker"
+        elif self.father and person in self.father.coworkers:
+            return "father's coworker"
+        elif person in self.friends:
+            return 'friend'
+        elif self.spouse and person in self.spouse.friends:
+            return "{}'s friend".format('husband' if self.spouse.male else 'wife')
+        elif self.mother and person in self.mother.friends:
+            return "mother's friend"
+        elif self.father and person in self.father.friends:
+            return "father's friend"
+        elif any(k for k in self.kids if person in k.friends):
+            k = next(k for k in self.kids if person in k.friends)
+            return "{}'s friend".format('son' if k.male else 'daughter')
+        elif any(s for s in self.siblings if person in s.friends):
+            s = next(s for s in self.siblings if person in s.friends)
+            return "{}'s friend".format('brother' if s.male else 'sister')
+        elif person in self.acquaintances:
+            return 'acquaintance'
         else:
-            relation = None
-        return relation
+            return None
 
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
