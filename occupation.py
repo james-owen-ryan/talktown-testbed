@@ -45,6 +45,10 @@ class Occupation(object):
         )
         for resident in company.city.residents:
             resident.update_salience_of(entity=self.person, change=boost_in_salience_for_this_job_level)
+        # Update all relationships this person has to reflect the new job-level difference
+        # between this person and the respective other person
+        for other_person in self.person.relationships:
+            self.person.relationships[other_person].update_spark_and_charge_increments_for_job_level_difference()
 
     def __str__(self):
         """Return string representation."""

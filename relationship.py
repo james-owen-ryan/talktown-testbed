@@ -45,6 +45,17 @@ class Relationship(object):
             # Inherit the spark increment and current spark of the preceding Acquaintance
             self.spark_increment = float(preceded_by.spark_increment)
             self.spark = preceded_by.spark
+        # Prepare variables that specify the effects that age and job-level differences
+        # will have on this relationship's charge and spark values; these are set immediately
+        # by update_spark_and_charge_increments_for_new_age_difference() and update_spark_and_
+        # charge_increments_for_new_job_level_difference, which will also be called whenever a
+        # member of this relationship has a birthday or gets a new occupation
+        self.age_difference_effect_on_charge_increment = None
+        self.age_difference_effect_on_spark_increment = None
+        self.job_level_difference_effect_on_charge_increment = None
+        self.job_level_difference_effect_on_spark_increment = None
+        self.update_spark_and_charge_increments_for_new_age_difference()
+        self.update_spark_and_charge_increments_for_job_level_difference()
         # This attribute records whether the other person has already called the
         # progress_relationship() method of this object on this timestep -- it gets
         # set to True by progress_relationship() and then turned back to False by
@@ -180,65 +191,57 @@ class Relationship(object):
         """Return string representation."""
         return "{}'s {} with {}".format(self.owner.name, self.type, self.subject.name)
 
-    @property
-    def age_difference_effect_on_charge_increment(self):
-        """Return the effect that age difference between owner and subject currently has on the charge increment."""
+    def update_spark_and_charge_increments_for_new_age_difference(self):
+        """Set a new charge increment for this relationship that reflects a new age difference.
+
+        This gets called whenever a member of this relationship has a birthday.
+        """
         config = self.owner.game.config
-        charge_intensity_reduction_due_to_age_difference = (
+        # Set new age-difference charge effect
+        self.age_difference_effect_on_charge_increment = (
             config.function_to_determine_how_age_difference_reduces_charge_intensity(
                 age1=self.owner.age, age2=self.subject.age
             )
         )
-        return charge_intensity_reduction_due_to_age_difference
+        # Set new age-difference spark effect
+        self.age_difference_effect_on_spark_increment = (
+            config.function_to_determine_how_age_difference_reduces_charge_intensity(
+                age1=self.owner.age, age2=self.subject.age
+            )
+        )
 
-    @property
-    def job_level_difference_effect_on_charge_increment(self):
-        """Return the effect that job-level difference currently has on the charge increment."""
+    def update_spark_and_charge_increments_for_job_level_difference(self):
+        """Set a new charge increment for this relationship that reflects a new job-level difference.
+
+        This gets called whenever a member of this relationship gets a promotion.
+
+        TODO once you implement people getting fired, make sure this gets called whenever that happens.
+        """
         config = self.owner.game.config
-        if self.owner.occupation:  # TODO if someone is retired give them job level of their last job
-            owner_job_level = self.owner.occupation.level
+        owner = self.owner
+        subject = self.subject
+        if owner.occupation:
+            owner_job_level = owner.occupation.level
+        elif owner.retired:
+            owner_job_level = owner.occupations[-1].level
         else:
             owner_job_level = 0.1
-        if self.subject.occupation:
-            subject_job_level = self.subject.occupation.level
+        if subject.occupation:
+            subject_job_level = subject.occupation.level
+        elif subject.retired:
+            subject_job_level = subject.occupations[-1].level
         else:
             subject_job_level = 0.1
-        charge_intensity_reduction_due_to_job_level_difference = (
+        self.job_level_difference_effect_on_charge_increment = (
             config.function_to_determine_how_job_level_difference_reduces_charge_intensity(
                 job_level1=owner_job_level, job_level2=subject_job_level
             )
         )
-        return charge_intensity_reduction_due_to_job_level_difference
-
-    @property
-    def age_difference_effect_on_spark_increment(self):
-        """Return the effect that age difference between owner and subject currently has on the spark increment."""
-        config = self.owner.game.config
-        spark_reduction_due_to_age_difference = (
-            config.function_to_determine_how_age_difference_reduces_charge_intensity(
-                age1=self.owner.age, age2=self.subject.age
-            )
-        )
-        return spark_reduction_due_to_age_difference
-
-    @property
-    def job_level_difference_effect_on_spark_increment(self):
-        """Return the effect that job-level difference currently has on the charge increment."""
-        config = self.owner.game.config
-        if self.owner.occupation:  # TODO if someone is retired give them job level of their last job
-            owner_job_level = self.owner.occupation.level
-        else:
-            owner_job_level = 0.1
-        if self.subject.occupation:
-            subject_job_level = self.subject.occupation.level
-        else:
-            subject_job_level = 0.1
-        spark_reduction_due_to_job_level_difference = (
+        self.job_level_difference_effect_on_spark_increment = (
             config.function_to_determine_how_job_level_difference_reduces_spark_increment(
                 job_level1=owner_job_level, job_level2=subject_job_level
             )
         )
-        return spark_reduction_due_to_job_level_difference
 
     def progress_relationship(self, missing_days_to_account_for):
         """Increment charge by its increment, and then potentially start a Friendship or Enmity."""

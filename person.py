@@ -776,7 +776,7 @@ class Person(object):
         """
         if person is self.spouse:
             return 'husband' if person.male else 'wife'
-        if person in self.father:
+        if person is self.father:
             return 'father'
         elif person is self.mother:
             return 'mother'
@@ -814,7 +814,9 @@ class Person(object):
         in the number of relationships that it checks for. While the former is meant
         for quick character decision making, this method should be used for things
         like dialogue generation, where performance is much less important than
-        richness and expressivity.
+        richness and expressivity. Because this method is meant to be used to generate
+        dialogue, it won't return specific relationships like 'first cousin, once removed',
+        because everyday people don't know or reference these relationships.
         """
         if person in self.greatgrandparents:
             return 'greatgrandfather' if person.male else 'greatgrandmother'
@@ -858,6 +860,10 @@ class Person(object):
             return 'stepfather' if person.male else 'stepmother'
         elif self.father and person is self.father.spouse:
             return 'stepfather' if person.male else 'stepmother'
+        elif self.greatgrandparents & person.greatgrandparents:
+            return 'second cousin'
+        elif self.greatgrandparents & person.siblings:
+            return 'great uncle' if person.male else 'great aunt'
         elif person is self.best_friend:
             return 'best friend'
         elif person is self.worst_enemy:
@@ -1446,9 +1452,19 @@ class Person(object):
 
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
-        self.age = self.game.true_year - self.birth_year
-        if self.age == 18:
+        self.age = age = self.game.true_year - self.birth_year
+        if age == 18:
             self.adult = True
+        # If you haven't in a while (in the logarithmic sense, rather than absolute
+        # sense), update all relationships you have to reflect the new age difference
+        # between you and the respective other person
+        if age in (
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18,
+            20, 23, 26, 29, 33, 37, 41, 45, 50, 55, 60,
+            65, 70, 75, 80, 85, 90, 95, 100
+        ):
+            for other_person in self.relationships:
+                self.relationships[other_person].update_spark_and_charge_increments_for_new_age_difference()
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
