@@ -800,11 +800,11 @@ class Person(object):
             return 'brother in law' if person.male else 'sister in law'
         elif person.spouse in self.kids:
             return 'son in law' if person.male else 'daughter in law'
-        elif person in self.spouse.parents:
+        elif self.spouse and person in self.spouse.parents:
             return 'father in law' if person.male else 'mother in law'
-        elif person in self.spouse.sons:
+        elif self.spouse and person in self.spouse.sons:
             return 'stepson'
-        elif person in self.spouse.daughters:
+        elif self.spouse and person in self.spouse.daughters:
             return 'stepdaughter'
         elif self.mother and person is self.mother.spouse:
             return 'stepfather' if person.male else 'stepmother'
@@ -1162,7 +1162,7 @@ class Person(object):
         score = 0
         for relative in relatives_in_town:
             relation_to_me = self.relation_to_me(person=relative)
-            pull_toward_someone_of_that_relation = config.pull_to_live_near_family[relation_to_me]
+            pull_toward_someone_of_that_relation = config.pull_to_live_near_family.get(relation_to_me, 0.0)
             dist = self.city.getDistFrom(relative.home.lot,lot) + 1.0  # To avoid ZeroDivisionError
             score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
         # Score for proximity to friends (only positively)
