@@ -21,13 +21,13 @@ class Relationship(object):
         self.subject = subject
         self.preceded_by = preceded_by
         self.succeeded_by = None
-        self.where_they_met = self.owner.location
-        self.when_they_met = self.owner.game.date
-        self.where_they_last_met = self.owner.location  # Changes as appropriate
-        self.when_they_last_met = self.owner.game.date
+        self.where_they_met = owner.location
+        self.when_they_met = owner.game.date
+        self.where_they_last_met = owner.location  # Changes as appropriate
+        self.when_they_last_met = owner.game.date
         self.total_interactions = 0
         # Set this as the primary relationship owner has with subject
-        owner.relationships[self.subject] = self
+        owner.relationships[subject] = self
         if not preceded_by:
             self.compatibility = self._init_get_compatibility()
             self.charge_increment = self._init_determine_charge_increment()
@@ -68,11 +68,12 @@ class Relationship(object):
         From source [4]: # People with similar openness, extroversion, and agreeableness are
         more likely to become friends.
         """
+        owner, subject = self.owner, self.subject
         # Get absolute difference in o, e, a
         diff = (
-            abs(self.owner.personality.openness_to_experience - self.subject.personality.openness_to_experience) +
-            abs(self.owner.personality.extroversion - self.subject.personality.extroversion) +
-            abs(self.owner.personality.agreeableness - self.subject.personality.agreeableness)
+            abs(owner.personality.openness_to_experience - subject.personality.openness_to_experience) +
+            abs(owner.personality.extroversion - subject.personality.extroversion) +
+            abs(owner.personality.agreeableness - subject.personality.agreeableness)
         )
         # Normalize absolute difference to -1.0 to 1.0 compatibility scale (from its natural
         # 0.0-6.0 increasing difference scale, given each personality trait is on the scale -1 to 1)
