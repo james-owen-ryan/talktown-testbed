@@ -766,8 +766,56 @@ class Person(object):
         elif feature_type == "home address":
             return self.mind.mental_models[place].address
 
+    def _common_familial_relation_to_me(self, person):
+        """Return the immediate common familial relation to the given person, if any.
+
+        This method gets called by decision-making methods that get executed often,
+        since it runs much more quickly than relation_to_me, which itself is much
+        richer in the number of relations it checks for. Basically, this method
+        is meant for quick decision making, and relation_to_me for dialogue generation.
+        """
+        if person is self.spouse:
+            return 'husband' if person.male else 'wife'
+        if person in self.father:
+            return 'father'
+        elif person is self.mother:
+            return 'mother'
+        elif person in self.brothers:
+            return 'brother'
+        elif person in self.sisters:
+            return 'sister'
+        elif person in self.aunts:
+            return 'aunt'
+        elif person in self.uncles:
+            return 'uncle'
+        elif person in self.sons:
+            return 'son'
+        elif person in self.daughters:
+            return 'daughter'
+        elif person in self.cousins:
+            return 'cousin'
+        elif person in self.nephews:
+            return 'nephew'
+        elif person in self.nieces:
+            return 'niece'
+        elif person in self.greatgrandparents:
+            return 'greatgrandfather' if person.male else 'greatgrandmother'
+        elif person in self.grandparents:
+            return 'grandfather' if person.male else 'grandmother'
+        elif person in self.grandchildren:
+            return 'grandson' if person.male else 'granddaughter'
+        else:
+            return None
+
     def relation_to_me(self, person):
-        """Return the primary (immediate) familial relation to another person, if any."""
+        """Return the primary relation to another person, if any.
+
+        This method is much richer than _common_familial_relation_to_me
+        in the number of relationships that it checks for. While the former is meant
+        for quick character decision making, this method should be used for things
+        like dialogue generation, where performance is much less important than
+        richness and expressivity.
+        """
         if person in self.greatgrandparents:
             return 'greatgrandfather' if person.male else 'greatgrandmother'
         elif person in self.grandparents:
@@ -1165,26 +1213,26 @@ class Person(object):
         into a vacant home.
         """
         config = self.game.config
+        pull_to_live_near_that_relation = config.pull_to_live_near_family
+        pull_to_live_near_a_friend = config.pull_to_live_near_a_friend
         desire_to_live_near_family = self._determine_desire_to_move_near_family()
         # Score home for its proximity to family (either positively or negatively, depending); only
         # consider family members that are alive, in town, and not living with you already (i.e., kids)
-        relatives_in_town =  set([
-            f for f in self.extended_family if f.present and f.home is not self.home
-        ])
+        relatives_in_town = {f for f in self.extended_family if f.present and f.home is not self.home}
         score = 0
         for relative in relatives_in_town:
-            relation_to_me = self.relation_to_me(person=relative)
-            pull_toward_someone_of_that_relation = config.pull_to_live_near_family.get(relation_to_me, 0.0)
-            dist = self.city.getDistFrom(relative.home.lot,lot) + 1.0  # To avoid ZeroDivisionError
+            relation_to_me = self._common_familial_relation_to_me(person=relative)
+            pull_toward_someone_of_that_relation = pull_to_live_near_that_relation.get(relation_to_me, 0.0)
+            dist = self.city.getDistFrom(relative.home.lot, lot) + 1.0  # To avoid ZeroDivisionError
             score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
         # Score for proximity to friends (only positively)
         for friend in self.friends:
-            dist =  self.city.getDistFrom(friend.home.lot,lot) + 1.0
-            score += config.pull_to_live_near_a_friend / dist
+            dist = self.city.getDistFrom(friend.home.lot, lot) + 1.0
+            score += pull_to_live_near_a_friend / dist
         # Score for proximity to workplace (only positively) -- will be only criterion for person
         # who is new to the city (and thus knows no one there yet)
         if self.occupation:
-            dist = self.city.getDistFrom(self.occupation.company.lot,lot) + 1.0
+            dist = self.city.getDistFrom(self.occupation.company.lot, lot) + 1.0
             score += config.pull_to_live_near_workplace / dist
         return score
 
