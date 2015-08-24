@@ -547,6 +547,18 @@ class Game(object):
         else:
             raise Exception('There is no one in {} named {}'.format(self.city.name, name))
 
+    def find_by_hex(self, hex_value):
+        """Return person whose ID in memory has the given hex value."""
+        int_of_hex = int(hex_value, 16)
+        try:
+            person = next(
+                p for p in self.city.residents | self.city.deceased | self.city.departed if
+                id(p) == int_of_hex
+            )
+            return person
+        except StopIteration:
+            raise Exception('There is no one with that hex ID')
+
 
 g = Game()
 g.establish_setting()
