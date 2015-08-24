@@ -976,10 +976,20 @@ class Person(object):
         """Retire from an occupation."""
         event.Retirement(subject=self)
 
-    def depart_city(self):
-        """Depart the city (and thus the simulation), never to return."""
+    def depart_city(self, forced_nuclear_family=set()):
+        """Depart the city (and thus the simulation), never to return.
+
+        forced_nuclear_family is reserved for Marriage events in which the newlyweds
+        cannot find housing in the city and so depart, potentially with their entire
+        new mixed family. In this case, a special procedure (_move_spouses_and_any_kids_
+        in_together) determines which stepchildren will move with them; because this
+        procedure returns a different set of people than self.nuclear_family does, we
+        need to allow the assertion of a forced nuclear family for Marriage-related
+        Departures.
+        """
         event.Departure(subject=self)
-        for person in self.nuclear_family - {self}:
+        nuclear_family = forced_nuclear_family if forced_nuclear_family else self.nuclear_family
+        for person in nuclear_family - {self}:
             if person in self.city.residents:
                 event.Departure(subject=person)
 
@@ -1076,7 +1086,9 @@ class Person(object):
                 # A vacant home was chosen
                 home_to_move_into = self._purchase_home(home=chosen_home_or_lot)
             else:
-                raise Exception("A person is attempting to secure a lot or home that is not known to be vacant.")
+                raise Exception(
+                    "{} has secured a lot or home that is not known to be vacant.".format(self.name)
+                )
         else:
             home_to_move_into = None  # The city is full; this will spark a departure
         return home_to_move_into

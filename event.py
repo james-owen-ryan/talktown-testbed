@@ -822,11 +822,11 @@ class Marriage(Event):
         self._update_newlywed_attributes()
         self._have_newlyweds_pool_money_together()
         self._have_one_spouse_and_possibly_stepchildren_take_the_others_name()
+        self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
         if self.city:
             self._decide_and_enact_new_living_arrangements()
             # If they're not in the city yet (marriage between two PersonsExNihilo during
             # world generation), living arrangements will be made once they move into it
-        self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
 
     def __str__(self):
         """Return string representation."""
@@ -898,9 +898,27 @@ class Marriage(Event):
                 if stepchild.age <= config.age_after_which_stepchildren_will_not_take_stepparent_name:
                     stepchild.change_name(new_last_name=other_spouse.last_name, reason=self)
 
+    def _decide_whether_children_will_get_hyphenated_names(self):
+        """Decide whether any children resulting from this marriage will get hyphenated names.
+
+        TODO: Have this be affected by newlywed personalities.
+        """
+        if self.subjects[0].last_name != self.subjects[1].last_name:  # First, make sure they have different surnames
+            config = self.subjects[0].game.config
+            if any(s for s in self.subjects if s.last_name.hyphenated):
+                choice = False
+            elif random.random() < config.chance_newlyweds_decide_children_will_get_hyphenated_surname:
+                choice = True
+            else:
+                choice = False
+        else:
+            choice = False
+        return choice
+
     def _decide_and_enact_new_living_arrangements(self):
         """Handle the full pipeline from finding a place to moving into it."""
         home_they_will_move_into = self._decide_where_newlyweds_will_live()
+        # This method may spark a departure if they are not able to secure housing in town
         self._move_spouses_and_any_kids_in_together(home_they_will_move_into=home_they_will_move_into)
 
     def _decide_where_newlyweds_will_live(self):
@@ -942,25 +960,10 @@ class Marriage(Event):
             for family_member in family_members_that_will_move:
                 family_member.move(new_home=home_they_will_move_into, reason=self)
         else:
-            for family_member in family_members_that_will_move:
-                family_member.depart_city()
-
-    def _decide_whether_children_will_get_hyphenated_names(self):
-        """Decide whether any children resulting from this marriage will get hyphenated names.
-
-        TODO: Have this be affected by newlywed personalities.
-        """
-        if self.subjects[0].last_name != self.subjects[1].last_name:  # First, make sure they have different surnames
-            config = self.subjects[0].game.config
-            if any(s for s in self.subjects if s.last_name.hyphenated):
-                choice = False
-            elif random.random() < config.chance_newlyweds_decide_children_will_get_hyphenated_surname:
-                choice = True
-            else:
-                choice = False
-        else:
-            choice = False
-        return choice
+            # This will spark a Departure for each person in family_members_that_will_move
+            self.subjects[0].depart_city(
+                forced_nuclear_family=family_members_that_will_move
+            )
 
 
 class Move(Event):
