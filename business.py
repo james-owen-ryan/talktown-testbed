@@ -429,6 +429,17 @@ class ApartmentComplex(Business):
         return residents
 
 
+class Bakery(Business):
+    """A bakery."""
+
+    def __init__(self, owner):
+        """Initialize a Bakery object.
+
+        @param owner: The owner of this business.
+        """
+        super(Bakery, self).__init__(owner)
+
+
 class Bank(Business):
     """A bank."""
 
@@ -462,6 +473,28 @@ class Barbershop(Business):
         super(Barbershop, self).__init__(owner)
 
 
+class BlacksmithShop(Business):
+    """A blacksmith business."""
+
+    def __init__(self, owner):
+        """Initialize a BlacksmithShop object.
+
+        @param owner: The owner of this business.
+        """
+        super(BlacksmithShop, self).__init__(owner)
+
+
+class Brewery(Business):
+    """A brewery."""
+
+    def __init__(self, owner):
+        """Initialize a Brewery object.
+
+        @param owner: The owner of this business.
+        """
+        super(Brewery, self).__init__(owner)
+
+
 class BusDepot(Business):
     """A bus depot."""
 
@@ -471,6 +504,39 @@ class BusDepot(Business):
         @param owner: The owner of this business.
         """
         super(BusDepot, self).__init__(owner)
+
+
+class ButcherShop(Business):
+    """A butcher business."""
+
+    def __init__(self, owner):
+        """Initialize a ButcherShop object.
+
+        @param owner: The owner of this business.
+        """
+        super(ButcherShop, self).__init__(owner)
+
+
+class CandyStore(Business):
+    """A candy store."""
+
+    def __init__(self, owner):
+        """Initialize a CandyStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(CandyStore, self).__init__(owner)
+
+
+class CarpentryCompany(Business):
+    """A carpentry company."""
+
+    def __init__(self, owner):
+        """Initialize a CarpentryCompany object.
+
+        @param owner: The owner of this business.
+        """
+        super(CarpentryCompany, self).__init__(owner)
 
 
 class Cemetery(Business):
@@ -504,6 +570,17 @@ class CityHall(Business):
         self.city.city_hall = self
 
 
+class ClothingStore(Business):
+    """A store that sells clothing only; i.e., not a department store."""
+
+    def __init__(self, owner):
+        """Initialize a ClothingStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(ClothingStore, self).__init__(owner)
+
+
 class ConstructionFirm(Business):
     """A construction firm."""
 
@@ -533,6 +610,17 @@ class ConstructionFirm(Business):
         return building_constructions
 
 
+class Dairy(Business):
+    """A store where milk is sold and from which milk is distributed."""
+
+    def __init__(self, owner):
+        """Initialize a Dairy object.
+
+        @param owner: The owner of this business.
+        """
+        super(Dairy, self).__init__(owner)
+
+
 class DayCare(Business):
     """A day care center for young children."""
 
@@ -544,15 +632,70 @@ class DayCare(Business):
         super(DayCare, self).__init__(owner)
 
 
-class OptometryClinic(Business):
-    """An optometry clinic."""
+class Deli(Business):
+    """A delicatessen."""
 
     def __init__(self, owner):
-        """Initialize an OptometryClinic object.
+        """Initialize a Deli object.
 
         @param owner: The owner of this business.
         """
-        super(OptometryClinic, self).__init__(owner)
+        super(Deli, self).__init__(owner)
+
+
+class DepartmentStore(Business):
+    """A department store."""
+
+    def __init__(self, owner):
+        """Initialize a DepartmentStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(DepartmentStore, self).__init__(owner)
+
+
+class Diner(Business):
+    """A diner."""
+
+    def __init__(self, owner):
+        """Initialize a Diner object.
+
+        @param owner: The owner of this business.
+        """
+        super(Diner, self).__init__(owner)
+
+
+class Distillery(Business):
+    """A whiskey distillery."""
+
+    def __init__(self, owner):
+        """Initialize a Distillery object.
+
+        @param owner: The owner of this business.
+        """
+        super(Distillery, self).__init__(owner)
+
+
+class DrugStore(Business):
+    """A drug store."""
+
+    def __init__(self, owner):
+        """Initialize a DrugStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(DrugStore, self).__init__(owner)
+
+
+class Farm(Business):
+    """A farm on a tract in a city."""
+
+    def __init__(self, owner):
+        """Initialize a Farm object.
+
+        @param owner: The owner of this business.
+        """
+        super(Farm, self).__init__(owner)
 
 
 class FireStation(Business):
@@ -565,6 +708,61 @@ class FireStation(Business):
         """
         super(FireStation, self).__init__(owner)
         self.city.fire_station = self
+
+
+class Foundry(Business):
+    """A metal foundry."""
+
+    def __init__(self, owner):
+        """Initialize a Foundry object.
+
+        @param owner: The owner of this business.
+        """
+        super(Foundry, self).__init__(owner)
+
+
+class FurnitureStore(Business):
+    """A furniture store."""
+
+    def __init__(self, owner):
+        """Initialize a FurnitureStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(FurnitureStore, self).__init__(owner)
+
+
+class GeneralStore(Business):
+    """A general store."""
+
+    def __init__(self, owner):
+        """Initialize a GeneralStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(GeneralStore, self).__init__(owner)
+
+
+class GroceryStore(Business):
+    """A grocery store."""
+
+    def __init__(self, owner):
+        """Initialize a GroceryStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(GroceryStore, self).__init__(owner)
+
+
+class HardwareStore(Business):
+    """A hardware store."""
+
+    def __init__(self, owner):
+        """Initialize a HardwareStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(HardwareStore, self).__init__(owner)
 
 
 class Hospital(Business):
@@ -599,6 +797,39 @@ class Hotel(Business):
         super(Hotel, self).__init__(owner)
 
 
+class Inn(Business):
+    """An inn."""
+
+    def __init__(self, owner):
+        """Initialize an Inn object.
+
+        @param owner: The owner of this business.
+        """
+        super(Inn, self).__init__(owner)
+
+
+class InsuranceCompany(Business):
+    """An insurance company."""
+
+    def __init__(self, owner):
+        """Initialize an InsuranceCompany object.
+
+        @param owner: The owner of this business.
+        """
+        super(InsuranceCompany, self).__init__(owner)
+
+
+class JeweleryShop(Business):
+    """A jewelry company."""
+
+    def __init__(self, owner):
+        """Initialize a JeweleryShop object.
+
+        @param owner: The owner of this business.
+        """
+        super(JeweleryShop, self).__init__(owner)
+
+
 class LawFirm(Business):
     """A law firm."""
 
@@ -627,12 +858,39 @@ class LawFirm(Business):
         return filed_name_changes
 
 
+class OptometryClinic(Business):
+    """An optometry clinic."""
+
+    def __init__(self, owner):
+        """Initialize an OptometryClinic object.
+
+        @param owner: The owner of this business.
+        """
+        super(OptometryClinic, self).__init__(owner)
+
+
+class PaintingCompany(Business):
+    """A painting company."""
+
+    def __init__(self, owner):
+        """Initialize a PaintingCompany object."""
+        super(PaintingCompany, self).__init__(owner)
+
+
 class Park(Business):
     """A park on a tract in a city."""
 
     def __init__(self, owner):
         """Initialize a Park object."""
         super(Park, self).__init__(owner)
+
+
+class Pharmacy(Business):
+    """A pharmacy."""
+
+    def __init__(self, owner):
+        """Initialize a Pharmacy object."""
+        super(Pharmacy, self).__init__(owner)
 
 
 class PlasticSurgeryClinic(Business):
@@ -646,6 +904,17 @@ class PlasticSurgeryClinic(Business):
         super(PlasticSurgeryClinic, self).__init__(owner)
 
 
+class PlumbingCompany(Business):
+    """A plumbing company."""
+
+    def __init__(self, owner):
+        """Initialize a PlumbingCompany object.
+
+        @param owner: The owner of this business.
+        """
+        super(PlumbingCompany, self).__init__(owner)
+
+
 class PoliceStation(Business):
     """A police station."""
 
@@ -656,6 +925,17 @@ class PoliceStation(Business):
         """
         super(PoliceStation, self).__init__(owner)
         self.city.police_station = self
+
+
+class Quarry(Business):
+    """A rock quarry."""
+
+    def __init__(self, owner):
+        """Initialize a Quarry object.
+
+        @param owner: The owner of this business.
+        """
+        super(Quarry, self).__init__(owner)
 
 
 class RealtyFirm(Business):
@@ -701,6 +981,17 @@ class School(Business):
         self.city.school = self
 
 
+class ShoemakerShop(Business):
+    """A shoemaker's company."""
+
+    def __init__(self, owner):
+        """Initialize an ShoemakerShop object.
+
+        @param owner: The owner of this business.
+        """
+        super(ShoemakerShop, self).__init__(owner)
+
+
 class Supermarket(Business):
     """A supermarket on a lot in a city."""
 
@@ -712,6 +1003,17 @@ class Supermarket(Business):
         super(Supermarket, self).__init__(owner)
 
 
+class TailorShop(Business):
+    """A tailor."""
+
+    def __init__(self, owner):
+        """Initialize a TailorShop object.
+
+        @param owner: The owner of this business.
+        """
+        super(TailorShop, self).__init__(owner)
+
+
 class TattooParlor(Business):
     """A tattoo parlor."""
 
@@ -721,6 +1023,17 @@ class TattooParlor(Business):
         @param owner: The owner of this business.
         """
         super(TattooParlor, self).__init__(owner)
+
+
+class Tavern(Business):
+    """A place where alcohol is served in the 19th century, maintained by a barkeeper."""
+
+    def __init__(self, owner):
+        """Initialize a Tavern object.
+
+        @param owner: The owner of this business.
+        """
+        super(Tavern, self).__init__(owner)
 
 
 class TaxiDepot(Business):

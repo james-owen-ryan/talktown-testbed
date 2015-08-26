@@ -110,11 +110,6 @@ class Occupation(object):
                 resident.update_salience_of(entity=self.person, change=-change_in_salience_for_this_job_level)
 
 
-##################################
-##      BUSINESS-INDEPENDENT    ##
-##################################
-
-
 class Cashier(Occupation):
     """A cashier at a business."""
 
@@ -143,7 +138,7 @@ class Manager(Occupation):
     """A manager at a business."""
 
     def __init__(self, person, company, shift):
-        """Initialize an Owner object.
+        """Initialize a Manager object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
@@ -155,12 +150,24 @@ class Secretary(Occupation):
     """A secretary at a business."""
 
     def __init__(self, person, company, shift):
-        """Initialize an Secretary object.
+        """Initialize a Secretary object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(Secretary, self).__init__(person=person, company=company, shift=shift)
+
+
+class Proprietor(Occupation):
+    """A proprietor of a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Proprietor object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Proprietor, self).__init__(person=person, company=company, shift=shift)
 
 
 class Owner(Occupation):
@@ -175,9 +182,16 @@ class Owner(Occupation):
         super(Owner, self).__init__(person=person, company=company, shift=shift)
 
 
-##################################
-##      BUSINESS-SEMIDEPENDENT  ##
-##################################
+class Bottler(Occupation):
+    """A bottler at a brewery, dairy, or distillery."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Bottler object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Bottler, self).__init__(person=person, company=company, shift=shift)
 
 
 class Groundskeeper(Occupation):
@@ -204,9 +218,16 @@ class Nurse(Occupation):
         super(Nurse, self).__init__(person=person, company=company, shift=shift)
 
 
-##################################
-##      BUSINESS-DEPENDENT      ##
-##################################
+class Apprentice(Occupation):
+    """An apprentice at a blacksmith shop."""
+
+    def __init__(self, person, company, shift):
+        """Initialize an Apprentice object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Apprentice, self).__init__(person=person, company=company, shift=shift)
 
 
 class Architect(Occupation):
@@ -282,16 +303,16 @@ class Concierge(Occupation):
         super(Concierge, self).__init__(person=person, company=company, shift=shift)
 
 
-class ConstructionWorker(Occupation):
-    """A construction worker at a construction firm."""
+class Builder(Occupation):
+    """A builder at a construction firm."""
 
     def __init__(self, person, company, shift):
-        """Initialize a ConstructionWorker object.
+        """Initialize a Builder object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
         """
-        super(ConstructionWorker, self).__init__(person=person, company=company, shift=shift)
+        super(Builder, self).__init__(person=person, company=company, shift=shift)
 
 
 class DayCareProvider(Occupation):
@@ -348,16 +369,16 @@ class Firefighter(Occupation):
         super(Firefighter, self).__init__(person=person, company=company, shift=shift)
 
 
-class HairStylist(Occupation):
-    """A hair stylist at a barbershop."""
+class Barber(Occupation):
+    """A barber at a barbershop."""
 
     def __init__(self, person, company, shift):
-        """Initialize a HairStylist object.
+        """Initialize a Barber object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
         """
-        super(HairStylist, self).__init__(person=person, company=company, shift=shift)
+        super(Barber, self).__init__(person=person, company=company, shift=shift)
 
 
 class HotelMaid(Occupation):
@@ -550,3 +571,483 @@ class Waiter(Occupation):
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(Waiter, self).__init__(person=person, company=company, shift=shift)
+
+
+class Baker(Occupation):
+    """A baker at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Baker object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Baker, self).__init__(person=person, company=company, shift=shift)
+
+
+class Barkeeper(Occupation):
+    """A barkeeper at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Barkeeper object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Barkeeper, self).__init__(person=person, company=company, shift=shift)
+
+
+class Blacksmith(Occupation):
+    """A blacksmith at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Blacksmith object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Blacksmith, self).__init__(person=person, company=company, shift=shift)
+
+
+class Brewer(Occupation):
+    """A brewer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Brewer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Brewer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Bricklayer(Occupation):
+    """A bricklayer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Bricklayer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Bricklayer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Busboy(Occupation):
+    """A busboy at a restaurant."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Busboy object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Busboy, self).__init__(person=person, company=company, shift=shift)
+
+
+class Butcher(Occupation):
+    """A butcher at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Butcher object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Butcher, self).__init__(person=person, company=company, shift=shift)
+
+
+class Carpenter(Occupation):
+    """A carpenter at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Carpenter object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Carpenter, self).__init__(person=person, company=company, shift=shift)
+
+
+class Clothier(Occupation):
+    """A clothier at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Clothier object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Clothier, self).__init__(person=person, company=company, shift=shift)
+
+
+class Cook(Occupation):
+    """A cook at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Cook object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Cook, self).__init__(person=person, company=company, shift=shift)
+
+
+class Cooper(Occupation):
+    """A cooper at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Cooper object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Cooper, self).__init__(person=person, company=company, shift=shift)
+
+
+class Dishwasher(Occupation):
+    """A dishwasher at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Dishwasher object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Dishwasher, self).__init__(person=person, company=company, shift=shift)
+
+
+class Distiller(Occupation):
+    """A distiller at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Distiller object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Distiller, self).__init__(person=person, company=company, shift=shift)
+
+
+class Dressmaker(Occupation):
+    """A dressmaker at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Dressmaker object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Dressmaker, self).__init__(person=person, company=company, shift=shift)
+
+
+class Druggist(Occupation):
+    """A druggist at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Druggist object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Druggist, self).__init__(person=person, company=company, shift=shift)
+
+
+class Farmer(Occupation):
+    """A farmer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Farmer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Farmer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Farmhand(Occupation):
+    """A farmhand at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Farmhand object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Farmhand, self).__init__(person=person, company=company, shift=shift)
+
+
+class Grocer(Occupation):
+    """A grocer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Grocer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Grocer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Innkeeper(Occupation):
+    """A innkeeper at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Innkeeper object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Innkeeper, self).__init__(person=person, company=company, shift=shift)
+
+
+class InsuranceAgent(Occupation):
+    """A insuranceagent at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a InsuranceAgent object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(InsuranceAgent, self).__init__(person=person, company=company, shift=shift)
+
+
+class Jeweler(Occupation):
+    """A jeweler at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Jeweler object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Jeweler, self).__init__(person=person, company=company, shift=shift)
+
+
+class Joiner(Occupation):
+    """A joiner at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Joiner object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Joiner, self).__init__(person=person, company=company, shift=shift)
+
+
+class Laborer(Occupation):
+    """A laborer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Laborer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Laborer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Landlord(Occupation):
+    """A landlord at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Landlord object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Landlord, self).__init__(person=person, company=company, shift=shift)
+
+
+class Milkman(Occupation):
+    """A milkman at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Milkman object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Milkman, self).__init__(person=person, company=company, shift=shift)
+
+
+class Molder(Occupation):
+    """A molder at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Molder object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Molder, self).__init__(person=person, company=company, shift=shift)
+
+
+class Painter(Occupation):
+    """A painter at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Painter object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Painter, self).__init__(person=person, company=company, shift=shift)
+
+
+class Pharmacist(Occupation):
+    """A pharmacist at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Pharmacist object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Pharmacist, self).__init__(person=person, company=company, shift=shift)
+
+
+class Plasterer(Occupation):
+    """A plasterer at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Plasterer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Plasterer, self).__init__(person=person, company=company, shift=shift)
+
+
+class Plumber(Occupation):
+    """A plumber at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Plumber object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Plumber, self).__init__(person=person, company=company, shift=shift)
+
+
+class Puddler(Occupation):
+    """A puddler at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Puddler object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Puddler, self).__init__(person=person, company=company, shift=shift)
+
+
+class Quarryman(Occupation):
+    """A quarryman at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Quarryman object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Quarryman, self).__init__(person=person, company=company, shift=shift)
+
+
+class Seamstress(Occupation):
+    """A seamstress at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Seamstress object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Seamstress, self).__init__(person=person, company=company, shift=shift)
+
+
+class Shoemaker(Occupation):
+    """A shoemaker at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Shoemaker object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Shoemaker, self).__init__(person=person, company=company, shift=shift)
+
+
+class Stocker(Occupation):
+    """A stocker at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Stocker object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Stocker, self).__init__(person=person, company=company, shift=shift)
+
+
+class Stonecutter(Occupation):
+    """A stonecutter at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Stonecutter object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Stonecutter, self).__init__(person=person, company=company, shift=shift)
+
+
+class Tailor(Occupation):
+    """A tailor at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Tailor object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Tailor, self).__init__(person=person, company=company, shift=shift)
+
+
+class Turner(Occupation):
+    """A turner at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Turner object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Turner, self).__init__(person=person, company=company, shift=shift)
+
+
+class Whitewasher(Occupation):
+    """A whitewasher at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Whitewasher object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Whitewasher, self).__init__(person=person, company=company, shift=shift)
+
+
+class Woodworker(Occupation):
+    """A woodworker at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Woodworker object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Woodworker, self).__init__(person=person, company=company, shift=shift)

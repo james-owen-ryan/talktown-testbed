@@ -202,7 +202,7 @@ class Names(object):
             cls.irish_surnames, cls.scandinavian_surnames
         )
         if '-' in source_name:
-            # Butcher one component of the hyphenated name
+            # ButcherShop one component of the hyphenated name
             names_derived_from = source_name.split('-')
             component_to_butcher = random.choice(names_derived_from)
             if component_to_butcher == names_derived_from[0]:

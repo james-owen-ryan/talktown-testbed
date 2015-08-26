@@ -308,7 +308,7 @@ class BusinessConstruction(Event):
             self.construction_firm = architect.company
             self.builders = set([
                 position for position in self.construction_firm.employees if
-                position.__class__.__name__ == 'ConstructionWorker'
+                position.__class__.__name__ == 'Builder'
             ])
             self._remunerate()
             self.architect.building_constructions.add(self)
@@ -744,7 +744,7 @@ class HouseConstruction(Event):
             self.construction_firm = architect.company
             self.builders = set([
                 position for position in self.construction_firm.employees if
-                position.__class__.__name__ == 'ConstructionWorker'
+                position.__class__.__name__ == 'Builder'
             ])
             self._remunerate()
             self.architect.building_constructions.add(self)
