@@ -23,9 +23,6 @@ class Occupation(object):
         # a really tricky pipeline that has to be maintained
         person.occupations.append(self)
         self.level = person.game.config.job_levels[self.__class__]
-        # Set industry and what industry a potential applicant must come from to be hired for this occupation
-        self.industry = person.game.config.industries[self.__class__]
-        self.prerequisite_industry = person.game.config.prerequisite_industries[self.__class__]
         # Update the .coworkers attribute of this person and their new coworkers
         person.coworkers = set()  # Wash out their former coworkers, if any
         person.coworkers = {employee.person for employee in self.company.employees} - {person}

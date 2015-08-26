@@ -364,14 +364,9 @@ class Business(object):
         else:
             candidate_job_level = 0
         if not candidate_job_level >= level_of_this_position:
-            # Make sure they have experience in the right industry, if that's
-            # a requirement of this occupation
-            prerequisite_industry = self.city.game.config.prerequisite_industries[occupation_of_need]
-            if prerequisite_industry:
-                if self.city.game.config.prerequisite_industries[occupation_of_need] == 'Student':
-                    if candidate.college_graduate:
-                        qualified = True
-                elif any(o for o in candidate.occupations if o.industry == prerequisite_industry):
+            # Make sure they have a college degree if one is required to have this occupation
+            if occupation_of_need in self.city.game.config.occupations_requiring_college_degree:
+                if candidate.college_graduate:
                     qualified = True
             else:
                 qualified = True
