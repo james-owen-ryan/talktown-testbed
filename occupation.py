@@ -53,11 +53,11 @@ class Occupation(object):
         """Return string representation."""
         if not self.terminus:
             return "{} at {} since {}".format(
-                self.__class__.__name__, self.company.name, self.hiring.year
+                self.__class__.__name__, self.company.name, self.start_date
             )
         else:
             return "{} at {} {}-{}".format(
-                self.__class__.__name__, self.company.name, self.hiring.year, self.terminus.year
+                self.__class__.__name__, self.company.name, self.start_date, self.end_date
             )
 
     @property
@@ -69,10 +69,7 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
-        try:
-            self.company.employees.remove(self)
-        except KeyError:
-            raise Exception('{} IS THE CULPRIT'.format(self.person.name))
+        self.company.employees.remove(self)
         self.company.former_employees.add(self)
         if self is self.company.owner:
             self.company.former_owners.append(self)
