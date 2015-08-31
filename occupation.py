@@ -65,6 +65,8 @@ class Occupation(object):
         except KeyError:
             raise Exception('{} IS THE CULPRIT'.format(self.person.name))
         self.company.former_employees.add(self)
+        if self is self.company.owner:
+            self.company.former_owners.append(self)
         # If this isn't an in-house promotion, update a bunch of attributes
         in_house_promotion = (isinstance(reason, Hiring) and reason.promotion)
         if not in_house_promotion:

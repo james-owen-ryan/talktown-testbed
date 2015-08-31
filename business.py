@@ -90,6 +90,7 @@ class Business(object):
         self.demolition = None  # Potentially gets set by event.Demolition.__init__()
         self.out_of_business = False  # Potentially gets changed by go_out_of_business()
         self.closed = None  # Year closed
+        self.former_owners = []
 
         print "{} was established on {}".format(self.name, self.city.game.date)
 
