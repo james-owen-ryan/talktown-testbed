@@ -19,6 +19,8 @@ class Occupation(object):
         self.hiring = None  # event.Hiring object holding data about the hiring; gets set by that object's __init__()
         self.end_date = None  # Changed by self.terminate
         self.terminus = None  # Changed by self.terminate
+        self.preceded_by = None  # Employee that preceded this one in its occupation -- gets set by Business.hire()
+        self.succeeded_by = None  # Employee that succeeded this one in its occupation -- gets set by Business.hire()
         # Note: self.person.occupation gets set by Business.hire(), because there's
         # a really tricky pipeline that has to be maintained
         person.occupations.append(self)
@@ -94,7 +96,7 @@ class Occupation(object):
         # for fill that now vacant position (which may cause a hiring chain)
         if not self.company.out_of_business:
             position_that_is_now_vacant = self.__class__
-            self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
+            self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift, to_replace=self)
         # If the person hasn't already been hired to a new position, set their occupation
         # attribute to None
         if self.person.occupation is self:

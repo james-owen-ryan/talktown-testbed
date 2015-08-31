@@ -333,7 +333,7 @@ class Business(object):
         day_shift = set([employee for employee in self.employees if employee.shift == "night"])
         return day_shift
 
-    def hire(self, occupation_of_need, shift):
+    def hire(self, occupation_of_need, shift, to_replace=None):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
         # If you have someone working here who is an apprentice, hire them outright
         if (self.city.game.config.job_levels[occupation_of_need] > self.city.game.config.job_levels[Apprentice] and
@@ -349,6 +349,11 @@ class Business(object):
         # Instantiate the new occupation -- this means that the subject may
         # momentarily have two occupations simultaneously
         new_position = occupation_of_need(person=selected_candidate, company=self, shift=shift)
+        # If this person is being hired to replace a now-former employee, attribute
+        # this new position as the successor to the former one
+        if to_replace:
+            to_replace.succeeded_by = new_position
+            new_position.preceded_by = to_replace
         # Now instantiate a Hiring object to hold data about the hiring
         hiring = Hiring(subject=selected_candidate, company=self, occupation=new_position)
         # Now terminate the person's former occupation, if any (which may cause
