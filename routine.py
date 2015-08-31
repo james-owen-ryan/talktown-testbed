@@ -17,9 +17,6 @@ class Routine(object):
         """Initialize a Routine object."""
         self.person = person
         self.working = False  # Whether or not the person is working at an exact timestep
-        self.businesses_patronized = {}  # Gets set by set_businesses_patronized()
-        if self.person.home:
-            self.set_businesses_patronized()
 
     def __str__(self):
         """Return string representation."""
@@ -39,6 +36,8 @@ class Routine(object):
         if not self.person.adult:
             if self.person.game.time_of_day == "day":
                 location, occasion = self._go_to_school_or_daycare(), 'school'
+                if location is self.person.home:  # They are very young child and living in a city/time without daycare
+                    occasion = 'home'
             else:
                 location, occasion = self.person.home, 'home'  # Kids stay home at night
         elif self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
@@ -74,10 +73,12 @@ class Routine(object):
 
     def _go_to_school_or_daycare(self):
         """Return the school or day care that this child attends."""
-        if self.person.age > 5:
+        if self.person.age > 5 and self.person.city.school:
             school_or_day_care = self.person.city.school
+        elif self.person.age <= 5 and self.person.city.businesses_of_type('DayCare'):
+            school_or_day_care = self.person.city.businesses_of_type('DayCare')[0]
         else:
-            school_or_day_care = self.businesses_patronized["DayCare"]
+            school_or_day_care = self.person.home  # They stay home
         return school_or_day_care
 
     def _go_in_public(self):
@@ -92,7 +93,7 @@ class Routine(object):
             else:
                 location, occasion = self.person.home, 'home'
         # In case something went wrong, e.g., there's no business of a type
-        # that this person patronizes, just have them stay at home
+        # in this town currently, just have them stay at home
         if not location:
             location, occasion = self.person.home, 'home'
         return location, occasion
@@ -102,25 +103,24 @@ class Routine(object):
         config = self.person.game.config
         # TODO -- if someone goes on one of these errands, have them actually get
         # served by that business, e.g., have them actually get a haircut
-        if random.random() < config.chance_someone_gets_a_haircut_some_day:
-            business_type_of_errand = 'Barbershop'
-        elif random.random() < config.chance_someone_gets_contacts_or_glasses:
-            business_type_of_errand = 'OptometryClinic'
-        elif random.random() < config.chance_someone_gets_a_tattoo_some_day:
-            business_type_of_errand = 'TattooParlor'
-        elif random.random() < config.chance_someone_gets_plastic_surgery_some_day:
-            business_type_of_errand = 'PlasticSurgeryClinic'
+        # TODO -- have people become loyal to certain businesses (or maybe not because such small town?)
+        # Determine the type of service this errand will be for
+        x = random.random()
+        service_type_probs = config.probabilities_of_errand_for_service_type[self.person.game.time_of_day]
+        service_type_of_errand = next(
+            # See config.py to understand what's going on here
+            e for e in service_type_probs if service_type_probs[e][0] <= x <= service_type_probs[e][1]
+        )[1]
+        businesses_in_town_providing_that_service = [
+            b for b in self.person.city.companies if service_type_of_errand in b.services
+        ]
+        if businesses_in_town_providing_that_service:
+            location = random.choice(businesses_in_town_providing_that_service)
         else:
-            x = random.random()
-            business_type_of_errand = next(
-                # See config.py to understand what's going on here
-                e for e in config.probabilities_of_errand_to_business_type[self.person.game.time_of_day] if
-                e[0][0] <= x <= e[0][1]
-            )[1]
-        location = self.businesses_patronized[business_type_of_errand]
+            location = None
         # Determine whether the occasion is an errand or just leisure -- in the case of location
-        # being None, which happens if the person has no business of the given type that they
-        # patronize, simply set occasion to None, since _go_in_public() will end up having the
+        # being None, which happens if there is no business of that type in town currently,
+        # simply set occasion to None, since _go_in_public() will end up having the
         # person staying home anyway (and will change occasion to 'home')
         if location:
             occasion = config.business_type_to_occasion_for_visit[location.__class__.__name__]
@@ -198,40 +198,3 @@ class Routine(object):
         ]
         extended_family_they_will_visit = random.choice(extended_family_person_doesnt_live_with)
         return extended_family_they_will_visit
-
-    def set_businesses_patronized(self):
-        """Return the businesses that this person patronizes.
-
-        This currently only returns the businesses nearest to where a person
-        lives, but one could conceive a person going near one where they work or
-        even going out of their way to go to a family member's business, etc. [TODO]
-        """
-        # Compile types of businesses that people visit at least some time in their
-        # normal routine living
-        routine_business_types = [
-            "Bank", "Bar", "Barbershop", "BusDepot", "DayCare", "Hotel", "OptometryClinic",
-            "Park", "Restaurant", "Supermarket", "TaxiDepot", "Cemetery",
-            "TattooParlor", "PlasticSurgeryClinic", "University"
-        ]
-        # Ascertain and record the closest businesses for each of those types
-        businesses_patronized = {}
-        for business_type in routine_business_types:
-            businesses_patronized[business_type] = (
-                self.person.city.nearest_business_of_type(
-                    lot=self.person.home.lot, business_type=business_type
-                )
-            )
-        self.businesses_patronized = businesses_patronized
-
-    def update_business_patronized_of_specific_type(self, business_type):
-        """Update which business of a specific type this person patronized.
-
-        This gets called whenever a new business of this type is built in town, since
-        people may decide to patronize the new business instead of the business they used
-        to patronize.
-        """
-        self.businesses_patronized[business_type] = (
-            self.person.city.nearest_business_of_type(
-                lot=self.person.home.lot, business_type=business_type
-            )
-        )

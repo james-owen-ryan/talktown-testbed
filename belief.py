@@ -182,20 +182,24 @@ class MentalModel(object):
             entity_to_transfer_belief_facet_from = (
                 self._decide_entity_to_transfer_belief_facet_from(feature_type=feature_type)
             )
-            if result == 't' and entity_to_transfer_belief_facet_from:  # Transference
+            # Transference
+            if result == 't' and entity_to_transfer_belief_facet_from:
                 belief_facet_obj = self._transfer_belief_facet(
                     feature_type=feature_type,
                     entity_being_transferred_from=entity_to_transfer_belief_facet_from
                 )
-            elif result == 'm':  # Mutation
+            # Mutation
+            elif result == 'm' and feature_type not in config.feature_types_that_do_not_mutate:
                 belief_facet_obj = self._mutate_belief_facet(
                     feature_type=feature_type, facet_being_mutated=current_belief_facet
                 )
-            else:  # Forgetting
+            # Forgetting
+            else:
                 belief_facet_obj = self._forget_belief_facet(
                     feature_type=feature_type
                 )
-        else:  # Confabulation
+        # Confabulation
+        else:
             belief_facet_obj = self._confabulate_belief_facet(
                 feature_type=feature_type, current_belief_facet=current_belief_facet
             )
@@ -978,7 +982,6 @@ class PersonMentalModel(MentalModel):
 
     def _confabulate_home_facet(self, feature_type):
         """Confabulate a facet to a belief about a person's home."""
-        config = self.owner.game.config
         confabulated_home = random.choice(list(self.subject.city.dwelling_places))
         confabulated_feature_str = confabulated_home.name
         confabulated_object_itself = confabulated_home
@@ -1039,13 +1042,13 @@ class PersonMentalModel(MentalModel):
             mutated_feature_str, mutated_object_itself = self._mutate_workplace_facet(
                 facet_being_mutated=facet_being_mutated
             )
-        elif feature_type == "job shift":
+        else:  # "job shift"
             mutated_feature_str = "night" if facet_being_mutated == "day" else "day"
             mutated_object_itself = None
-        else:   # job title
-            mutated_feature_str, mutated_object_itself = self._mutate_job_title_facet(
-                facet_being_mutated=facet_being_mutated
-            )
+        # else:   # job title
+        #     mutated_feature_str, mutated_object_itself = self._mutate_job_title_facet(
+        #         facet_being_mutated=facet_being_mutated
+        #     )
         return mutated_feature_str, mutated_object_itself
 
     def _mutate_workplace_facet(self, facet_being_mutated):
@@ -1064,31 +1067,36 @@ class PersonMentalModel(MentalModel):
         mutated_feature_str = mutated_object_itself.name
         return mutated_feature_str, mutated_object_itself
 
-    def _mutate_job_title_facet(self, facet_being_mutated):
-        """Mutate a belief about a person's job title."""
-        # If you have a belief about where this person works, mutate their job title
-        # to another job title attested at that business
-        if self.subject.occupation and self.subject.occupation.company:
-        # if self.owner.mind.mental_models[self.subject].occupation.company:
-            # other_job_titles_attested_there = [
-            #     e.__class__.__name__ for e in
-            #     self.owner.mind.mental_models[self.subject].occupation.company.employees if
-            #     e.__class__.__name__ != facet_being_mutated
-            # ]
-            other_job_titles_attested_there = [
-                e.__class__.__name__ for e in
-                self.subject.occupation.company.employees if
-                e.__class__.__name__ != facet_being_mutated
-            ]
-            mutated_feature_str = random.choice(other_job_titles_attested_there)
-            mutated_object_itself = None
-        else:
-            # I guess just choose a random job title?
-            random_company = random.choice(list(self.owner.city.companies))
-            random_job_title = random.choice(list(random_company.employees)).__class__.__name__
-            mutated_feature_str = random_job_title
-            mutated_object_itself = None
-        return mutated_feature_str, mutated_object_itself
+    # I'M REMOVING THIS BECAUSE I DON'T KNOW WHAT TO DO WHEN A WORKPLACE HAS ONLY ONE
+    # JOB TITLE, LIKE A BUTCHER SHOP, ETC.
+    # def _mutate_job_title_facet(self, facet_being_mutated):
+    #     """Mutate a belief about a person's job title."""
+    #     # If you have a belief about where this person works, mutate their job title
+    #     # to another job title attested at that business
+    #     if self.subject.occupation and self.subject.occupation.company:
+    #     # if self.owner.mind.mental_models[self.subject].occupation.company:
+    #         # other_job_titles_attested_there = [
+    #         #     e.__class__.__name__ for e in
+    #         #     self.owner.mind.mental_models[self.subject].occupation.company.employees if
+    #         #     e.__class__.__name__ != facet_being_mutated
+    #         # ]
+    #         other_job_titles_attested_there = [
+    #             e.__class__.__name__ for e in
+    #             self.subject.occupation.company.employees if
+    #             e.__class__.__name__ != facet_being_mutated
+    #         ]
+    #         if len(other_job_titles_attested_there) > 1:
+    #             mutated_feature_str = random.choice(other_job_titles_attested_there)
+    #             mutated_object_itself = None
+    #             return mutated_feature_str, mutated_object_itself
+    #         else:
+    #             # This isn't really mutable, so just return 'CNM', None, which means
+    #             # a mutation will in fact not happen
+    #             return None, None
+    #     else:
+    #         # This isn't really mutable, so just return None, None, which means
+    #         # a mutation will in fact not happen
+    #         return None, None
 
     def _mutate_home_belief_facet(self, feature_type, facet_being_mutated):
         """Mutate a belief facet pertaining to a person's home."""

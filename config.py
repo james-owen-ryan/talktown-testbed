@@ -13,10 +13,12 @@ class Config(object):
                 #################
                 ##  WORLD GEN  ##
                 #################
+        self.chance_of_a_coal_mine_at_time_of_town_founding = 0.2
+        self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
-        self.date_the_founder_dies = (1980, 10, 18)
-        self.date_city_gets_founded = (1910, 10, 18)  # Date world gen begins
-        # City generation
+        self.date_gameplay_begins = (1979, 8, 19)
+        self.date_city_gets_founded = (1839, 8, 19)  # Date world gen begins
+        # City generation (in a topological sense)
         self.loci = 3
         self.samples = 32
         self.size = 16
@@ -26,15 +28,6 @@ class Config(object):
         self.chance_city_gets_named_for_founder = 0.3
         self.chance_avenue_gets_numbered_name = 0.0
         self.chance_street_gets_numbered_name = 0.8
-        self.public_institutions_started_upon_city_founding = (
-            CityHall, Hospital, FireStation, PoliceStation, School, University, Park, Cemetery
-        )
-        self.businesses_started_upon_city_founding = (
-            # Excluding construction firm, reality firm, and apartment complexes built by founder
-            Bank, RealtyFirm, Hotel, Supermarket, BusDepot, TaxiDepot, Barbershop, DayCare,
-            Restaurant, Restaurant, OptometryClinic, LawFirm, TattooParlor, PlasticSurgeryClinic,
-            Bar, Bar,
-        )
         # City founder
         self.age_of_city_founder = 30
         self.age_of_city_founders_spouse = 30
@@ -74,30 +67,65 @@ class Config(object):
         self.chance_someone_visiting_someone_visits_immediate_family = 0.3
         self.chance_someone_visiting_someone_visits_friend = 0.5
         self.chance_someone_visiting_someone_visits_extended_family = 0.
-        self.probabilities_of_errand_to_business_type = {
+        self.relative_frequencies_of_errands_for_service_types = {
             # Keep in mind, this person will be spending the entire day/night cycle there
-            "day": (
-                ((0.00, 0.30), 'Restaurant'),
-                ((0.30, 0.55), 'Supermarket'),
-                ((0.55, 0.65), 'Park'),
-                ((0.65, 0.75), 'Bank'),
-                ((0.75, 0.80), 'BusDepot'),
-                ((0.80, 0.85), 'Bar'),
-                ((0.85, 0.88), 'Cemetery'),
-                ((0.88, 0.90), 'TaxiDepot'),
-                ((0.90, 0.95), 'Hotel'),
-                ((0.95, 1.00), 'University'),
+            "day": {
+                'baked goods': 3,
+                'dairy': 3,
+                'meat': 3,
+                'clothes': 2.5,
+                'banking': 2,
+                'furniture': 2,
+                'haircut': 2,
+                'restaurant': 2,
+                'park': 2,
+                'medicine': 1.5,
+                'shoes': 1.5,
+                'tools': 1.5,
+                'insurance': 1,
+                'jewelry': 1,
+                'confections': 0.5,
+                'bar': 0.25,
+                'dentist': 0.25,
+                'eyeglasses': 0.15,
+                'cemetery': 0.1,
+                'tattoo': 0.1,
+                'plastic surgery': 0.0,
+                'transport': 0.0,  # No taxis or buses in this version
+            },
+            "night": {
+                'restaurant': 5,
+                'bar': 5,
+                'cemetery': 0.05,
+                'park': 0.05,
+                'tattoo': 0.01,
+                'baked goods': 0,
+                'banking': 0,
+                'clothes': 0,
+                'confections': 0,
+                'dairy': 0,
+                'dentist': 0,
+                'eyeglasses': 0,
+                'furniture': 0,
+                'haircut': 0,
+                'insurance': 0,
+                'jewelry': 0,
+                'meat': 0,
+                'medicine': 0,
+                'plastic surgery': 0.0,
+                'shoes': 0,
+                'tools': 0,
+                'transport': 0.0,  # No taxis or buses in this version
+            },
+        }
+        # Fit a probability distribution to the above relative frequencies
+        self.probabilities_of_errand_for_service_type = {
+            "day": self.fit_probability_distribution(
+                relative_frequencies_dictionary=self.relative_frequencies_of_errands_for_service_types["day"]
             ),
-            "night": (
-                ((0.00, 0.35), 'Restaurant'),
-                ((0.35, 0.70), 'Bar'),
-                ((0.70, 0.80), 'Hotel'),
-                ((0.80, 0.88), 'Supermarket'),
-                ((0.88, 0.95), 'TaxiDepot'),
-                ((0.95, 0.97), 'BusDepot'),
-                ((0.97, 0.99), 'Park'),
-                ((0.99, 1.00), 'Cemetery'),
-            ),
+            "night": self.fit_probability_distribution(
+                relative_frequencies_dictionary=self.relative_frequencies_of_errands_for_service_types["night"]
+            )
         }
         self.business_type_to_occasion_for_visit = {
             'Bar': 'leisure',
@@ -114,13 +142,50 @@ class Config(object):
             'TattooParlor': 'errand',
             'TaxiDepot': 'errand',
             'University': 'errand',
+            'ApartmentComplex': 'errand',
+            'Bakery': 'errand',
+            'BlacksmithShop': 'errand',
+            'Brewery': 'leisure',
+            'ButcherShop': 'errand',
+            'CandyStore': 'leisure',
+            'CarpentryCompany': 'errand',
+            'CityHall': 'errand',
+            'ClothingStore': 'errand',
+            'CoalMine': 'errand',
+            'ConstructionFirm': 'errand',
+            'Dairy': 'errand',
+            'DayCare': 'errand',
+            'Deli': 'leisure',
+            'DentistOffice': 'errand',
+            'DepartmentStore': 'leisure',
+            'Diner': 'leisure',
+            'Distillery': 'leisure',
+            'DrugStore': 'errand',
+            'Farm': 'errand',
+            'FireStation': 'errand',
+            'Foundry': 'errand',
+            'FurnitureStore': 'errand',
+            'GeneralStore': 'errand',
+            'GroceryStore': 'errand',
+            'HardwareStore': 'errand',
+            'Hospital': 'errand',
+            'Inn': 'errand',
+            'InsuranceCompany': 'errand',
+            'JeweleryShop': 'errand',
+            'LawFirm': 'errand',
+            'PaintingCompany': 'errand',
+            'Pharmacy': 'errand',
+            'PlumbingCompany': 'errand',
+            'PoliceStation': 'errand',
+            'Quarry': 'errand',
+            'RealtyFirm': 'errand',
+            'School': 'errand',
+            'ShoemakerShop': 'errand',
+            'TailorShop': 'errand',
+            'Tavern': 'leisure',
         }
-        self.errand_business_types = ('Supermarket', 'Bank', 'BusDepot', 'Cemetery', 'TaxiDepot', 'University')
-        self.leisure_business_types = ('Restaurant', 'Park', 'Bar', 'Hotel')
-        self.chance_someone_gets_a_haircut_some_day = 0.02
-        self.chance_someone_gets_contacts_or_glasses = 0.002
-        self.chance_someone_gets_a_tattoo_some_day = 0.001  # Face tattoo, of course
-        self.chance_someone_gets_plastic_surgery_some_day = 0.001
+        # self.errand_business_types = ('Supermarket', 'Bank', 'BusDepot', 'Cemetery', 'TaxiDepot', 'University')
+        # self.leisure_business_types = ('Restaurant', 'Park', 'Bar', 'Hotel')
         # Socializing
         # The chance someone will spark up an interaction with someone else has to
         # do with their extroversion, openness to experience (if they don't know
@@ -201,7 +266,7 @@ class Config(object):
                 ###############
 
         # Misc
-        self.age_people_start_working = 16
+        self.age_people_start_working = 14
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Housing
         self.number_of_apartment_units_per_complex = 8
@@ -219,9 +284,9 @@ class Config(object):
                 0)
         )
         # Company types that are public resources, i.e., not privately owned
-        self.public_companies = (CityHall, FireStation, Hospital, PoliceStation, School, University, Cemetery, Park)
+        self.public_company_types = (CityHall, FireStation, Hospital, PoliceStation, School, University, Cemetery, Park)
         # Company types that get established on tracts, not on lots
-        self.companies_that_get_established_on_tracts = (Cemetery, Park)  # TODO maybe add University?
+        self.companies_that_get_established_on_tracts = (Cemetery, Park, Farm, Quarry, CoalMine)  # TODO maybe add University?
         # Companies hiring people
         self.preference_to_hire_immediate_family = 3
         self.preference_to_hire_from_within_company = 2
@@ -230,6 +295,7 @@ class Config(object):
         self.dispreference_to_hire_enemy = -1  # TODO modify this according to charge
         self.preference_to_hire_acquaintance = 0.5  # TODO modify this according to charge
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
+        self.chance_a_business_opens_some_timestep = (1/730.) * 2  # About two will open a year
         # This dictionary specifies three things about each business type: the year
         # at which it may be established in the simulation (its advent), the year at
         # which its closure will become highly likely (its demise), and the minimum
@@ -237,13 +303,13 @@ class Config(object):
         # to be established; these are specified so that businesses don't appear
         # anachronistically or otherwise out of place
         self.business_types_advent_demise_and_minimum_population = {
-            ApartmentComplex: (0, 9999, 200),
+            ApartmentComplex: (1910, 9999, 200),
             Bakery: (0, 9999, 50),
             Bank: (0, 9999, 100),
-            Bar: (0, 9999, 30),
+            Bar: (1920, 9999, 100),
             Barbershop: (0, 9999, 50),
-            BlacksmithShop: (0, 1945, 20),
-            Brewery: (0, 9999, 40),
+            BlacksmithShop: (0, 1945, 0),
+            Brewery: (0, 9999, 0),
             BusDepot: (1930, 9999, 9999),
             ButcherShop: (0, 1960, 50),
             CandyStore: (0, 1960, 100),
@@ -251,26 +317,27 @@ class Config(object):
             Cemetery: (0, 9999, 1),
             CityHall: (0, 9999, 100),
             ClothingStore: (0, 1880, 100),
+            CoalMine: (0, 9999, 0),
             ConstructionFirm: (0, 9999, 80),
-            Dairy: (0, 1930, 50),
+            Dairy: (0, 1945, 30),
             DayCare: (1960, 9999, 200),
             Deli: (1880, 9999, 100),
+            DentistOffice: (0, 9999, 75),
             DepartmentStore: (1880, 9999, 200),
-            Diner: (1945, 9999, 50),
-            Distillery: (0, 1919, 40),
-            DrugStore: (0, 1950, 50),
+            Diner: (1945, 9999, 30),
+            Distillery: (0, 1919, 0),
+            DrugStore: (0, 1950, 30),
             Farm: (0, 9999, 0),
             FireStation: (0, 9999, 100),
             Foundry: (1830, 1950, 100),
-            FurnitureStore: (0, 1930, 50),
+            FurnitureStore: (0, 1930, 20),
             GeneralStore: (0, 1930, 20),
-            GroceryStore: (0, 1950, 50),
-            HardwareStore: (0, 9999, 100),
+            GroceryStore: (0, 1950, 20),
+            HardwareStore: (0, 9999, 40),
             Hospital: (0, 9999, 200),
             Hotel: (0, 9999, 50),
             Inn: (0, 9999, 0),
             InsuranceCompany: (0, 9999, 200),
-            Ironworks: (0, 1950, 40),
             JeweleryShop: (0, 9999, 200),
             LawFirm: (0, 9999, 150),
             OptometryClinic: (1900, 9999, 200),
@@ -281,15 +348,195 @@ class Config(object):
             PlumbingCompany: (0, 9999, 100),
             PoliceStation: (0, 9999, 100),
             Quarry: (0, 9999, 0),
-            RealtyFirm: (0, 9999, 100),
+            RealtyFirm: (0, 9999, 80),
             Restaurant: (0, 9999, 50),
             School: (0, 9999, 1),
-            ShoemakerShop: (0, 1900, 50),
+            ShoemakerShop: (0, 1900, 20),
             Supermarket: (1945, 9999, 200),
-            TailorShop: (0, 9999, 50),
+            TailorShop: (0, 9999, 40),
             TattooParlor: (1970, 9999, 300),
+            Tavern: (0, 1920, 20),
             TaxiDepot: (1930, 9999, 9999),
-            University: (0, 9999, 200),
+            University: (0, 9999, 9999),
+        }
+        # Max number of businesses of each type that may be in a city at the same time
+        self.max_number_of_business_types_at_one_time = {
+            ApartmentComplex: 99,
+            Bakery: 2,
+            Bank: 2,
+            Bar: 3,
+            Barbershop: 1,
+            BlacksmithShop: 1,
+            Brewery: 1,
+            BusDepot: 1,
+            ButcherShop: 2,
+            CandyStore: 1,
+            CarpentryCompany: 1,
+            Cemetery: 1,
+            CityHall: 1,
+            ClothingStore: 2,
+            CoalMine: 1,
+            ConstructionFirm: 1,
+            Dairy: 1,
+            DayCare: 1,
+            Deli: 2,
+            DentistOffice: 1,
+            DepartmentStore: 1,
+            Diner: 3,
+            Distillery: 1,
+            DrugStore: 1,
+            Farm: 99,
+            FireStation: 1,
+            Foundry: 1,
+            FurnitureStore: 1,
+            GeneralStore: 1,
+            GroceryStore: 2,
+            HardwareStore: 1,
+            Hospital: 1,
+            Hotel: 1,
+            Inn: 2,
+            InsuranceCompany: 1,
+            JeweleryShop: 1,
+            LawFirm: 1,
+            OptometryClinic: 1,
+            PaintingCompany: 1,
+            Park: 99,
+            Pharmacy: 1,
+            PlasticSurgeryClinic: 1,
+            PlumbingCompany: 2,
+            PoliceStation: 1,
+            Quarry: 1,
+            RealtyFirm: 1,
+            Restaurant: 5,
+            School: 1,
+            ShoemakerShop: 1,
+            Supermarket: 1,
+            TailorShop: 1,
+            TattooParlor: 1,
+            Tavern: 2,
+            TaxiDepot: 1,
+            University: 1,
+        }
+        # Services provided by each business type -- used to determine people's routines
+        self.services_provided_by_business_of_type = {
+            ApartmentComplex: (),
+            Bakery: ('baked goods',),
+            Bank: ('banking',),
+            Bar: ('bar',),
+            Barbershop: ('haircut',),
+            BlacksmithShop: ('tools',),
+            Brewery: (),
+            BusDepot: ('transport',),
+            ButcherShop: ('meat',),
+            CandyStore: ('confections',),
+            CarpentryCompany: (),  # MAYBE RANDOMLY HAVE PLUMBERS, ETC. VISIT HOMES AND BE THERE ON TIMESTEP
+            Cemetery: ('cemetery',),
+            CityHall: (),
+            ClothingStore: ('clothes',),
+            CoalMine: (),
+            ConstructionFirm: (),
+            Dairy: ('dairy',),
+            DayCare: (),
+            Deli: ('restaurant',),
+            DentistOffice: ('dentist',),
+            DepartmentStore: ('clothes', 'furniture', 'tools', 'confections', 'shoes'),
+            Diner: ('restaurant',),
+            Distillery: (),
+            DrugStore: ('medicine', 'confections'),
+            Farm: ('meat', 'dairy'),
+            FireStation: (),
+            Foundry: (),
+            FurnitureStore: ('furniture',),
+            GeneralStore: ('clothes', 'furniture', 'tools', 'confections'),
+            GroceryStore: ('baked goods', 'meat', 'confections', 'dairy'),
+            HardwareStore: ('tools',),
+            Hospital: (),
+            Hotel: ('restaurant', 'bar',),
+            Inn: (),
+            InsuranceCompany: ('insurance',),
+            JeweleryShop: ('jewelry',),
+            LawFirm: (),
+            OptometryClinic: ('eyeglasses',),
+            PaintingCompany: (),
+            Park: ('park',),
+            Pharmacy: ('medicine',),
+            PlasticSurgeryClinic: ('plastic surgery',),
+            PlumbingCompany: (),
+            PoliceStation: (),
+            Quarry: (),
+            RealtyFirm: (),
+            Restaurant: ('restaurant',),
+            School: (),
+            ShoemakerShop: ('shoes',),
+            Supermarket: ('baked goods', 'meat', 'confections', 'medicine', 'dairy'),
+            TailorShop: ('clothes',),
+            TattooParlor: ('tattoo',),
+            Tavern: ('bar', 'restaurant'),
+            TaxiDepot: ('transport',),
+            University: (),
+        }
+        # Chance a business shuts down some timestep -- TODO actually model how well business is doing
+        self.chance_a_business_closes_some_timestep = (1/730.) / 60  # Average business will last 60 years
+        # Chance a business shuts downs ome timestep after its specified demise -- i.e., chance a business
+        # will shut down once its anachronistic, like a blacksmith shop after 1945
+        self.chance_a_business_shuts_down_on_timestep_after_its_demise = (1/730.) / 3  # Average will last 3 years
+        # Occupation classes for owners/proprietors of each business type
+        self.owner_occupations_for_each_business_type = {
+            ApartmentComplex: Owner,
+            Bakery: Baker,
+            Bank: Owner,
+            Bar: Proprietor,
+            Barbershop: Barber,
+            BlacksmithShop: Blacksmith,
+            Brewery: Owner,
+            BusDepot: None,
+            ButcherShop: Butcher,
+            CandyStore: Proprietor,
+            CarpentryCompany: Carpenter,
+            Cemetery: None,
+            CityHall: None,
+            ClothingStore: Clothier,
+            CoalMine: Owner,
+            ConstructionFirm: Architect,
+            Dairy: Milkman,
+            DayCare: DayCareProvider,
+            Deli: Proprietor,
+            DentistOffice: Dentist,
+            DepartmentStore: Owner,
+            Diner: Proprietor,
+            Distillery: Distiller,
+            DrugStore: Druggist,
+            Farm: Farmer,
+            FireStation: None,
+            Foundry: Owner,
+            FurnitureStore: Woodworker,
+            GeneralStore: Proprietor,
+            GroceryStore: Grocer,
+            HardwareStore: Proprietor,
+            Hospital: None,
+            Hotel: Owner,
+            Inn: Innkeeper,
+            InsuranceCompany: InsuranceAgent,
+            JeweleryShop: Jeweler,
+            LawFirm: Lawyer,
+            OptometryClinic: Optometrist,
+            PaintingCompany: Plasterer,
+            Park: None,
+            Pharmacy: Owner,
+            PlasticSurgeryClinic: PlasticSurgeon,
+            PlumbingCompany: Plumber,
+            PoliceStation: None,
+            Quarry: Owner,
+            RealtyFirm: Realtor,
+            Restaurant: Proprietor,
+            School: None,
+            ShoemakerShop: Shoemaker,
+            Supermarket: Owner,
+            TailorShop: Tailor,
+            TattooParlor: TattooArtist,
+            Tavern: Proprietor,
+            TaxiDepot: Owner,
+            University: None,
         }
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
@@ -312,8 +559,8 @@ class Config(object):
                 'additional night': (Bartender, Bartender, Manager,),
             },
             Barbershop: {
-                'day': (Barber,),
-                'night': (Barber,),
+                'day': (),
+                'night': (),
                 'additional day': (Cashier,),
                 'additional night': (),
             },
@@ -330,26 +577,16 @@ class Config(object):
                 'additional night': (Janitor,),
             },
             ConstructionFirm: {
-                'day': (
-                    # Order matters for this one -- architect must come first to build the others'
-                    # houses!
-                    Architect, Secretary, Bricklayer, Builder,
-                ),
+                'day': (Secretary, Bricklayer, Builder),
                 'night': (),
                 'additional day': (Builder, Builder),
                 'additional night': (Janitor,),
             },
             DayCare: {
-                'day': (DayCareProvider,),
+                'day': (),
                 'night': (Janitor,),
                 'additional day': (DayCareProvider, DayCareProvider),
                 'additional night': (),
-            },
-            OptometryClinic: {
-                'day': (Optometrist,),
-                'night': (),
-                'additional day': (Secretary, Nurse),
-                'additional night': (Janitor,),
             },
             FireStation: {
                 'day': (Firefighter,),
@@ -370,13 +607,19 @@ class Config(object):
                 'additional night': (),
             },
             LawFirm: {
-                'day': (Lawyer,),
+                'day': (Secretary,),
                 'night': (),
-                'additional day': (Secretary, Lawyer, Lawyer),
+                'additional day': (Lawyer, Lawyer, Secretary, Lawyer),
+                'additional night': (Janitor,),
+            },
+            OptometryClinic: {
+                'day': (),
+                'night': (),
+                'additional day': (Secretary, Nurse),
                 'additional night': (Janitor,),
             },
             PlasticSurgeryClinic: {
-                'day': (PlasticSurgeon,),
+                'day': (),
                 'night': (),
                 'additional day': (Secretary, Nurse),
                 'additional night': (Janitor,),
@@ -388,13 +631,13 @@ class Config(object):
                 'additional night': (PoliceOfficer,),
             },
             RealtyFirm: {
-                'day': (Secretary, Realtor),
+                'day': (Secretary,),
                 'night': (),
                 'additional day': (Realtor, Realtor),
                 'additional night': (Janitor,),
             },
             Restaurant: {
-                'day': (Proprietor, Waiter, Cook),
+                'day': (Waiter, Cook),
                 'night': (Waiter, Cook),
                 'additional day': (Busboy, Waiter, Manager, Dishwasher),
                 'additional night': (Busboy, Waiter, Manager, Dishwasher),
@@ -407,15 +650,15 @@ class Config(object):
             },
             Supermarket: {
                 'day': (Cashier, Stocker, Manager),
-                'night': (Cashier, Stocker, Manager),
+                'night': (Stocker, Stocker),
                 'additional day': (Cashier, Cashier, Stocker),
-                'additional night': (Cashier, Stocker, Stocker,),
+                'additional night': (Stocker,),
             },
             TattooParlor: {
-                'day': (TattooArtist,),
+                'day': (),
                 'night': (TattooArtist,),
                 'additional day': (),
-                'additional night': (Manager, Cashier),
+                'additional night': (Cashier,),
             },
             TaxiDepot: {
                 'day': (TaxiDriver,),
@@ -443,13 +686,13 @@ class Config(object):
             },
             # New businesses added after the above
             Bakery: {
-                'day': (Baker,),
+                'day': (),
                 'night': (),
                 'additional day': (Cashier,),
                 'additional night': (Cashier,),
             },
             BlacksmithShop: {
-                'day': (Blacksmith,),
+                'day': (),
                 'night': (),
                 'additional day': (Apprentice,),
                 'additional night': (),
@@ -461,49 +704,55 @@ class Config(object):
                 'additional night': (Janitor,),
             },
             ButcherShop: {
-                'day': (Butcher,),
+                'day': (),
                 'night': (),
-                'additional day': (Cashier, ButcherShop),
+                'additional day': (Cashier, Butcher),
                 'additional night': (Cashier,),
             },
             CandyStore: {
-                'day': (Proprietor, Cashier,),
+                'day': (Cashier,),
                 'night': (),
                 'additional day': (Cashier,),
                 'additional night': (Cashier,),
             },
             CarpentryCompany: {
-                'day': (Carpenter, Woodworker),
+                'day': (Woodworker,),
                 'night': (),
                 'additional day': (Turner, Joiner, Secretary),
                 'additional night': (),
             },
             ClothingStore: {
-                'day': (Clothier,),
+                'day': (),
                 'night': (),
                 'additional day': (Dressmaker, Seamstress),
                 'additional night': (),
             },
             Dairy: {
-                'day': (Milkman,),
+                'day': (Bottler,),
                 'night': (),
-                'additional day': (Bottler, Bottler),
-                'additional night': (),
+                'additional day': (Bottler,),
+                'additional night': (Bottler,),
             },
             Deli: {
-                'day': (Proprietor, Cook, Cashier),
+                'day': (Cook, Cashier),
                 'night': (Cook, Cashier),
                 'additional day': (Dishwasher,),
                 'additional night': (Dishwasher,),
             },
+            DentistOffice: {
+                'day': (),
+                'night': (),
+                'additional day': (Secretary, Dentist),
+                'additional night': (Janitor,),
+            },
             DepartmentStore: {
                 'day': (Cashier, Stocker, Manager),
-                'night': (Cashier, Stocker, Manager),
+                'night': (Stocker, Stocker, Janitor),
                 'additional day': (Cashier, Cashier, Stocker),
-                'additional night': (Cashier, Stocker, Stocker,),
+                'additional night': (Stocker, Stocker, Janitor,),
             },
             Diner: {
-                'day': (Proprietor, Cook),
+                'day': (Cook,),
                 'night': (Cook, Waiter),
                 'additional day': (Dishwasher,),
                 'additional night': (Dishwasher,),
@@ -515,15 +764,15 @@ class Config(object):
                 'additional night': (Janitor,),
             },
             DrugStore: {
-                'day': (Druggist,),
-                'night': (Cashier,),
+                'day': (),
+                'night': (),
                 'additional day': (),
                 'additional night': (),
             },
             Farm: {
-                'day': (Farmer, Farmhand, Farmhand),
+                'day': (Farmhand,),
                 'night': (),
-                'additional day': (),
+                'additional day': (Farmhand, Farmhand),
                 'additional night': (),
             },
             Foundry: {
@@ -533,93 +782,99 @@ class Config(object):
                 'additional night': (Janitor,),
             },
             FurnitureStore: {
-                'day': (Woodworker,),
+                'day': (),
                 'night': (),
-                'additional day': (Woodworker, Cashier),
+                'additional day': (Apprentice, Cashier, Woodworker),
                 'additional night': (Janitor,),
             },
             GeneralStore: {
-                'day': (Proprietor,),
-                'night': (Cashier,),
-                'additional day': (),
+                'day': (),
+                'night': (),
+                'additional day': (Cashier, Stocker),
                 'additional night': (Janitor,),
             },
             GroceryStore: {
-                'day': (Grocer, Stocker),
-                'night': (Cashier,),
-                'additional day': (),
-                'additional night': (),
+                'day': (Stocker,),
+                'night': (),
+                'additional day': (Cashier,),
+                'additional night': (Stocker, Janitor),
             },
             HardwareStore: {
-                'day': (Proprietor, Stocker),
-                'night': (Cashier,),
+                'day': (Stocker,),
+                'night': (),
                 'additional day': (),
-                'additional night': (),
+                'additional night': (Janitor,),
             },
             Inn: {
-                'day': (Innkeeper, Stocker),
-                'night': (Cashier,),
+                'day': (),
+                'night': (Innkeeper,),
                 'additional day': (),
                 'additional night': (),
             },
             Tavern: {
                 'day': (Bartender,),
-                'night': (Barkeeper,),
+                'night': (Bartender,),
                 'additional day': (),
                 'additional night': (),
             },
             InsuranceCompany: {
-                'day': (InsuranceAgent,),
+                'day': (),
                 'night': (),
                 'additional day': (Secretary, InsuranceAgent, InsuranceAgent),
                 'additional night': (Janitor,),
             },
             JeweleryShop: {
-                'day': (Jeweler,),
+                'day': (),
                 'night': (),
                 'additional day': (Cashier,),
                 'additional night': (),
             },
             PaintingCompany: {
-                'day': (Painter, Plasterer, Whitewasher),
+                'day': (Painter, Whitewasher),
                 'night': (),
                 'additional day': (Painter,),
                 'additional night': (),
             },
             Pharmacy: {
                 'day': (Pharmacist, Cashier),
-                'night': (Pharmacist, Cashier),
+                'night': (),
                 'additional day': (),
                 'additional night': (Janitor,),
             },
             PlumbingCompany: {
-                'day': (Plumber,),
+                'day': (),
                 'night': (),
-                'additional day': (Secretary,),
+                'additional day': (Secretary, Plumber),
                 'additional night': (),
             },
             Quarry: {
-                'day': (Quarryman, Stonecutter, Laborer, Laborer),
+                'day': (Quarryman, Stonecutter, Laborer, Laborer, Engineer),
                 'night': (),
-                'additional day': (Laborer,),
+                'additional day': (Laborer,)*100,  # Endlessly hiring more laborers if someone needs a job
                 'additional night': (),
             },
+            CoalMine: {
+                'day': (Miner, Miner, Engineer),
+                'night': (Miner, Miner, Miner),
+                'additional day': (Miner,)*100,  # Endlessly hiring more miners if someone needs a job
+                'additional night': (Miner,)*100,
+            },
             ShoemakerShop: {
-                'day': (Shoemaker,),
+                'day': (),
                 'night': (),
-                'additional day': (),
+                'additional day': (Apprentice,),
                 'additional night': (),
             },
             TailorShop: {
-                'day': (Tailor,),
+                'day': (),
                 'night': (),
-                'additional day': (),
+                'additional day': (Apprentice,),
                 'additional night': (),
             },
         }
         # Occupations for which a college degree is required
         self.occupations_requiring_college_degree = {
-            Doctor, Architect, Optometrist, PlasticSurgeon, Lawyer, Professor,
+            Doctor, Architect, Optometrist, PlasticSurgeon, Lawyer, Professor, Pharmacist, Dentist
         }
         # Job levels of various occupations (indexed by their class names)
         self.job_levels = {
@@ -642,6 +897,7 @@ class Config(object):
             Stocker: 1,
             Seamstress: 1,
             Farmhand: 1,
+            Miner: 1,
             Painter: 1,
             BankTeller: 2,
             Grocer: 2,
@@ -672,7 +928,6 @@ class Config(object):
             Nurse: 2,
             Farmer: 2,
             Shoemaker: 2,
-            Jeweler: 2,
             Brewer: 2,
             TattooArtist: 2,
             Puddler: 2,
@@ -682,22 +937,25 @@ class Config(object):
             Molder: 2,
             Turner: 2,
             Quarryman: 2,
-            Manager: 3,
+            Proprietor: 2,
+            Manager: 2,
             Druggist: 3,
             InsuranceAgent: 3,
+            Jeweler: 3,
             FireChief: 3,
             PoliceChief: 3,
             Realtor: 3,
-            Proprietor: 3,
             Mortician: 3,
-            Owner: 3,
             Doctor: 4,
+            Engineer: 4,
             Pharmacist: 4,
             Architect: 4,
             Optometrist: 4,
+            Dentist: 4,
             PlasticSurgeon: 4,
             Lawyer: 4,
             Professor: 4,
+            Owner: 5,
             Mayor: 5,
         }
         # Compensation for various occupations
@@ -1174,6 +1432,7 @@ class Config(object):
             "declaration": 2,
             "forgetting": 0.001,
         }
+        self.feature_types_that_do_not_mutate = {'job title'}
         self.decay_rate_of_belief_strength_per_day = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (
             self.base_strength_of_evidence_types['observation'] /
@@ -1846,4 +2105,27 @@ class Config(object):
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0
         self.charge_threshold_enmity = -15.0
+
+    @staticmethod
+    def fit_probability_distribution(relative_frequencies_dictionary):
+        """Return a probability distribution fitted to the given relative-frequencies dictionary."""
+        frequencies_sum = float(sum(relative_frequencies_dictionary.values()))
+        probabilities = {}
+        for k in relative_frequencies_dictionary.keys():
+            frequency = relative_frequencies_dictionary[k]
+            probability = frequency/frequencies_sum
+            probabilities[k] = probability
+        fitted_probability_distribution = {}
+        current_bound = 0.0
+        for k in probabilities:
+            probability = probabilities[k]
+            probability_range_for_k = (current_bound, current_bound+probability)
+            fitted_probability_distribution[k] = probability_range_for_k
+            current_bound += probability
+        # Make sure the last bound indeed extends to 1.0
+        last_bound_attributed = list(probabilities)[-1]
+        fitted_probability_distribution[last_bound_attributed] = (
+            fitted_probability_distribution[last_bound_attributed][0], 1.0
+        )
+        return fitted_probability_distribution
 

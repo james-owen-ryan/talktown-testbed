@@ -20,8 +20,8 @@ class Game(object):
         self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
         self.month = datetime.date(*self.config.date_city_gets_founded).month
         self.day = datetime.date(*self.config.date_city_gets_founded).day
-        self.ordinal_date_that_the_founder_dies = (
-            datetime.date(*self.config.date_the_founder_dies).toordinal()
+        self.ordinal_date_that_gameplay_begins = (
+            datetime.date(*self.config.date_gameplay_begins).toordinal()
         )
         self.time_of_day = "day"
         self.date = self.get_date()
@@ -57,97 +57,56 @@ class Game(object):
 
     def establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
-        # Generate a city plan
-        self.city = City(self)  # TEMP for testing only
-        # Generate a city founder -- this is a very rich person who will construct the
-        # infrastructure on which the city gets built; this person will also serve as
-        # the patriarch/matriarch of a very large, very rich family that the person who
-        # # dies at the beginning of the game and Player 2 and cronies will part of
-        self.founder = self._produce_city_founder()
-        # Placeholder until you set up how the founder moves into the city
-        self.founder.city = self.founder.spouse.city = self.city
+        # Generate a city plan with at least two tracts
+        self.city = City(self)
+        while len(self.city.tracts) < 2:
+            self.city = City(self)
+        # Have families establish farms on all of the city tracts except one,
+        # which will be a cemetery
+        for i in xrange(len(self.city.tracts)-2):
+            farmer = PersonExNihilo(game=self, job_opportunity_impetus=Farmer, spouse_already_generated=None)
+            Farm(owner=farmer)
+            # farmer.move_into_the_city(hiring_that_instigated_move=farmer.occupation)  # SHOULD BE ABLE TO DELETE THIS
+        # For the last tract, potentially have a quarry or coal mine instead of a farm
+        if random.random() < self.config.chance_of_a_coal_mine_at_time_of_town_founding:
+            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
+            CoalMine(owner=owner)
+            self.city.mayor = owner  # TODO actual mayor stuff
+        elif random.random() < self.config.chance_of_a_quarry_at_time_of_town_founding:
+            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
+            Quarry(owner=owner)
+            self.city.mayor = owner  # TODO actual mayor stuff
+        else:
+            farmer = PersonExNihilo(game=self, job_opportunity_impetus=Farmer, spouse_already_generated=None)
+            Farm(owner=farmer)
+            self.city.mayor = farmer  # TODO actual mayor stuff
+        # Name the city -- has to come before the cemetery is instantiated,
+        # so that the cemetery can be named after it
         self.city.name = self._generate_name_for_city()
-        # Make the city founder mayor de facto
-        self.city.mayor = self.founder
-        # Have that city founder establish a construction form in the limits of the new
-        # city plan -- this firm will shortly construct all the major buildings in town
-        ConstructionFirm(owner=self.founder)
-        # Now that there is a construction firm in town, the founder and family can
-        # move into town
-        self.founder.move_into_the_city(hiring_that_instigated_move=None)
-        # Have the city founder build several apartment complexes downtown -- first, however,
-        # build a realty firm so that these apartment units can be sold
-        RealtyFirm(owner=self.founder.spouse)
-        self._build_apartment_complexes_downtown()
-        # Construct city hall -- this will automatically make the city founder its
-        # mayor -- and other public institutions making up the city's infrastructure;
-        # each of these establishments will bring in workers who will find vacant lots
-        # on which to build homes
-        self._establish_city_infrastructure()
+        # Establish a cemetery -- it doesn't matter who the owner is for
+        # public institutions like a cemetery, it will just be used as a
+        # reference with which to access this game instance
+        Cemetery(owner=self.random_person)
         # Now simulate to a week before gameplay
-        self.enact_lo_fi_simulation(n_timesteps=51122)
+        n_days_until_gameplay_begins = self.ordinal_date_that_gameplay_begins-self.ordinal_date
+        n_timesteps_until_gameplay_begins = n_days_until_gameplay_begins * 2
+        self.enact_lo_fi_simulation(n_timesteps=n_timesteps_until_gameplay_begins)
         # Now simulate at full fidelity for the remaining week
-        while self.ordinal_date < self.ordinal_date_that_the_founder_dies:
+        while self.ordinal_date < self.ordinal_date_that_gameplay_begins:
             self.enact_hi_fi_simulation()
-            print "{0} days remain until founder death".format(
-                self.ordinal_date_that_the_founder_dies-self.ordinal_date
+            print "{} days remain until gameplay begins".format(
+                self.ordinal_date_that_gameplay_begins-self.ordinal_date
             )
-        # Select the player character and lover
-        self.pc = self._select_player_character()
-        self.pc_id = self.pc.id
-        self.lover = self._select_lover_character()
-        self.lover_id = self.lover.id
         # Simulate the night in question, on which the founder dies
         self.enact_hi_fi_simulation()
-        self.founder.die(cause_of_death="Natural causes")
-        # Finally, determine the initial evidence about the lover's appearance
-        # that will be given to the player character (3/5 are true)
-        self.initial_evidence, self.initial_evidence_str = self._determine_initial_evidence_about_lover_appearance()
-
-    def _produce_city_founder(self):
-        """Produce the very rich person who will essentially start up this city.
-
-        Some facts about this person will not vary across playthroughs: they is a
-        very rich person who first establishes a construction firm within the limits
-        of what will become the city;
-        """
-        city_founder = PersonExNihilo(
-            game=self, job_opportunity_impetus=None, spouse_already_generated=None, this_person_is_the_founder=True
-        )
-        return city_founder
 
     def _generate_name_for_city(self):
         """Generate a name for the city."""
         if random.random() < self.config.chance_city_gets_named_for_founder:
-            suffix = random.choice(["ville", " City", " Town", ""])
-            name = "{0}{1}".format(self.founder.last_name, suffix)
+            name = self.city.mayor.last_name
         else:
             name = Names.a_place_name()
         return name
-
-    def _build_apartment_complexes_downtown(self):
-        """Build multiple apartment complexes downtown."""
-        for _ in xrange(self.config.number_of_apartment_complexes_founder_builds_downtown):
-            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
-            owner.city = self.city
-            ApartmentComplex(owner=owner)
-            owner.move_into_the_city(hiring_that_instigated_move=owner.occupation)
-            # ApartmentComplex(owner=self.founder)
-
-    def _establish_city_infrastructure(self):
-        """Build the essential public institutions that will serve as the city's infrastructure."""
-        for public_institution in self.config.public_institutions_started_upon_city_founding:
-            public_institution(owner=self.founder)
-        for business in self.config.businesses_started_upon_city_founding:
-            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
-            owner.city = self.city
-            business(owner=owner)
-            owner.move_into_the_city(hiring_that_instigated_move=owner.occupation)
-
-        # 7. eventually, have other people come in and start more of the following: OptometryClinic,
-        # LawFirm, PlasticSurgeryClinic, TattooParlor, Restaurant, Bank, Supermarket, ApartmentComplex.
-        #
-        # 	- For these, have them potentially be started by reasoning over supply, need, etc.
 
     def _select_player_character(self):
         if any(k for k in self.founder.kids | self.founder.grandchildren if k.present):
@@ -157,25 +116,6 @@ class Game(object):
         else:
             player_character = random.choice([p for p in self.city.residents if p.adult])
         return player_character
-
-    def _select_lover_character(self):
-        people_that_pc_doesnt_know_about = [
-            p for p in self.city.residents if p.adult and p not in self.pc.mind.mental_models and
-            p not in self.pc.relationships
-        ]
-        if people_that_pc_doesnt_know_about:
-            n_people_that_know_this_person = {}
-            for person in people_that_pc_doesnt_know_about:
-                n_people_that_know_this_person[person] = (
-                    len([q for q in self.city.residents if person in q.mind.mental_models])
-                )
-            # Pick the person having closest to 70 people who know about them
-            lover = min(people_that_pc_doesnt_know_about, key=lambda z: abs(70-n_people_that_know_this_person[z]))
-        else:
-            lover = random.choice([
-                person for person in self.city.residents if person.adult and person is not self.pc
-            ])
-        return lover
 
     def _determine_initial_evidence_about_lover_appearance(self):
         true_and_false_values = [True, True, True, False, False]
@@ -211,23 +151,6 @@ class Game(object):
             )
         )
         return initial_evidence, initial_evidence_str
-
-    def _sim_and_save_a_week_of_timesteps(self):
-        # First, save out miscellaneous details necessary for gameplay
-        import pickle
-        meta = {
-            "lover": self.lover.id, "player char": self.pc.id, "founder name": self.founder.name,
-            "founder is male": self.founder.male, "initial evidence str": self.initial_evidence_str
-        }
-        pickle.dump(meta,  open('/Users/jamesryan/Desktop/TOTT_states/meta.dat', 'wb'))
-        filename_suffixes = [
-            "_day1", "_night1", "_day2", "_night2", "_day3", "_night3", "_day4", "_night4",
-            "_day5", "_night5", "_day6", "_night6", "_day7", "_night7"
-        ]
-        for suffix in filename_suffixes:
-            print "Simulating and saving data for timestep {0}".format(suffix[1:])
-            self.enact_hi_fi_simulation(timestep_during_gameplay=True)
-            self.save_data(filename_suffix=suffix)
 
     def assign_event_number(self, new_event):
         """Assign an event number to some event, to allow for precise ordering of events that happened same timestep.
@@ -306,6 +229,9 @@ class Game(object):
         chance_of_a_day_being_simulated = 0.005
         for i in xrange(n_timesteps):
             self._advance_time()
+            # Potentially have a new business open or an existing business close
+            self.potentially_establish_a_new_business()
+            self.potentially_shut_down_businesses()
             # Simulate births, even if this day will not actually be simulated
             for person in list(self.city.residents):
                 if person.pregnant:
@@ -315,6 +241,9 @@ class Game(object):
                                 person.give_birth()
                         else:
                             person.give_birth()
+                # if person.ready_to_work and not person.occupation:
+                #     # If this person's father owns a farm, go to work on the farm
+                #     if person.father and person.father.occupation.company
             if random.random() < chance_of_a_day_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
@@ -338,7 +267,7 @@ class Game(object):
                     #         person.depart_city()
                     elif person.adult and not person.occupation:
                         if random.random() < 0.005:
-                            self.consider_new_business_getting_constructed()
+                            self.potentially_shut_down_businesses()
                         # elif random.random() > 0.70:
                         #     person.depart_city()
                         elif person.age > 22:
@@ -367,28 +296,90 @@ class Game(object):
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
                 last_simulated_day = self.ordinal_date
 
-    def consider_new_business_getting_constructed(self):
-        if self.city.vacant_lots and random.random() < 0.2:
-            reasonable_frequencies = {
-                Bar: 5, Bank: 2, Barbershop: 2, Restaurant: 4, Supermarket: 2, OptometryClinic: 2,
-                LawFirm: 2, PlasticSurgeryClinic: 1, RealtyFirm: 2, TattooParlor: 2, ApartmentComplex: 5,
-                DayCare: 4,
-            }
-            weighted_business_types = []
-            for business_type in reasonable_frequencies:
-                weighted_business_types += (
-                    [business_type] *
-                    min(1,
-                        (reasonable_frequencies[business_type] -
-                         len(self.city.businesses_of_type(business_type.__name__))))
-                )
-            if weighted_business_types:
-                business_type = random.choice(weighted_business_types)
+    def potentially_establish_a_new_business(self):
+        """Potentially have a new business get constructed in town."""
+        config = self.config
+        if random.random() < config.chance_a_business_opens_some_timestep:
+            all_business_types = Business.__subclasses__()
+            type_of_business_that_will_open = None
+            tries = 0
+            while not type_of_business_that_will_open:
+                tries += 1
+                randomly_selected_type = random.choice(all_business_types)
+                advent, demise, min_pop = config.business_types_advent_demise_and_minimum_population[
+                    randomly_selected_type
+                ]
+                # Check if the business type is era-appropriate
+                if advent < self.year < demise and self.city.population > min_pop:
+                    # Check if there aren't already too many businesses of this type in town
+                    max_number_for_this_type = config.max_number_of_business_types_at_one_time[randomly_selected_type]
+                    if (len(self.city.businesses_of_type(randomly_selected_type.__name__)) <
+                            max_number_for_this_type):
+                        # Lastly, if this is a business that only forms on a tract, make sure
+                        # there is a vacant tract for it to be established upon
+                        need_tract = randomly_selected_type in config.companies_that_get_established_on_tracts
+                        if (need_tract and self.city.vacant_tracts) or not need_tract:
+                            type_of_business_that_will_open = randomly_selected_type
+                if self.city.population < 50 or tries > 10:  # Just not ready for more businesses yet -- grow naturally
+                    break
+            if type_of_business_that_will_open:
+                owner = self._determine_who_will_establish_new_business(business_type=type_of_business_that_will_open)
+                type_of_business_that_will_open(owner=owner)
+
+    def _determine_who_will_establish_new_business(self, business_type):
+        """Select a person who will establish a new business of the given type."""
+        config = self.config
+        occupation_type_for_owner_of_this_type_of_business = (
+            config.owner_occupations_for_each_business_type[business_type]
+        )
+        if occupation_type_for_owner_of_this_type_of_business in config.occupations_requiring_college_degree:
+            if any(p for p in self.city.residents if p.college_graduate and not p.occupations):
+                # Have a fresh college graduate in town start up a dentist office or whatever it is
+                owner = next(p for p in self.city.residents if not p.college_graduate and not p.occupations)
             else:
-                business_type = random.choice(list(reasonable_frequencies.keys()))
-            owner = PersonExNihilo(game=self, job_opportunity_impetus=Owner, spouse_already_generated=None)
-            owner.city = self.city
-            business_type(owner=owner)
+                # Have someone from outside the city come in
+                owner = PersonExNihilo(
+                    game=self, job_opportunity_impetus=occupation_type_for_owner_of_this_type_of_business,
+                    spouse_already_generated=None
+                )
+        else:
+            if config.job_levels[occupation_type_for_owner_of_this_type_of_business] < 3:
+                # Have a young person step up and start their career as a tradesman
+                if any(p for p in g.city.residents if p.ready_to_work and not p.occupations):
+                    owner = next(p for p in g.city.residents if p.ready_to_work and not p.occupations)
+                # Have any unemployed person in town try their hand at running a business
+                elif any(p for p in g.city.residents if not p.retired and not p.occupation):
+                    owner = next(p for p in g.city.residents if not p.retired and not p.occupation)
+                else:
+                    # Have someone from outside the city come in
+                    owner = PersonExNihilo(
+                        game=self, job_opportunity_impetus=occupation_type_for_owner_of_this_type_of_business,
+                        spouse_already_generated=None
+                    )
+            else:
+                # Have someone from outside the city come in
+                owner = PersonExNihilo(
+                    game=self, job_opportunity_impetus=occupation_type_for_owner_of_this_type_of_business,
+                    spouse_already_generated=None
+                )
+        return owner
+
+    def potentially_shut_down_businesses(self):
+        """Potentially have a new business get constructed in town."""
+        config = self.config
+        chance_a_business_shuts_down_this_timestep = config.chance_a_business_closes_some_timestep
+        chance_a_business_shuts_down_on_timestep_after_its_demise = (
+            # Once its anachronistic, like a Dairy in 1960
+            config.chance_a_business_shuts_down_on_timestep_after_its_demise
+        )
+        for business in list(self.city.companies):
+            if business.demise <= self.year:
+                if random.random() < config.chance_a_business_shuts_down_on_timestep_after_its_demise:
+                    if business.__class__ not in config.public_company_types:
+                        business.go_out_of_business(reason=None)
+            elif random.random() < chance_a_business_shuts_down_this_timestep:
+                if business.__class__ not in config.public_company_types:
+                    business.go_out_of_business(reason=None)
 
     def enact_hi_fi_simulation(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""
@@ -427,8 +418,10 @@ class Game(object):
         for person in self.city.residents:
             if not (timestep_during_gameplay and person is self.pc):
                 for thing in list(person.mind.mental_models):
-                    person.mind.mental_models[thing].deteriorate()
-                if self.ordinal_date == self.ordinal_date_that_the_founder_dies:
+                    # People's mental models of themselves, their homes, and their workplaces don't deteriorate
+                    if thing not in {person, person.home, None if not person.occupation else person.occupation.company}:
+                        person.mind.mental_models[thing].deteriorate()
+                if self.ordinal_date == self.ordinal_date_that_gameplay_begins:
                     person.reflect()
                     # if person is self.lover:
                     #     # Have them invent an alibi for where they were, in case

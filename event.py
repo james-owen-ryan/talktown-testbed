@@ -86,7 +86,7 @@ class Birth(Event):
                 position.__class__.__name__ == 'Nurse'
             ])
             self.doctor.baby_deliveries.add(self)
-            self._remunerate()
+            # self._remunerate()
         else:
             self.hospital = None
             self.nurses = set()
@@ -298,7 +298,7 @@ class BusinessConstruction(Event):
     a House object.
     """
 
-    def __init__(self, subject, business, architect):
+    def __init__(self, subject, business, architect, demolition_that_preceded_this=None):
         """Initialize a BusinessConstruction object."""
         super(BusinessConstruction, self).__init__(game=subject.game)
         self.subject = subject
@@ -310,18 +310,15 @@ class BusinessConstruction(Event):
                 position for position in self.construction_firm.employees if
                 position.__class__.__name__ == 'Builder'
             ])
-            self._remunerate()
+            # self._remunerate()
             self.architect.building_constructions.add(self)
         else:
+            # Build it yourself
             self.construction_firm = None
-            self.builders = set()
+            self.builders = {p for p in subject.nuclear_family if p.ready_to_work and p.male}
         self.subject.building_commissions.add(self)
-        # Update which business of this type everyone in the city patronizes, since
-        # they may decide to now patronize this business instead of the one they used to
-        for resident in self.business.city.residents:
-            resident.routine.update_business_patronized_of_specific_type(
-                business_type=self.business.__class__.__name__
-            )
+        if demolition_that_preceded_this:
+            demolition_that_preceded_this.reason = self
 
     def __str__(self):
         """Return string representation."""
@@ -351,6 +348,38 @@ class BusinessConstruction(Event):
             )
 
 
+class BusinessClosure(Event):
+    """The closure of a business."""
+
+    def __init__(self, business, reason=None):
+        """Initialize a Demolition object."""
+        super(BusinessClosure, self).__init__(game=business.city.game)
+        self.city = business.city
+        self.business = business
+        self.reason = reason  # Potentially this will point to a object for the owner's Retirement
+        business.closure = self
+        # The company's out_of_business attribute must be set before anyone is laid off,
+        # else the company will try to replace that person
+        business.out_of_business = True
+        business.closed = self.year
+        for employee in list(business.employees):
+            LayOff(subject=employee.person, company=business, occupation=employee)
+        self.city.companies.remove(business)
+        self.city.former_companies.add(business)
+        # Demolish the building -- TODO reify buildings separately from companies
+        if self.city.businesses_of_type('ConstructionFirm'):
+            demolition_company = random.choice(self.city.businesses_of_type('ConstructionFirm'))
+        else:
+            demolition_company = None
+        Demolition(building=business, demolition_company=demolition_company, reason=self)
+
+    def __str__(self):
+        """Return string representation."""
+        return "Closure of {} in {}".format(
+            self.business.name, self.year
+        )
+
+
 class Death(Event):
     """A death of a person in the city."""
 
@@ -374,7 +403,7 @@ class Death(Event):
         if mortician:
             # Death shouldn't be possibly outside the city, but I'm doing
             # this to be consistent with other event classes
-            self._remunerate()
+            # self._remunerate()
             self.cemetery_plot = self._inter_the_body()
             self.mortician.body_interments.add(self)
         else:
@@ -424,6 +453,40 @@ class Death(Event):
         self.next_of_kin.pay(
             payee=self.mortician.person,
             amount=config.compensations[service_rendered][self.mortician.__class__]
+        )
+
+
+class Demolition(Event):
+    """The demolition of a house or other building."""
+
+    def __init__(self, building, demolition_company, reason=None):
+        """Initialize a Demolition object."""
+        super(Demolition, self).__init__(game=building.city.game)
+        self.city = building.city
+        self.building = building
+        self.demolition_company = demolition_company  # ConstructionFirm handling the demolition
+        self.reason = reason  # May also get set by HouseConstruction or BusinessConstruction object __init__()
+        building.demolition = self
+        building.lot.building = None
+        building.lot.former_buildings.append(building)
+        if building.__class__ == House:
+            self._have_the_now_displaced_residents_move()
+
+    def _have_the_now_displaced_residents_move(self):
+        """Handle the full pipeline from them finding a place to moving into it."""
+        home_they_will_move_into = self.building.owners[0].secure_home()
+        if home_they_will_move_into:
+            for resident in list(self.building.residents):
+                resident.move(new_home=home_they_will_move_into, reason=self)
+        else:
+            self.building.owners[0].depart_city(
+                forced_nuclear_family=self.building.residents
+            )
+
+    def __str__(self):
+        """Return string representation."""
+        return "Demolition of {} by {} in {}".format(
+            self.building.name, self.demolition_company, self.year
         )
 
 
@@ -502,7 +565,7 @@ class Divorce(Event):
             self.law_firm = lawyer.company
             self.lawyer.divorces_filed.add(self)
             self._decide_and_enact_new_living_arrangements()
-            self._remunerate()
+            # self._remunerate()
         else:
             self.law_firm = None
 
@@ -697,7 +760,7 @@ class HomePurchase(Event):
         self._transfer_ownership()
         if realtor:
             self.realty_firm = realtor.company
-            self._remunerate()
+            # self._remunerate()
             self.realtor.home_sales.add(self)
         else:  # No realtor when setting initial owners as people who built the home
             self.realty_firm = None
@@ -734,7 +797,7 @@ class HomePurchase(Event):
 class HouseConstruction(Event):
     """Construction of a house."""
 
-    def __init__(self, subjects, architect, lot):
+    def __init__(self, subjects, architect, lot, demolition_that_preceded_this=None):
         """Initialize a HouseConstruction object."""
         super(HouseConstruction, self).__init__(game=subjects[0].game)
         self.subjects = subjects
@@ -746,13 +809,15 @@ class HouseConstruction(Event):
                 position for position in self.construction_firm.employees if
                 position.__class__.__name__ == 'Builder'
             ])
-            self._remunerate()
+            # self._remunerate()
             self.architect.building_constructions.add(self)
         else:
             self.construction_firm = None
             self.builders = set()
         for subject in self.subjects:
             subject.building_commissions.add(self)
+        if demolition_that_preceded_this:
+            demolition_that_preceded_this.reason = self
 
     def __str__(self):
         """Return string representation."""
@@ -796,12 +861,13 @@ class LayOff(Event):
         super(LayOff, self).__init__(game=subject.game)
         self.subject = subject
         self.company = company
+        self.reason = company.closure
         self.occupation = occupation
         self.occupation.terminate(reason=self)
 
     def __str__(self):
         """Return string representation."""
-        return "Laying off of {} as {} in {} in {}".format(
+        return "Laying off of {} as {} in {}".format(
             self.subject.name, self.occupation, self.year
         )
 
@@ -994,8 +1060,6 @@ class Move(Event):
             person.game.city.residents.add(person)
             # Go to your new home
             person.go_to(destination=new_home, occasion='home')
-            # Update your patronized businesses given that these may now change
-            person.routine.set_businesses_patronized()
         # Update .neighbor attributes for subjects, as well as their new and now former neighbors
         self._update_mover_and_neighbor_attributes()
 
@@ -1082,8 +1146,8 @@ class NameChange(Event):
         if isinstance(reason, Marriage):
             reason.name_changes.append(self)
         subject.name_changes.append(self)
-        if self.city:
-            self.law_firm = lawyer
+        if lawyer:
+            self.law_firm = lawyer.company
             self.lawyer.filed_name_changes.add(self)
         else:
             self.law_firm = None

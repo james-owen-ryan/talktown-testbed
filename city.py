@@ -38,6 +38,7 @@ class City(object):
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city
         self.companies = set()
+        self.former_companies = set()
         self.lots = set()
         self.tracts = set()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
@@ -48,7 +49,7 @@ class City(object):
         self.blocks = set()
         self.generateLots(gameState.config)
         for lot in self.lots | self.tracts:
-            lot.setNeighboringLots()
+            lot.set_neighboring_lots()
             lot.init_generate_address()
         self.paths = {}
         self.generatePaths()
@@ -369,13 +370,13 @@ class City(object):
                 insertOnce(Blocks,(ew+ii,ns+sizeOfBlock,'EW'),Block( ewStreets[(ew,ns+sizeOfBlock)], (ii+ew)*100,(ew+ii,ns+sizeOfBlock)))
                 insertOnce(Numberings,(ew+ii,ns+sizeOfBlock,'S'),Block.determine_house_numbering( (ii+ew)*100,'S', configFile)) 
                 if (tract != None):
-                    tract.addBlock(Blocks[(ew,ns+ii,'NS')],Numberings[(ew,ns+ii,'E')][n_buildings_per_block],'E',0)
-                    tract.addBlock( Blocks[(ew+ii,ns,'EW')],Numberings[(ew+ii,ns,'N')][n_buildings_per_block] ,'N',0)
+                    tract.add_block(Blocks[(ew,ns+ii,'NS')],Numberings[(ew,ns+ii,'E')][n_buildings_per_block],'E',0)
+                    tract.add_block( Blocks[(ew+ii,ns,'EW')],Numberings[(ew+ii,ns,'N')][n_buildings_per_block] ,'N',0)
                     if (ew+sizeOfBlock <= size/2):
-                        tract.addBlock(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],Numberings[(ew+sizeOfBlock,ns+ii,'W')][n_buildings_per_block],'W',0)
+                        tract.add_block(Blocks[(ew+sizeOfBlock,ns+ii,'NS')],Numberings[(ew+sizeOfBlock,ns+ii,'W')][n_buildings_per_block],'W',0)
                     
                     if (ns+sizeOfBlock <= size/2):
-                        tract.addBlock( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],Numberings[(ew+ii,ns+sizeOfBlock,'S')][n_buildings_per_block],'S',0)
+                        tract.add_block( Blocks[(ew+ii,ns+sizeOfBlock,'EW')],Numberings[(ew+ii,ns+sizeOfBlock,'S')][n_buildings_per_block],'S',0)
              
             neCorner = Lot(self)
             insertInto(lots,(ew,ns,'N'),(0,neCorner))
@@ -423,7 +424,7 @@ class City(object):
             lotList = lots[block]
             
             for lot in lotList:
-                lot[1].addBlock(actualBlock,Numberings[block][lot[0]],block[2],lot[0])
+                lot[1].add_block(actualBlock,Numberings[block][lot[0]],block[2],lot[0])
                 actualBlock.lots.append(lot[1])
                 
         for conn in connections: 
@@ -640,7 +641,9 @@ class Block(object):
 
 class Lot(object):
     """A lot on a block in a city, upon which buildings and houses get erected."""
+
     counter = 0
+
     def __init__(self, city):
         """Initialize a Lot object."""
         self.id = Lot.counter
@@ -648,16 +651,18 @@ class Lot(object):
         self.city = city
         self.streets = []
         self.blocks = []
-        self.sidesOfStreet = []
+        self.sides_of_street = []
         self.house_numbers = []  # In the event a business/landmark is erected here, it inherits this
         self.building = None  # Will always be None for Tract
         self.landmark = None  # Will always be None for Lot
-        self.positionsInBlock = []
-        self.neighboring_lots = set()  # Gets set by City call to setNeighboringLots after all lots have been generated
+        self.positions_in_block = []
+        self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots after all lots have been generated
         # These get set by init_generate_address(), which gets called by City
         self.address = None
         self.street_address_is_on = None
         self.block_address_is_on = None
+        self.index_of_street_address_will_be_on = None
+        self.former_buildings = []
 
     @property
     def population(self):
@@ -668,20 +673,20 @@ class Lot(object):
             population = 0
         return population
 
-    def addBlock(self, block, number, sideOfStreet, positionInBlock):
+    def add_block(self, block, number, side_of_street, position_in_block):
         self.streets.append(block.street)
         self.blocks.append(block)
-        self.sidesOfStreet.append(sideOfStreet)
+        self.sides_of_street.append(side_of_street)
         self.house_numbers.append(number)
-        self.positionsInBlock.append(positionInBlock)
+        self.positions_in_block.append(position_in_block)
 
-    def setNeighboringLots(self):
-        neighboringLots = set()
+    def set_neighboring_lots(self):
+        neighboring_lots = set()
         for block in self.blocks:
             for lot in block.lots:
                 if lot is not self:
-                    neighboringLots.add(lot)
-        self.neighboring_lots = neighboringLots
+                    neighboring_lots.add(lot)
+        self.neighboring_lots = neighboring_lots
 
     def init_generate_address(self):
         """Generate an address, given the lot building is on."""

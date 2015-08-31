@@ -60,7 +60,10 @@ class Occupation(object):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
         self.terminus = reason
-        self.company.employees.remove(self)
+        try:
+            self.company.employees.remove(self)
+        except KeyError:
+            raise Exception('{} IS THE CULPRIT'.format(self.person.name))
         self.company.former_employees.add(self)
         # If this isn't an in-house promotion, update a bunch of attributes
         in_house_promotion = (isinstance(reason, Hiring) and reason.promotion)
@@ -87,8 +90,9 @@ class Occupation(object):
                 )
         # This position is now vacant, so now have the company that this person worked
         # for fill that now vacant position (which may cause a hiring chain)
-        position_that_is_now_vacant = self.__class__
-        self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
+        if not self.company.out_of_business:
+            position_that_is_now_vacant = self.__class__
+            self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift)
         # If the person hasn't already been hired to a new position, set their occupation
         # attribute to None
         if self.person.occupation is self:
@@ -104,7 +108,13 @@ class Occupation(object):
             )
             for resident in self.company.city.residents:
                 # Note the minus sign here
-                resident.update_salience_of(entity=self.person, change=-change_in_salience_for_this_job_level)
+                resident.update_salience_of(
+                    entity=self.person, change=-change_in_salience_for_this_job_level
+                )
+        # Finally, if this was a Lawyer position, have the law firm rename itself to
+        # no longer include this person's name
+        if self.__class__ is Lawyer:
+            self.company.rename_due_to_lawyer_change()
 
 
 class Cashier(Occupation):
@@ -240,16 +250,6 @@ class Architect(Occupation):
         # Work accomplishments
         self.building_constructions = set()
         self.house_constructions = set()
-
-    def construct_building(self, client, business):
-        """Return a constructed building."""
-        construction = BusinessConstruction(subject=client, business=business, architect=self)
-        return construction
-
-    def construct_house(self, clients, lot):
-        """Return a constructed building."""
-        construction = HouseConstruction(subjects=clients, architect=self, lot=lot)
-        return construction.house
 
 
 class BankTeller(Occupation):
@@ -403,6 +403,8 @@ class Lawyer(Occupation):
         # Work accomplishments
         self.filed_divorces = set()
         self.filed_name_changes = set()
+        # Have the law firm rename itself to include your name
+        self.company.rename_due_to_lawyer_change()
 
     def file_divorce(self, clients):
         """File a name change on behalf of person."""
@@ -503,11 +505,6 @@ class Realtor(Occupation):
         super(Realtor, self).__init__(person=person, company=company, shift=shift)
         # Work accomplishments
         self.home_sales = set()
-
-    def sell_home(self, clients, home):
-        """Return a sold home."""
-        home_sales = HomePurchase(subjects=clients, home=home, realtor=self)
-        return home_sales.home
 
 
 class Professor(Occupation):
@@ -702,6 +699,18 @@ class Cooper(Occupation):
         super(Cooper, self).__init__(person=person, company=company, shift=shift)
 
 
+class Dentist(Occupation):
+    """A dishwasher at a business."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Dentist object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Dentist, self).__init__(person=person, company=company, shift=shift)
+
+
 class Dishwasher(Occupation):
     """A dishwasher at a business."""
 
@@ -748,6 +757,18 @@ class Druggist(Occupation):
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(Druggist, self).__init__(person=person, company=company, shift=shift)
+
+
+class Engineer(Occupation):
+    """An engineer at a coal mine or quarry."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Engineer object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Engineer, self).__init__(person=person, company=company, shift=shift)
 
 
 class Farmer(Occupation):
@@ -868,6 +889,18 @@ class Milkman(Occupation):
         @param company: The Company object for the company that person works for in this capacity.
         """
         super(Milkman, self).__init__(person=person, company=company, shift=shift)
+
+
+class Miner(Occupation):
+    """A miner at a coal mine."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Miner object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Miner, self).__init__(person=person, company=company, shift=shift)
 
 
 class Molder(Occupation):

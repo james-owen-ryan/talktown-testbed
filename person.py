@@ -42,6 +42,7 @@ class Person(object):
             # Set attributes pertaining to age
             self.age = 0
             self.adult = False
+            self.ready_to_work = False
         else:  # PersonExNihilo
             self.city = None
             self.biological_mother = None
@@ -54,6 +55,7 @@ class Person(object):
             # Set attributes pertaining to age
             self.age = None  # Will get initialized by PersonExNihilo.__init__()
             self.adult = True if self.age >= 18 else False
+            self.ready_to_work = True if self.age >= self.game.config.age_people_start_working else False
         # Set sex
         self.male, self.female = self._init_sex()
         self.tag = ''  # Allows players to tag characters with arbitrary strings
@@ -380,6 +382,8 @@ class Person(object):
                 s.half_sisters.add(self)
                 s.sisters.add(self)
         # Update for non-gender-specific familial attributes
+        for a in self.ancestors:
+            a.descendants.add(self)
         for g in self.greatgrandparents:
             g.greatgrandchildren.add(self)
         for g in self.grandparents:
@@ -1149,21 +1153,25 @@ class Person(object):
 
     def _commission_construction_of_a_house(self, lot):
         """Build a house to move into."""
+        # Try to find an architect -- if you can't, you'll have to build it yourself
         architect = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Architect)
+        architect = None if not architect else architect.occupation
         if self.spouse:
             clients = (self, self.spouse,)
         else:
             clients = (self,)
-        return architect.occupation.construct_house(clients=clients, lot=lot)
+        return event.HouseConstruction(subjects=clients, architect=architect, lot=lot).house
 
     def _purchase_home(self, home):
         """Purchase a house or apartment unit, with the help of a realtor."""
+        # Try to find a realtor -- if you can't, you'll just deal directly with the person
         realtor = self.contract_person_of_certain_occupation(occupation_in_question=occupation.Realtor)
+        realtor = None if not realtor else realtor.occupation
         if self.spouse:
             clients = (self, self.spouse,)
         else:
             clients = (self,)
-        return realtor.occupation.sell_home(clients=clients, home=home)
+        return event.HomePurchase(subjects=clients, home=home, realtor=realtor).home
 
     def _choose_vacant_home_or_vacant_lot(self):
         """Choose a vacant home to move into or a vacant lot to build on.
@@ -1453,6 +1461,8 @@ class Person(object):
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
         self.age = age = self.game.true_year - self.birth_year
+        if age == self.game.config.age_people_start_working:
+            self.ready_to_work = True
         if age == 18:
             self.adult = True
         # If you haven't in a while (in the logarithmic sense, rather than absolute
@@ -1484,17 +1494,14 @@ class PersonExNihilo(Person):
     children) may be generated for a person of this class.
     """
 
-    def __init__(self, game, job_opportunity_impetus, spouse_already_generated, this_person_is_the_founder=False):
+    def __init__(self, game, job_opportunity_impetus, spouse_already_generated):
         super(PersonExNihilo, self).__init__(game, birth=None)
         # Potentially overwrite sex set by Person.__init__()
         if spouse_already_generated:
             self.male, self.female = self._override_sex(spouse=spouse_already_generated)
             self.attracted_to_men, self.attracted_to_women = self._override_sexuality(spouse=spouse_already_generated)
         # Overwrite birth year set by Person.__init__()
-        if this_person_is_the_founder:  # The person who founds the city -- there are special requirements for them
-            self.game.founder = self
-            self.birth_year = self._init_birth_year_of_the_founder()
-        elif spouse_already_generated and spouse_already_generated is self.game.founder:
+        if spouse_already_generated and spouse_already_generated is self.game.founder:
             self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)
         else:
             job_level = self.game.config.job_levels[job_opportunity_impetus]
@@ -1518,15 +1525,12 @@ class PersonExNihilo(Person):
         self.named_for = None
         # If this person is being hired for a high job level, retcon that they have
         # a college education -- do the same for the city founder
-        if job_opportunity_impetus and self.game.config.job_levels[job_opportunity_impetus] > 3:
-            self.college_graduate = True
-        elif this_person_is_the_founder:
+        if (job_opportunity_impetus and
+                job_opportunity_impetus in self.game.config.occupations_requiring_college_degree):
             self.college_graduate = True
         # Potentially generate and retcon a family that this person will have
         # had prior to moving into the city
-        if this_person_is_the_founder:
-            self._init_generate_the_founders_family()
-        elif not spouse_already_generated:
+        if not spouse_already_generated:
             chance_of_having_family = (
                 self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(age=self.age)
             )

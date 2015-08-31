@@ -1,9 +1,6 @@
-import random
-
-
 class DwellingPlace(object):
     """A dwelling place in a city."""
-    counter = 0
+
     def __init__(self, lot, owners):
         """Initialize a DwellingPlace object.
 
@@ -29,16 +26,26 @@ class DwellingPlace(object):
         self.former_owners = set()
         self._init_ownership(initial_owners=owners)
         self.people_here_now = set()  # People at home on a specific time step (either a resident or visitor)
+        self.demolition = None  # Potentially gets set by event.Demolition.__init__()
 
     def __str__(self):
         """Return string representation."""
-        return "{0}, {1}".format(self.name, self.address)
+        if self.demolition or self.apartment and self.complex.demolition:
+            if self.house:
+                construction_year = self.construction.year
+                demolition_year = self.demolition.year
+            else:
+                construction_year = self.complex.construction.year
+                demolition_year = self.complex.demolition.year
+            return "{}, {} ({}-{})".format(self.name, self.address, construction_year, demolition_year)
+        else:
+            return "{}, {}".format(self.name, self.address)
 
     @property
     def name(self):
         """Return the name of this residence."""
         owner_surnames = set([o.last_name for o in self.owners])
-        name = "{0} Residence".format('-'.join(owner_surnames))
+        name = "{0} residence".format('-'.join(owner_surnames))
         return name
 
     def _init_ownership(self, initial_owners):

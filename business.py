@@ -21,14 +21,36 @@ class Business(object):
         owner.game.current_place_id += 1
         config = owner.game.config
         self.type = "business"
-        self.city = owner.city
+        # 'Demise' specifies a year at which point it is highly likely this business will close
+        # down (due to being anachronistic at that point, e.g., a dairy past 1930)
+        self.demise = config.business_types_advent_demise_and_minimum_population[self.__class__][1]
+        # 'Services' is a tuple specifying the services offered by this business, given its type
+        self.services = config.services_provided_by_business_of_type[self.__class__]
+        self.city = owner.game.city
         self.city.companies.add(self)
         if self.__class__ is ApartmentComplex:
             self.city.apartment_complexes.add(self)
         else:
             self.city.other_businesses.add(self)
         self.founded = self.city.game.year
-        self.lot = self._init_choose_vacant_lot()
+        if self.city.vacant_lots:
+            self.lot = self._init_choose_vacant_lot()
+            demolition_preceding_construction_of_this_business = None
+        else:
+            # Acquire a lot currently occupied by a home, demolish the home,
+            # and then construct this company's building on that lot
+            acquired_lot = self._init_acquire_currently_occupied_lot()
+            if self.city.businesses_of_type('ConstructionFirm'):
+                demolition_company = random.choice(self.city.businesses_of_type('ConstructionFirm'))
+            else:
+                demolition_company = None
+            demolition_preceding_construction_of_this_business = Demolition(
+                building=acquired_lot.building, demolition_company=demolition_company
+            )
+            self.lot = acquired_lot
+            print "{} DEMOLISHED {} TO BUILD ON THERE".format(
+                self.__class__.__name__, demolition_preceding_construction_of_this_business.building.name
+            )
         if self.__class__ in config.companies_that_get_established_on_tracts:
             self.lot.landmark = self
         else:
@@ -38,41 +60,56 @@ class Business(object):
         # first architect before it can construct its own building
         self.employees = set()
         self.former_employees = set()
-        if self.__class__ in config.public_companies:  # Hospital, police station, fire station, etc.
+        if self.__class__ in config.public_company_types:  # Hospital, police station, fire station, etc.
             self.owner = None
         else:
             self.owner = self._init_set_and_get_owner_occupation(owner=owner)
         self._init_hire_initial_employees()
         if self.__class__ not in config.companies_that_get_established_on_tracts:
+            # Try to find an architect -- if you can't, you'll have to build it yourself
             architect = owner.contract_person_of_certain_occupation(occupation_in_question=Architect)
-            self.construction = architect.occupation.construct_building(client=owner, business=self)
+            architect = None if not architect else architect.occupation
+            self.construction = BusinessConstruction(subject=owner, business=self, architect=architect)
+            # If a demolition of an earlier building preceded the construction of this business,
+            # attribute our new BusinessConstruction object as the .reason attribute for that
+            # Demolition attribute
+            if demolition_preceding_construction_of_this_business:
+                demolition_preceding_construction_of_this_business.reason = self.construction
         # Set address
         self.address = self.lot.address
         self.street_address_is_on = self.lot.street_address_is_on
         self.block = self.lot.block_address_is_on
-        # This gets set by self._init_get_named()
+        # Choose a name for this business
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
+            if self.name:
+                print 'RENAMING {}'.format(self.name)
             self._init_get_named()
-        # This is the set of people who require some service at this company today
-        self.customers_today_or_tonight = set()
-        self.people_here_now = set()  # People at this business on a specific time step (either working or patronizing)
+        # Set miscellaneous attributes
+        self.people_here_now = set()
+        self.demolition = None  # Potentially gets set by event.Demolition.__init__()
+        self.out_of_business = False  # Potentially gets changed by go_out_of_business()
+        self.closed = None  # Year closed
+
+        print "{} was established on {}".format(self.name, self.city.game.date)
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
         # The order really matters here -- see hire() below
-        new_position = Owner(person=owner, company=self, shift="day")
-        hiring = Hiring(subject=owner, company=self, occupation=Owner)
-        if owner.occupation and owner is not self.city.game.founder:
-            # The city founder will have multiple occupations, in the sense that they will
-            # also own multiple apartment complexes, but they will only be attributed as
-            # their occupation being owner of the construction firm
+        occupation_class_for_owner_of_this_type_of_business = (
+            self.city.game.config.owner_occupations_for_each_business_type[self.__class__]
+        )
+        new_position = occupation_class_for_owner_of_this_type_of_business(
+            person=owner, company=self, shift="day"
+        )
+        hiring = Hiring(
+            subject=owner, company=self, occupation=occupation_class_for_owner_of_this_type_of_business
+        )
+        if owner.occupation:
             owner.occupation.terminate(reason=hiring)
         owner.occupation = new_position
-        # Lastly, if the person was hired from outside the city, have them move to it --
-        # don't do this for the city founder though, who must hold off on moving here until
-        # an architect already has
-        if owner.city is not self.city and owner is not self.city.game.founder:
+        # Lastly, if the person was hired from outside the city, have them move to it
+        if owner.city is not self.city:
             owner.move_into_the_city(hiring_that_instigated_move=hiring)
         return owner.occupation
 
@@ -103,10 +140,41 @@ class Business(object):
             University: 'University',
             Cemetery: 'Cemetery',
             Park: 'Park',
+            Bakery: 'Baking Co.',
+            BlacksmithShop: 'Blacksmith Shop',
+            Brewery: 'Brewery',
+            ButcherShop: 'Butcher Shop',
+            CandyStore: 'Candy Store',
+            CarpentryCompany: 'Carpentry',
+            ClothingStore: 'Clothing Co.',
+            CoalMine: 'Coal Mine',
+            Dairy: 'Dairy',
+            Deli: 'Delicatessen',
+            DentistOffice: 'Dentistry',
+            DepartmentStore: 'Dept. Store',
+            Diner: 'Diner',
+            Distillery: 'Distillery',
+            DrugStore: 'Drug Store',
+            Farm: 'family farm',
+            Foundry: 'Foundry',
+            FurnitureStore: 'Furniture Co.',
+            GeneralStore: 'General Store',
+            GroceryStore: 'Groceries',
+            HardwareStore: 'Hardware Co.',
+            Inn: 'Inn',
+            InsuranceCompany: 'Insurance Co.',
+            JeweleryShop: 'Jewelry',
+            PaintingCompany: 'Painting',
+            Pharmacy: 'Pharmacy',
+            PlumbingCompany: 'Plumbing Co.',
+            Quarry: 'Rock Quarry',
+            ShoemakerShop: 'Shoes',
+            TailorShop: 'Tailoring',
+            Tavern: 'Tavern',
         }
         classes_that_get_special_names = (
             CityHall, FireStation, Hospital, PoliceStation, School, Cemetery, LawFirm, Bar,
-            Restaurant, University, Park
+            Restaurant, University, Park, Farm
         )
         if self.__class__ not in classes_that_get_special_names:
             if random.random() < config.chance_company_gets_named_after_owner:
@@ -118,8 +186,10 @@ class Business(object):
             name = "{0} {1}".format(prefix, class_to_company_name_component[self.__class__])
         elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, School, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
+        elif self.__class__ is Farm:
+            name = "{} family farm".format(self.owner.person.last_name)
         elif self.__class__ is LawFirm:
-            associates = [self.owner] + [e for e in self.employees if e.__class__ is Lawyer]
+            associates = [e for e in self.employees if e.__class__ is Lawyer]
             suffix = "{0} & {1}".format(
                 ', '.join(a.person.last_name for a in associates[:-1]), associates[-1].person.last_name
             )
@@ -129,14 +199,18 @@ class Business(object):
         elif self.__class__ is Restaurant:
             name = Names.a_restaurant_name()
         elif self.__class__ in (University, Park):
-            name = "{0} {1}".format(self.city.game.founder.name, class_to_company_name_component[self.__class__])
+            # TODO HAVE PARK BE NAMED AFTER FARM/QUARRY/MINE THAT PRECEDED IT
+            name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
         else:
             raise Exception("A company of class {0} was unable to be named.".format(self.__class__.__name__))
         self.name = name
 
     def __str__(self):
         """Return string representation."""
-        return "{0}, {1}".format(self.name, self.address)
+        if not self.out_of_business:
+            return "{}, {}".format(self.name, self.address)
+        else:
+            return "{}, {} ({}-{})".format(self.name, self.address, self.founded, self.closed)
 
     def _init_hire_initial_employees(self):
         """Fill all the positions that are vacant at the time of this company forming."""
@@ -146,6 +220,34 @@ class Business(object):
         # Hire employees for the night shift
         for vacant_position in self.city.game.config.initial_job_vacancies[self.__class__]['night']:
             self.hire(occupation_of_need=vacant_position, shift="night")
+
+    def _init_acquire_currently_occupied_lot(self):
+        """If there are no vacant lots in town, acquire a lot and demolish the home currently on it."""
+        lot_scores = self._rate_all_occupied_lots()
+        if len(lot_scores) >= 3:
+            # Pick from top three
+            top_three_choices = heapq.nlargest(3, lot_scores, key=lot_scores.get)
+            if random.random() < 0.6:
+                choice = top_three_choices[0]
+            elif random.random() < 0.9:
+                choice = top_three_choices[1]
+            else:
+                choice = top_three_choices[2]
+        elif lot_scores:
+            choice = max(lot_scores)
+        else:
+            raise Exception("A company attempted to secure an *occupied* lot in town but somehow could not.")
+        return choice
+
+    def _rate_all_occupied_lots(self):
+        """Rate all lots currently occupied by homes for their desirability as business locations."""
+        lots_with_homes_on_them = (
+            l for l in self.city.lots if l.building and l.building.type == 'residence'
+        )
+        scores = {}
+        for lot in lots_with_homes_on_them:
+            scores[lot] = self._rate_potential_lot(lot=lot)
+        return scores
 
     def _init_choose_vacant_lot(self):
         """Choose a vacant lot on which to build the company building.
@@ -159,7 +261,7 @@ class Business(object):
         else:
             vacant_lots_or_tracts = self.city.vacant_lots
         assert vacant_lots_or_tracts, (
-            "{0} is attempting to found a {1}, but there's no vacant lots/tracts in {2}".format(
+            "{} is attempting to found a {}, but there's no vacant lots/tracts in {}".format(
                 self.owner.person.name, self.__class__.__name__, self.city.name
             )
         )
@@ -199,24 +301,9 @@ class Business(object):
         proximity to other businesses of the same type, and to the number of people living
         near the lot.
         """
-        config = self.city.game.config
         score = 0
-        # Increase score for population surrounding this lot -- secondary population is the
-        # total population of this lot's neighboring lots; tertiary population is the
-        # total population of this lot's neighboring lots and those lots' neighboring lots
-        score += config.function_to_determine_company_preference_for_local_population(
-            secondary_pop=self.city.secondary_population(lot), tertiary_pop=self.city.tertiary_population(lot)
-        )
-        # Decrease score for being near to another company of this same type
-        dist_to_nearest_company_of_same_type = (
-            self.city.dist_to_nearest_business_of_type(lot, business_type=type(self), exclusion=self)
-        )
-        if dist_to_nearest_company_of_same_type is not None:  # It will be None if there is no such business yet
-            score -= config.function_to_determine_company_penalty_for_nearby_company_of_same_type(
-                dist_to_nearest_company_of_same_type=dist_to_nearest_company_of_same_type
-            )
-        # As an emergency criterion for the case where there are no people or companies in the town
-        # yet, rate lots according to their distance from downtown
+        # As (now) the only criterion, rate lots according to their distance
+        # from downtown; this causes a downtown commercial area to naturally emerge
         score -= self.city.dist_from_downtown(lot)
         return score
 
@@ -247,12 +334,17 @@ class Business(object):
 
     def hire(self, occupation_of_need, shift):
         """Scour the job market to hire someone to fulfill the duties of occupation."""
-        job_candidates_in_town = self._assemble_job_candidates(occupation_of_need=occupation_of_need)
-        if job_candidates_in_town:
-            candidate_scores = self._rate_all_job_candidates(candidates=job_candidates_in_town)
-            selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
+        # If you have someone working here who is an apprentice, hire them outright
+        if (self.city.game.config.job_levels[occupation_of_need] > self.city.game.config.job_levels[Apprentice] and
+                any(e for e in self.employees if e.__class__ == Apprentice)):
+            selected_candidate = next(e for e in self.employees if e.__class__ == Apprentice).person
         else:
-            selected_candidate = self._find_candidate_from_outside_the_city(occupation_of_need=occupation_of_need)
+            job_candidates_in_town = self._assemble_job_candidates(occupation_of_need=occupation_of_need)
+            if job_candidates_in_town:
+                candidate_scores = self._rate_all_job_candidates(candidates=job_candidates_in_town)
+                selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
+            else:
+                selected_candidate = self._find_candidate_from_outside_the_city(occupation_of_need=occupation_of_need)
         # Instantiate the new occupation -- this means that the subject may
         # momentarily have two occupations simultaneously
         new_position = occupation_of_need(person=selected_candidate, company=self, shift=shift)
@@ -273,6 +365,10 @@ class Business(object):
         # person was just hired for, triggering endless recursion as the company tries to
         # fill this vacancy in a Sisyphean nightmare)
         selected_candidate.occupation = new_position
+        # If this is a law firm and the new hire is a lawyer, change the name
+        # of this firm to include the new lawyer's name
+        if self.__class__ == "LawFirm" and new_position == Lawyer:
+            self._init_get_named()
         # Lastly, if the person was hired from outside the city, have them move to it
         if selected_candidate.city is not self.city:
             selected_candidate.move_into_the_city(hiring_that_instigated_move=hiring)
@@ -378,16 +474,16 @@ class Business(object):
                 qualified = False
         return qualified
 
-    def serve_customers(self):
-        """Serve customers (gets overridden by certain subclasses as appropriate)."""
-        pass
-
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         if feature_type == "business block":
             return self.block
         elif feature_type == "business address":
             return self.address
+
+    def go_out_of_business(self, reason):
+        """Cease operation of this business."""
+        BusinessClosure(business=self, reason=reason)
 
 
 class ApartmentComplex(Business):
@@ -576,6 +672,17 @@ class ClothingStore(Business):
         super(ClothingStore, self).__init__(owner)
 
 
+class CoalMine(Business):
+    """A coal mine."""
+
+    def __init__(self, owner):
+        """Initialize a ClothingStore object.
+
+        @param owner: The owner of this business.
+        """
+        super(CoalMine, self).__init__(owner)
+
+
 class ConstructionFirm(Business):
     """A construction firm."""
 
@@ -636,6 +743,17 @@ class Deli(Business):
         @param owner: The owner of this business.
         """
         super(Deli, self).__init__(owner)
+
+
+class DentistOffice(Business):
+    """A dentist office."""
+
+    def __init__(self, owner):
+        """Initialize a DentistOffice object.
+
+        @param owner: The owner of this business.
+        """
+        super(DentistOffice, self).__init__(owner)
 
 
 class DepartmentStore(Business):
@@ -834,6 +952,26 @@ class LawFirm(Business):
         @param owner: The owner of this business.
         """
         super(LawFirm, self).__init__(owner)
+
+    def rename_due_to_lawyer_change(self):
+        """Rename this company due to the hiring of a new lawyer."""
+        partners = [e for e in self.employees if e.__class__ is Lawyer]
+        if len(partners) > 1:
+            partners_str = "{} & {}".format(
+                ', '.join(a.person.last_name for a in partners[:-1]),
+                partners[-1].person.last_name
+            )
+            self.name = "Law Offices of {}".format(partners_str)
+        elif partners:
+            # If there's only one lawyer at this firm now, have its
+            # name be 'Law Offices of [first name] [last name]'
+            self.name = "Law Offices of {} {}".format(
+                partners[0].person.first_name, partners[0].person.last_name
+            )
+        else:
+            # The only lawyer working here retired or departed the city -- the
+            # business will shut down shortly and this will be its final name
+            pass
 
     @property
     def filed_divorces(self):
