@@ -48,13 +48,7 @@ class Business(object):
                 building=acquired_lot.building, demolition_company=demolition_company
             )
             self.lot = acquired_lot
-            print "{} DEMOLISHED {} TO BUILD ON THERE".format(
-                self.__class__.__name__, demolition_preceding_construction_of_this_business.building.name
-            )
-        if self.__class__ in config.companies_that_get_established_on_tracts:
-            self.lot.landmark = self
-        else:
-            self.lot.building = self
+        self.lot.building = self
         # First, hire employees -- this is done first because the first-ever business, a
         # construction firm started by the city founder, will need to hire the city's
         # first architect before it can construct its own building
@@ -82,8 +76,6 @@ class Business(object):
         # Choose a name for this business
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):
-            if self.name:
-                print 'RENAMING {}'.format(self.name)
             self._init_get_named()
         # Set miscellaneous attributes
         self.people_here_now = set()
@@ -91,8 +83,6 @@ class Business(object):
         self.out_of_business = False  # Potentially gets changed by go_out_of_business()
         self.closed = None  # Year closed
         self.former_owners = []
-
-        print "{} was established on {}".format(self.name, self.city.game.date)
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
@@ -196,9 +186,17 @@ class Business(object):
             )
             name = "{0} {1}".format(class_to_company_name_component[LawFirm], suffix)
         elif self.__class__ is Bar:
-            name = Names.a_bar_name()
+            if self.city.game.year > 1968:
+                # Choose a name from the corpus of bar names
+                name = Names.a_bar_name()
+            else:
+                name = self.owner.last_name + "'s"
         elif self.__class__ is Restaurant:
-            name = Names.a_restaurant_name()
+            if self.city.game.year > 1968:
+                # Choose a name from the corpus of restaurant names
+                name = Names.a_restaurant_name()
+            else:
+                name = self.owner.last_name + "'s"
         elif self.__class__ in (University, Park):
             # TODO HAVE PARK BE NAMED AFTER FARM/QUARRY/MINE THAT PRECEDED IT
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])

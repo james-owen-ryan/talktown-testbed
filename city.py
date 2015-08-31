@@ -472,7 +472,7 @@ class City(object):
     @property
     def vacant_tracts(self):
         """Return all vacant tracts in the city."""
-        vacant_tracts = [tract for tract in self.tracts if not tract.landmark]
+        vacant_tracts = [tract for tract in self.tracts if not tract.building]
         return vacant_tracts
 
     @property
@@ -652,9 +652,8 @@ class Lot(object):
         self.streets = []
         self.blocks = []
         self.sides_of_street = []
-        self.house_numbers = []  # In the event a business/landmark is erected here, it inherits this
-        self.building = None  # Will always be None for Tract
-        self.landmark = None  # Will always be None for Lot
+        self.house_numbers = []  # In the event a business is erected here, it inherits this
+        self.building = None
         self.positions_in_block = []
         self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots after all lots have been generated
         # These get set by init_generate_address(), which gets called by City
