@@ -51,7 +51,14 @@ class Occupation(object):
 
     def __str__(self):
         """Return string representation."""
-        return "{0} at {1}".format(self.__class__.__name__, self.company.name)
+        if not self.terminus:
+            return "{} at {} since {}".format(
+                self.__class__.__name__, self.company.name, self.hiring.year
+            )
+        else:
+            return "{} at {} {}-{}".format(
+                self.__class__.__name__, self.company.name, self.hiring.year, self.terminus.year
+            )
 
     @property
     def years_experience(self):
