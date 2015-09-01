@@ -322,8 +322,8 @@ class BusinessConstruction(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Construction of {0} at {1} in {2}".format(
-            self.business, self.business.address, self.year
+        return "Construction of {} at {} in {}".format(
+            self.business.name, self.business.address, self.year
         )
 
     def _remunerate(self):
@@ -485,9 +485,14 @@ class Demolition(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Demolition of {} by {} in {}".format(
-            self.building.name, self.demolition_company, self.year
-        )
+        if self.reason:
+            return "Demolition of {} on behalf of {} in {}".format(
+                self.building.name, self.reason.company, self.year
+            )
+        else:
+            return "Demolition of {} in {}".format(
+                self.building.name, self.year
+            )
 
 
 class Departure(Event):
@@ -741,8 +746,8 @@ class Hiring(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Hiring of {0} as {1} in {2}".format(
-            self.subject.name, self.occupation, self.year
+        return "Hiring of {} as {} at {} in {}".format(
+            self.subject.name, self.occupation.__class__.__name__, self.occupation.company.name, self.year
         )
 
 
@@ -867,8 +872,8 @@ class LayOff(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Laying off of {} as {} in {}".format(
-            self.subject.name, self.occupation, self.year
+        return "Laying off of {} as {} at {} in {}".format(
+            self.subject.name, self.occupation.__class__.__name__, self.occupation.company.name, self.year
         )
 
 
@@ -1190,6 +1195,6 @@ class Retirement(Event):
 
     def __str__(self):
         """Return string representation."""
-        return "Retirement of {} as {} in {}".format(
-            self.subject.name, self.occupation, self.year
+        return "Retirement of {} as {} at {} in {}".format(
+            self.subject.name, self.occupation.__class__.__name__, self.occupation.company.name, self.year
         )

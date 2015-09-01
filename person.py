@@ -57,7 +57,7 @@ class Person(object):
             self.adult = True if self.age >= 18 else False
             self.ready_to_work = True if self.age >= self.game.config.age_people_start_working else False
         # Set sex
-        self.male, self.female = self._init_sex()
+        self.male, self.female = (True, False) if random.random() < 0.5 else (False, True)
         self.tag = ''  # Allows players to tag characters with arbitrary strings
         # Set misc attributes
         self.alive = True
@@ -203,17 +203,6 @@ class Person(object):
             return "{0}, {1} years old".format(self.name, self.age)
         else:
             return "{0}, {1}-{2}".format(self.name, self.birth_year, self.death_year)
-
-    @staticmethod
-    def _init_sex():
-        """Determine the sex of this person."""
-        if random.random() < 0.5:
-            male = True
-            female = False
-        else:
-            male = False
-            female = True
-        return male, female
 
     @staticmethod
     def _init_fertility(male, config):
@@ -850,8 +839,32 @@ class Person(object):
             return 'niece'
         elif person is self.spouse:
             return 'husband' if person.male else 'wife'
-        elif person.spouse in self.siblings:
+        elif self.divorces and any(d for d in self.divorces if person in d.subjects):
+            return 'ex-husband' if person.male else 'ex-wife'
+        elif self.widowed and any(m for m in self.marriages if person in m.subjects and m.terminus is person.death):
+            return 'deceased husband' if person.male else 'deceased wife'
+        elif person.spouse in self.siblings or self.spouse in person.siblings:
             return 'brother in law' if person.male else 'sister in law'
+        elif self.father and any(d for d in self.father.divorces if person in d.subjects):
+            return "father's ex-{}".format('husband' if person.male else 'wife')
+        elif self.mother and any(d for d in self.mother.divorces if person in d.subjects):
+            return "mother's ex-{}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.brothers if any(d for d in s.divorces if person in d.subjects)):
+            return "brother's ex-{}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.sisters if any(d for d in s.divorces if person in d.subjects)):
+            return "sister's ex-{}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.brothers if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+            return "brother's deceased {}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.sisters if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+            return "sister's deceased {}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.brothers if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+            return "deceased brother's former {}".format('husband' if person.male else 'wife')
+        elif any(s for s in self.sisters if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+            return "deceased sister's former {}".format('husband' if person.male else 'wife')
         elif person.spouse in self.kids:
             return 'son in law' if person.male else 'daughter in law'
         elif self.spouse and person in self.spouse.parents:
@@ -999,6 +1012,41 @@ class Person(object):
             mortician.occupation.inter_body(deceased=self, cause_of_death=cause_of_death)
         else:  # This is probably the mortician themself dying
             event.Death(subject=self, mortician=None, cause_of_death=cause_of_death)
+
+    def find_work(self):
+        """Find a job at a local business.
+
+        This method has every business in town that had potential job vacancies
+        rate this person as a candidate for those vacancies. The person then
+        gets hired by the company who has rated them highest, assuming they
+        qualify for any positions at all.
+        """
+        scores = {}
+        # Assemble scores of this person as a job candidate from all companies
+        # in town for all of their open positions, day- or night-shift
+        for company in self.city.companies:
+            for shift in ('day', 'night'):
+                for position in company.job_vacancies[shift]:
+                    i_am_qualified_for_this_position = (
+                        company.check_if_person_is_qualified_for_the_position(
+                            candidate=self, occupation_of_need=position
+                        )
+                    )
+                    if i_am_qualified_for_this_position:
+                        score = company.rate_job_candidate(person=self)
+                        # The open positions are listed in order of priority, so
+                        # penalize this position if its not the company's top priority
+                        priority = company.job_vacancies[shift].index(position)
+                        score /= priority+1
+                        scores[(company, position, shift)] = score
+        # If this person qualified for any position, have them be hired to the one
+        # for which they were scored mostly highly
+        if scores:
+            company, position, shift = max(scores, key=scores.get)
+            company.hire(
+                occupation_of_need=position, shift=shift, to_replace=None,
+                fills_additional_job_vacancy=True, selected_candidate=self
+            )
 
     def move_out_of_parents(self):
         """Move out of parents' house."""
@@ -1500,6 +1548,12 @@ class PersonExNihilo(Person):
         if spouse_already_generated:
             self.male, self.female = self._override_sex(spouse=spouse_already_generated)
             self.attracted_to_men, self.attracted_to_women = self._override_sexuality(spouse=spouse_already_generated)
+        elif job_opportunity_impetus:
+            # Make sure you have the appropriate sex for the job position you are coming
+            # to town to accept; if you don't, swap your sex and
+            if not self.game.config.employable_as_a[job_opportunity_impetus](applicant=self):
+                self.male, self.female = self.female, self.male
+                self.attracted_to_men, self.attracted_to_women = (False, True) if self.male else (True, False)
         # Overwrite birth year set by Person.__init__()
         if spouse_already_generated and spouse_already_generated is self.game.founder:
             self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)

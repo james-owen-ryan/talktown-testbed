@@ -256,6 +256,9 @@ class Game(object):
                         chance_they_are_trying_to_conceive_this_year /= chance_of_a_day_being_simulated*365
                         if random.random() < chance_they_are_trying_to_conceive_this_year:
                             person.have_sex(partner=person.spouse, protection=False)
+                        elif random.random() < self.config.chance_a_divorce_happens_some_timestep:
+                            lawyer = person.contract_person_of_certain_occupation(occupation_in_question=Lawyer)
+                            Divorce(subjects=(person, person.spouse), lawyer=lawyer)
                     if person.age > max(72, random.random() * 100):
                         # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
                         if person is not self.founder:
@@ -265,14 +268,13 @@ class Game(object):
                     # elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
                     #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
                     #         person.depart_city()
-                    elif person.adult and not person.occupation:
-                        if random.random() < 0.005:
-                            self.potentially_shut_down_businesses()
-                        # elif random.random() > 0.70:
-                        #     person.depart_city()
-                        elif person.age > 22:
+                    elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
+                        if random.random() < 0.01:
+                            person.find_work()
+                        elif person.age > 22 and person.male if self.year > 1920 else True:
                             person.college_graduate = True
-                    elif person.age > 18 and person not in person.home.owners:
+                    elif (person.male and person.occupation and person not in person.home.owners and
+                          random.random() > 0.005):
                         person.move_out_of_parents()
                 days_since_last_simulated_day = self.ordinal_date-last_simulated_day
                 # Reset all Relationship interacted_this_timestep attributes
@@ -322,7 +324,9 @@ class Game(object):
                             type_of_business_that_will_open = randomly_selected_type
                 if self.city.population < 50 or tries > 10:  # Just not ready for more businesses yet -- grow naturally
                     break
-            if type_of_business_that_will_open:
+            if type_of_business_that_will_open in config.public_company_types:
+                type_of_business_that_will_open(owner=self.city.mayor)
+            elif type_of_business_that_will_open:
                 owner = self._determine_who_will_establish_new_business(business_type=type_of_business_that_will_open)
                 type_of_business_that_will_open(owner=owner)
 
@@ -333,9 +337,11 @@ class Game(object):
             config.owner_occupations_for_each_business_type[business_type]
         )
         if occupation_type_for_owner_of_this_type_of_business in config.occupations_requiring_college_degree:
-            if any(p for p in self.city.residents if p.college_graduate and not p.occupations):
+            if any(p for p in self.city.residents if p.college_graduate and not p.occupations and
+                   config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
                 # Have a fresh college graduate in town start up a dentist office or whatever it is
-                owner = next(p for p in self.city.residents if not p.college_graduate and not p.occupations)
+                owner = next(p for p in self.city.residents if p.college_graduate and not p.occupations and
+                             config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
             else:
                 # Have someone from outside the city come in
                 owner = PersonExNihilo(
@@ -345,11 +351,15 @@ class Game(object):
         else:
             if config.job_levels[occupation_type_for_owner_of_this_type_of_business] < 3:
                 # Have a young person step up and start their career as a tradesman
-                if any(p for p in g.city.residents if p.ready_to_work and not p.occupations):
-                    owner = next(p for p in g.city.residents if p.ready_to_work and not p.occupations)
+                if any(p for p in g.city.residents if p.ready_to_work and not p.occupations and
+                       config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
+                    owner = next(p for p in g.city.residents if p.ready_to_work and not p.occupations and
+                       config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
                 # Have any unemployed person in town try their hand at running a business
-                elif any(p for p in g.city.residents if not p.retired and not p.occupation):
-                    owner = next(p for p in g.city.residents if not p.retired and not p.occupation)
+                elif any(p for p in g.city.residents if not p.retired and not p.occupation and
+                         config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
+                    owner = next(p for p in g.city.residents if not p.retired and not p.occupation and
+                         config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
                 else:
                     # Have someone from outside the city come in
                     owner = PersonExNihilo(
@@ -539,6 +549,20 @@ class Game(object):
                 return people_named_this[0]
         else:
             raise Exception('There is no one in {} named {}'.format(self.city.name, name))
+
+    def find_deceased(self, name):
+        """Return deceased person with that name."""
+        if any(p for p in self.city.deceased if p.name == name):
+            people_named_this = [p for p in self.city.deceased if p.name == name]
+            if len(people_named_this) > 1:
+                print '\nWarning: Multiple {} residents are named {}; returning a complete list\n'.format(
+                    self.city.name, name
+                )
+                return people_named_this
+            else:
+                return people_named_this[0]
+        else:
+            raise Exception('There is no one named {} who died in {]'.format(name, self.city.name))
 
     def find_by_hex(self, hex_value):
         """Return person whose ID in memory has the given hex value."""

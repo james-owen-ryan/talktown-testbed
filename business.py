@@ -33,7 +33,7 @@ class Business(object):
         else:
             self.city.other_businesses.add(self)
         self.founded = self.city.game.year
-        if self.city.vacant_lots:
+        if self.city.vacant_lots or self.__class__ in config.companies_that_get_established_on_tracts:
             self.lot = self._init_choose_vacant_lot()
             demolition_preceding_construction_of_this_business = None
         else:
@@ -59,6 +59,13 @@ class Business(object):
         else:
             self.owner = self._init_set_and_get_owner_occupation(owner=owner)
         self._init_hire_initial_employees()
+        # Also set the vacancies this company will initially have that may get filled
+        # up gradually by people seeking employment (most often, this will be kids who
+        # grow up and are ready to work and people who were recently laid off)
+        self.job_vacancies = {
+            'day': config.initial_job_vacancies[self.__class__]['additional day'],
+            'night': config.initial_job_vacancies[self.__class__]['additional night']
+        }
         if self.__class__ not in config.companies_that_get_established_on_tracts:
             # Try to find an architect -- if you can't, you'll have to build it yourself
             architect = owner.contract_person_of_certain_occupation(occupation_in_question=Architect)
@@ -178,7 +185,9 @@ class Business(object):
         elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, School, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
         elif self.__class__ is Farm:
-            name = "{} family farm".format(self.owner.person.last_name)
+            name = "{} farm".format(self.owner.person.name)
+            if any(c for c in self.city.companies if c.name == name):
+                name = "{} farm".format(self.owner.person.full_name)
         elif self.__class__ is LawFirm:
             associates = [e for e in self.employees if e.__class__ is Lawyer]
             suffix = "{0} & {1}".format(
@@ -186,20 +195,110 @@ class Business(object):
             )
             name = "{0} {1}".format(class_to_company_name_component[LawFirm], suffix)
         elif self.__class__ is Bar:
-            if self.city.game.year > 1968:
-                # Choose a name from the corpus of bar names
-                name = Names.a_bar_name()
-            else:
-                name = self.owner.last_name + "'s"
+            name = Names.a_bar_name()
+            # if self.city.game.year > 1968:
+            #     # Choose a name from the corpus of bar names
+            #     name = Names.a_bar_name()
+            # else:
+            #     name = self.owner.person.last_name + "'s"
         elif self.__class__ is Restaurant:
-            if self.city.game.year > 1968:
-                # Choose a name from the corpus of restaurant names
-                name = Names.a_restaurant_name()
-            else:
-                name = self.owner.last_name + "'s"
-        elif self.__class__ in (University, Park):
-            # TODO HAVE PARK BE NAMED AFTER FARM/QUARRY/MINE THAT PRECEDED IT
-            name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
+            name = Names.a_restaurant_name()
+            # if self.city.game.year > 1968:
+            #     # Choose a name from the corpus of restaurant names
+            #     name = Names.a_restaurant_name()
+            # else:
+            #     name = self.owner.person.last_name + "'s"
+        elif self.__class__ is University:
+            name = "{} College".format(self.city.name)
+        elif self.__class__ is Park:
+            if self.lot.former_buildings:
+                business_here_previously = list(self.lot.former_buildings)[-1]
+                owner = business_here_previously.owner.person
+                if business_here_previously.__class__ is Farm:
+                    x = random.random()
+                    if x < 0.25:
+                        name = '{} {} Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.5:
+                        name = '{} Farm Park'.format(
+                            owner.last_name
+                        )
+
+                    elif x < 0.75:
+                        name = '{} Park'.format(
+                            owner.last_name
+                        )
+                    elif x < 0.8:
+                        name = 'Old Farm Park'
+                    elif x < 0.9:
+                        name = '{} {} Memorial Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.97:
+                        name = '{} Memorial Park'.format(
+                            owner.last_name
+                        )
+                    else:
+                        name = '{} Park'.format(self.city.name)
+                elif business_here_previously.__class__ is Quarry:
+                    x = random.random()
+                    if x < 0.25:
+                        name = '{} {} Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.5:
+                        name = '{} Park'.format(
+                            business_here_previously.name
+                        )
+
+                    elif x < 0.75:
+                        name = '{} Park'.format(
+                            owner.last_name
+                        )
+                    elif x < 0.8:
+                        name = 'Old Quarry Park'
+                    elif x < 0.9:
+                        name = '{} {} Memorial Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.97:
+                        name = 'Quarry Park'.format(
+                            owner.last_name
+                        )
+                    else:
+                        name = '{} Park'.format(self.city.name)
+                elif business_here_previously.__class__ is CoalMine:
+                    x = random.random()
+                    if x < 0.25:
+                        name = '{} {} Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.5:
+                        name = '{} Park'.format(
+                            business_here_previously.name
+                        )
+
+                    elif x < 0.75:
+                        name = '{} Park'.format(
+                            owner.last_name
+                        )
+                    elif x < 0.8:
+                        name = 'Old Mine Park'
+                    elif x < 0.9:
+                        name = '{} {} Memorial Park'.format(
+                            owner.first_name, owner.last_name
+                        )
+                    elif x < 0.97:
+                        name = 'Coal Mine Park'.format(
+                            owner.last_name
+                        )
+                    elif x < 0.99:
+                        name = 'Coal Park'.format(
+                            owner.last_name
+                        )
+                    else:
+                        name = '{} Park'.format(self.city.name)
         else:
             raise Exception("A company of class {0} was unable to be named.".format(self.__class__.__name__))
         self.name = name
@@ -331,12 +430,14 @@ class Business(object):
         day_shift = set([employee for employee in self.employees if employee.shift == "night"])
         return day_shift
 
-    def hire(self, occupation_of_need, shift, to_replace=None):
-        """Scour the job market to hire someone to fulfill the duties of occupation."""
+    def _find_candidate(self, occupation_of_need):
+        """Find the best available candidate to fill the given occupation of need."""
         # If you have someone working here who is an apprentice, hire them outright
         if (self.city.game.config.job_levels[occupation_of_need] > self.city.game.config.job_levels[Apprentice] and
-                any(e for e in self.employees if e.__class__ == Apprentice)):
-            selected_candidate = next(e for e in self.employees if e.__class__ == Apprentice).person
+                any(e for e in self.employees if e.__class__ == Apprentice and e.years_experience > 0)):
+            selected_candidate = next(
+                e for e in self.employees if e.__class__ == Apprentice and e.years_experience > 0
+            ).person
         else:
             job_candidates_in_town = self._assemble_job_candidates(occupation_of_need=occupation_of_need)
             if job_candidates_in_town:
@@ -344,6 +445,14 @@ class Business(object):
                 selected_candidate = self._select_candidate(candidate_scores=candidate_scores)
             else:
                 selected_candidate = self._find_candidate_from_outside_the_city(occupation_of_need=occupation_of_need)
+        return selected_candidate
+
+    def hire(self, occupation_of_need, shift, to_replace=None,
+             fills_additional_job_vacancy=False, selected_candidate=None):
+        """Hire the given selected candidate."""
+        # If no candidate has yet been selected, scour the job market to find one
+        if not selected_candidate:
+            selected_candidate = self._find_candidate(occupation_of_need=occupation_of_need)
         # Instantiate the new occupation -- this means that the subject may
         # momentarily have two occupations simultaneously
         new_position = occupation_of_need(person=selected_candidate, company=self, shift=shift)
@@ -352,6 +461,10 @@ class Business(object):
         if to_replace:
             to_replace.succeeded_by = new_position
             new_position.preceded_by = to_replace
+            # If this person is being hired to replace the owner, they are now the owner --
+            # TODO not all businesses should transfer ownership using the standard hiring process
+            if to_replace is self.owner:
+                self.owner = new_position
         # Now instantiate a Hiring object to hold data about the hiring
         hiring = Hiring(subject=selected_candidate, company=self, occupation=new_position)
         # Now terminate the person's former occupation, if any (which may cause
@@ -373,6 +486,10 @@ class Business(object):
         # of this firm to include the new lawyer's name
         if self.__class__ == "LawFirm" and new_position == Lawyer:
             self._init_get_named()
+        # If this position filled one of this company's "additional" job vacancies (see
+        # config.py), then remove an instance of this position from that list
+        if fills_additional_job_vacancy:
+            self.job_vacancies[shift].remove(occupation_of_need)
         # Lastly, if the person was hired from outside the city, have them move to it
         if selected_candidate.city is not self.city:
             selected_candidate.move_into_the_city(hiring_that_instigated_move=hiring)
@@ -404,14 +521,14 @@ class Business(object):
         """Rate all job candidates."""
         scores = {}
         for candidate in candidates:
-            scores[candidate] = self._rate_job_candidate(person=candidate)
+            scores[candidate] = self.rate_job_candidate(person=candidate)
         return scores
 
-    def _rate_job_candidate(self, person):
+    def rate_job_candidate(self, person):
         """Rate a job candidate, given an open position and owner biases."""
         config = self.city.game.config
         decision_maker = self.owner.person if self.owner else self.city.mayor
-        score = 0
+        score = 0.0
         if person in self.employees:
             score += config.preference_to_hire_from_within_company
         if person in decision_maker.immediate_family:
@@ -437,21 +554,21 @@ class Business(object):
         # reasoning over people that could be promoted from within this company
         for company in self.city.companies:
             for position in company.employees:
-                person_is_qualified = self._check_if_person_is_qualified_for_the_position(
+                person_is_qualified = self.check_if_person_is_qualified_for_the_position(
                     candidate=position.person, occupation_of_need=occupation_of_need
                 )
                 if person_is_qualified:
                     candidates.add(position.person)
         # Consider unemployed (mostly young) people if they are qualified
         for person in self.city.unemployed:
-            person_is_qualified = self._check_if_person_is_qualified_for_the_position(
+            person_is_qualified = self.check_if_person_is_qualified_for_the_position(
                 candidate=person, occupation_of_need=occupation_of_need
             )
             if person_is_qualified:
                 candidates.add(person)
         return candidates
 
-    def _check_if_person_is_qualified_for_the_position(self, candidate, occupation_of_need):
+    def check_if_person_is_qualified_for_the_position(self, candidate, occupation_of_need):
         """Check if the job candidate is qualified for the position you are hiring for."""
         config = self.city.game.config
         qualified = False
@@ -470,12 +587,13 @@ class Business(object):
                     qualified = True
             else:
                 qualified = True
-        # Lastly, make sure they have been at their old job for at least a year
-        # if they are already living in this city and this isn't an entry-level
-        # position (otherwise people climb the ranks instantaneously)
-        if level_of_this_position > 1:
-            if candidate.city is self.city and (not candidate.occupation or candidate.occupation.years_experience < 1):
-                qualified = False
+        # Make sure the candidates gender would not make their hiring historically inaccurate
+        if not config.employable_as_a[occupation_of_need](applicant=candidate):
+            qualified = False
+        # Lastly, make sure they have been at their old job for at least a year,
+        # if they had one
+        if candidate.occupation and candidate.occupation.years_experience < 1:
+            qualified = False
         return qualified
 
     def get_feature(self, feature_type):
