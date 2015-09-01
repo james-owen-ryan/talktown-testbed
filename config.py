@@ -289,7 +289,7 @@ class Config(object):
         # Company types that get established on tracts, not on lots
         self.companies_that_get_established_on_tracts = (Cemetery, Park, Farm, Quarry, CoalMine)  # TODO maybe add University?
         # Companies hiring people
-        self.preference_to_hire_immediate_family = 3
+        self.preference_to_hire_immediate_family = 9
         self.preference_to_hire_from_within_company = 2
         self.preference_to_hire_extended_family = 1
         self.preference_to_hire_friend = 1  # TODO modify this according to charge
@@ -1084,7 +1084,7 @@ class Config(object):
         self.function_to_derive_score_multiplier_bonus_for_experience = (
             lambda years_experience: years_experience**0.2
         )
-        self.preference_to_contract_immediate_family = 3
+        self.preference_to_contract_immediate_family = 9
         self.preference_to_contract_friend = 2  # TODO have this be modified by charge
         self.dispreference_to_contract_enemy = -2  # TODO have this be modified by charge
         self.preference_to_contract_former_contract = 2
