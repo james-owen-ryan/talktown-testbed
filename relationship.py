@@ -5,6 +5,8 @@ from belief import *
 
 # TODO make proposing, general romantic progressions better
 
+# TODO NORMALIZE CHARGE, SPARK, TRUST
+
 
 class Relationship(object):
     """A social and/or romantic relationship between two people."""
