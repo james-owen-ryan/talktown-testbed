@@ -470,6 +470,7 @@ class Demolition(Event):
         building.lot.building = None
         building.lot.former_buildings.append(building)
         if building.__class__ == House:
+            self.city.homes.remove(building)
             self._have_the_now_displaced_residents_move()
 
     def _have_the_now_displaced_residents_move(self):
@@ -487,7 +488,7 @@ class Demolition(Event):
         """Return string representation."""
         if self.reason:
             return "Demolition of {} on behalf of {} in {}".format(
-                self.building.name, self.reason.company, self.year
+                self.building.name, self.reason.business, self.year
             )
         else:
             return "Demolition of {} in {}".format(

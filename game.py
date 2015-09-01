@@ -269,7 +269,7 @@ class Game(object):
                     #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
                     #         person.depart_city()
                     elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
-                        if random.random() < 0.01:
+                        if random.random() < 0.03:
                             person.find_work()
                         elif person.age > 22 and person.male if self.year > 1920 else True:
                             person.college_graduate = True
