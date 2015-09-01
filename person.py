@@ -1035,10 +1035,16 @@ class Person(object):
                     position, shift = self.game.config.initial_job_vacancies['day'][0], 'day'
                 else:
                     position, shift = self.game.config.initial_job_vacancies['night'][0], 'night'
-            dads_company.hire(
-                occupation_of_need=position, shift=shift, to_replace=None,
-                fills_supplemental_job_vacancy=True, selected_candidate=self
+            i_am_qualified_for_this_position = (
+                dads_company.check_if_person_is_qualified_for_the_position(
+                    candidate=self, occupation_of_need=position
+                )
             )
+            if i_am_qualified_for_this_position:
+                dads_company.hire(
+                    occupation_of_need=position, shift=shift, to_replace=None,
+                    fills_supplemental_job_vacancy=True, selected_candidate=self
+                )
         else:
             scores = self._get_scored_as_job_candidate_by_all_companies()
             # If this person qualified for any position, have them be hired to the one
