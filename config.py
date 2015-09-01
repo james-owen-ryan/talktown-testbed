@@ -289,10 +289,12 @@ class Config(object):
         # Company types that get established on tracts, not on lots
         self.companies_that_get_established_on_tracts = (Cemetery, Park, Farm, Quarry, CoalMine)  # TODO maybe add University?
         # Companies hiring people
-        self.preference_to_hire_immediate_family = 9
-        self.preference_to_hire_from_within_company = 2
-        self.preference_to_hire_extended_family = 1
-        self.preference_to_hire_friend = 1  # TODO modify this according to charge
+        self.preference_to_hire_immediate_family = 15
+        self.preference_to_hire_extended_family = 7
+        self.preference_to_hire_from_within_company = 5
+        self.preference_to_hire_friend = 4  # TODO modify this according to charge
+        self.preference_to_hire_immediate_family_of_an_employee = 3
+        self.preference_to_hire_extended_family_of_an_employee = 2
         self.dispreference_to_hire_enemy = -1  # TODO modify this according to charge
         self.preference_to_hire_acquaintance = 0.5  # TODO modify this according to charge
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates

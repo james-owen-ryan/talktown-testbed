@@ -540,6 +540,10 @@ class Business(object):
             score += config.preference_to_hire_immediate_family
         elif person in decision_maker.extended_family:
             score += config.preference_to_hire_extended_family
+        if person.immediate_family & self.employees:
+            score + config.preference_to_hire_immediate_family_of_an_employee
+        elif person.extended_family & self.employees:
+            score + config.preference_to_hire_extended_family_of_an_employee
         if person in decision_maker.friends:
             score += config.preference_to_hire_friend
         elif person in decision_maker.acquaintances:
