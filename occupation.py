@@ -21,6 +21,7 @@ class Occupation(object):
         self.terminus = None  # Changed by self.terminate
         self.preceded_by = None  # Employee that preceded this one in its occupation -- gets set by Business.hire()
         self.succeeded_by = None  # Employee that succeeded this one in its occupation -- gets set by Business.hire()
+        self.supplemental = False  # Whether this position must be immediately refilled if terminated -- Business.hire()
         # Note: self.person.occupation gets set by Business.hire(), because there's
         # a really tricky pipeline that has to be maintained
         person.occupations.append(self)
@@ -97,10 +98,19 @@ class Occupation(object):
                     entity=employee.person, change=change_in_salience_for_former_coworker
                 )
         # This position is now vacant, so now have the company that this person worked
-        # for fill that now vacant position (which may cause a hiring chain)
+        # for fill that now vacant position (which may cause a hiring chain) unless
+        # this position is supplemental (i.e., not vital to this businesses' basic
+        # operation), in which case we add it back into the business's listing of
+        # supplemental positions that may be filled at some point that someone really
+        # needs work
         if not self.company.out_of_business:
             position_that_is_now_vacant = self.__class__
-            self.company.hire(occupation_of_need=position_that_is_now_vacant, shift=self.shift, to_replace=self)
+            if not self.supplemental:
+                self.company.hire(
+                    occupation_of_need=position_that_is_now_vacant, shift=self.shift, to_replace=self
+                )
+            else:
+                self.company.supplemental_vacancies[self.shift].append(position_that_is_now_vacant)
         # If the person hasn't already been hired to a new position, set their occupation
         # attribute to None
         if self.person.occupation is self:

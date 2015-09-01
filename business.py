@@ -56,15 +56,17 @@ class Business(object):
         self.former_employees = set()
         if self.__class__ in config.public_company_types:  # Hospital, police station, fire station, etc.
             self.owner = None
+            self.founder = None
         else:
             self.owner = self._init_set_and_get_owner_occupation(owner=owner)
+            self.founder = self.owner
         self._init_hire_initial_employees()
         # Also set the vacancies this company will initially have that may get filled
         # up gradually by people seeking employment (most often, this will be kids who
         # grow up and are ready to work and people who were recently laid off)
-        self.job_vacancies = {
-            'day': config.initial_job_vacancies[self.__class__]['additional day'],
-            'night': config.initial_job_vacancies[self.__class__]['additional night']
+        self.supplemental_vacancies = {
+            'day': config.initial_job_vacancies[self.__class__]['supplemental day'],
+            'night': config.initial_job_vacancies[self.__class__]['supplemental night']
         }
         if self.__class__ not in config.companies_that_get_established_on_tracts:
             # Try to find an architect -- if you can't, you'll have to build it yourself
@@ -448,7 +450,7 @@ class Business(object):
         return selected_candidate
 
     def hire(self, occupation_of_need, shift, to_replace=None,
-             fills_additional_job_vacancy=False, selected_candidate=None):
+             fills_supplemental_job_vacancy=False, selected_candidate=None):
         """Hire the given selected candidate."""
         # If no candidate has yet been selected, scour the job market to find one
         if not selected_candidate:
@@ -486,10 +488,13 @@ class Business(object):
         # of this firm to include the new lawyer's name
         if self.__class__ == "LawFirm" and new_position == Lawyer:
             self._init_get_named()
-        # If this position filled one of this company's "additional" job vacancies (see
+        # If this position filled one of this company's "supplemental" job vacancies (see
         # config.py), then remove an instance of this position from that list
-        if fills_additional_job_vacancy:
-            self.job_vacancies[shift].remove(occupation_of_need)
+        if fills_supplemental_job_vacancy:
+            self.supplemental_vacancies[shift].remove(occupation_of_need)
+            # This position doesn't have to be refilled immediately if terminated, so
+            # attribute to it that it is supplemental
+            selected_candidate.occupation.supplemental = True
         # Lastly, if the person was hired from outside the city, have them move to it
         if selected_candidate.city is not self.city:
             selected_candidate.move_into_the_city(hiring_that_instigated_move=hiring)

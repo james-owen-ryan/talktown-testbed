@@ -1026,7 +1026,7 @@ class Person(object):
         # in town for all of their open positions, day- or night-shift
         for company in self.city.companies:
             for shift in ('day', 'night'):
-                for position in company.job_vacancies[shift]:
+                for position in company.supplemental_vacancies[shift]:
                     i_am_qualified_for_this_position = (
                         company.check_if_person_is_qualified_for_the_position(
                             candidate=self, occupation_of_need=position
@@ -1036,7 +1036,7 @@ class Person(object):
                         score = company.rate_job_candidate(person=self)
                         # The open positions are listed in order of priority, so
                         # penalize this position if its not the company's top priority
-                        priority = company.job_vacancies[shift].index(position)
+                        priority = company.supplemental_vacancies[shift].index(position)
                         score /= priority+1
                         scores[(company, position, shift)] = score
         # If this person qualified for any position, have them be hired to the one
@@ -1045,7 +1045,7 @@ class Person(object):
             company, position, shift = max(scores, key=scores.get)
             company.hire(
                 occupation_of_need=position, shift=shift, to_replace=None,
-                fills_additional_job_vacancy=True, selected_candidate=self
+                fills_supplemental_job_vacancy=True, selected_candidate=self
             )
 
     def move_out_of_parents(self):
