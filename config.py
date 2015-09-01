@@ -769,7 +769,7 @@ class Config(object):
             DrugStore: {
                 'day': (),
                 'night': (),
-                'supplemental day': [],
+                'supplemental day': [Cashier],
                 'supplemental night': [],
             },
             Farm: {
@@ -811,14 +811,14 @@ class Config(object):
             Inn: {
                 'day': (),
                 'night': (Innkeeper,),
-                'supplemental day': [],
+                'supplemental day': [Concierge],
                 'supplemental night': [],
             },
             Tavern: {
                 'day': (Bartender,),
                 'night': (Bartender,),
                 'supplemental day': [],
-                'supplemental night': [],
+                'supplemental night': [Bartender],
             },
             InsuranceCompany: {
                 'day': (),

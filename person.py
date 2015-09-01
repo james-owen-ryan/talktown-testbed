@@ -1014,13 +1014,44 @@ class Person(object):
             event.Death(subject=self, mortician=None, cause_of_death=cause_of_death)
 
     def find_work(self):
-        """Find a job at a local business.
+        """Attempt to find a job at a local business.
 
         This method has every business in town that had potential job vacancies
         rate this person as a candidate for those vacancies. The person then
         gets hired by the company who has rated them highest, assuming they
         qualify for any positions at all.
         """
+        # If your father owns a company, and you're employable at that position,
+        # have him be very likely to hire you at a supplemental position
+        if self.father and self.father.occupation and self.father.occupation.company.owner is self.father:
+            dads_company = self.father.occupation.company
+            if dads_company.supplemental_vacancies['day']:
+                position, shift = dads_company.supplemental_vacancies['day'][0], 'day'
+            elif dads_company.supplemental_vacancies['night']:
+                position, shift = dads_company.supplemental_vacancies['night'][0], 'night'
+            else:
+                # Father can accommodate and add another supplemental position
+                if self.game.config.initial_job_vacancies['day']:
+                    position, shift = self.game.config.initial_job_vacancies['day'][0], 'day'
+                else:
+                    position, shift = self.game.config.initial_job_vacancies['night'][0], 'night'
+            dads_company.hire(
+                occupation_of_need=position, shift=shift, to_replace=None,
+                fills_supplemental_job_vacancy=True, selected_candidate=self
+            )
+        else:
+            scores = self._get_scored_as_job_candidate_by_all_companies()
+            # If this person qualified for any position, have them be hired to the one
+            # for which they were scored mostly highly
+            if scores:
+                company, position, shift = max(scores, key=scores.get)
+                company.hire(
+                    occupation_of_need=position, shift=shift, to_replace=None,
+                    fills_supplemental_job_vacancy=True, selected_candidate=self
+                )
+
+    def _get_scored_as_job_candidate_by_all_companies(self):
+        """Get scored as a job candidate by all companies in town for all their supplemental positions."""
         scores = {}
         # Assemble scores of this person as a job candidate from all companies
         # in town for all of their open positions, day- or night-shift
@@ -1039,14 +1070,7 @@ class Person(object):
                         priority = company.supplemental_vacancies[shift].index(position)
                         score /= priority+1
                         scores[(company, position, shift)] = score
-        # If this person qualified for any position, have them be hired to the one
-        # for which they were scored mostly highly
-        if scores:
-            company, position, shift = max(scores, key=scores.get)
-            company.hire(
-                occupation_of_need=position, shift=shift, to_replace=None,
-                fills_supplemental_job_vacancy=True, selected_candidate=self
-            )
+        return scores
 
     def move_out_of_parents(self):
         """Move out of parents' house."""
