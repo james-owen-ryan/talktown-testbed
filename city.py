@@ -461,6 +461,12 @@ class City(object):
         return len(self.residents)
 
     @property
+    def buildings(self):
+        """Return all businesses and houses (not apartment units) in this city."""
+        houses = {d for d in self.dwelling_places if d.__class__ is House}
+        return houses | self.companies
+
+    @property
     def vacant_lots(self):
         """Return all vacant lots in the city."""
         vacant_lots = [lot for lot in self.lots if not lot.building]
