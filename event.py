@@ -279,7 +279,7 @@ class Birth(Event):
         if not self.city.businesses_of_type('DayCare'):
             self.mother.occupation.terminate(reason=self)
         else:
-            if random.random() < self.mother.game.config.self.chance_new_mother_quits_job_even_if_day_care_in_town:
+            if random.random() < self.mother.game.config.chance_new_mother_quits_job_even_if_day_care_in_town:
                 self.mother.occupation.terminate(reason=self)
 
     def _remunerate(self):
@@ -602,7 +602,7 @@ class Divorce(Event):
             # Divorce isn't currently possible outside a city, but still
             # doing this to be consistent with other event classes
             self.law_firm = lawyer.company
-            self.lawyer.divorces_filed.add(self)
+            self.lawyer.filed_divorces.add(self)
             self._decide_and_enact_new_living_arrangements()
             # self._remunerate()
         else:
@@ -681,8 +681,10 @@ class Divorce(Event):
     def _decide_and_enact_new_living_arrangements(self):
         """Handle the full pipeline from discussion to one spouse (and possibly kids) moving out."""
         spouse_who_will_move_out = self._decide_who_will_move_out()
-        kids_who_will_move_out_also = self._decide_which_kids_will_move_out()
-        family_members_who_will_move = set([spouse_who_will_move_out]) | kids_who_will_move_out_also
+        kids_who_will_move_out_also = self._decide_which_kids_will_move_out(
+            spouse_moving=spouse_who_will_move_out
+        )
+        family_members_who_will_move = {spouse_who_will_move_out} | kids_who_will_move_out_also
         home_spouse_will_move_to = self._decide_where_spouse_moving_out_will_live(
             spouse_who_will_move=spouse_who_will_move_out
         )
@@ -1067,6 +1069,10 @@ class Marriage(Event):
                 if kid.present and not kid.marriage and kid.home is spouse2.home:
                     family_members_that_will_move.add(kid)
         if home_they_will_move_into:
+            # Make sure both spouses are among the home's listed owners
+            for spouse in self.subjects:
+                home_they_will_move_into.owners.add(spouse)
+            # Move the whole family in
             for family_member in family_members_that_will_move:
                 family_member.move(new_home=home_they_will_move_into, reason=self)
         else:
