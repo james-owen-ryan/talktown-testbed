@@ -312,6 +312,18 @@ class BusinessMentalModel(MentalModel):
         ]
         return mental_models_of_believed_employees
 
+    @property
+    def nearby_buildings(self):
+        """Return all the buildings that owner believes are on the same block as this one."""
+        if self.block:
+            believed_nearby = [
+                p for p in self.owner.mind.mental_models if p.type != "person" and
+                self.owner.mind.mental_models[p].block == self.block
+            ]
+        else:
+            believed_nearby = []
+        return believed_nearby
+
     def people_here_when(self, date):
         """Return all the people that owner believes were here at a given date."""
         believed_here_on_this_date = [
@@ -565,6 +577,18 @@ class DwellingPlaceModel(MentalModel):
             self.owner.mind.mental_models[p].home.object_itself is self.subject
         ]
         return believed_residents
+
+    @property
+    def nearby_buildings(self):
+        """Return all the buildings that owner believes are on the same block as this one."""
+        if self.block:
+            believed_nearby = [
+                p for p in self.owner.mind.mental_models if p.type != "person" and
+                self.owner.mind.mental_models[p].block == self.block
+            ]
+        else:
+            believed_nearby = []
+        return believed_nearby
 
     def people_here_when(self, date):
         """Return all the people that owner believes were here at a given date."""
