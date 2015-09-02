@@ -13,6 +13,7 @@ from whereabouts import Whereabouts
 from relationship import Acquaintance
 from evidence import Reflection, Observation, Lie, Statement
 from belief import *
+import face
 
 
 class Person(object):
@@ -1611,10 +1612,19 @@ class Person(object):
         ):
             for other_person in self.relationships:
                 self.relationships[other_person].update_spark_and_charge_increments_for_new_age_difference()
-        # Potentially have your hair turn gray (or white, if it's already gray)
-        if age > 40:
+        # Potentially have your hair turn gray (or white, if it's already gray) -- TODO MAKE THIS HERITABLE
+        if age > config.age_when_people_start_graying:
             if random.random() < config.chance_someones_hair_goes_gray_or_white:
-                self.face.hair.color = 'gray' if self.face.hair.color != 'gray' else 'white'
+                new_color_str = 'gray' if self.face.hair.color != 'gray' else 'white'
+                # Maintain the same face.Feature attributes as the original Feature had, but
+                # create a new Feature object with the updated string -- TODO is this still inheritance?
+                variant_id = self.face.hair.color.variant_id
+                inherited_from = self.face.hair.color.inherited_from
+                exact_variant_inherited = self.face.hair.color.exact_variant_inherited
+                self.face.hair.color = face.Feature(
+                    value=new_color_str, variant_id=variant_id, inherited_from=inherited_from,
+                    exact_variant_inherited=exact_variant_inherited
+                )
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""

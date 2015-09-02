@@ -233,6 +233,7 @@ class Config(object):
         # Birth
         self.chance_new_mother_quits_job_even_if_day_care_in_town = 0.35
         # Aging
+        self.age_when_people_start_graying = 48
         self.chance_someones_hair_goes_gray_or_white = 0.02
         self.chance_someones_hair_goes_white_some_birthday = 0.05  # Must already be gray
         # Death
