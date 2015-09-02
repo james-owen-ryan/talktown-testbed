@@ -454,7 +454,7 @@ class Death(Event):
         self.subject.home.former_owners.add(self.subject)
         if any(r for r in self.subject.home.residents if r.ready_to_work):
             heir = next(r for r in self.subject.home.residents if r.ready_to_work)
-            self.subject.home.owners = (heir,)
+            self.subject.home.owners = {heir}
 
     def _inter_the_body(self):
         """Inter the body at the local cemetery."""
@@ -804,8 +804,8 @@ class HomePurchase(Event):
 
     def _transfer_ownership(self):
         """Transfer ownership of this house to its new owners."""
-        self.home.former_owners |= set(self.home.owners)
-        self.home.owners = self.subjects
+        self.home.former_owners |= self.home.owners
+        self.home.owners = set(self.subjects)
         self.home.transactions.append(self)
 
     def _remunerate(self):
