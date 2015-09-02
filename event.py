@@ -394,26 +394,34 @@ class Death(Event):
         self.mortician = mortician
         self.cemetery = self.subject.city.cemetery
         self.next_of_kin = subject.next_of_kin
-        # TODO WTF????
-        if subject in self.city.residents:
-            subject.city.residents.remove(subject)
+        subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()  # Must come before self.subject.go_to()
         self._vacate_job_position_of_the_deceased()
         if mortician:
-            # Death shouldn't be possibly outside the city, but I'm doing
+            # Death shouldn't be possible outside the city, but I'm doing
             # this to be consistent with other event classes
             # self._remunerate()
             self.cemetery_plot = self._inter_the_body()
-            self.mortician.body_interments.add(self)
+            mortician.body_interments.add(self)
         else:
             self.cemetery_plot = None
-        # TODO WTF????
-        if self.subject in self.subject.home.residents:
-            self.subject.home.residents.remove(self.subject)
-        self.subject.home.former_residents.add(self.subject)
-        # TODO WTF????
-        self.subject.go_to(destination=self.city.cemetery)
+        # If this person has kids at home and no spouse to take care of them,
+        # have those kids depart the city (presumably to live with relatives
+        # elsewhere) -- TODO have the kids be adopted by a relative in town,
+        # but watch out, because kids at home may be old maids still living with
+        # their parents
+        if subject.kids_at_home and not subject.spouse:
+            for kid in subject.kids_at_home:
+                kid.depart_city()
+        # Update attributes of this person's home
+        subject.home.residents.remove(subject)
+        subject.home.former_residents.add(subject)
+        if subject in subject.home.owners:
+            subject.home.owners.remove(subject)
+            if subject.home.residents and not subject.home.owners:
+                self._transfer_ownership_of_home_owned_by_the_deceased()
+        subject.go_to(destination=self.city.cemetery)
 
     def __str__(self):
         """Return string representation."""
@@ -440,6 +448,13 @@ class Death(Event):
         """Vacate the deceased's job position, if any."""
         if self.subject.occupation:
             self.subject.occupation.terminate(reason=self)
+
+    def _transfer_ownership_of_home_owned_by_the_deceased(self):
+        """Transfer ownership of the deceased's home to another one of its residents."""
+        self.subject.home.former_owners.add(self.subject)
+        if any(r for r in self.subject.home.residents if r.ready_to_work):
+            heir = next(r for r in self.subject.home.residents if r.ready_to_work)
+            self.subject.home.owners = (heir,)
 
     def _inter_the_body(self):
         """Inter the body at the local cemetery."""
@@ -647,7 +662,7 @@ class Divorce(Event):
         if random.random() < chance_of_a_name_reversion:
             for name_change in self.marriage.name_changes:
                 name_change.subject.change_name(
-                    subject=name_change.subject, new_last_name=name_change.old_last_name, reason=self
+                    new_last_name=name_change.old_last_name, reason=self
                 )
 
     def _decide_and_enact_new_living_arrangements(self):
