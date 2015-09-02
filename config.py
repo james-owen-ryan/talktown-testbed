@@ -232,6 +232,9 @@ class Config(object):
         )
         # Birth
         self.chance_new_mother_quits_job_even_if_day_care_in_town = 0.35
+        # Aging
+        self.chance_someones_hair_goes_gray_or_white = 0.02
+        self.chance_someones_hair_goes_white_some_birthday = 0.05  # Must already be gray
         # Death
         self.function_to_derive_chance_a_widow_remarries = (
             lambda years_married: 1.0 / (int(years_married) + 4)
@@ -1292,15 +1295,15 @@ class Config(object):
                 ((0.85, 1.0), 'long')
             ],
             "hair color": [
-                ((0.0, 0.3), 'black'),
-                ((0.3, 0.5), 'brown'),
-                ((0.5, 0.7), 'blonde'),
-                ((0.7, 0.75), 'red'),
-                ((0.75, 0.8), 'gray'),
-                ((0.8, 0.85), 'white'),
-                ((0.85, 0.9), 'green'),
-                ((0.9, 0.95), 'blue'),
-                ((0.95, 1.0), 'purple')
+                ((0.0, 0.4), 'black'),
+                ((0.4, 0.75), 'brown'),
+                ((0.75, 0.9), 'blonde'),
+                ((0.9, 1.0), 'red'),
+                ((999, 999), 'gray'),
+                ((999, 999), 'white'),
+                ((999, 999), 'green'),
+                ((999, 999), 'blue'),
+                ((999, 999), 'purple')
             ],
             "eyebrow size": [
                 ((0.0, 0.3), 'small'),
@@ -1565,6 +1568,7 @@ class Config(object):
             ("tattoo",                      0.10),
             ("skin color",                  0.10),
             ("hair color",                  0.08),
+            ("hair length",                 0.08),
             ("scar",                        0.05),
             ("birthmark",                   0.05),
             ("facial hair style",           0.05),
@@ -1572,7 +1576,6 @@ class Config(object):
             ("glasses",                     0.05),
             ("sunglasses",                  0.05),
             ("head size",                   0.04),
-            ("hair length",                 0.03),
             ("eye color",                   0.01),
             ("middle name",                 0.01),
             ("ear angle",                   0.01),

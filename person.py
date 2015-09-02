@@ -564,6 +564,61 @@ class Person(object):
         events.sort(key=lambda ev: ev.event_number)  # Sort chronologically
         return events
 
+    @property
+    def age_and_gender_description(self):
+        """Return a string broadly capturing this person's age."""
+        if self.age < 1:
+            return 'infant boy' if self.male else 'infant girl'
+        elif self.age < 4:
+            return 'boy toddler' if self.male else 'girl toddler'
+        elif self.age < 10:
+            return 'young boy' if self.male else 'young girl'
+        elif self.age < 13:
+            return 'preteen boy' if self.male else 'preteen girl'
+        elif self.age < 20:
+            return 'teenage boy' if self.male else 'teenage girl'
+        elif self.age < 25:
+            return 'young man' if self.male else 'young woman'
+        elif self.age < 45:
+            return 'man' if self.male else 'woman'
+        elif self.age < 65:
+            return 'middle-aged man' if self.male else 'middle-aged woman'
+        elif self.age < 75:
+            return 'older man' if self.male else 'older woman'
+        else:
+            return 'elderly man' if self.male else 'elderly woman'
+
+    @property
+    def basic_appearance_description(self):
+        """Return a string broadly capturing this person's basic appearance."""
+        features = []
+        if self.face.distinctive_features.freckles == 'yes':
+            features.append('freckles')
+        if self.face.distinctive_features.glasses == 'yes':
+            features.append('glasses')
+        if self.face.distinctive_features.tattoo == 'yes':
+            features.append('a prominent tattoo')
+        if self.face.distinctive_features.scar == 'yes':
+            features.append('a visible scar')
+        if self.face.distinctive_features.birthmark == 'yes':
+            features.append('a noticeable birthmark')
+        if self.face.hair.length == 'bald':
+            features.append('a bald head')
+        else:
+            features.append('{} {} hair'.format(
+                self.face.hair.length,
+                'blond' if self.male and self.face.hair.color == 'blonde' else self.face.hair.color
+            )
+            )
+        if self.face.facial_hair.style == 'sideburns':
+            features.append('sideburns')
+        elif self.face.facial_hair.style != 'none':
+            features.append('a {}'.format(str(self.face.facial_hair.style)))
+        if len(features) > 2:
+            return '{}, and {}'.format(', '.join(feature for feature in features[:-1]), features[-1])
+        else:
+            return ' and '.join(features)
+
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         # Name
@@ -1540,8 +1595,9 @@ class Person(object):
 
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
+        config = self.game.config
         self.age = age = self.game.true_year - self.birth_year
-        if age == self.game.config.age_people_start_working(year=self.game.year):
+        if age == config.age_people_start_working(year=self.game.year):
             self.ready_to_work = True
         if age == 18:
             self.adult = True
@@ -1555,6 +1611,10 @@ class Person(object):
         ):
             for other_person in self.relationships:
                 self.relationships[other_person].update_spark_and_charge_increments_for_new_age_difference()
+        # Potentially have your hair turn gray (or white, if it's already gray)
+        if age > 40:
+            if random.random() < config.chance_someones_hair_goes_gray_or_white:
+                self.face.hair.color = 'gray' if self.face.hair.color != 'gray' else 'white'
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
@@ -1760,7 +1820,13 @@ class PersonExNihilo(Person):
         else:
             # Have the closest apartment complex to downtown expand to add
             # another unit for this person to move into
-            apartment_complexes_in_town = self.city.businesses_of_type('ApartmentComplex')
+            apartment_complexes_in_town = [
+                # Check if they have units first -- have had the weird case of someone
+                # trying to build a complex right downtown and then not being able to
+                # expand that very complex itself to move into it, because it currently
+                # has no units, and thus no unit number to give the expansion unit
+                ac for ac in self.city.businesses_of_type('ApartmentComplex') if ac.units
+            ]
             apartment_complex_closest_to_downtown = (
                 min(apartment_complexes_in_town, key=lambda ac: self.city.getDistFrom(ac.lot, self.city.downtown))
             )
