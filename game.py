@@ -89,8 +89,9 @@ class Game(object):
         Cemetery(owner=self.random_person)
         # Now simulate to a week before gameplay
         n_days_until_gameplay_begins = self.ordinal_date_that_gameplay_begins-self.ordinal_date
-        n_timesteps_until_gameplay_begins = n_days_until_gameplay_begins * 2
-        self.enact_lo_fi_simulation(n_timesteps=n_timesteps_until_gameplay_begins)
+        n_days_until_hi_fi_sim_begins = n_days_until_gameplay_begins - 7
+        n_timesteps_until_hi_fi_sim_begins = n_days_until_hi_fi_sim_begins * 2
+        self.enact_lo_fi_simulation(n_timesteps=n_timesteps_until_hi_fi_sim_begins)
         # Now simulate at full fidelity for the remaining week
         while self.ordinal_date < self.ordinal_date_that_gameplay_begins:
             self.enact_hi_fi_simulation()

@@ -42,9 +42,6 @@ class City(object):
         self.lots = set()
         self.tracts = set()
         self.dwelling_places = set()  # Both houses and apartment units (not complexes)
-        self.houses = set()  # Convenience wrapper for C# land
-        self.apartment_complexes = set()  # Convenience wrapper for C# land
-        self.other_businesses = set()  # Convenience wrapper for C# land
         self.streets = set()
         self.blocks = set()
         self.generateLots(gameState.config)
@@ -60,7 +57,7 @@ class City(object):
             if (density > highestDensity):
                 highestDensity = density
                 self.downtown = lot
-        self.name = None  # Gets set by Game.establish_setting()
+        self.name = None  # Gets set by Game.establish_setting() so that it may be named after an early settler
         # These get set when these businesses get established (by their __init__() magic methods)
         self.cemetery = None
         self.city_hall = None

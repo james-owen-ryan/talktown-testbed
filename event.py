@@ -469,19 +469,24 @@ class Demolition(Event):
         building.demolition = self
         building.lot.building = None
         building.lot.former_buildings.append(building)
-        if building.__class__ == House:
-            self.city.homes.remove(building)
-            self._have_the_now_displaced_residents_move()
+        # If this is a dwelling place, have its now-displaced residents find new housing
+        if building.__class__.__name__ is 'House':
+            self.city.dwelling_places.remove(building)
+            self._have_the_now_displaced_residents_move(house_or_apartment_unit=building)
+        if building.__class__.__name__ is 'ApartmentComplex':
+            for unit in building.units:
+                self.city.dwelling_places.remove(unit)
+                self._have_the_now_displaced_residents_move(house_or_apartment_unit=unit)
 
-    def _have_the_now_displaced_residents_move(self):
+    def _have_the_now_displaced_residents_move(self, house_or_apartment_unit):
         """Handle the full pipeline from them finding a place to moving into it."""
-        home_they_will_move_into = self.building.owners[0].secure_home()
+        home_they_will_move_into = house_or_apartment_unit.owners[0].secure_home()
         if home_they_will_move_into:
-            for resident in list(self.building.residents):
+            for resident in list(house_or_apartment_unit.residents):
                 resident.move(new_home=home_they_will_move_into, reason=self)
         else:
-            self.building.owners[0].depart_city(
-                forced_nuclear_family=self.building.residents
+            house_or_apartment_unit.owners[0].depart_city(
+                forced_nuclear_family=house_or_apartment_unit.residents
             )
 
     def __str__(self):
@@ -618,9 +623,13 @@ class Divorce(Event):
         """Make the divorcees (probably) lose each other as their strongest love interests."""
         spouse1, spouse2 = divorcees
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
-            spouse1.fall_out_of_love()
+            spouse1.relationships[spouse2].spark = (
+                config.new_spark_value_for_divorcee_who_has_fallen_out_of_love
+            )
         if random.random() < config.chance_a_divorcee_falls_out_of_love:
-            spouse2.fall_out_of_love()
+            spouse2.relationships[spouse1].spark = (
+                config.new_spark_value_for_divorcee_who_has_fallen_out_of_love
+            )
 
     def _have_divorcees_split_up_money(self):
         """Have the divorcees split their money up (50/50)."""

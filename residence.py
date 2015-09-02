@@ -12,9 +12,11 @@ class DwellingPlace(object):
         self.city = lot.city
         self.city.dwelling_places.add(self)
         self.lot = lot
-        if self.house:
+        if self.__class__ is House:
+            self.house, self.apartment = True, False
             self.address = self.lot.address
-        elif self.apartment:
+        elif self.__class__ is Apartment:
+            self.house, self.apartment = False, True
             self.address = ""  # Gets set by Apartment._init_generate_address()
         self.block = self.lot.block_address_is_on
         self.residents = set()
@@ -68,7 +70,6 @@ class Apartment(DwellingPlace):
     """An individual apartment unit in an apartment building in a city."""
 
     def __init__(self, apartment_complex, lot, unit_number):
-        self.apartment, self.house = True, False
         self.complex = apartment_complex
         self.unit_number = unit_number
         super(Apartment, self).__init__(lot, owners=(apartment_complex.owner.person,))
@@ -88,8 +89,6 @@ class House(DwellingPlace):
     """
 
     def __init__(self, lot, construction):
-        self.apartment, self.house = False, True
         super(House, self).__init__(lot, owners=construction.subjects)
         self.construction = construction
         self.lot.building = self
-        self.city.houses.add(self)

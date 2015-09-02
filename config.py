@@ -214,6 +214,7 @@ class Config(object):
         # Divorce
         self.chance_a_divorce_happens_some_timestep = 0.002 / 720  # 1/500 chance of divorce each year
         self.chance_a_divorcee_falls_out_of_love = 0.9
+        self.new_spark_value_for_divorcee_who_has_fallen_out_of_love = -500.0
         self.chance_a_male_divorcee_is_one_who_moves_out = 0.7
         self.function_to_derive_chance_spouse_changes_name_back = (
             lambda years_married: min(
@@ -267,7 +268,7 @@ class Config(object):
                 ###############
 
         # Misc
-        self.age_people_start_working = 14
+        self.age_people_start_working = lambda year: 14 if year < 1920 else 18
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Housing
         self.number_of_apartment_units_per_complex = 8

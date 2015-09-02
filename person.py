@@ -1539,7 +1539,7 @@ class Person(object):
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
         self.age = age = self.game.true_year - self.birth_year
-        if age == self.game.config.age_people_start_working:
+        if age == self.game.config.age_people_start_working(year=self.game.year):
             self.ready_to_work = True
         if age == 18:
             self.adult = True
