@@ -229,6 +229,8 @@ class Config(object):
         self.function_to_determine_chance_of_conception = lambda female_age: max(
             female_age/10000., (100 - ((female_age**1.98) / 20.)) / 100  # Decreases exponentially with age
         )
+        # Birth
+        self.chance_new_mother_quits_job_even_if_day_care_in_town = 0.35
         # Death
         self.function_to_derive_chance_a_widow_remarries = (
             lambda years_married: 1.0 / (int(years_married) + 4)

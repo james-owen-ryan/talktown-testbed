@@ -178,6 +178,7 @@ class Person(object):
         self.moves = []  # From one home to another
         self.name_changes = []
         self.building_commissions = set()  # Constructions of houses or buildings that they commissioned
+        self.home_purchases = []
         self.retirement = None
         self.departure = None  # Leaving the city, i.e., leaving the simulation
         self.death = None
@@ -553,6 +554,7 @@ class Person(object):
         events += [kid.birth for kid in self.kids]
         events += self.divorces
         events += self.name_changes
+        events += self.home_purchases
         events += list(self.building_commissions)
         if self.retirement:
             events.append(self.retirement)

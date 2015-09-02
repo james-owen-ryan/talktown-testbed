@@ -79,6 +79,8 @@ class Birth(Event):
         self._update_mother_attributes()
         if self.mother.city:
             self._take_baby_home()
+        if self.mother.occupation:
+            self._have_mother_potentially_quit_job()
         if self.doctor:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
             self.nurses =  set([
@@ -271,6 +273,14 @@ class Birth(Event):
     def _take_baby_home(self):
         """Take the baby home to the mother's house."""
         self.subject.move(new_home=self.mother.home, reason=self)
+
+    def _have_mother_potentially_quit_job(self):
+        """Have the mother potentially quit her job."""
+        if not self.city.businesses_of_type('DayCare'):
+            self.mother.occupation.terminate(reason=self)
+        else:
+            if random.random() < self.mother.game.config.self.chance_new_mother_quits_job_even_if_day_care_in_town:
+                self.mother.occupation.terminate(reason=self)
 
     def _remunerate(self):
         """Have parents pay hospital for services rendered."""
@@ -787,6 +797,8 @@ class HomePurchase(Event):
         super(HomePurchase, self).__init__(game=subjects[0].game)
         self.city = subjects[0].city
         self.subjects = subjects
+        for subject in subjects:
+            subject.home_purchases.append(self)
         self.home = home
         self.home.transactions.append(self)
         self.realtor = realtor
@@ -809,7 +821,6 @@ class HomePurchase(Event):
         """Transfer ownership of this house to its new owners."""
         self.home.former_owners |= self.home.owners
         self.home.owners = set(self.subjects)
-        self.home.transactions.append(self)
 
     def _remunerate(self):
         """Have subject pay realty firm for services rendered."""
