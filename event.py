@@ -495,12 +495,13 @@ class Demolition(Event):
 
     def _have_the_now_displaced_residents_move(self, house_or_apartment_unit):
         """Handle the full pipeline from them finding a place to moving into it."""
-        home_they_will_move_into = house_or_apartment_unit.owners[0].secure_home()
+        an_owner = list(house_or_apartment_unit.owners)[0]
+        home_they_will_move_into = an_owner.secure_home()
         if home_they_will_move_into:
             for resident in list(house_or_apartment_unit.residents):
                 resident.move(new_home=home_they_will_move_into, reason=self)
         else:
-            house_or_apartment_unit.owners[0].depart_city(
+            an_owner.depart_city(
                 forced_nuclear_family=house_or_apartment_unit.residents
             )
 
