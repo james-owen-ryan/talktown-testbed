@@ -259,6 +259,7 @@ class Game(object):
                             person.have_sex(partner=person.spouse, protection=False)
                         elif random.random() < self.config.chance_a_divorce_happens_some_timestep:
                             lawyer = person.contract_person_of_certain_occupation(occupation_in_question=Lawyer)
+                            lawyer = None if not lawyer else lawyer.occupation
                             Divorce(subjects=(person, person.spouse), lawyer=lawyer)
                     if person.age > max(72, random.random() * 100):
                         # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
