@@ -1103,10 +1103,15 @@ class Config(object):
 
         # People ex nihilo
         self.function_to_determine_person_ex_nihilo_age_given_job_level = (
-            lambda job_level: 18 + random.randint(2*job_level, 10*job_level)
+            lambda job_level: 18 + random.randint(2*job_level, 7*job_level)
         )
+        # self.function_to_determine_chance_person_ex_nihilo_starts_with_family = (
+        #     lambda age: (age / 100.0) * 1.4
+        # )
         self.function_to_determine_chance_person_ex_nihilo_starts_with_family = (
-            lambda age: (age / 100.0) * 1.4
+            # The larger the city population, the lower the chance a P.E.N. moves
+            # into town with a family
+            lambda city_pop: (200.0-city_pop) / 1000.0
         )
         self.person_ex_nihilo_age_at_marriage_mean = 23
         self.person_ex_nihilo_age_at_marriage_sd = 2.7

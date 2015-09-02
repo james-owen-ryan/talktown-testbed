@@ -1587,11 +1587,8 @@ class PersonExNihilo(Person):
                 self.male, self.female = self.female, self.male
                 self.attracted_to_men, self.attracted_to_women = (False, True) if self.male else (True, False)
         # Overwrite birth year set by Person.__init__()
-        if spouse_already_generated and spouse_already_generated is self.game.founder:
-            self.birth_year = self._init_birth_year(job_level=None, founders_spouse=True)
-        else:
-            job_level = self.game.config.job_levels[job_opportunity_impetus]
-            self.birth_year = self._init_birth_year(job_level=job_level)
+        job_level = self.game.config.job_levels[job_opportunity_impetus]
+        self.birth_year = self._init_birth_year(job_level=job_level)
         # Set age given birth year that was attributed
         self.age = self.game.true_year - self.birth_year
         if self.age >= 18:
@@ -1618,7 +1615,9 @@ class PersonExNihilo(Person):
         # had prior to moving into the city
         if not spouse_already_generated:
             chance_of_having_family = (
-                self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(age=self.age)
+                self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
+                    city_pop=self.city.population
+                )
             )
             if random.random() < chance_of_having_family:
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
@@ -1674,15 +1673,12 @@ class PersonExNihilo(Person):
         birth_year = self.game.true_year - age_at_current_year_of_sim
         return birth_year
 
-    def _init_birth_year(self, job_level, founders_spouse=False):
+    def _init_birth_year(self, job_level):
         """Generate a birth year for this person that is consistent with the job level they/spouse will get."""
         config = self.game.config
-        if not founders_spouse:
-            age_at_current_year_of_sim = config.function_to_determine_person_ex_nihilo_age_given_job_level(
-                job_level=job_level
-            )
-        else:
-            age_at_current_year_of_sim = config.age_of_city_founders_spouse
+        age_at_current_year_of_sim = config.function_to_determine_person_ex_nihilo_age_given_job_level(
+            job_level=job_level
+        )
         birth_year = self.game.true_year - age_at_current_year_of_sim
         return birth_year
 
@@ -1697,29 +1693,6 @@ class PersonExNihilo(Person):
     def _init_money(self):
         """Determine how much money this person has to start with."""
         return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
-
-    def _init_generate_the_founders_family(self):
-        """Generate and retcon a family that the founder will have prior to the city being founded.
-
-        This family will develop into the very rich family that Player 2 and his or her
-        cronies belong to.
-        """
-        config = self.game.config
-        # Force this person to have a ton of money
-        self.money = config.money_city_founder_starts_with
-        # Force heterosexuality and fertility -- we are rigging things so that a very large
-        # family develops as this person's progeny
-        self.infertile = False
-        if self.male:
-            self.attracted_to_women = True
-        else:
-            self.attracted_to_men = True
-        spouse = PersonExNihilo(
-            game=self.game, job_opportunity_impetus=None, spouse_already_generated=self
-        )
-        spouse.infertile = False
-        self._init_retcon_marriage(spouse=spouse)
-        self._init_retcon_births_of_children()
 
     def _init_generate_family(self, job_opportunity_impetus):
         """Generate and retcon a family that this person will take with them into the city."""
