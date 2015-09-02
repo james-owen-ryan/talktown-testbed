@@ -304,12 +304,13 @@ class BusinessMentalModel(MentalModel):
 
     @property
     def employees(self):
-        """Return all the people that owner believes works here."""
-        believed_employees = [
-            p for p in self.owner.mind.mental_models if p.type == "person" and
+        """Return a list of mental models all the people that owner believes works here."""
+        mental_models_of_believed_employees = [
+            self.owner.mind.mental_models[p] for p in self.owner.mind.mental_models if p.type == "person" and
+            self.owner.mind.mental_models[p].occupation.company and
             self.owner.mind.mental_models[p].occupation.company.object_itself is self.subject
         ]
-        return believed_employees
+        return mental_models_of_believed_employees
 
     def people_here_when(self, date):
         """Return all the people that owner believes were here at a given date."""
