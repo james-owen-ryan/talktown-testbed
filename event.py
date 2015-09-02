@@ -487,11 +487,13 @@ class Demolition(Event):
         # If this is a dwelling place, have its now-displaced residents find new housing
         if building.__class__.__name__ is 'House':
             self.city.dwelling_places.remove(building)
-            self._have_the_now_displaced_residents_move(house_or_apartment_unit=building)
+            if building.residents:
+                self._have_the_now_displaced_residents_move(house_or_apartment_unit=building)
         if building.__class__.__name__ is 'ApartmentComplex':
             for unit in building.units:
                 self.city.dwelling_places.remove(unit)
-                self._have_the_now_displaced_residents_move(house_or_apartment_unit=unit)
+                if unit.residents:
+                    self._have_the_now_displaced_residents_move(house_or_apartment_unit=unit)
 
     def _have_the_now_displaced_residents_move(self, house_or_apartment_unit):
         """Handle the full pipeline from them finding a place to moving into it."""
