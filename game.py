@@ -303,7 +303,12 @@ class Game(object):
     def potentially_establish_a_new_business(self):
         """Potentially have a new business get constructed in town."""
         config = self.config
-        if random.random() < config.chance_a_business_opens_some_timestep:
+        # If there's less than 30 vacant homes in this city and no apartment complex
+        # yet, have one open up
+        if len(self.city.vacant_homes) < 30 and not self.city.businesses_of_type('ApartmentComplex'):
+            owner = self._determine_who_will_establish_new_business(business_type=ApartmentComplex)
+            ApartmentComplex(owner=owner)
+        elif random.random() < config.chance_a_business_opens_some_timestep:
             all_business_types = Business.__subclasses__()
             type_of_business_that_will_open = None
             tries = 0
@@ -386,12 +391,18 @@ class Game(object):
         )
         for business in list(self.city.companies):
             if business.demise <= self.year:
-                if random.random() < config.chance_a_business_shuts_down_on_timestep_after_its_demise:
+                if random.random() < chance_a_business_shuts_down_on_timestep_after_its_demise:
                     if business.__class__ not in config.public_company_types:
                         business.go_out_of_business(reason=None)
             elif random.random() < chance_a_business_shuts_down_this_timestep:
                 if business.__class__ not in config.public_company_types:
-                    business.go_out_of_business(reason=None)
+                    if not (
+                        # Don't shut down an apartment complex with people living in it,
+                        # or an apartment complex that's the only one in town
+                        business.__class__ is ApartmentComplex and business.residents or
+                        len(self.city.businesses_of_type('ApartmentComplex')) == 1
+                    ):
+                        business.go_out_of_business(reason=None)
 
     def enact_hi_fi_simulation(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""

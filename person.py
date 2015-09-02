@@ -1616,7 +1616,7 @@ class PersonExNihilo(Person):
         if not spouse_already_generated:
             chance_of_having_family = (
                 self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
-                    city_pop=self.city.population
+                    city_pop=game.city.population
                 )
             )
             if random.random() < chance_of_having_family:
@@ -1752,9 +1752,26 @@ class PersonExNihilo(Person):
         self.city = self.game.city
         self.city.residents.add(self)
         new_home = self.secure_home()
-        # TODO PEOPLE ARE MOVING INTO OTHER PEOPLE'S HOMES AS DUCT TAPE
         if not new_home:
             someone_elses_home = random.choice(list(self.city.dwelling_places))
             self.move(new_home=someone_elses_home, reason=hiring_that_instigated_move)
-        else:
+        if new_home:
             self.move(new_home=new_home, reason=hiring_that_instigated_move)
+        else:
+            # Have the closest apartment complex to downtown expand to add
+            # another unit for this person to move into
+            apartment_complexes_in_town = self.city.businesses_of_type('ApartmentComplex')
+            apartment_complex_closest_to_downtown = (
+                min(apartment_complexes_in_town, key=lambda ac: self.city.getDistFrom(ac.lot, self.city.downtown))
+            )
+            apartment_complex_closest_to_downtown.expand()
+            self.move(
+                new_home=apartment_complex_closest_to_downtown.units[-1],
+                reason=hiring_that_instigated_move
+            )
+            print '{} expanded and {} moved into new unit #{}'.format(
+                apartment_complex_closest_to_downtown.name, self.name,
+                apartment_complex_closest_to_downtown.units[-1].unit_number
+            )
+
+

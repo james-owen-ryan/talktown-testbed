@@ -48,13 +48,13 @@ class Config(object):
             # The actual chance is a person's extroversion, but these represent
             # the minimum chance. (Keep in mind, they currently will be spending
             # the entire day/night cycle at some particular place in public
-            "day": 0.05, "night": 0.03
+            "day": 0.3, "night": 0.05
         }
         self.chance_someone_leaves_home_on_day_off_cap = {
             # The actual chance is a person's extroversion, but these represent
             # the maximum chance. (Keep in mind, they currently will be spending
             # the entire day/night cycle at some particular place in public
-            "day": 0.7, "night": 0.5
+            "day": 0.9, "night": 0.8
         }
         self.chance_someone_leaves_home_on_sick_day = 0.05
         self.chance_someone_goes_on_errand_vs_visits_someone = 0.75  # thus 0.25 of visiting someone
@@ -201,7 +201,7 @@ class Config(object):
         self.chance_someone_instigates_interaction_with_other_person_floor = 0.05
         self.chance_someone_instigates_interaction_with_other_person_cap = 0.95
         # Marriage
-        self.min_mutual_spark_value_for_someone_to_propose_marriage = 300
+        self.min_mutual_spark_value_for_someone_to_propose_marriage = 5
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
         self.chance_a_newlywed_keeps_former_love_interest = 0.01
@@ -310,7 +310,7 @@ class Config(object):
         # to be established; these are specified so that businesses don't appear
         # anachronistically or otherwise out of place
         self.business_types_advent_demise_and_minimum_population = {
-            ApartmentComplex: (1910, 9999, 200),
+            ApartmentComplex: (1880, 9999, 50),
             Bakery: (0, 9999, 50),
             Bank: (0, 9999, 100),
             Bar: (1920, 9999, 100),

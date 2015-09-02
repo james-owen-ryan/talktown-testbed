@@ -646,6 +646,14 @@ class ApartmentComplex(Business):
             residents |= unit.residents
         return residents
 
+    def expand(self):
+        """Add an extra unit in this complex to accommodate a new person in town seeking housing."""
+        currently_highest_unit_number = max(self.units, key=lambda u: u.unit_number).unit_number
+        next_unit_number = currently_highest_unit_number + 1
+        self.units.append(
+            Apartment(apartment_complex=self, lot=self.lot, unit_number=next_unit_number)
+        )
+
 
 class Bakery(Business):
     """A bakery."""
