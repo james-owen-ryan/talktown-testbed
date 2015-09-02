@@ -604,7 +604,7 @@ class Business(object):
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         if feature_type == "business block":
-            return self.block
+            return str(self.block)
         elif feature_type == "business address":
             return self.address
 
