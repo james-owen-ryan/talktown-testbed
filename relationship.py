@@ -282,10 +282,13 @@ class Relationship(object):
         # so, update accordingly
         self._update_social_network()
         # TODO fix currently dumb way of 'proposing' and divorcing
-        if not owner.spouse and not subject.spouse and self.spark > 5:
+        if (not owner.spouse and
+                not subject.spouse and
+                self.spark > config.min_mutual_spark_value_for_someone_to_propose_marriage):
             if owner in subject.relationships:
-                if subject.relationships[owner].spark > 5:
-                    owner.marry(subject)
+                if subject.relationships[owner].spark > config.min_mutual_spark_value_for_someone_to_propose_marriage:
+                    if not owner.male == subject.male:
+                        owner.marry(subject)
             elif owner.spouse in owner.relationships:
                 if self.spark > owner.relationships[owner.spouse] * 2:
                     owner.divorce(partner=owner.spouse)

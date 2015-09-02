@@ -201,6 +201,7 @@ class Config(object):
         self.chance_someone_instigates_interaction_with_other_person_floor = 0.05
         self.chance_someone_instigates_interaction_with_other_person_cap = 0.95
         # Marriage
+        self.min_mutual_spark_value_for_someone_to_propose_marriage = 300
         self.chance_one_newlywed_takes_others_name = 0.9
         self.chance_newlyweds_decide_children_will_get_hyphenated_surname = 0.4  # Given already not taking same name
         self.chance_a_newlywed_keeps_former_love_interest = 0.01
