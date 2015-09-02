@@ -540,7 +540,7 @@ class Person(object):
     @property
     def kids_at_home(self):
         """Return kids of this person that live with them, if any."""
-        kids_at_home = {k for k in self.kids if k.home is self.home}
+        kids_at_home = {k for k in self.kids if k.home is self.home and k.present}
         return kids_at_home
 
     @property
