@@ -496,59 +496,6 @@ class Game(object):
         else:
             self.date = self.get_date()
 
-    def save_data(self, filename_suffix="_day1"):
-        import pickle
-        # Pickle up city and building stuff
-        streets = self.city.getStreets()
-        blocks = self.city.getBlocks()
-        lots = self.city.getLots()
-        businesses = self.city.getBusinesses()
-        apartments = self.city.getApartments()
-        houses = self.city.getHouses()
-        pickle.dump(streets, open('/Users/jamesryan/Desktop/TOTT_states/streets' + filename_suffix + '.dat', 'wb'))
-        pickle.dump(blocks, open('/Users/jamesryan/Desktop/TOTT_states/blocks' + filename_suffix + '.dat', 'wb'))
-        pickle.dump(lots, open('/Users/jamesryan/Desktop/TOTT_states/lots' + filename_suffix + '.dat', 'wb'))
-        pickle.dump(businesses, open('/Users/jamesryan/Desktop/TOTT_states/businesses' + filename_suffix + '.dat', 'wb'))
-        pickle.dump(apartments, open('/Users/jamesryan/Desktop/TOTT_states/apartments' + filename_suffix + '.dat', 'wb'))
-        pickle.dump(houses, open('/Users/jamesryan/Desktop/TOTT_states/houses' + filename_suffix + '.dat', 'wb'))
-        # Generate people_dict
-        people_dict = {}
-        for person in self.city.residents:
-            faceStr = person.face.faceStr
-            first_name = str(person.first_name)
-            last_name = str(person.last_name)
-            suffix = person.suffix
-            people_dict[person.id] = {
-                "faceStr": faceStr,
-                "first_name": first_name,
-                "last_name": last_name,
-                "suffix": suffix,
-                "people_known_of": set([p.id for p in person.mind.mental_models if p.type == "person"]),
-                "location": person.location.id,
-                "get_knowledge": {}
-            }
-            for other_person in person.mind.mental_models:
-                if other_person.type == "person":
-                    owner = person
-                    subject = other_person
-                    all_features_of_knowledge_about_a_person = [
-                        'eye horizontal settedness', 'birthmark', 'job title', 'eye shape', 'hair color', 'head size',
-                        'home', 'scar', 'sunglasses', 'tattoo', 'nose shape', 'job shift', 'ear angle', 'home block',
-                        'mouth size', 'freckles', 'eye size', 'first name', 'skin color', 'ear size', 'middle name',
-                        'nose size', 'home address', 'eye vertical settedness', 'facial hair style', 'hair length',
-                        'eyebrow color', 'last name', 'head shape', 'eyebrow size', 'eye color', 'workplace', 'glasses',
-                        'location that night', 'rep'
-                    ]
-                    owners_knowledge_about_subject = set()
-                    for feature in all_features_of_knowledge_about_a_person:
-                        if owner.get_knowledge_about_person(subject, feature):
-                            owners_knowledge_about_subject.add(
-                                (feature, str(owner.get_knowledge_about_person(subject, feature)))
-                            )
-                    people_dict[person.id]["get_knowledge"][other_person.id] = owners_knowledge_about_subject
-        # Pickle people_dict
-        pickle.dump(people_dict,  open('/Users/jamesryan/Desktop/TOTT_states/people' + filename_suffix + '.dat', 'wb'))
-
     def find(self, name):
         """Return person living in this city with that name."""
         if any(p for p in self.city.residents if p.name == name):
