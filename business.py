@@ -298,7 +298,7 @@ class Business(object):
                     else:
                         name = '{} Park'.format(self.city.name)
         else:
-            raise Exception("A company of class {0} was unable to be named.".format(self.__class__.__name__))
+            raise Exception("A company of class {} was unable to be named.".format(self.__class__.__name__))
         self.name = name
 
     def __str__(self):
@@ -427,6 +427,16 @@ class Business(object):
         """Return all employees who work the night shift here."""
         day_shift = set([employee for employee in self.employees if employee.shift == "night"])
         return day_shift
+
+    @property
+    def sign(self):
+        """Return a string representing this business's sign."""
+        if self.__class__ in self.city.game.config.public_company_types:
+            return self.name
+        elif self.city.game.year - self.founded > 8:
+            return '{}, since {}'.format(self.name, self.founded)
+        else:
+            return self.name
 
     def _find_candidate(self, occupation_of_need):
         """Find the best available candidate to fill the given occupation of need."""
