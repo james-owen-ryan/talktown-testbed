@@ -305,7 +305,7 @@ class Game(object):
         config = self.config
         # If there's less than 30 vacant homes in this city and no apartment complex
         # yet, have one open up
-        if len(self.city.vacant_homes) < 30 and not self.city.businesses_of_type('ApartmentComplex'):
+        if len(self.city.vacant_lots) < 30 and not self.city.businesses_of_type('ApartmentComplex'):
             owner = self._determine_who_will_establish_new_business(business_type=ApartmentComplex)
             ApartmentComplex(owner=owner)
         elif random.random() < config.chance_a_business_opens_some_timestep:
