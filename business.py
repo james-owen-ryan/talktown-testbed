@@ -641,8 +641,16 @@ class ApartmentComplex(Business):
 
     def _init_apartment_units(self):
         """Instantiate objects for the individual units in this apartment complex."""
+        config = self.city.game.config
+        n_units_to_build = random.randint(
+            config.number_of_apartment_units_in_new_complex_min,
+            config.number_of_apartment_units_in_new_complex_max
+        )
+        if n_units_to_build % 2 != 0:
+            # Make it a nice even number
+            n_units_to_build -= 1
         apartment_units = []
-        for i in xrange(self.city.game.config.number_of_apartment_units_per_complex):
+        for i in xrange(n_units_to_build):
             unit_number = i + 1
             apartment_units.append(
                 Apartment(apartment_complex=self, lot=self.lot, unit_number=unit_number)
@@ -658,11 +666,19 @@ class ApartmentComplex(Business):
         return residents
 
     def expand(self):
-        """Add an extra unit in this complex to accommodate a new person in town seeking housing."""
+        """Add two extra units in this complex.
+
+        The impetus for this method being called is to accommodate a new person in town seeking housing.
+        Since apartment complexes in this simulation always have an even number of units, we add two extra
+        ones to maintain that property.
+        """
         currently_highest_unit_number = max(self.units, key=lambda u: u.unit_number).unit_number
         next_unit_number = currently_highest_unit_number + 1
         self.units.append(
             Apartment(apartment_complex=self, lot=self.lot, unit_number=next_unit_number)
+        )
+        self.units.append(
+            Apartment(apartment_complex=self, lot=self.lot, unit_number=next_unit_number+1)
         )
 
 

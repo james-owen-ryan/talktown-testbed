@@ -278,7 +278,8 @@ class Config(object):
         self.age_people_start_working = lambda year: 14 if year < 1920 else 18
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Housing
-        self.number_of_apartment_units_per_complex = 8
+        self.number_of_apartment_units_in_new_complex_min = 4
+        self.number_of_apartment_units_in_new_complex_max = 16
         # Company naming
         self.chance_company_gets_named_after_owner = 0.5
         # Companies deciding where to locate themselves
