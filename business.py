@@ -77,7 +77,7 @@ class Business(object):
         # Set address
         self.address = self.lot.address
         self.street_address_is_on = self.lot.street_address_is_on
-        self.block = self.lot.block_address_is_on
+        self.block = self.lot.block
         # Choose a name for this business
         self.name = None
         while not self.name or any(c for c in self.city.companies if c is not self and c.name == self.name):

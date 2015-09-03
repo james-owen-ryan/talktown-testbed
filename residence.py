@@ -18,7 +18,7 @@ class DwellingPlace(object):
         elif self.__class__ is Apartment:
             self.house, self.apartment = False, True
             self.address = ""  # Gets set by Apartment._init_generate_address()
-        self.block = self.lot.block_address_is_on
+        self.block = self.lot.block
         self.residents = set()
         self.former_residents = set()
         self.transactions = []

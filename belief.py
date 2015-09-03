@@ -651,7 +651,7 @@ class DwellingPlaceModel(MentalModel):
             confabulated_feature_str = random.choice(["yes", "no"])
             confabulated_object_itself = None
         elif feature_type == "home block":
-            random_block = random.choice(list(self.owner.city.blocks))
+            random_block = random.choice(list(self.owner.city.blocks))  # 98989
             confabulated_feature_str = str(random_block)
             confabulated_object_itself = None
         else:  # home address

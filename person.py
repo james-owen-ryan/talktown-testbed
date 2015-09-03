@@ -1373,16 +1373,16 @@ class Person(object):
         for relative in relatives_in_town:
             relation_to_me = self._common_familial_relation_to_me(person=relative)
             pull_toward_someone_of_that_relation = pull_to_live_near_that_relation.get(relation_to_me, 0.0)
-            dist = self.city.getDistFrom(relative.home.lot, lot) + 1.0  # To avoid ZeroDivisionError
+            dist = self.city.distance_between(relative.home.lot, lot) + 1.0  # To avoid ZeroDivisionError
             score += (desire_to_live_near_family * pull_toward_someone_of_that_relation) / dist
         # Score for proximity to friends (only positively)
         for friend in self.friends:
-            dist = self.city.getDistFrom(friend.home.lot, lot) + 1.0
+            dist = self.city.distance_between(friend.home.lot, lot) + 1.0
             score += pull_to_live_near_a_friend / dist
         # Score for proximity to workplace (only positively) -- will be only criterion for person
         # who is new to the city (and thus knows no one there yet)
         if self.occupation:
-            dist = self.city.getDistFrom(self.occupation.company.lot, lot) + 1.0
+            dist = self.city.distance_between(self.occupation.company.lot, lot) + 1.0
             score += config.pull_to_live_near_workplace / dist
         return score
 
@@ -1838,7 +1838,7 @@ class PersonExNihilo(Person):
                 ac for ac in self.city.businesses_of_type('ApartmentComplex') if ac.units
             ]
             apartment_complex_closest_to_downtown = (
-                min(apartment_complexes_in_town, key=lambda ac: self.city.getDistFrom(ac.lot, self.city.downtown))
+                min(apartment_complexes_in_town, key=lambda ac: self.city.distance_between(ac.lot, self.city.downtown))
             )
             apartment_complex_closest_to_downtown.expand()
             self.move(
