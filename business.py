@@ -148,7 +148,7 @@ class Business(object):
             Dairy: 'Dairy',
             Deli: 'Delicatessen',
             DentistOffice: 'Dentistry',
-            DepartmentStore: 'Dept. Store',
+            DepartmentStore: 'Department Store',
             Diner: 'Diner',
             Distillery: 'Distillery',
             DrugStore: 'Drug Store',
