@@ -796,8 +796,6 @@ Grove Hill
 Grove Oak
 Groveland
 Groveport
-Gruetli-Laager
-Gu-Win
 Guilford
 Guin
 Gulf Shores
@@ -827,7 +825,6 @@ Hanover
 Hanson
 Happy Valley
 Hardin
-Harding-Birch Lakes
 Hardwick
 Harpersville
 Harriman
@@ -1002,7 +999,6 @@ Kivalina
 Klawock
 Klukwan
 Knik River
-Knik-Fairview
 Knoxville
 Kobuk
 Kodiak
@@ -1197,7 +1193,6 @@ Mendon
 Mentasta Lake
 Mentone
 Mentor
-Mentor-on-the-Lake
 Mercer
 Meriden
 Merrimac
@@ -1558,7 +1553,6 @@ Pole
 Pollard
 Pomeroy
 Pomfret
-Pope-Vannoy Landing
 Port Alexander
 Port Alsworth
 Port Angeles
@@ -1723,7 +1717,6 @@ SeaTac
 Seale
 Seattle
 Section
-Sedro-Woolley
 Seekonk
 Selah
 Selawik
@@ -1785,7 +1778,6 @@ Snohomish
 Snoqualmie
 Snow Hill
 Soap Lake
-Soddy-Daisy
 Soldotna
 Solon
 Somers
@@ -1866,7 +1858,6 @@ Surgoinsville
 Susitna
 Susitna North
 Sutton
-Sutton-Alpine
 Swampscott
 Swansea
 Sweetwater
