@@ -495,7 +495,7 @@ class Config(object):
         self.chance_a_business_shuts_down_on_timestep_after_its_demise = (1/730.) / 3  # Average will last 3 years
         # Occupation classes for owners/proprietors of each business type
         self.owner_occupations_for_each_business_type = {
-            ApartmentComplex: Owner,
+            ApartmentComplex: Landlord,
             Bakery: Baker,
             Bank: Owner,
             Bar: Proprietor,
@@ -554,7 +554,7 @@ class Config(object):
         # Initial vacant positions for each business type
         self.initial_job_vacancies = {
             ApartmentComplex: {
-                'day': (Landlord,),
+                'day': (),
                 'night': (Janitor,),
                 'supplemental day': [Secretary, Janitor],
                 'supplemental night': [],
