@@ -569,40 +569,40 @@ class Person(object):
     def age_and_gender_description(self):
         """Return a string broadly capturing this person's age."""
         if self.age < 1:
-            return 'infant boy' if self.male else 'infant girl'
+            return 'an infant boy' if self.male else 'an infant girl'
         elif self.age < 4:
-            return 'boy toddler' if self.male else 'girl toddler'
+            return 'a boy toddler' if self.male else 'a girl toddler'
         elif self.age < 10:
-            return 'young boy' if self.male else 'young girl'
+            return 'a young boy' if self.male else 'a young girl'
         elif self.age < 13:
-            return 'preteen boy' if self.male else 'preteen girl'
+            return 'a preteen boy' if self.male else 'a preteen girl'
         elif self.age < 20:
-            return 'teenage boy' if self.male else 'teenage girl'
+            return 'an teenage boy' if self.male else 'a teenage girl'
         elif self.age < 25:
-            return 'young man' if self.male else 'young woman'
+            return 'a young man' if self.male else 'a young woman'
         elif self.age < 45:
-            return 'man' if self.male else 'woman'
+            return 'a man' if self.male else 'a woman'
         elif self.age < 65:
-            return 'middle-aged man' if self.male else 'middle-aged woman'
+            return 'a middle-aged man' if self.male else 'a middle-aged woman'
         elif self.age < 75:
-            return 'older man' if self.male else 'older woman'
+            return 'an older man' if self.male else 'an older woman'
         else:
-            return 'elderly man' if self.male else 'elderly woman'
+            return 'an elderly man' if self.male else 'an elderly woman'
 
     @property
     def basic_appearance_description(self):
         """Return a string broadly capturing this person's basic appearance."""
         features = []
-        if self.face.distinctive_features.freckles == 'yes':
-            features.append('freckles')
-        if self.face.distinctive_features.glasses == 'yes':
-            features.append('glasses')
         if self.face.distinctive_features.tattoo == 'yes':
             features.append('a prominent tattoo')
         if self.face.distinctive_features.scar == 'yes':
             features.append('a visible scar')
         if self.face.distinctive_features.birthmark == 'yes':
             features.append('a noticeable birthmark')
+        if self.face.distinctive_features.freckles == 'yes':
+            features.append('freckles')
+        if self.face.distinctive_features.glasses == 'yes':
+            features.append('glasses')
         if self.face.hair.length == 'bald':
             features.append('a bald head')
         else:
