@@ -296,6 +296,7 @@ class Config(object):
         )
         # Company types that are public resources, i.e., not privately owned
         self.public_company_types = (CityHall, FireStation, Hospital, PoliceStation, School, University, Cemetery, Park)
+        self.public_places_closed_at_night = (Cemetery, Park)
         # Company types that get established on tracts, not on lots
         self.companies_that_get_established_on_tracts = (Cemetery, Park, Farm, Quarry, CoalMine)  # TODO maybe add University?
         # Companies hiring people

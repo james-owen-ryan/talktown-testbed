@@ -411,6 +411,10 @@ class Business(object):
         # Apartment complexes are always locked
         if self.__class__ is ApartmentComplex:
             locked = True
+        # Public institutions, like parks and cemeteries and city hall, are also always locked at night
+        if (self.city.game.time_of_day == "night" and
+                self.__class__ in self.city.game.config.public_places_closed_at_night):
+            locked = True
         # Other businesses are locked only when no one is working, or
         # at night when only a janitor is working
         else:
