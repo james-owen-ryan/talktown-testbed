@@ -661,10 +661,10 @@ class DwellingPlaceModel(MentalModel):
             house_number = min(house_number, config.largest_possible_house_number)
             random_street = random.choice(list(self.owner.city.streets))
             if random.random() > 0.5:
-                unit_number = int(random.random() * config.number_of_apartment_units_per_complex)
-                confabulated_feature_str = "{0} {1} (Unit #{2})".format(house_number, random_street, unit_number)
+                unit_number = int(random.random() * config.number_of_apartment_units_in_new_complex_max)
+                confabulated_feature_str = "{} {} (Unit #{})".format(house_number, random_street, unit_number)
             else:
-                confabulated_feature_str = "{0} {1}".format(house_number, random_street)
+                confabulated_feature_str = "{} {}".format(house_number, random_street)
             confabulated_object_itself = None
         belief_facet_object = Facet(
             value=confabulated_feature_str, owner=self.owner, subject=self.subject,
