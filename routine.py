@@ -20,7 +20,7 @@ class Routine(object):
 
     def __str__(self):
         """Return string representation."""
-        return "Daily routine of {1}".format(self.person.name)
+        return "Daily routine of {}".format(self.person.name)
 
     def enact(self):
         """Enact this person's daily routine for a particular timestep."""
