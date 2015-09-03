@@ -58,6 +58,7 @@ class DwellingPlace(object):
             index_in_owners_of_last_to_leave = int(
                 round(self.city.game.random_number_this_timestep * len(self.owners))
             )
+            index_in_owners_of_last_to_leave -= 1
             last_to_leave = list(self.owners)[index_in_owners_of_last_to_leave]
             if self.city.game.random_number_this_timestep > last_to_leave.personality.neuroticism:
                 locked = True
