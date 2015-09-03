@@ -19,7 +19,7 @@ Akiachak
 Akiak
 Akron
 Akutan
-Alabama City
+Alabama
 Alabama Port
 Alabaster
 Alakanuk
@@ -33,7 +33,7 @@ Alcoa
 Alden
 Aleknagik
 Aleneva
-Alexander City
+Alexander
 Alexandria
 Alford
 Algona
@@ -83,7 +83,7 @@ Ashby
 Ashfield
 Ashford
 Ashland
-Ashland City
+Ashland
 Ashtabula
 Ashville
 Asotin
@@ -165,7 +165,7 @@ Belmont
 Belpre
 Beluga
 Benton
-Benton City
+Benton
 Berea
 Berkley
 Berlin
@@ -205,7 +205,7 @@ Blountsville
 Blue Ash
 Blue Springs
 Bluff
-Bluff City
+Bluff
 Boaz
 Boligee
 Bolinger
@@ -478,7 +478,7 @@ Crump
 Cuba
 Cube Cove
 Cullman
-Cumberland City
+Cumberland
 Cumberland Gap
 Cummington
 Cusseta
@@ -531,7 +531,7 @@ Diomede
 Dixiana
 Dixons Mills
 Docena
-Dodge City
+Dodge
 Dolomite
 Dora
 Dot Lake
@@ -592,7 +592,7 @@ Ekwok
 Elba
 Elberta
 Eldridge
-Electric City
+Electric
 Elfin Cove
 Elgin
 Elim
@@ -695,7 +695,7 @@ Freetown
 Fremont
 Friendship
 Friendsville
-Frisco City
+Frisco
 Fritz Creek
 Fruithurst
 Fulton
@@ -715,7 +715,7 @@ Gallion
 Gambell
 Game Creek
 Gantt
-Garden City
+Garden
 Gardendale
 Gardner
 Garfield Heights
@@ -791,7 +791,7 @@ Greenwich
 Grimes
 Griswold
 Groton
-Grove City
+Grove
 Grove Hill
 Grove Oak
 Groveland
@@ -870,7 +870,7 @@ Hillsboro
 Hingham
 Hinsdale
 Hobart Bay
-Hobson City
+Hobson
 Hodges
 Hohenwald
 Hokes Bluff
@@ -928,7 +928,7 @@ Independence
 Indian Springs Village
 Inverness
 Ipswich
-Iron City
+Iron
 Irondale
 Ironton
 Irvington
@@ -944,10 +944,10 @@ Jamestown
 Jasper
 Java
 Jefferson
-Jefferson City
+Jefferson
 Jellico
 Jemison
-Johnson City
+Johnson
 Johnstown
 Jonesborough
 Juneau
@@ -1023,7 +1023,7 @@ Lacey's Spring
 Lackawanna
 Lacon
 Lafayette
-Lake City
+Lake
 Lake Forest Park
 Lake Louise
 Lake Minchumina
@@ -1054,7 +1054,7 @@ Leeds
 Leesburg
 Leicester
 Leighton
-Lenoir City
+Lenoir
 Lenox
 Leominster
 Lester
@@ -1158,7 +1158,7 @@ Mattapoisett
 Mattawa
 Maumee
 Maury
-Maury City
+Maury
 Mayfield Heights
 Maynard
 Maynardville
@@ -1210,7 +1210,7 @@ Middlefield
 Middleton
 Middletown
 Midfield
-Midland City
+Midland
 Midtown
 Midway
 Milan
@@ -1267,7 +1267,7 @@ Mooresville
 Moose Creek
 Moose Pass
 Moraine
-Morgan City
+Morgan
 Morgan Count
 Morris
 Morrison
@@ -1292,7 +1292,7 @@ Mount Pleasant
 Mount Vernon
 Mount Washington
 Mountain Brook
-Mountain City
+Mountain
 Mountain Creek
 Mountain Village
 Mountlake Terrace
@@ -1492,7 +1492,7 @@ Peekskill
 Pegram
 Pelham
 Pelican
-Pell City
+Pell
 Pembroke
 Pennington
 Pepper Pike
@@ -1507,7 +1507,7 @@ Petersham
 Peterson
 Petersville
 Petrey
-Phenix City
+Phenix
 Phil Campbell
 Philadelphia
 Phillipston
@@ -1594,7 +1594,7 @@ Quincy
 Quinhagak
 Quinton
 Ragland
-Rainbow City
+Rainbow
 Rainier
 Rainsville
 Ralph
@@ -1616,7 +1616,7 @@ Red Hill
 Red Level
 Redding
 Redmond
-Reece City
+Reece
 Reform
 Rehobeth
 Rehoboth
@@ -1665,7 +1665,7 @@ Rowe
 Rowley
 Roxbury
 Roy
-Royal City
+Royal
 Royalston
 Ruby
 Russell
@@ -1697,7 +1697,7 @@ Sanford
 Saraland
 Saratoga Springs
 Sardis
-Sardis City
+Sardis
 Satsuma
 Saugus
 Saulsbury
@@ -1800,7 +1800,7 @@ Spencer
 Spokane
 Spokane Valley
 Sprague
-Spring City
+Spring
 Spring Hill
 Spring Valley
 Springboro
@@ -1895,7 +1895,7 @@ Thorne Bay
 Three Way
 Tieton
 Tiffin
-Tipp City
+Tipp
 Tiptonville
 Tisbury
 Togiak
@@ -1913,7 +1913,7 @@ Topsfield
 Toronto
 Torrington
 Townsend
-Tracy City
+Tracy
 Trapper Creek
 Trenton
 Trezevant
@@ -1942,7 +1942,7 @@ Unalakleet
 Unalaska
 Unicoi
 Union
-Union City
+Union
 Union Gap
 University Heights
 University Place
