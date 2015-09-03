@@ -1,3 +1,4 @@
+import string
 from event import *
 
 
@@ -22,6 +23,7 @@ class Occupation(object):
         self.preceded_by = None  # Employee that preceded this one in its occupation -- gets set by Business.hire()
         self.succeeded_by = None  # Employee that succeeded this one in its occupation -- gets set by Business.hire()
         self.supplemental = False  # Whether this position must be immediately refilled if terminated -- Business.hire()
+        self.vocation = self._init_generate_vocation_string()
         # Note: self.person.occupation gets set by Business.hire(), because there's
         # a really tricky pipeline that has to be maintained
         person.occupations.append(self)
@@ -60,6 +62,21 @@ class Occupation(object):
             return "{} at {} {}-{}".format(
                 self.__class__.__name__, self.company.name, self.start_date, self.end_date
             )
+
+    def _init_generate_vocation_string(self):
+        """Generate a properly formatted vocation string for this occupation."""
+        class_name = self.__class__.__name__
+        try:
+            camel_case_char = next(letter for letter in class_name[1:] if letter in string.uppercase)
+            index_of_camel_case_char = class_name.index(camel_case_char)
+            if index_of_camel_case_char == 0:
+                index_of_camel_case_char = class_name[1:].index(camel_case_char) + 1
+            return "{} {}".format(
+                class_name[:index_of_camel_case_char].lower(),
+                class_name[index_of_camel_case_char:].lower()
+            )
+        except StopIteration:
+            return class_name.lower()
 
     @property
     def years_experience(self):
@@ -330,11 +347,11 @@ class Builder(Occupation):
         super(Builder, self).__init__(person=person, company=company, shift=shift)
 
 
-class DayCareProvider(Occupation):
+class DaycareProvider(Occupation):
     """A person who works at a day care."""
 
     def __init__(self, person, company, shift):
-        """Initialize a DayCareProvider object.
+        """Initialize a DaycareProvider object.
 
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
