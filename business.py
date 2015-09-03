@@ -76,6 +76,7 @@ class Business(object):
                 demolition_preceding_construction_of_this_business.reason = self.construction
         # Set address
         self.address = self.lot.address
+        self.house_number = self.lot.house_number
         self.street_address_is_on = self.lot.street_address_is_on
         self.block = self.lot.block
         # Choose a name for this business
