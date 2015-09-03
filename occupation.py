@@ -356,7 +356,7 @@ class DaycareProvider(Occupation):
         @param person: The Person object for the person whose occupation this is.
         @param company: The Company object for the company that person works for in this capacity.
         """
-        super(DayCareProvider, self).__init__(person=person, company=company, shift=shift)
+        super(DaycareProvider, self).__init__(person=person, company=company, shift=shift)
 
 
 class Doctor(Occupation):
