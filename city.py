@@ -678,7 +678,7 @@ class Block(object):
     @property
     def buildings(self):
         """Return all the buildings on this block."""
-        return (lot.building for lot in self.lots if lot.building)
+        return [lot.building for lot in self.lots if lot.building]
 
 
 class Lot(object):
