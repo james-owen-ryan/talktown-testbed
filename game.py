@@ -37,11 +37,10 @@ class Game(object):
         # we need to perform a check every March 1 to ensure that all leap-year babies
         # celebrate their birthday that day on non-leap years
         self.birthdays = {(2, 29): set()}
-        # Prepare various Talk of the Town variables
-        self.founder = None  # The person who founds the city -- gets set by self.establish_setting()
-        self.lover = None
-        self.pc = None
-
+        # Prepare a number that will hold a single random number that is generated daily -- this
+        # facilitates certain things that should be determined randomly but remain constant across
+        # a timestep, e.g., whether a person locked their door before leaving home
+        self.random_number_this_timestep = random.random()
         # self.establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
 
@@ -495,6 +494,8 @@ class Game(object):
 
         else:
             self.date = self.get_date()
+        # Lastly, set a new random number for this timestep
+        self.random_number_this_timestep = random.random()
 
     def find(self, name):
         """Return person living in this city with that name."""
