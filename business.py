@@ -418,6 +418,11 @@ class Business(object):
         return set([employee.person for employee in self.employees])
 
     @property
+    def working_right_now(self):
+        people_working = [p for p in self.people_here_now if p.routine.working]
+        return [(p.occupation.vocation, p) for p in people_working]
+
+    @property
     def day_shift(self):
         """Return all employees who work the day shift here."""
         day_shift = set([employee for employee in self.employees if employee.shift == "day"])
