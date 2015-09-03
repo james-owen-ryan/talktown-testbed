@@ -691,6 +691,8 @@ class Lot(object):
         """Initialize a Lot object."""
         self.id = Lot.counter
         Lot.counter += 1
+        self.lot = True if self.__class__ is Lot else False
+        self.tract = True if self.__class__ is Tract else False
         self.city = city
         self.streets = []
         self.parcels = []
