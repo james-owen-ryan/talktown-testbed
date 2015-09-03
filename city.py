@@ -660,6 +660,7 @@ class Lot(object):
         self.positions_in_block = []
         self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots after all lots have been generated
         # These get set by init_generate_address(), which gets called by City
+        self.house_number = None
         self.address = None
         self.street_address_is_on = None
         self.block_address_is_on = None
@@ -694,7 +695,7 @@ class Lot(object):
         """Generate an address, given the lot building is on."""
         self.index_of_street_address_will_be_on = random.randint(0, len(self.streets)-1)
         house_number = self.house_numbers[self.index_of_street_address_will_be_on]
-        house_number = int(house_number)
+        self.house_number = int(house_number)
         street = self.streets[self.index_of_street_address_will_be_on]
         self.address = "{0} {1}".format(house_number, street.name)
         self.street_address_is_on = street
