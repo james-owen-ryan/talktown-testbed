@@ -1810,8 +1810,6 @@ class PersonExNihilo(Person):
                     n_kids=len(self.marriage.children_produced)
                 )
             )
-            if self is self.game.founder:  # Try to force large family to develop
-                chance_they_are_trying_to_conceive_this_year += config.boost_to_the_founders_conception_chance
             if random.random() < chance_they_are_trying_to_conceive_this_year:
                 self.have_sex(partner=self.spouse, protection=False)
             else:
