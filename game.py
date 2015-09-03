@@ -108,50 +108,6 @@ class Game(object):
             name = Names.a_place_name()
         return name
 
-    def _select_player_character(self):
-        if any(k for k in self.founder.kids | self.founder.grandchildren if k.present):
-            player_character = next(
-                k for k in self.founder.kids | self.founder.grandchildren if k.present
-            )
-        else:
-            player_character = random.choice([p for p in self.city.residents if p.adult])
-        return player_character
-
-    def _determine_initial_evidence_about_lover_appearance(self):
-        true_and_false_values = [True, True, True, False, False]
-        feature_types_of_initial_evidence = ["head shape", "hair color", "hair length", "eye color", "nose shape"]
-        random.shuffle(true_and_false_values)
-        initial_evidence = {}
-        for i in xrange(len(feature_types_of_initial_evidence)):
-            feature_type = feature_types_of_initial_evidence[i]
-            true_feature = str(self.lover.get_feature(feature_type=feature_type))
-            true_or_false = true_and_false_values[i]
-            if true_or_false is True:
-                initial_evidence[feature_type] = true_feature
-            else:
-                # Mutate the true feature into a false one
-                x = random.random()
-                mutated_feature = next(  # See config.py to understand what this is doing
-                    mutation[1] for mutation in self.config.memory_mutations[feature_type][true_feature] if
-                    mutation[0][0] <= x <= mutation[0][1]
-                )
-                initial_evidence[feature_type] = mutated_feature
-        if initial_evidence["hair color"] == "blonde":  # Don't make them assume female lover
-            initial_evidence["hair color"] = "blond(e)"
-        if initial_evidence["hair length"] == "bald":
-            hair_str = "a bald head"
-        elif initial_evidence["hair length"] == "medium":
-            hair_str = "medium-length {0} hair".format(initial_evidence["hair color"])
-        else:
-            hair_str = "{0} {1} hair".format(initial_evidence["hair length"], initial_evidence["hair color"])
-        initial_evidence_str = (
-            "a {0}-shaped head, {1}, a {2} nose, and {3} eyes".format(
-                initial_evidence["head shape"], hair_str, initial_evidence["nose shape"],
-                initial_evidence["eye color"],
-            )
-        )
-        return initial_evidence, initial_evidence_str
-
     def assign_event_number(self, new_event):
         """Assign an event number to some event, to allow for precise ordering of events that happened same timestep.
 
@@ -262,13 +218,9 @@ class Game(object):
                             Divorce(subjects=(person, person.spouse), lawyer=lawyer)
                     if person.age > max(72, random.random() * 100):
                         # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
-                        if person is not self.founder:
-                            person.die(cause_of_death="Natural causes")
+                        person.die(cause_of_death="Natural causes")
                     elif person.occupation and person.age > max(65, random.random() * 100):
                         person.retire()
-                    # elif random.random() < 0.01:  # I THINK NOT HAVING ELIF IS WHAT CAUSED THE WEIRD DTH/DPT ERRORS
-                    #     if person is not self.founder and person not in self.founder.kids | self.founder.grandchildren:
-                    #         person.depart_city()
                     elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
                         if random.random() < 0.03:
                             person.find_work()
@@ -424,10 +376,6 @@ class Game(object):
         for person in self.city.residents:
             if not (timestep_during_gameplay and person is self.pc):  # Don't sim where the PC is
                 person.routine.enact()
-                # if this_is_the_night_in_question:
-                #     self.lover.location.people_here_now.remove(self.lover)
-                #     self.lover.location = self.founder.home
-                #     self.lover.location.people_here_now.add(self.lover)
         # Have people observe their surroundings, which will cause knowledge to
         # build up, and have them socialize with other people also at that location --
         # this will cause relationships to form/progress and knowledge to propagate
@@ -445,21 +393,6 @@ class Game(object):
                         person.mind.mental_models[thing].deteriorate()
                 if self.ordinal_date == self.ordinal_date_that_gameplay_begins:
                     person.reflect()
-                    # if person is self.lover:
-                    #     # Have them invent an alibi for where they were, in case
-                    #     # the PC encounters them and asks, in which case we don't
-                    #     # want them to just admit to being at the founder's home
-                    #     date = (self.ordinal_date_that_the_founder_dies, 1)
-                    #     if random.random() < 0.5:
-                    #         fake_alibi = person.home
-                    #     else:
-                    #         fake_alibi = random.choice(list(self.city.companies))
-                    #     fake_reflection = Reflection(subject=self.lover, source=self.lover)
-                    #     person.mind.mental_models[person].whereabouts.date[date] = Facet(
-                    #         value=fake_alibi.name, owner=self.lover, subject=self.lover,
-                    #         feature_type="whereabouts", initial_evidence=fake_reflection,
-                    #         predecessor=None, parent=None, object_itself=fake_alibi
-                    #     )
             # But also have them reflect accurately on their own features --
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:
