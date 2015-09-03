@@ -670,6 +670,7 @@ class Block(object):
         self.number = number
         self.street = street
         self.lots = []
+        self.type = 'block'
 
     def __str__(self):
         """Return string representation."""
