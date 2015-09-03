@@ -1837,17 +1837,21 @@ class PersonExNihilo(Person):
                 # has no units, and thus no unit number to give the expansion unit
                 ac for ac in self.city.businesses_of_type('ApartmentComplex') if ac.units
             ]
-            apartment_complex_closest_to_downtown = (
-                min(apartment_complexes_in_town, key=lambda ac: self.city.distance_between(ac.lot, self.city.downtown))
-            )
-            apartment_complex_closest_to_downtown.expand()
+            if len(apartment_complexes_in_town) > 3:
+                complexes_closest_to_downtown = heapq.nlargest(
+                    3, apartment_complexes_in_town,
+                    key=lambda ac: self.city.distance_between(ac.lot, self.city.downtown)
+                )
+                complex_that_will_expand = random.choice(complexes_closest_to_downtown)
+            else:
+                complex_that_will_expand = min(
+                    apartment_complexes_in_town,
+                    key=lambda ac: self.city.distance_between(ac.lot, self.city.downtown)
+                )
+            complex_that_will_expand.expand()  # This will add two new units to this complex
             self.move(
-                new_home=apartment_complex_closest_to_downtown.units[-1],
+                new_home=complex_that_will_expand.units[-2],
                 reason=hiring_that_instigated_move
-            )
-            print '{} expanded and {} moved into new unit #{}'.format(
-                apartment_complex_closest_to_downtown.name, self.name,
-                apartment_complex_closest_to_downtown.units[-1].unit_number
             )
 
 
