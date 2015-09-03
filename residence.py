@@ -1,3 +1,6 @@
+import random
+
+
 class DwellingPlace(object):
     """A dwelling place in a city."""
 
@@ -43,6 +46,26 @@ class DwellingPlace(object):
             return "{}, {} ({}-{})".format(self.name, self.address, construction_year, demolition_year)
         else:
             return "{}, {}".format(self.name, self.address)
+
+    @property
+    def locked(self):
+        """Return True if the door to this dwelling place is currently locked, else false."""
+        locked = False
+        if not self.owners:
+            locked = True
+        elif self.city.game.time_of_day == 'day' and not self.people_here_now:
+            # Randomly decide who was the last to leave this home today
+            index_in_owners_of_last_to_leave = int(
+                round(self.city.game.random_number_this_timestep * len(self.owners))
+            )
+            last_to_leave = list(self.owners)[index_in_owners_of_last_to_leave]
+            if self.city.game.random_number_this_timestep > last_to_leave.personality.neuroticism:
+                locked = True
+        elif self.city.game.time_of_day == "night":
+            most_neurotic_owner = max(self.owners, key=lambda o: o.personality.neuroticism)
+            if self.city.game.random_number_this_timestep > most_neurotic_owner.personality.neuroticism:
+                locked = True
+        return locked
 
     @property
     def name(self):

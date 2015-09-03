@@ -405,6 +405,22 @@ class Business(object):
         return score
 
     @property
+    def locked(self):
+        """Return True if the entrance to this building is currently locked, else false."""
+        locked = False
+        # Apartment complexes are always locked
+        if self.__class__ is ApartmentComplex:
+            locked = True
+        # Other businesses are locked only when no one is working, or
+        # at night when only a janitor is working
+        else:
+            if not self.working_right_now:
+                locked = True
+            elif not any(e for e in self.working_right_now if e[0] != 'janitor'):
+                locked = True
+        return locked
+
+    @property
     def residents(self):
         """Return the employees that work here.
 

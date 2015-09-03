@@ -41,6 +41,7 @@ class Config(object):
                 #################
 
         # Daily routines
+        self.chance_someone_locks_their_door = lambda neuroticism: neuroticism  # If random.random() > neuro: True
         self.chance_someone_calls_in_sick_to_work = 0.03
         self.chance_someone_doesnt_have_to_work_some_day = 0.00  # Can be used as proxy in lieu of weekends
         self.chance_someone_leaves_home_multiplier_due_to_kids = 0.3  # i.e., 30% as likely to leave if kids
