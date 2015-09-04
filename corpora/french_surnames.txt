@@ -303,7 +303,6 @@ Belle
 Belleau
 Bellefeuille
 Bellefleur
-Belle-Isle
 Bellenger
 Bellerive
 Bellerose
@@ -392,17 +391,14 @@ Bias
 Bibeau
 Bibeault
 Bickert
-Bien-Aime
 Bienvenu
 Bienvenue
 Billadeau
 Billard
 Billeaud
 Billet
-Billey
 Billiet
 Billotte
-Billy
 Bilodeau
 Binda
 Biringer
@@ -436,7 +432,6 @@ Blasier
 Bleau
 Blier
 Blois
-Blond
 Blondeau
 Blondin
 Blouin
@@ -483,10 +478,8 @@ Bonneville
 Bonney
 Bonnin
 Bonnot
-Bonny
 Bonson
 Bonte
-Bonus
 Bonvillain
 Bonville
 Borde
@@ -920,7 +913,6 @@ Christian
 Christin
 Christine
 Christophe
-Cinq-Mars
 Cisse
 Cissna
 Citron
@@ -1568,7 +1560,6 @@ Filiatrault
 Filiault
 Fillion
 Fils
-Fils-Aime
 Filteau
 Firmin
 Flagel
@@ -2151,13 +2142,6 @@ Jasmine
 Jauquet
 Jay
 Jean
-Jean-Baptiste
-Jean-Charles
-Jeanfreau
-Jean-Jacques
-Jean-Louis
-Jeanneret
-Jean-Pierre
 Jennette
 Jenrette
 Jerome
@@ -3306,7 +3290,6 @@ Picon
 Picot
 Picou
 Pierre
-Pierre-Louis
 Pierron
 Piet
 Pigeon
