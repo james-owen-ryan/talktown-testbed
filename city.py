@@ -63,6 +63,17 @@ class City(object):
                 lot.block = city_block
         for block in self.blocks:
             block.lots.sort(key=lambda lot: lot.house_number)
+        # Fill in any missing blocks, which I think gets caused by tracts being so
+        # large in some cases; these blocks will not have any lots on them, so they'll
+        # never have buildings on them, but it makes city navigation more natural during gameplay
+        for street in self.streets:
+            street.blocks.sort(key=lambda block: block.number)
+            current_block_number = min(street.blocks, key=lambda block: block.number).number
+            largest_block_number = max(street.blocks, key=lambda block: block.number).number
+            while current_block_number != largest_block_number:
+                current_block_number += 100
+                if not any(b for b in street.blocks if b.number == current_block_number):
+                    Block(number=current_block_number, street=street)
         self.paths = {}
         self.generatePaths()
         # Determine the lot central to the highest density of lots in the city and
@@ -588,6 +599,7 @@ class Street(object):
         self.name = self.generate_name(number, direction)
         self.starting_parcel = starting_parcel
         self.ending_parcel = ending_parcel
+        self.blocks = []  # Gets appended to by Block.__init__()
 
     def generate_name(self, number, direction):
         """Generate a street name."""
@@ -669,6 +681,7 @@ class Block(object):
         """Initialize a block object."""
         self.number = number
         self.street = street
+        self.street.blocks.append(self)
         self.lots = []
         self.type = 'block'
 
