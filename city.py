@@ -73,7 +73,7 @@ class City(object):
             while current_block_number != largest_block_number:
                 current_block_number += 100
                 if not any(b for b in street.blocks if b.number == current_block_number):
-                    Block(number=current_block_number, street=street)
+                    self.blocks.add(Block(number=current_block_number, street=street))
         self.paths = {}
         self.generatePaths()
         # Determine the lot central to the highest density of lots in the city and
