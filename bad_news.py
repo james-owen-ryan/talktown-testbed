@@ -228,13 +228,13 @@ class Player(object):
                 scene = self._describe_the_apartment_unit_player_is_outside_of()
             elif self.location.__class__.__name__ == 'ApartmentComplex':
                 scene = self._describe_the_apartment_complex_the_player_is_outside_of()
-            elif self.location.type == "business":
+            else:  # Business
                 scene = self._describe_the_business_the_player_is_outside_of()
         else:  # Exterior scenes
             if self.location.type == 'residence':
                 scene = self._describe_the_interior_of_a_home_the_player_is_in()
-
-        # if self.inside -- PRINT ALL THE PEOPLE THERE
+            else:
+                scene = self._describe_the_interior_of_a_business_the_player_is_in()
         print "\n{}\n".format(scene)
 
     def _describe_the_block_player_is_on(self):
@@ -280,9 +280,16 @@ class Player(object):
                         building.lot.house_number, lights_on
                     )
             else:  # A business that's not a bar or restaurant
-                description += '{}\tA company whose sign reads "{}"'.format(
-                    building.lot.house_number, building.sign
-                )
+                if building.__class__.__name__ == 'Farm':
+                    description += '{house_number}\tA farm'.format(
+                        house_number=building.house_number
+                    )
+                else:
+                    description += '{house_number}\tA {gated_area_or_company} whose sign reads "{sign}"'.format(
+                        house_number=building.lot.house_number,
+                        gated_area_or_company='gated area' if building.lot.tract else 'company',
+                        sign=building.sign
+                    )
         return description
 
     def _describe_the_house_player_is_outside_of(self):
@@ -416,7 +423,7 @@ class Player(object):
             "You are at the entrance of {business_name} at {address}. "
             "Its {gate_or_door} is {door_locked}{conjunction} you see {n_people_inside} "
             "{inside_or_on_premises}.".format(
-                business_name=self.location.name,
+                business_name=self.location.name if self.location.__class__.__name__ != 'Farm' else 'a farm',
                 address=self.location.address,
                 gate_or_door="gate" if self.location.lot.tract else "door",
                 door_locked="locked" if self.location.locked else "unlocked",
@@ -456,12 +463,12 @@ class Player(object):
                 house_noun_phrase=house_noun_phrase,
                 address=self.location.address,
                 people_here_intro=people_here_intro,
-                people_present_description=self._generate_description_of_the_people_at_a_residence()
+                people_present_description=self._generate_description_of_the_people_in_a_business()
             )
         )
         return scene
 
-    def _generate_description_of_the_people_at_a_residence(self):
+    def _generate_description_of_the_people_in_a_residence(self):
         """Describe the individuals currently situated in a residence that the player is in."""
         people_present_description = ""
         for person in self.location.people_here_now:
@@ -470,6 +477,51 @@ class Player(object):
             else:
                 people_present_description += '\n\t{} with {}'.format(
                     person.age_and_gender_description, person.basic_appearance_description
+                ).capitalize()
+        return people_present_description
+
+    def _describe_the_interior_of_a_business_the_player_is_in(self):
+        """Describe the interior of a business that the player is in."""
+        if len(self.location.people_here_now) > max(NUMERAL_TO_WORD):
+            people_here_intro = "There are {number} people here:\n".format(
+                len(self.location.people_here_now)
+            )
+        elif len(self.location.people_here_now) > 7:
+            people_here_intro = "There are many people here:\n"
+        elif len(self.location.people_here_now) > 1:
+            people_here_intro = "There are {number_word} people here:\n".format(
+                number_word=NUMERAL_TO_WORD[len(self.location.people_here_now)]
+            )
+        elif self.location.people_here_now:
+            people_here_intro = "There is a single person here:\n"
+        else:
+            people_here_intro = "There is no one here."
+        scene = (
+            "You are {inside_or_on_premises_of} {business_name} at {address}. "
+            "{people_here_intro}{people_present_description}".format(
+                inside_or_on_premises_of='on the premises of' if self.location.lot.tract else 'inside',
+                business_name=self.location.name if self.location.__class__.__name__ != 'Farm' else 'a farm',
+                address=self.location.address,
+                people_here_intro=people_here_intro,
+                people_present_description=self._generate_description_of_the_people_in_a_business()
+            )
+        )
+        return scene
+
+    def _generate_description_of_the_people_in_a_business(self):
+        """Describe the individuals currently situated in a residence that the player is in."""
+        people_present_description = ""
+        people_here_now = list(self.location.people_here_now)
+        # List people working here first
+        people_here_now.sort(key=lambda p: p.routine.working, reverse=True)
+        for person in self.location.people_here_now:
+            if person in self.people_i_know_by_name:
+                people_present_description += '\n\t{persons_name}{occupation_if_working}'.format(person.name)
+            else:
+                people_present_description += '\n\t{age_gender} with {appearance}{occupation_if_working}'.format(
+                    age_gender=person.age_and_gender_description,
+                    appearance=person.basic_appearance_description,
+                    occupation_if_working=' ({})'.format(person.occupation.vocation) if person.routine.working else ''
                 ).capitalize()
         return people_present_description
 
