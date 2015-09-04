@@ -598,11 +598,12 @@ class Divorce(Event):
         self._update_divorcee_attributes()
         self._have_divorcees_split_up_money()
         self._have_a_spouse_and_possibly_kids_change_name_back()
+        if lawyer:
+            self.law_firm = lawyer.company
+            self.lawyer.filed_divorces.add(self)
         if self.city:
             # Divorce isn't currently possible outside a city, but still
             # doing this to be consistent with other event classes
-            self.law_firm = lawyer.company
-            self.lawyer.filed_divorces.add(self)
             self._decide_and_enact_new_living_arrangements()
             # self._remunerate()
         else:
