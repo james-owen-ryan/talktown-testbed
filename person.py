@@ -198,6 +198,8 @@ class Person(object):
         self.location = None
         # Prepare attributes pertaining to this person's knowledge
         self.all_belief_facets = set()  # Used to make batch calls to Facet.decay_strength()
+        # Prepare Bad News helper attributes
+        self.temp_address_number = -1
 
     def __str__(self):
         """Return string representation."""
@@ -516,8 +518,8 @@ class Person(object):
             next_of_kin = self.father
         elif any(k for k in self.kids if k.adult and k.present):
             next_of_kin = next(k for k in self.kids if k.adult and k.present)
-        elif any(f for f in self.immediate_family if f.adult and f.present):
-            next_of_kin = next(f for f in self.immediate_family if f.adult and f.present)
+        elif any(f for f in self.siblings if f.adult and f.present):
+            next_of_kin = next(f for f in self.siblings if f.adult and f.present)
         elif any(f for f in self.extended_family if f.adult and f.present):
             next_of_kin = next(f for f in self.extended_family if f.adult and f.present)
         elif any(f for f in self.friends if f.adult and f.present):
@@ -577,7 +579,7 @@ class Person(object):
         elif self.age < 13:
             return 'a preteen boy' if self.male else 'a preteen girl'
         elif self.age < 20:
-            return 'an teenage boy' if self.male else 'a teenage girl'
+            return 'a teenage boy' if self.male else 'a teenage girl'
         elif self.age < 25:
             return 'a young man' if self.male else 'a young woman'
         elif self.age < 45:
@@ -619,6 +621,13 @@ class Person(object):
             return '{}, and {}'.format(', '.join(feature for feature in features[:-1]), features[-1])
         else:
             return ' and '.join(features)
+
+    @property
+    def description(self):
+        """Return a basic description of this person."""
+        return "{} with {}".format(
+            self.age_and_gender_description, self.basic_appearance_description
+        )
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""

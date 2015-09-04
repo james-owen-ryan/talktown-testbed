@@ -658,7 +658,7 @@ class Config(object):
                 'supplemental night': [Busboy, Waiter, Manager, Dishwasher],
             },
             School: {
-                'day': (Janitor, Teacher, Teacher, Nurse),
+                'day': (Janitor, Teacher, Teacher, Nurse, Principal),
                 'night': (Janitor,),
                 'supplemental day': [Teacher],
                 'supplemental night': [Janitor],
@@ -960,6 +960,7 @@ class Config(object):
             FireChief: 3,
             PoliceChief: 3,
             Realtor: 3,
+            Principal: 3,
             Mortician: 3,
             Doctor: 4,
             Engineer: 4,
@@ -1030,6 +1031,10 @@ class Config(object):
             Puddler: lambda applicant: applicant.male,
             Clothier: lambda applicant: applicant.male if applicant.game.year < 1930 else True,
             Teacher: lambda applicant: applicant.female if applicant.game.year < 1955 else True,
+            Principal: lambda applicant: (
+                applicant.male if applicant.game.year < 1965 else True and
+                any(o for o in applicant.occupations if o.__class__ is Teacher)
+            ),
             Tailor: lambda applicant: applicant.male if applicant.game.year < 1955 else True,
             Molder: lambda applicant: applicant.male,
             Turner: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
@@ -1039,18 +1044,43 @@ class Config(object):
             Druggist: lambda applicant: applicant.male,
             InsuranceAgent: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
             Jeweler: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
-            FireChief: lambda applicant: applicant.male,
-            PoliceChief: lambda applicant: applicant.male,
+            FireChief: lambda applicant: (
+                applicant.male and any(o for o in applicant.occupations if o.__class__ is Firefighter)
+            ),
+            PoliceChief: lambda applicant: (
+                applicant.male and any(o for o in applicant.occupations if o.__class__ is PoliceOfficer)
+            ),
             Realtor: lambda applicant: applicant.male if applicant.game.year < 1966 else True,
             Mortician: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
-            Doctor: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
-            Engineer: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
+            Doctor: lambda applicant: (
+                applicant.male if applicant.game.year < 1972 else True and
+                not applicant.occupations
+            ),
+            Engineer: lambda applicant: (
+                applicant.male if applicant.game.year < 1977 else True and
+                not applicant.occupations
+            ),
             Pharmacist: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
-            Architect: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
-            Optometrist: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
-            Dentist: lambda applicant: applicant.male if applicant.game.year < 1972 else True,
-            PlasticSurgeon: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
-            Lawyer: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
+            Architect: lambda applicant: (
+                applicant.male if applicant.game.year < 1977 else True and
+                not applicant.occupations
+            ),
+            Optometrist: lambda applicant: (
+                applicant.male if applicant.game.year < 1972 else True and
+                not applicant.occupations
+            ),
+            Dentist: lambda applicant: (
+                applicant.male if applicant.game.year < 1972 else True and
+                not applicant.occupations
+            ),
+            PlasticSurgeon: lambda applicant: (
+                applicant.male if applicant.game.year < 1977 else True and
+                not applicant.occupations
+            ),
+            Lawyer: lambda applicant: (
+                applicant.male if applicant.game.year < 1977 else True and
+                not applicant.occupations
+            ),
             Professor: lambda applicant: applicant.male if applicant.game.year < 1962 else True,
             Owner: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
             Mayor: lambda applicant: applicant.male if applicant.game.year < 1977 else True,
@@ -1237,7 +1267,7 @@ class Config(object):
             "eye color": 0.75,
             "eye horizontal settedness": 0.75,
             "eye vertical settedness": 0.75,
-            "facial hair style": 0.5,  # From nurture
+            "facial hair style": 0.0,
             "freckles": 0.75,
             "birthmark": 0.0,
             "scar": 0.0,
@@ -1464,11 +1494,11 @@ class Config(object):
             "eye vertical settedness": self.facial_feature_distributions_male["eye vertical settedness"],
             "facial hair style": [
                 ((0.0, 1.0), 'none'),
-                ((0.0, 0.0), 'mustache'),
-                ((0.0, 0.0), 'full beard'),
-                ((0.0, 0.0), 'goatee'),
-                ((0.0, 0.0), 'sideburns'),
-                ((0.0, 0.0), 'soul patch'),
+                ((-99, -99), 'mustache'),
+                ((-99, -99), 'full beard'),
+                ((-99, -99), 'goatee'),
+                ((-99, -99), 'sideburns'),
+                ((-99, -99), 'soul patch'),
             ],
             "freckles": self.facial_feature_distributions_male["freckles"],
             "birthmark": self.facial_feature_distributions_male["birthmark"],

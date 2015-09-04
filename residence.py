@@ -71,8 +71,11 @@ class DwellingPlace(object):
     @property
     def name(self):
         """Return the name of this residence."""
-        owner_surnames = set([o.last_name for o in self.owners])
-        name = "{0} residence".format('-'.join(owner_surnames))
+        if self.owners:
+            owner_surnames = set([o.last_name for o in self.owners])
+            name = "{} residence".format('-'.join(owner_surnames))
+        else:
+            name = 'Uninhabited residence'
         return name
 
     def _init_ownership(self, initial_owners):

@@ -46,7 +46,8 @@ class Player(object):
         self.last_address_i_heard = None
         self.last_unit_number_i_heard = None
         self.last_block_i_heard = None
-        self.set_scene()
+        self.interlocutor = None
+        self.observe()
 
     @property
     def buildings_on_this_block(self):
@@ -71,7 +72,7 @@ class Player(object):
                 b.block.street is street_object
             )
             self.outside = True
-            self.set_scene()
+            self.observe()
         except StopIteration:
             # Arrive then at that block
             house_number = int(address[:3])
@@ -108,7 +109,7 @@ class Player(object):
                 raise Exception('There is no {}'.format(block))
         self.location = block
         self.outside = True
-        self.set_scene()
+        self.observe()
 
     def move(self, direction):
         """Move to an adjacent block."""
@@ -144,27 +145,35 @@ class Player(object):
                 new_block = self.location.street.blocks[index_of_new_block]
                 self.goto_block(block=new_block)
 
-    def approach(self, house_number):
+    def approach(self, house_number=None):
         """Move the player to the building on her current block with the given house number."""
         if self.location.__class__.__name__ != 'Block':
             self.location = self.location.block
-        try:
-            building_to_approach = next(b for b in self.location.buildings if b.house_number == house_number)
-        except StopIteration:
-            raise InvalidAddressException(
-                "There is no building on this block with the house number {}".format(house_number)
-            )
-        self.location = building_to_approach
-        self.outside = True
-        self.set_scene()
+        building_to_approach = None
+        if not house_number:
+            if len(self.location.buildings) == 1:
+                building_to_approach = list(self.location.buildings)[0]
+            else:
+                print "\nYou need to specify a house number to approach.\n"
+        else:
+            try:
+                building_to_approach = next(b for b in self.location.buildings if b.house_number == house_number)
+            except StopIteration:
+                print "\nThere is no building on this block with the house number {}\n".format(house_number)
+        if building_to_approach:
+            self.location = building_to_approach
+            self.outside = True
+            self.observe()
 
     def approach_apt(self, unit_number=None):
         """Move the player to the unit of the apartment she is currently outside with the given unit number."""
+        if self.location.__class__.__name__ == "Apartment":
+            self.location = self.location.complex
         if not unit_number:
             unit_number = self.last_unit_number_i_heard
-        self.location = self.location.units[unit_number]
+        self.location = self.location.units[unit_number-1]
         self.outside = True  # Make sure elsewhere to check for outside + location being an apartment unit
-        self.set_scene()
+        self.observe()
 
     def enter(self, house_number=None):
         """Enter a building."""
@@ -172,7 +181,9 @@ class Player(object):
             # Then attempt to enter the building you are outside of
             if not self.location.locked:
                 self.outside = False
-                self.set_scene()
+                self.observe()
+            elif self.location.lot.tract:
+                print 'The gate is locked.'
             else:
                 print 'The door is locked.'
         else:
@@ -182,7 +193,9 @@ class Player(object):
             self.location = building_to_approach
             if not self.location.locked:
                 self.outside = False
-                self.set_scene()
+                self.observe()
+            elif self.location.lot.tract:
+                print 'The gate is locked.'
             else:
                 print 'The door is locked.'
 
@@ -192,7 +205,7 @@ class Player(object):
             # Then attempt to enter the apartment unit you are standing outside of
             if not self.location.locked:
                 self.outside = False
-                self.set_scene()
+                self.observe()
             else:
                 print 'The door is locked.'
         else:
@@ -202,46 +215,89 @@ class Player(object):
             self.location = apartment_unit_to_approach
             if not self.location.locked:
                 self.outside = False
-                self.set_scene()
+                self.observe()
             else:
                 print 'The door is locked.'
 
     def exit(self):
         """Exit a building."""
         self.outside = True
-        self.set_scene()
+        self.observe()
 
-    def go_in_street(self):
+    def go_to_street(self):
         """Go into the street and the observe the block you are on."""
         self.outside = True
         self.location = self.location.block
-        self.set_scene()
+        self.observe()
 
-    def set_scene(self):
+    def observe(self):
         """Describe the player's current setting."""
         if self.outside:  # Interior scenes
             if self.location.type == 'block':
                 scene = self._describe_the_block_player_is_on()
             elif self.location.__class__.__name__ == 'House':
-                scene = self._describe_the_house_player_is_outside_of()
+                scene = self._describe_house_exterior()
             elif self.location.__class__.__name__ == 'Apartment':
-                scene = self._describe_the_apartment_unit_player_is_outside_of()
+                scene = self._describe_apartment_unit_exterior()
             elif self.location.__class__.__name__ == 'ApartmentComplex':
-                scene = self._describe_the_apartment_complex_the_player_is_outside_of()
+                scene = self._describe_apartment_complex_exterior()
             else:  # Business
-                scene = self._describe_the_business_the_player_is_outside_of()
+                scene = self._describe_business_exterior()
         else:  # Exterior scenes
             if self.location.type == 'residence':
-                scene = self._describe_the_interior_of_a_home_the_player_is_in()
+                scene = self._describe_home_interior()
             else:
-                scene = self._describe_the_interior_of_a_business_the_player_is_in()
+                scene = self._describe_business_interior()
         print "\n{}\n".format(scene)
+
+    def address(self, addressee=None):
+        """Address person with the given name here, or else the only person here."""
+        if addressee is not None:
+            if type(addressee) == str:
+                name = addressee
+                address_number = None
+            else:
+                address_number = addressee
+                name = None
+        else:
+            name = None
+            address_number = None
+        if self.location.people_here_now:
+            if len(self.location.people_here_now) == 1:
+                self.interlocutor = list(self.location.people_here_now)[0]
+                print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
+                    age_and_gender_nominal=self.interlocutor.age_and_gender_description,
+                    appearance=self.interlocutor.basic_appearance_description
+                )
+            else:
+                if any(p for p in self.location.people_here_now if p.name == name):
+                    self.interlocutor = next(p for p in self.location.people_here_now if p.name == name)
+                    print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
+                        age_and_gender_nominal=self.interlocutor.age_and_gender_description,
+                        appearance=self.interlocutor.basic_appearance_description
+                    )
+                elif any(p for p in self.location.people_here_now if p.temp_address_number == address_number):
+                    self.interlocutor = next(
+                        p for p in self.location.people_here_now if p.temp_address_number == address_number
+                    )
+                    print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
+                        age_and_gender_nominal=self.interlocutor.age_and_gender_description,
+                        appearance=self.interlocutor.basic_appearance_description
+                    )
+                else:
+                    print "\nI'm not sure whom you met.\n".format(name)
+        else:
+            print '\nNo one is here.\n'.format(name)
+
+    def remember(self):
+        """Remember the name of the person you are talking to."""
+        self.people_i_know_by_name.add(self.interlocutor)
 
     def _describe_the_block_player_is_on(self):
         """Describe the block that the player is on."""
         buildings_on_this_block = [lot.building for lot in self.location.lots if lot.building]
         if buildings_on_this_block:
-            buildings_str = self._generate_description_of_buildings_on_this_block()
+            buildings_str = self._describe_buildings_on_block()
             if len(buildings_on_this_block) > 1:
                 scene = "You are on the {}. There are {} buildings here:\n{}".format(
                     self.location, NUMERAL_TO_WORD[len(buildings_on_this_block)], buildings_str
@@ -254,7 +310,7 @@ class Player(object):
             scene = "You are on the {}. There are no buildings here.".format(self.location)
         return scene
 
-    def _generate_description_of_buildings_on_this_block(self):
+    def _describe_buildings_on_block(self):
         """Generate a pretty-printable description of buildings on the block the player is on."""
         description = ""
         buildings_on_this_block = [lot.building for lot in self.location.lots if lot.building]
@@ -292,7 +348,7 @@ class Player(object):
                     )
         return description
 
-    def _describe_the_house_player_is_outside_of(self):
+    def _describe_house_exterior(self):
         """Describe the house whose doorstep the player is standing on."""
         if self.location in self.houses_i_know_by_name:
             whose_house = "{person_i_know_lives_here}'s house".format(
@@ -329,7 +385,7 @@ class Player(object):
             )
         return scene
 
-    def _describe_the_apartment_unit_player_is_outside_of(self):
+    def _describe_apartment_unit_exterior(self):
         """Describe the apartment unit whose door the player is standing at."""
         if self.location in self.houses_i_know_by_name:
             whose_apartment = "{person_i_know_lives_here}'s apartment, unit #{unit_number}".format(
@@ -360,7 +416,7 @@ class Player(object):
         )
         return scene
 
-    def _describe_the_apartment_complex_the_player_is_outside_of(self):
+    def _describe_apartment_complex_exterior(self):
         """Describe the apartment complex, particularly its intercom system, that the player is outside of."""
         try:
             janitor_in_lobby = next(e for e in self.location.working_right_now if e[0] == 'janitor')
@@ -377,12 +433,12 @@ class Player(object):
                 address=self.location.address,
                 lobby_str=lobby_str,
                 n_options=len(self.location.units)+1,
-                intercom_index=self._generate_apartment_complex_intercom_system_directory()
+                intercom_index=self._describe_apartment_complex_intercom()
             )
         )
         return scene
 
-    def _generate_apartment_complex_intercom_system_directory(self):
+    def _describe_apartment_complex_intercom(self):
         """Describe the apartment complex's intercom system, listing units and names."""
         intercom_description = ""
         for unit in self.location.units:
@@ -398,7 +454,7 @@ class Player(object):
         intercom_description += "\n\n\t#99\tOffice"
         return intercom_description
 
-    def _describe_the_business_the_player_is_outside_of(self):
+    def _describe_business_exterior(self):
         """Describe the business a player is outside of."""
         if len(self.location.people_here_now) > 8:
             n_people_inside = "many people"
@@ -434,7 +490,7 @@ class Player(object):
         )
         return scene
 
-    def _describe_the_interior_of_a_home_the_player_is_in(self):
+    def _describe_home_interior(self):
         """Describe the interior of a house that the player is in."""
         if self.location in self.houses_i_know_by_name:
             house_noun_phrase = "the {house_or_apartment} of {person_i_know_lives_here}".format(
@@ -442,9 +498,11 @@ class Player(object):
                 person_i_know_lives_here=self.salient_person_who_lives_in_a_house[self.location].name
             )
         else:
-            house_noun_phrase = "a house".format(self.location.address)
-        if len(self.location.people_here_now) > max(NUMERAL_TO_WORD):
-            people_here_intro = "There are {number} people here:\n".format(
+            house_noun_phrase = "a {house_or_apartment}".format(
+                house_or_apartment="home" if self.location.house else "apartment"
+            )
+        if len(self.location.people_here_now) > 14:
+            people_here_intro = "There are very many people here:\n".format(
                 len(self.location.people_here_now)
             )
         elif len(self.location.people_here_now) > 7:
@@ -463,28 +521,36 @@ class Player(object):
                 house_noun_phrase=house_noun_phrase,
                 address=self.location.address,
                 people_here_intro=people_here_intro,
-                people_present_description=self._generate_description_of_the_people_in_a_business()
+                people_present_description=self._describe_people_in_business()
             )
         )
         return scene
 
-    def _generate_description_of_the_people_in_a_residence(self):
+    def _describe_people_in_home(self):
         """Describe the individuals currently situated in a residence that the player is in."""
         people_present_description = ""
-        for person in self.location.people_here_now:
+        people_here_now = list(self.location.people_here_now)
+        for i in xrange(len(people_here_now)):
+            person = people_here_now[i]
+            person.temp_address_number = i
             if person in self.people_i_know_by_name:
-                people_present_description += '\n\t{persons_name}'.format(person.name)
+                people_present_description += '\n\t{i}\t{persons_name}'.format(
+                    i=person.temp_address_number,
+                    persons_name=person.name
+                )
             else:
-                people_present_description += '\n\t{} with {}'.format(
-                    person.age_and_gender_description, person.basic_appearance_description
+                people_present_description += '\n\t{i}\t{age_gender} with {appearance}'.format(
+                    i=person.temp_address_number,
+                    age_gender=person.age_and_gender_description,
+                    appearance=person.basic_appearance_description
                 ).capitalize()
         return people_present_description
 
-    def _describe_the_interior_of_a_business_the_player_is_in(self):
+    def _describe_business_interior(self):
         """Describe the interior of a business that the player is in."""
         if len(self.location.people_here_now) > max(NUMERAL_TO_WORD):
             people_here_intro = "There are {number} people here:\n".format(
-                len(self.location.people_here_now)
+                number=len(self.location.people_here_now)
             )
         elif len(self.location.people_here_now) > 7:
             people_here_intro = "There are many people here:\n"
@@ -503,25 +569,42 @@ class Player(object):
                 business_name=self.location.name if self.location.__class__.__name__ != 'Farm' else 'a farm',
                 address=self.location.address,
                 people_here_intro=people_here_intro,
-                people_present_description=self._generate_description_of_the_people_in_a_business()
+                people_present_description=self._describe_people_in_business()
             )
         )
         return scene
 
-    def _generate_description_of_the_people_in_a_business(self):
+    def _describe_people_in_business(self):
         """Describe the individuals currently situated in a residence that the player is in."""
         people_present_description = ""
         people_here_now = list(self.location.people_here_now)
-        # List people working here first
-        people_here_now.sort(key=lambda p: p.routine.working, reverse=True)
-        for person in self.location.people_here_now:
-            if person in self.people_i_know_by_name:
-                people_present_description += '\n\t{persons_name}{occupation_if_working}'.format(person.name)
+        # List people working here first (sorted by job level)
+        people_here_now.sort(
+            key=lambda p: (p.routine.working,
+                           0 if not p.occupation or not p.routine.working else p.occupation.level),
+            reverse=True
+        )
+        for i in xrange(len(people_here_now)):
+            person = people_here_now[i]
+            person.temp_address_number = i
+            if (self.game.sim.time_of_day == 'day' and self.location.__class__.__name__ == 'School' and
+                    person.whereabouts.date[(self.game.sim.ordinal_date, 0)].occasion == 'school'):
+                occupation_if_working = ' (student)'
             else:
-                people_present_description += '\n\t{age_gender} with {appearance}{occupation_if_working}'.format(
+                occupation_if_working = ' ({})'.format(person.occupation.vocation) if person.routine.working else ''
+            if person in self.people_i_know_by_name:
+                people_present_description += '\n\t{i}\t{persons_name}{occupation_if_working}'.format(
+                    i=person.temp_address_number,
+                    persons_name=person.name,
+                    occupation_if_working=occupation_if_working
+
+                )
+            else:
+                people_present_description += '\n\t{i}\t{age_gender} with {appearance}{occupation_if_working}'.format(
+                    i=person.temp_address_number,
                     age_gender=person.age_and_gender_description,
                     appearance=person.basic_appearance_description,
-                    occupation_if_working=' ({})'.format(person.occupation.vocation) if person.routine.working else ''
+                    occupation_if_working=occupation_if_working
                 ).capitalize()
         return people_present_description
 
@@ -536,6 +619,7 @@ class Player(object):
             ).capitalize()
         else:
             print 'No one answers.'
+        self.interlocutor = answerer
 
     def knock(self):
         """Print exposition surrounding the knocking of a house's door."""
@@ -557,6 +641,7 @@ class Player(object):
             ).capitalize()
         else:
             print 'No one answers.'
+        self.interlocutor = answerer
 
     def _buzz_apartment_complex_office(self):
         """Buzz the office of an apartment complex.
@@ -612,10 +697,7 @@ class Player(object):
                         else:
                             return None
 
-
-class InvalidAddressException(StopIteration):
-    """An exception that is raised when the player attempts to approach or enter an invalid address."""
-
-    def __init__(self, message):
-        """Initialize an InvalidAddressException."""
-        self.message = message
+    @property
+    def i(self):
+        """Wrapper for self.interlocutor."""
+        return self.interlocutor

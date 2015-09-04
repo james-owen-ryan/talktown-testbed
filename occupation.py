@@ -528,6 +528,18 @@ class PoliceOfficer(Occupation):
         super(PoliceOfficer, self).__init__(person=person, company=company, shift=shift)
 
 
+class Principal(Occupation):
+    """A principal at a school."""
+
+    def __init__(self, person, company, shift):
+        """Initialize a Principal object.
+
+        @param person: The Person object for the person whose occupation this is.
+        @param company: The Company object for the company that person works for in this capacity.
+        """
+        super(Principal, self).__init__(person=person, company=company, shift=shift)
+
+
 class Realtor(Occupation):
     """A realtor at a realty firm."""
 
