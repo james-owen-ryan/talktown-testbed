@@ -235,8 +235,9 @@ class Config(object):
         self.chance_new_mother_quits_job_even_if_day_care_in_town = 0.35
         # Aging
         self.age_when_people_start_graying = 48
+        self.age_when_men_start_balding = 48
         self.chance_someones_hair_goes_gray_or_white = 0.02
-        self.chance_someones_hair_goes_white_some_birthday = 0.05  # Must already be gray
+        self.chance_someones_loses_their_hair_some_year = 0.02
         # Death
         self.function_to_derive_chance_a_widow_remarries = (
             lambda years_married: 1.0 / (int(years_married) + 4)
@@ -1249,7 +1250,7 @@ class Config(object):
             # the dice already has them inheriting and not generating from population distribution
             "head size": 0.8,
             "head shape": 0.8,
-            "hair length": 0.99,
+            "hair length": 1.0,
             "hair color": 0.0,
             "eyebrow size": 0.0,
             "eyebrow color": 0.0,
@@ -1293,10 +1294,11 @@ class Config(object):
                 ((0.65, 1.0), 'oval')
             ],
             "hair length": [
-                ((0.0, 0.15), 'bald'),
-                ((0.15, 0.65), 'short'),
+                # TODO make this depend on era
+                ((0.0, 0.0), 'bald'),
+                ((0.0, 0.65), 'short'),
                 ((0.65, 0.85), 'medium'),
-                ((0.85, 1.0), 'long')
+                ((0.95, 1.0), 'long')
             ],
             "hair color": [
                 ((0.0, 0.4), 'black'),
@@ -1429,8 +1431,8 @@ class Config(object):
                 ((0.8, 1.0), 'oval'),
             ],
             "hair length": [
-                ((0.0, 0.005), 'bald'),
-                ((0.005, 0.2), 'short'),
+                ((0.0, 0.0), 'bald'),
+                ((0.0, 0.2), 'short'),
                 ((0.2, 0.45), 'medium'),
                 ((0.45, 1.0), 'long'),
             ],

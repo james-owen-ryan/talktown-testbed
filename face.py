@@ -78,6 +78,19 @@ class Face(object):
             type_str, variant_id = self._generate_feature_from_its_population_distribution(
                 feature_type=feature_type
             )
+        # Make sure you don't inherit a bald head or gray hair lol
+        if feature_type == 'hair length' and type_str == 'bald':
+            takes_after = None
+            exact_variant_inherited = False
+            type_str, variant_id = self._generate_feature_from_its_population_distribution(
+                feature_type=feature_type
+            )
+        elif feature_type == 'hair color' and type_str in ('gray', 'white'):
+            takes_after = None
+            exact_variant_inherited = False
+            type_str, variant_id = self._generate_feature_from_its_population_distribution(
+                feature_type=feature_type
+            )
         # Construct the actual feature object
         feature_object = Feature(
             value=type_str, variant_id=variant_id, inherited_from=takes_after,

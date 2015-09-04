@@ -1625,6 +1625,18 @@ class Person(object):
                     value=new_color_str, variant_id=variant_id, inherited_from=inherited_from,
                     exact_variant_inherited=exact_variant_inherited
                 )
+        # Potentially go bald, if male -- TODO MAKE THIS HERITABLE
+        if self.male and age > config.age_when_men_start_balding:
+            if random.random() < config.chance_someones_loses_their_hair_some_year:
+                # Maintain the same face.Feature attributes as the original Feature had, but
+                # create a new Feature object with the updated string -- TODO is this still inheritance?
+                variant_id = self.face.hair.length.variant_id
+                inherited_from = self.face.hair.length.inherited_from
+                exact_variant_inherited = self.face.hair.length.exact_variant_inherited
+                self.face.hair.length = face.Feature(
+                    value='bald', variant_id=variant_id, inherited_from=inherited_from,
+                    exact_variant_inherited=exact_variant_inherited
+                )
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
