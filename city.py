@@ -74,6 +74,8 @@ class City(object):
                 current_block_number += 100
                 if not any(b for b in street.blocks if b.number == current_block_number):
                     self.blocks.add(Block(number=current_block_number, street=street))
+            # Sort one last time to facilitate easy navigation during gameplay
+            street.blocks.sort(key=lambda block: block.number)
         self.paths = {}
         self.generatePaths()
         # Determine the lot central to the highest density of lots in the city and
