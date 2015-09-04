@@ -102,10 +102,47 @@ class Player(object):
         if not block:
             block = self.last_block_i_heard
         if type(block) == str:
-            block = next(b for b in self.city.blocks if str(block) == block)
+            try:
+                block = next(b for b in self.city.blocks if str(block) == b)
+            except StopIteration:
+                raise Exception('There is no {}'.format(block))
         self.location = block
         self.outside = True
         self.set_scene()
+
+    def move(self, direction):
+        """Move to an adjacent block."""
+        if self.location.type != 'block':
+            self.location = self.location.block
+        try:
+            direction = direction.lower()
+        except AttributeError:  # int or something weird was passed as direction and will get caught anyway
+            pass
+        available_directions = ('n', 's') if self.location.street.direction in ('N', 'S') else ('e', 'w')
+        if direction not in ('n', 'e', 's', 'w'):
+            print "\nThat is not a valid direction. Please choose from among the following options: N, S, E, W.\n"
+        elif direction not in available_directions:
+            direction_to_name = {'w': 'west', 'e': 'east', 's': 'south', 'n': 'north'}
+            print "\n{street_name} runs {direction1} to {direction2}.\n".format(
+                street_name=self.location.street.name,
+                direction1=direction_to_name[available_directions[0]],
+                direction2=direction_to_name[available_directions[1]],
+            )
+        else:
+            index_of_this_block_on_street = self.location.street.blocks.index(self.location)
+            index_of_new_block = (
+                index_of_this_block_on_street+1 if direction in ('n', 'e') else index_of_this_block_on_street-1
+            )
+            if index_of_new_block < 0 or index_of_new_block == len(self.location.street.blocks):
+                direction_to_adj = {'w': 'western', 'e': 'eastern', 's': 'southern', 'n': 'northern'}
+                print "\nYou are already at the {direction_adj} terminus of {street_name}.\n".format(
+                    direction_adj=direction_to_adj[direction],
+                    street_name=self.location.street.name
+                )
+            else:
+                # Go to the new block
+                new_block = self.location.street.blocks[index_of_new_block]
+                self.goto_block(block=new_block)
 
     def approach(self, house_number):
         """Move the player to the building on her current block with the given house number."""
