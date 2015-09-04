@@ -1297,7 +1297,7 @@ class Config(object):
                 # TODO make this depend on era
                 ((0.0, 0.0), 'bald'),
                 ((0.0, 0.65), 'short'),
-                ((0.65, 0.85), 'medium'),
+                ((0.65, 0.95), 'medium'),
                 ((0.95, 1.0), 'long')
             ],
             "hair color": [
