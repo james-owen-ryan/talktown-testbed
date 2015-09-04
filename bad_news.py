@@ -404,7 +404,7 @@ class Player(object):
             n_people_inside = "many people"
         elif len(self.location.people_here_now) > 4:
             n_people_inside = "several people"
-        elif len(self.location.people_here_now) > 2:
+        elif len(self.location.people_here_now) > 1:
             n_people_inside = "a few people"
         elif self.location.people_here_now:
             # A single person -- if it's a janitor, be more specific and
