@@ -62,6 +62,8 @@ class Player(object):
         if not address:
             address = self.last_address_i_heard
         try:
+            if ' (Unit' in address:
+                address = address.split(' (Unit')[0]
             house_number = int(address[:3])
             street_object = self._find_street_object(address)
             self.location = next(
@@ -180,7 +182,7 @@ class Player(object):
 
     def set_scene(self):
         """Describe the player's current setting."""
-        if self.outside:
+        if self.outside:  # Interior scenes
             if self.location.type == 'block':
                 scene = self._describe_the_block_player_is_on()
             elif self.location.__class__.__name__ == 'House':
@@ -191,6 +193,10 @@ class Player(object):
                 scene = self._describe_the_apartment_complex_the_player_is_outside_of()
             elif self.location.type == "business":
                 scene = self._describe_the_business_the_player_is_outside_of()
+        else:  # Exterior scenes
+            if self.location.type == 'residence':
+                scene = self._describe_the_interior_of_a_home_the_player_is_in()
+
         # if self.inside -- PRINT ALL THE PEOPLE THERE
         print "\n{}\n".format(scene)
 
@@ -383,6 +389,52 @@ class Player(object):
             )
         )
         return scene
+
+    def _describe_the_interior_of_a_home_the_player_is_in(self):
+        """Describe the interior of a house that the player is in."""
+        if self.location in self.houses_i_know_by_name:
+            house_noun_phrase = "the {house_or_apartment} of {person_i_know_lives_here}".format(
+                house_or_apartment="home" if self.location.house else "apartment",
+                person_i_know_lives_here=self.salient_person_who_lives_in_a_house[self.location].name
+            )
+        else:
+            house_noun_phrase = "a house".format(self.location.address)
+        if len(self.location.people_here_now) > max(NUMERAL_TO_WORD):
+            people_here_intro = "There are {number} people here:\n".format(
+                len(self.location.people_here_now)
+            )
+        elif len(self.location.people_here_now) > 7:
+            people_here_intro = "There are many people here:\n"
+        elif len(self.location.people_here_now) > 1:
+            people_here_intro = "There are {number_word} people here:\n".format(
+                number_word=NUMERAL_TO_WORD[len(self.location.people_here_now)]
+            )
+        elif self.location.people_here_now:
+            people_here_intro = "There is a single person here:\n"
+        else:
+            people_here_intro = "There is no one here."
+        scene = (
+            "You are inside {house_noun_phrase} at {address}. "
+            "{people_here_intro}{people_present_description}".format(
+                house_noun_phrase=house_noun_phrase,
+                address=self.location.address,
+                people_here_intro=people_here_intro,
+                people_present_description=self._generate_description_of_the_people_at_a_residence()
+            )
+        )
+        return scene
+
+    def _generate_description_of_the_people_at_a_residence(self):
+        """Describe the individuals currently situated in a residence that the player is in."""
+        people_present_description = ""
+        for person in self.location.people_here_now:
+            if person in self.people_i_know_by_name:
+                people_present_description += '\n\t{persons_name}'.format(person.name)
+            else:
+                people_present_description += '\n\t{} with {}'.format(
+                    person.age_and_gender_description, person.basic_appearance_description
+                ).capitalize()
+        return people_present_description
 
     def ring(self):
         """Print exposition surrounding the ringing of a doorbell."""
