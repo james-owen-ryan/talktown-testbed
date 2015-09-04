@@ -607,7 +607,7 @@ class Person(object):
             features.append('a bald head')
         else:
             features.append('{} {} hair'.format(
-                self.face.hair.length,
+                'medium-length' if self.face.hair.length == 'medium' else self.face.hair.length,
                 'blond' if self.male and self.face.hair.color == 'blonde' else self.face.hair.color
             )
             )
