@@ -109,7 +109,7 @@ class Occupation(object):
             )
             for employee in self.company.employees:
                 employee.person.update_salience_of(
-                    entity=self, change=change_in_salience_for_former_coworker
+                    entity=self.person, change=change_in_salience_for_former_coworker
                 )
                 self.person.update_salience_of(
                     entity=employee.person, change=change_in_salience_for_former_coworker
