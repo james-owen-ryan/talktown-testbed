@@ -1587,7 +1587,7 @@ class Config(object):
         self.function_to_determine_evidence_boost_for_strength_of_teller_belief = (
             lambda teller_belief_strength: teller_belief_strength
         )
-        self.name_feature_types = ("first name", "middle name", "last name")
+        self.name_feature_types = ("first name", "middle name", "last name", "hyphenated surname", "surname ethnicity")
         self.work_feature_types = ("workplace", "job title", "job shift")
         self.home_feature_types = ("home",)
         self.chance_someone_lies_floor = 0.02
@@ -1600,6 +1600,8 @@ class Config(object):
             ("job title",                   0.30),
             ("job shift",                   0.30),
             ("last name",                   0.25),
+            ("surname ethnicity",           0.15),
+            ("hyphenated surname",          0.15),
             ("home",                        0.15),
             ("tattoo",                      0.10),
             ("skin color",                  0.10),
@@ -1676,6 +1678,7 @@ class Config(object):
         # without a person seeing the person in question to reinforce the true feature);
         # this gets divided by a person's memory and divided by the strength of the belief facet
         self.chance_of_memory_deterioration_on_a_given_timestep = {
+            "hyphenated surname":           0.005,
             "skin color":                   0.01,
             "tattoo":                       0.01,
             "birthmark":                    0.02,
@@ -1685,6 +1688,7 @@ class Config(object):
             "glasses":                      0.05,
             "sunglasses":                   0.05,
             "job shift":                    0.05,
+            "surname ethnicity":            0.05,
             "first name":                   0.08,
             "ear angle":                    0.10,
             "workplace":                    0.10,
@@ -2261,4 +2265,3 @@ class Config(object):
             fitted_probability_distribution[last_bound_attributed][0], 1.0
         )
         return fitted_probability_distribution
-

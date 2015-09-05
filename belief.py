@@ -165,7 +165,7 @@ class MentalModel(object):
             return None
         else:
             # Generate a true facet
-            true_feature_str = self._get_true_feature(feature_type=feature_type)
+            true_feature_str = str(self.subject.get_feature(feature_type=feature_type))
             true_object_itself = self._get_true_feature_object(feature_type=feature_type)
             belief_facet_obj = Facet(
                 value=true_feature_str, owner=self.owner, subject=self.subject,
@@ -247,10 +247,6 @@ class MentalModel(object):
             object_itself=None
         )
         return belief_facet_obj
-
-    def _get_true_feature(self, feature_type):
-        true_feature_str = str(self.subject.get_feature(feature_type=feature_type))
-        return true_feature_str
 
     def _get_true_feature_object(self, feature_type):
         """This method gets overridden by the subclasses to this base class."""
@@ -982,11 +978,27 @@ class PersonMentalModel(MentalModel):
         """Confabulate a facet to a belief about a person's name."""
         if feature_type == "last name":
             confabulated_feature_str = Names.any_surname()
-        elif self.subject.male:
-            # Confabulate a name that is appropriate given the subject's birth year
-            confabulated_feature_str = Names.a_masculine_name(year=self.subject.birth_year)
-        else:
-            confabulated_feature_str = Names.a_feminine_name(year=self.subject.birth_year)
+        elif feature_type == "first name" or feature_type == "last name":
+            if self.subject.male:
+                # Confabulate a name that is appropriate given the subject's birth year
+                confabulated_feature_str = Names.a_masculine_name(year=self.subject.birth_year)
+            else:
+                confabulated_feature_str = Names.a_feminine_name(year=self.subject.birth_year)
+        elif feature_type == "surname ethnicity":
+            # Randomly choose another ethnicity  -- TODO choose according to distribution in the town
+            confabulated_feature_str = random.choice(['English', 'French', 'German', 'Irish', 'Scandinavian'])
+        else:  # hyphenated surname
+            # Confabulate according to the distribution in the town
+            n_people_in_town_with_hyphenated_surnames = len([
+                p for p in self.owner.city.residents if p.last_name.hyphenated
+            ])
+            percentage_of_people_in_town_with_hyphenated_surnames = (
+                n_people_in_town_with_hyphenated_surnames/float(self.owner.city.population)
+            )
+            if random.random() < percentage_of_people_in_town_with_hyphenated_surnames:
+                confabulated_feature_str = 'yes'
+            else:
+                confabulated_feature_str = 'no'
         return confabulated_feature_str
 
     def _confabulate_work_facet(self, feature_type):
@@ -1057,8 +1069,17 @@ class PersonMentalModel(MentalModel):
                 mutated_feature_str = Names.a_feminine_name_starting_with(
                     letter=feature_being_mutated_from_str[0], year=self.subject.birth_year
                 )
-        else:
+        elif feature_type == "last name":
+            # Choose a surname of the same ethnicity that starts with the same letter
             mutated_feature_str = Names.a_surname_sounding_like(source_name=feature_being_mutated_from_str)
+        elif feature_type == "surname ethnicity":
+            # Randomly choose another ethnicity
+            mutated_feature_str = feature_being_mutated_from_str
+            while mutated_feature_str == feature_being_mutated_from_str:
+                mutated_feature_str = random.choice(['English', 'French', 'German', 'Irish', 'Scandinavian'])
+        else:  # "hyphenated surname"
+            # Switch from yes to no, or vice versa
+            mutated_feature_str = 'yes' if feature_being_mutated_from_str == 'no' else 'no'
         return mutated_feature_str
 
     def _mutate_work_belief_facet(self, feature_type, facet_being_mutated):
@@ -1248,6 +1269,8 @@ class PersonMentalModel(MentalModel):
             "first name": "self.name.first_name",
             "middle name": "self.name.middle_name",
             "last name": "self.name.last_name",
+            "surname ethnicity": "self.name.surname_ethnicity",
+            "hyphenated surname": "self.name.hyphenated_surname",
             # Occupation
             "workplace": "self.occupation.company",
             "job title": "self.occupation.job_title",
@@ -1338,6 +1361,8 @@ class NameBelief(object):
         self.first_name = None
         self.middle_name = None
         self.last_name = None
+        self.surname_ethnicity = None  # Currently: English, French, German, Irish, or Scandinavian
+        self.hyphenated_surname = None
 
     def establish(self, observation_or_reflection):
         """Establish initial belief facets in response to an initial observation/reflection."""
@@ -1349,6 +1374,12 @@ class NameBelief(object):
         )
         self.last_name = self._init_name_facet(
             feature_type="last name", observation_or_reflection=observation_or_reflection
+        )
+        self.surname_ethnicity = self._init_name_facet(
+            feature_type="surname ethnicity", observation_or_reflection=observation_or_reflection
+        )
+        self.hyphenated_surname = self._init_name_facet(
+            feature_type="hyphenated surname", observation_or_reflection=observation_or_reflection
         )
 
     def _init_name_facet(self, feature_type, observation_or_reflection):
@@ -1424,7 +1455,9 @@ class NameBelief(object):
         attribute_to_belief_type = {
             "first_name": "first name",
             "middle_name": "middle name",
-            "last_name": "last name"
+            "last_name": "last name",
+            "surname_ethnicity": "surname ethnicity",
+            "hyphenated_surname": "hyphenated surname"
         }
         return attribute_to_belief_type[attribute]
 

@@ -638,6 +638,10 @@ class Person(object):
             return self.middle_name
         elif feature_type == "last name":
             return self.last_name
+        elif feature_type == "surname ethnicity":
+            return self.last_name.ethnicity
+        elif feature_type == "hyphenated surname":
+            return 'yes' if self.last_name.hyphenated else 'no'
         # Occupation
         elif feature_type == "workplace":
             return "None" if not self.occupation else self.occupation.company.name  # Name of company
@@ -1872,5 +1876,3 @@ class PersonExNihilo(Person):
                 new_home=complex_that_will_expand.units[-2],
                 reason=hiring_that_instigated_move
             )
-
-

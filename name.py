@@ -1,3 +1,6 @@
+from corpora import Names
+
+
 class Name(str):
     """A name, in the sense of a persistent object that can be passed on.
 
@@ -21,10 +24,31 @@ class Name(str):
         self.conceived_by = conceived_by
         self.derived_from = derived_from
         self.hyphenated = True if derived_from else False
+        self.ethnicity = self._get_ethnicity_of_this_name()
 
     def __new__(cls, value, progenitor, conceived_by, derived_from):
         """Do str stuff."""
         return str.__new__(cls, value)
+
+    def _get_ethnicity_of_this_name(self):
+        """Return the ethnicity of this name.
+
+        If a name is hyphenated, it returns the ethnicity of the first component. If this
+        is not a surname, it will return None.
+        """
+        name_to_check_for = str(self) if not self.derived_from else str(self.derived_from[0])
+        if name_to_check_for in Names.english_surnames:
+            return 'English'
+        elif name_to_check_for in Names.french_surnames:
+            return 'French'
+        elif name_to_check_for in Names.german_surnames:
+            return 'German'
+        elif name_to_check_for in Names.irish_surnames:
+            return 'Irish'
+        elif name_to_check_for in Names.scandinavian_surnames:
+            return 'Scandinavian'
+        else:
+            return None
 
     @property
     def bearers(self):
