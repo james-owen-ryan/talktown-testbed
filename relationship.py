@@ -257,6 +257,8 @@ class Relationship(object):
         self.total_interactions += 1
         self.where_they_last_met = owner.location  # Changes as appropriate
         self.when_they_last_met = owner.game.date
+        # Increment salience
+        self.owner.salience_of_other_people[self.subject] += config.salience_increment_for_social_interaction
         # Progress charge, possibly leading to a Friendship or Enmity
         change_to_charge = (
             self.charge_increment * self.age_difference_effect_on_charge_increment *
