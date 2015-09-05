@@ -20,7 +20,6 @@ Akiak
 Akron
 Akutan
 Alabama
-Alabama Port
 Alabaster
 Alakanuk
 Alamo
@@ -192,7 +191,6 @@ Bingen
 Binghamton
 Birch Creek
 Birmingham
-Birmingport
 Black
 Black Diamond
 Blackstone
@@ -240,7 +238,6 @@ Brentwood
 Brevig Mission
 Brewster
 Brewton
-Bridgeport
 Bridgewater
 Brier
 Brierfield
@@ -495,7 +492,6 @@ Daphne
 Darien
 Dartmouth
 Dauphin
-Davenport
 Davidson
 Daviston
 Dawson
@@ -795,7 +791,6 @@ Grove
 Grove Hill
 Grove Oak
 Groveland
-Groveport
 Guilford
 Guin
 Gulf Shores
@@ -986,7 +981,6 @@ Kimbrough
 King
 King Cove
 King Salmon
-Kingsport
 Kingston
 Kingston Springs
 Kinsey
@@ -1087,7 +1081,6 @@ Livingston
 Loachapoka
 Lobelville
 Lockhart
-Lockport
 Locust Fork
 Logan
 London
@@ -1224,7 +1217,6 @@ Millers Ferry
 Millersville
 Millington
 Millis
-Millport
 Millry
 Millville
 Millwood
@@ -1358,12 +1350,10 @@ Newark
 Newbern
 Newburgh
 Newbury
-Newburyport
 Newcastle
 Newell
 Newhalen
 Newington
-Newport
 Newtok
 Newton
 Newton Falls
@@ -1403,7 +1393,6 @@ Northampton
 Northborough
 Northbridge
 Northfield
-Northport
 Northway
 Northway Junction
 Northway Village
@@ -1553,21 +1542,6 @@ Pole
 Pollard
 Pomeroy
 Pomfret
-Port Alexander
-Port Alsworth
-Port Angeles
-Port Clarence
-Port Clinton
-Port Graham
-Port Heiden
-Port Jervis
-Port Lions
-Port Orchard
-Port Protection
-Port Townsend
-Portage Creek
-Portland
-Portsmouth
 Poughkeepsie
 Poulsbo
 Powell
@@ -1651,7 +1625,6 @@ Rochester
 Rock
 Rockford
 Rockland
-Rockport
 Rockwood
 Rocky Hill
 Rocky River
@@ -2030,7 +2003,6 @@ Westlake
 Westminster
 Westmoreland
 Weston
-Westport
 Westwood
 Wethersfield
 Weymouth
