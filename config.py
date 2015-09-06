@@ -1569,7 +1569,7 @@ class Config(object):
             # will eventually be multiplied by the strength of a single observation as
             # as a simulation of that many observations having occurred over that many
             # social interactions
-            lambda total_interactions, salience: total_interactions + (salience * 10)
+            lambda total_interactions, salience: total_interactions + (salience * 5)
         )
         self.salience_of_features_with_regard_to_implants = {
             # These values are used to determine the strength of an implant piece

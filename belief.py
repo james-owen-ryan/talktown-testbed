@@ -30,33 +30,6 @@ class MentalModel(object):
         """Return string representation."""
         return "{0}'s mental model of {1}".format(self.owner.name, self.subject.name)
 
-    # def build_up(self, new_observation_or_reflection):
-    #     """Build up the components of this belief by potentially filling in missing information
-    #     and/or repairing wrong information, or else by updating the evidence for and boosting the
-    #     strength of already correct facets.
-    #     """
-    #     for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-    #         if feature not in ("subject", "owner", "belief_trajectories"):
-    #             feature_type = self.attribute_to_feature_type(attribute=feature)
-    #             if self.owner.game.config.feature_is_observable[feature_type](subject=self.subject):
-    #                 current_belief_facet = self.__dict__[feature]
-    #                 if current_belief_facet is None or not current_belief_facet.accurate:
-    #                     feature_type = self.attribute_to_feature_type(attribute=feature)
-    #                     # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
-    #                     # if a Facet object is instantiated, it will automatically be adopted because
-    #                     # it's initial evidence will be a reflection or observation; specifically,
-    #                     # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
-    #                     self.init_belief_facet(
-    #                         feature_type=feature_type,
-    #                         observation_or_reflection=new_observation_or_reflection
-    #                     )
-    #                 else:
-    #                     # Belief facet is already accurate, but update its evidence to point to the new
-    #                     # observation or reflection (which will slow any potential deterioration) -- this
-    #                     # will also increment the strength of the belief facet, which will make it less
-    #                     # likely to deteriorate in the future
-    #                     current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
-
     def implant_knowledge(self, implant):
         """Implant knowledge into this person's mind.
 
