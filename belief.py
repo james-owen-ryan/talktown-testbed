@@ -52,6 +52,34 @@ class MentalModel(object):
                     initial_evidence=implant, object_itself=feature_object_itself
                 )
 
+    def build_up(self, new_observation_or_reflection):
+        """Build up the components of this belief by potentially filling in missing information
+        and/or repairing wrong information, or else by updating the evidence for and boosting the
+        strength of already correct facets.
+
+        This base method currently gets used by BusinessMentalModel and DwellingPlaceMentalModel,
+        which have their own 'attribute_to_feature_type' methods.
+        """
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature not in ("subject", "owner", "belief_trajectories"):
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is None or not current_belief_facet.accurate:
+                    feature_type = self.attribute_to_feature_type(attribute=feature)
+                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                    # if a Facet object is instantiated, it will automatically be adopted because
+                    # it's initial evidence will be a reflection or observation; specifically,
+                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                    self.init_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
+                    )
+                else:
+                    # Belief facet is already accurate, but update its evidence to point to the new
+                    # observation or reflection (which will slow any potential deterioration) -- this
+                    # will also increment the strength of the belief facet, which will make it less
+                    # likely to deteriorate in the future
+                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
     def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence):
         """Consider new evidence that someone has given you.
 
@@ -251,6 +279,11 @@ class MentalModel(object):
         return belief_facet_obj
 
     def _get_true_feature_object(self, feature_type):
+        """This method gets overridden by the subclasses to this base class."""
+        pass
+
+    @staticmethod
+    def attribute_to_feature_type(feature_type):
         """This method gets overridden by the subclasses to this base class."""
         pass
 

@@ -113,7 +113,10 @@ class PieceOfEvidence(object):
         # feature type -- this makes it so that, e.g., the strength of an observation of
         # a person's nose shape is weaker than the strength of an observation of a person's
         # hair color
-        adjusted_strength *= config.general_salience_of_features[feature_type]
+        if 'whereabouts' in feature_type:
+            adjusted_strength *= config.general_salience_of_features["whereabouts XYZ"]
+        else:
+            adjusted_strength *= config.general_salience_of_features[feature_type]
         return adjusted_strength
 
 
