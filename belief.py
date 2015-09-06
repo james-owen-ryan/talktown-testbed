@@ -5,6 +5,11 @@ from corpora import Names
 
 # TODO StreetMentalModel, BlockMentalModel, CityMentalModel?
 
+# TODO OBSERVATIONS AREN'T DETERIORATING IMMEDIATELY LIKE I HAD PLANNED -- SEE
+# _calculate_chance_feature_gets_remembered_perfectly, WHICH NEVER GETS CALLED
+
+# TODO IF PEOPLE ARE WORKING ARE PEOPLE OBSERVING THEIR JOB?
+
 
 class MentalModel(object):
     """A person's mental model of a person or place."""
@@ -25,30 +30,54 @@ class MentalModel(object):
         """Return string representation."""
         return "{0}'s mental model of {1}".format(self.owner.name, self.subject.name)
 
-    def build_up(self, new_observation_or_reflection):
-        """Build up the components of this belief by potentially filling in missing information
-        and/or repairing wrong information, or else by updating the evidence for and boosting the
-        strength of already correct facets.
+    # def build_up(self, new_observation_or_reflection):
+    #     """Build up the components of this belief by potentially filling in missing information
+    #     and/or repairing wrong information, or else by updating the evidence for and boosting the
+    #     strength of already correct facets.
+    #     """
+    #     for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+    #         if feature not in ("subject", "owner", "belief_trajectories"):
+    #             feature_type = self.attribute_to_feature_type(attribute=feature)
+    #             if self.owner.game.config.feature_is_observable[feature_type](subject=self.subject):
+    #                 current_belief_facet = self.__dict__[feature]
+    #                 if current_belief_facet is None or not current_belief_facet.accurate:
+    #                     feature_type = self.attribute_to_feature_type(attribute=feature)
+    #                     # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+    #                     # if a Facet object is instantiated, it will automatically be adopted because
+    #                     # it's initial evidence will be a reflection or observation; specifically,
+    #                     # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+    #                     self.init_belief_facet(
+    #                         feature_type=feature_type,
+    #                         observation_or_reflection=new_observation_or_reflection
+    #                     )
+    #                 else:
+    #                     # Belief facet is already accurate, but update its evidence to point to the new
+    #                     # observation or reflection (which will slow any potential deterioration) -- this
+    #                     # will also increment the strength of the belief facet, which will make it less
+    #                     # likely to deteriorate in the future
+    #                     current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
+    def implant_knowledge(self, implant):
+        """Implant knowledge into this person's mind.
+
+        This is done to simulate knowledge phenomena that didn't actually occur during the
+        low-fidelity simulation but realistically would have (had it been the high-fidelity
+        simulation).
         """
-        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
-            if feature not in ("subject", "owner", "belief_trajectories"):
-                current_belief_facet = self.__dict__[feature]
-                if current_belief_facet is None or not current_belief_facet.accurate:
-                    feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
-                    # if a Facet object is instantiated, it will automatically be adopted because
-                    # it's initial evidence will be a reflection or observation; specifically,
-                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
-                    self.init_belief_facet(
-                        feature_type=feature_type,
-                        observation_or_reflection=new_observation_or_reflection
-                    )
-                else:
-                    # Belief facet is already accurate, but update its evidence to point to the new
-                    # observation or reflection (which will slow any potential deterioration) -- this
-                    # will also increment the strength of the belief facet, which will make it less
-                    # likely to deteriorate in the future
-                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+        config = self.owner.game.config
+        for feature_type in config.salience_of_features_with_regard_to_implants:
+            if (random.random() <
+                    config.salience_of_features_with_regard_to_implants[feature_type] * implant.base_strength):
+                # Note: this Facet will automatically be adopted because it will be this character's
+                # first belief about this attribute; specifically, this will happen by a series of
+                # method calls starting with Facet.init() -- TODO THINK ABOUT WHETHER IT COULD BE
+                # SUPPLANTING SOMETHING ACTUALLY
+                feature_value = self.subject.get_feature(feature_type=feature_type)
+                feature_object_itself = self._get_true_feature_object(feature_type=feature_type)
+                Facet(
+                    value=feature_value, owner=self.owner, subject=self.subject, feature_type=feature_type,
+                    initial_evidence=implant, object_itself=feature_object_itself
+                )
 
     def consider_new_evidence(self, feature_type, feature_value, feature_object_itself, new_evidence):
         """Consider new evidence that someone has given you.
@@ -361,7 +390,7 @@ class BusinessMentalModel(MentalModel):
                         belief_facet_strength
                     )
                 else:  # Could still confabulate
-                    feature_type_str = self.attribute_to_belief_type(attribute=feature)
+                    feature_type_str = self.attribute_to_feature_type(attribute=feature)
                     chance_of_memory_deterioration = config.chance_of_confabulation_on_a_given_timestep
                 if random.random() < chance_of_memory_deterioration:
                     # Instantiate a new belief facet that represents a deterioration of
@@ -521,7 +550,7 @@ class BusinessMentalModel(MentalModel):
             return None
 
     @staticmethod
-    def attribute_to_belief_type(attribute):
+    def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
             "block": "business block",
@@ -620,7 +649,7 @@ class DwellingPlaceModel(MentalModel):
                     feature_type_str = current_belief_facet.feature_type
                     belief_facet_strength = current_belief_facet.strength
                 else:
-                    feature_type_str = self.attribute_to_belief_type(attribute=feature)
+                    feature_type_str = self.attribute_to_feature_type(attribute=feature)
                     belief_facet_strength = 1
                 # Determine the chance of memory deterioration, which starts from a base value
                 # that gets affected by the person's memory and the strength of the belief facet
@@ -796,7 +825,7 @@ class DwellingPlaceModel(MentalModel):
             return None
 
     @staticmethod
-    def attribute_to_belief_type(attribute):
+    def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
             "apartment": "home is apartment",
@@ -828,7 +857,7 @@ class DwellingPlaceModel(MentalModel):
 class PersonMentalModel(MentalModel):
     """A person's mental model of a person, representing everything she believes about her."""
 
-    def __init__(self, owner, subject, observation_or_reflection):
+    def __init__(self, owner, subject, observation_or_reflection, implant=None):
         """Initialize a PersonMentalModel object.
         @param owner: The person who holds this belief.
         @param subject: The person to whom this belief pertains.
@@ -849,6 +878,8 @@ class PersonMentalModel(MentalModel):
             self.face.establish(observation_or_reflection=observation_or_reflection)
             self.whereabouts.establish(observation_or_reflection=observation_or_reflection)
             self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
+        elif implant:
+            self.implant_knowledge(implant=implant)
 
     def _init_home_facet(self, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's home."""
@@ -889,23 +920,24 @@ class PersonMentalModel(MentalModel):
         By other facets, I mean ones that don't get built up elsewhere, as, e.g.,
         facets to WorkBeliefs do."""
         for feature in ("home",):
-            current_belief_facet = self.__dict__[feature]
-            if current_belief_facet is None or not current_belief_facet.accurate:
-                feature_type = self.attribute_to_belief_type(attribute=feature)
-                # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
-                # if a Facet object is instantiated, it will automatically be adopted because
-                # it's initial evidence will be a reflection or observation; specifically,
-                # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
-                self.init_belief_facet(
-                    feature_type=feature_type,
-                    observation_or_reflection=new_observation_or_reflection
-                )
-            else:
-                # Belief facet is already accurate, but update its evidence to point to the new
-                # observation or reflection (which will slow any potential deterioration) -- this
-                # will also increment the strength of the belief facet, which will make it less
-                # likely to deteriorate in this future
-                current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+            feature_type = self.attribute_to_feature_type(attribute=feature)
+            if self.owner.game.config.feature_is_observable[feature_type](subject=self.subject):
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is None or not current_belief_facet.accurate:
+                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                    # if a Facet object is instantiated, it will automatically be adopted because
+                    # it's initial evidence will be a reflection or observation; specifically,
+                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                    self.init_belief_facet(
+                        feature_type=feature_type,
+                        observation_or_reflection=new_observation_or_reflection
+                    )
+                else:
+                    # Belief facet is already accurate, but update its evidence to point to the new
+                    # observation or reflection (which will slow any potential deterioration) -- this
+                    # will also increment the strength of the belief facet, which will make it less
+                    # likely to deteriorate in this future
+                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def _deteriorate_other_belief_facets(self):
         """Deteriorate other beliefs facets that are components of this mental model.
@@ -919,7 +951,7 @@ class PersonMentalModel(MentalModel):
                 feature_type_str = current_belief_facet.feature_type
                 belief_facet_strength = current_belief_facet.strength
             else:
-                feature_type_str = self.attribute_to_belief_type(attribute=feature)
+                feature_type_str = self.attribute_to_feature_type(attribute=feature)
                 belief_facet_strength = 1
             # Determine the chance of memory deterioration, which starts from a base value
             # that gets affected by the person's memory and the strength of the belief facet
@@ -1254,7 +1286,7 @@ class PersonMentalModel(MentalModel):
             return self.face.distinctive_features.sunglasses
 
     @staticmethod
-    def attribute_to_belief_type(attribute):
+    def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
             "home": "home",
@@ -1340,16 +1372,17 @@ class WhereaboutsBelief(object):
 
     def build_up(self, new_observation_or_reflection):
         """Build up this belief by adding in a new entry for the current date."""
-        location_str = self.person_model.owner.location.name
-        location_obj = self.person_model.owner.location
-        day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
-        # Generate a unique hash so that we can maintain a trajectory for this belief
-        feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
-        self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
-            value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
-            feature_type=feature_type, initial_evidence=new_observation_or_reflection,
-            object_itself=location_obj
-        )
+        if new_observation_or_reflection:
+            location_str = self.person_model.owner.location.name
+            location_obj = self.person_model.owner.location
+            day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
+            # Generate a unique hash so that we can maintain a trajectory for this belief
+            feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
+            self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
+                value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
+                feature_type=feature_type, initial_evidence=new_observation_or_reflection,
+                object_itself=location_obj
+            )
 
 
 class NameBelief(object):
@@ -1384,8 +1417,13 @@ class NameBelief(object):
 
     def _init_name_facet(self, feature_type, observation_or_reflection):
         """Establish a belief, or lack of belief, pertaining to a person's name."""
-        config = self.person_model.owner.game.config
         if observation_or_reflection and observation_or_reflection.type == "reflection":
+            name_facet = self.person_model.init_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        elif self.person_model.owner.game.config.feature_is_observable[feature_type](
+            subject=self.person_model.subject
+        ):
             name_facet = self.person_model.init_belief_facet(
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )
@@ -1402,23 +1440,27 @@ class NameBelief(object):
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                current_belief_facet = self.__dict__[feature]
-                if current_belief_facet is None or not current_belief_facet.accurate:
-                    feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
-                    # if a Facet object is instantiated, it will automatically be adopted because
-                    # it's initial evidence will be a reflection or observation; specifically,
-                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
-                    self.person_model.init_belief_facet(
-                        feature_type=feature_type,
-                        observation_or_reflection=new_observation_or_reflection
-                    )
-                else:
-                    # Belief facet is already accurate, but update its evidence to point to the new
-                    # observation or reflection (which will slow any potential deterioration) -- this
-                    # will also increment the strength of the belief facet, which will make it less
-                    # likely to deteriorate in this future
-                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                feature_type = self.attribute_to_feature_type(feature)
+                if self.person_model.owner.game.config.feature_is_observable[feature_type](
+                        subject=self.person_model.subject
+                ):
+                    current_belief_facet = self.__dict__[feature]
+                    if current_belief_facet is None or not current_belief_facet.accurate:
+                        feature_type = self.attribute_to_feature_type(attribute=feature)
+                        # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                        # if a Facet object is instantiated, it will automatically be adopted because
+                        # it's initial evidence will be a reflection or observation; specifically,
+                        # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                        self.person_model.init_belief_facet(
+                            feature_type=feature_type,
+                            observation_or_reflection=new_observation_or_reflection
+                        )
+                    else:
+                        # Belief facet is already accurate, but update its evidence to point to the new
+                        # observation or reflection (which will slow any potential deterioration) -- this
+                        # will also increment the strength of the belief facet, which will make it less
+                        # likely to deteriorate in this future
+                        current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
@@ -1430,7 +1472,7 @@ class NameBelief(object):
                     feature_type_str = current_belief_facet.feature_type
                     belief_facet_strength = current_belief_facet.strength
                 else:
-                    feature_type_str = self.attribute_to_belief_type(attribute=feature)
+                    feature_type_str = self.attribute_to_feature_type(attribute=feature)
                     belief_facet_strength = 1
                 # Determine the chance of memory deterioration, which starts from a base value
                 # that gets affected by the person's memory and the strength of the belief facet
@@ -1450,7 +1492,7 @@ class NameBelief(object):
                     )
 
     @staticmethod
-    def attribute_to_belief_type(attribute):
+    def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
             "first_name": "first name",
@@ -1491,9 +1533,9 @@ class WorkBelief(object):
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )
         # If you are observing the person working right now, build up a belief about that
-        elif (self.person_model.subject.occupation and
-              self.person_model.owner.location is self.person_model.subject.occupation.company and
-              self.person_model.subject.routine.working):
+        elif self.person_model.owner.game.config.feature_is_observable[feature_type](
+            subject=self.person_model.subject
+        ):
             work_facet = self.person_model.init_belief_facet(
                 feature_type=feature_type, observation_or_reflection=observation_or_reflection
             )
@@ -1510,23 +1552,27 @@ class WorkBelief(object):
         """
         for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
             if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
-                current_belief_facet = self.__dict__[feature]
-                if current_belief_facet is None or not current_belief_facet.accurate:
-                    feature_type = self.attribute_to_belief_type(attribute=feature)
-                    # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
-                    # if a Facet object is instantiated, it will automatically be adopted because
-                    # it's initial evidence will be a reflection or observation; specifically,
-                    # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
-                    self.person_model.init_belief_facet(
-                        feature_type=feature_type,
-                        observation_or_reflection=new_observation_or_reflection
-                    )
-                else:
-                    # Belief facet is already accurate, but update its evidence to point to the new
-                    # observation or reflection (which will slow any potential deterioration) -- this
-                    # will also increment the strength of the belief facet, which will make it less
-                    # likely to deteriorate in this future
-                    current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                feature_type = self.attribute_to_feature_type(feature)
+                if self.person_model.owner.game.config.feature_is_observable[feature_type](
+                        subject=self.person_model.subject
+                ):
+                    current_belief_facet = self.__dict__[feature]
+                    if current_belief_facet is None or not current_belief_facet.accurate:
+                        feature_type = self.attribute_to_feature_type(attribute=feature)
+                        # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                        # if a Facet object is instantiated, it will automatically be adopted because
+                        # it's initial evidence will be a reflection or observation; specifically,
+                        # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                        self.person_model.init_belief_facet(
+                            feature_type=feature_type,
+                            observation_or_reflection=new_observation_or_reflection
+                        )
+                    else:
+                        # Belief facet is already accurate, but update its evidence to point to the new
+                        # observation or reflection (which will slow any potential deterioration) -- this
+                        # will also increment the strength of the belief facet, which will make it less
+                        # likely to deteriorate in this future
+                        current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
@@ -1538,7 +1584,7 @@ class WorkBelief(object):
                     feature_type_str = current_belief_facet.feature_type
                     belief_facet_strength = current_belief_facet.strength
                 else:
-                    feature_type_str = self.attribute_to_belief_type(attribute=feature)
+                    feature_type_str = self.attribute_to_feature_type(attribute=feature)
                     belief_facet_strength = 1
                 # Determine the chance of memory deterioration, which starts from a base value
                 # that gets affected by the person's memory and the strength of the belief facet
@@ -1558,7 +1604,7 @@ class WorkBelief(object):
                     )
 
     @staticmethod
-    def attribute_to_belief_type(attribute):
+    def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
             "company": "workplace",
@@ -1588,6 +1634,8 @@ class FaceBelief(object):
 
     def establish(self, observation_or_reflection):
         """Establish initial belief facets in response to an initial observation/reflection."""
+        # Note: All physical attributes are observable, so there's no need to check for this
+        # prior to potentially having an observation instantiate new knowledge
         for belief in (
             self.skin, self.head, self.hair, self.eyebrows, self.eyes, self.ears,
             self.nose, self.mouth, self.facial_hair, self.distinctive_features
@@ -1603,22 +1651,26 @@ class FaceBelief(object):
                 belief = self.__dict__[belief_type]
                 for feature in belief.__dict__:
                     if feature != 'face_belief':  # This should be the only one that doesn't resolve to a belief facet
-                        belief_facet = belief.__dict__[feature]
-                        if belief_facet is None or not belief_facet.accurate:
-                            feature_type = belief.attribute_to_feature_type(attribute=feature)
-                            # Adopt a new, accurate belief facet (unless init_belief_facet returns None)
-                            belief.__dict__[feature] = (
-                                belief.face_belief.person_model.init_belief_facet(
-                                    feature_type=feature_type,
-                                    observation_or_reflection=new_observation_or_reflection
+                        feature_type = belief.attribute_to_feature_type(attribute=feature)
+                        if self.person_model.owner.game.config.feature_is_observable[feature_type](
+                                subject=self.person_model.subject
+                        ):
+                            belief_facet = belief.__dict__[feature]
+                            if belief_facet is None or not belief_facet.accurate:
+                                feature_type = belief.attribute_to_feature_type(attribute=feature)
+                                # Adopt a new, accurate belief facet (unless init_belief_facet returns None)
+                                belief.__dict__[feature] = (
+                                    belief.face_belief.person_model.init_belief_facet(
+                                        feature_type=feature_type,
+                                        observation_or_reflection=new_observation_or_reflection
+                                    )
                                 )
-                            )
-                        else:
-                            # Belief facet is already accurate, but update its evidence to point to the new
-                            # observation or reflection (which will slow any potential deterioration) -- this
-                            # will also increment the strength of the belief facet, which will make it less
-                            # likely to deteriorate in this future
-                            belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+                            else:
+                                # Belief facet is already accurate, but update its evidence to point to the new
+                                # observation or reflection (which will slow any potential deterioration) -- this
+                                # will also increment the strength of the belief facet, which will make it less
+                                # likely to deteriorate in this future
+                                belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
 
     def deteriorate(self):
         """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""

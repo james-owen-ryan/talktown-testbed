@@ -1518,9 +1518,9 @@ class Config(object):
         self.frequency_of_naming_after_grandmother = 5
         self.frequency_of_naming_after_greatgrandmother = 2
 
-                ########################
-                ##  MEMORY/KNOWLEDGE  ##
-                ########################
+                ##############
+                ##  MEMORY  ##
+                ##############
 
         self.memory_mean = 1.0
         self.memory_sd = 0.05
@@ -1530,6 +1530,12 @@ class Config(object):
         self.memory_sex_diff = 0.03  # Men have worse memory, studies show
         self.memory_heritability = 0.6  # Couldn't quickly find a study on this -- totally made up
         self.memory_heritability_sd = 0.05
+
+                ################
+                ##  SALIENCE  ##
+                ################
+
+        self.salience_increment_for_social_interaction = 0.1  # Salience increment from a single social interaction
         self.salience_increment_from_relationship_change = {
             "acquaintance": 0.5,
             "former neighbor": 0.75,
@@ -1551,6 +1557,102 @@ class Config(object):
         self.salience_job_level_boost = (
             lambda job_level: job_level * 0.35
         )
+
+                #################
+                ##  KNOWLEDGE  ##
+                #################
+
+        # These parameters effect implant formation/strength
+        self.social_and_salience_component_of_implant_strength = (
+            # The salience * 10 is meant to simulate how many social interactions they
+            # should have had, given how salient subject is to source -- this number
+            # will eventually be multiplied by the strength of a single observation as
+            # as a simulation of that many observations having occurred over that many
+            # social interactions
+            lambda total_interactions, salience: total_interactions + (salience * 10)
+        )
+        self.salience_of_features_with_regard_to_implants = {
+            # These values are used to determine the strength of an implant piece
+            # of evidence for a feature of the given type, and they are also used to
+            # determine whether a feature type will even show up in an implant in
+            # the first place
+            "first name":                  0.80,
+            "last name":                   0.80,
+            "surname ethnicity":           0.70,
+            "skin color":                  0.70,
+            "workplace":                   0.50,
+            "tattoo":                      0.50,
+            "scar":                        0.40,
+            "job title":                   0.40,
+            "job shift":                   0.30,
+            "hair color":                  0.20,
+            "hair length":                 0.20,
+            "hyphenated surname":          0.15,
+            "home":                        0.15,
+            "birthmark":                   0.05,
+            "facial hair style":           0.05,
+            "freckles":                    0.05,
+            "glasses":                     0.05,
+            "sunglasses":                  0.05,
+            "head size":                   0.04,
+            "eye color":                   0.01,
+            "middle name":                 0.01,
+            "ear angle":                   0.01,
+            "eye horizontal settedness":   0.01,
+            "nose size":                   0.01,
+            # These simply won't come up in implants -- no point to
+            # actually add them to the dictionary, so I keep them commented here
+            # for reference only
+            # ("eye vertical settedness",     0.00),
+            # ("head shape",                  0.00),
+            # ("eyebrow size",                0.00),
+            # ("eyebrow color",               0.00),
+            # ("mouth size",                  0.00),
+            # ("ear size",                    0.00),
+            # ("nose shape",                  0.00),
+            # ("eye size",                    0.00),
+            # ("eye shape",                   0.00),
+        }
+        self.general_salience_of_features = {
+            # These values are multiplied against the strength of a piece of
+            # evidence when determining the strength of a particular belief facet --
+            # e.g., it will mean that an observation of a person's hair color is
+            # self.general_salience_of_features["hair color"] *
+            # self.strength_of_evidence_type["observation"]
+            "hair color":                  1.00,
+            "skin color":                  1.00,
+            "tattoo":                      1.00,
+            "scar":                        1.00,
+            "hyphenated surname":          1.00,
+            "birthmark":                   1.00,
+            "home":                        0.90,
+            "hair length":                 0.90,
+            "workplace":                   0.90,
+            "job title":                   0.90,
+            "job shift":                   0.90,
+            "facial hair style":           0.90,
+            "freckles":                    0.90,
+            "glasses":                     0.85,
+            "sunglasses":                  0.85,
+            "first name":                  0.80,
+            "surname ethnicity":           0.80,
+            "last name":                   0.70,
+            "nose size":                   0.40,
+            "middle name":                 0.30,
+            "eye color":                   0.10,
+            "head size":                   0.10,
+            "ear angle":                   0.08,
+            "eye horizontal settedness":   0.05,
+            "eye vertical settedness":     0.05,
+            "head shape":                  0.05,
+            "eyebrow size":                0.05,
+            "eyebrow color":               0.05,
+            "mouth size":                  0.05,
+            "ear size":                    0.05,
+            "nose shape":                  0.05,
+            "eye size":                    0.05,
+            "eye shape":                   0.05,
+        }
         self.chance_someone_observes_nearby_entity = 0.75
         self.chance_someone_eavesdrops_statement_or_lie = 0.05
         self.base_strength_of_evidence_types = {
@@ -1633,6 +1735,41 @@ class Config(object):
             # ("eye shape",                   0.00),
             # ("home address",                0.00),
         )
+        self.feature_is_observable = {
+            "first name": lambda subject: True,
+            "last name": lambda subject: True,
+            "surname ethnicity": lambda subject: True,
+            "skin color": lambda subject: True,
+            "workplace": lambda subject: subject.routine.working,
+            "tattoo": lambda subject: True,
+            "scar": lambda subject: True,
+            "job title": lambda subject: subject.routine.working,
+            "job shift": lambda subject: subject.routine.working,
+            "hair color": lambda subject: True,
+            "hair length": lambda subject: True,
+            "hyphenated surname": lambda subject: True,
+            "home": lambda subject: subject.location is subject.home,
+            "birthmark": lambda subject: True,
+            "facial hair style": lambda subject: True,
+            "freckles": lambda subject: True,
+            "glasses": lambda subject: True,
+            "sunglasses": lambda subject: True,
+            "head size": lambda subject: True,
+            "eye color": lambda subject: True,
+            "middle name": lambda subject: False,
+            "ear angle": lambda subject: True,
+            "eye horizontal settedness": lambda subject: True,
+            "nose size": lambda subject: True,
+            "eye vertical settedness": lambda subject: True,
+            "head shape": lambda subject: True,
+            "eyebrow size": lambda subject: True,
+            "eyebrow color": lambda subject: True,
+            "mouth size": lambda subject: True,
+            "ear size": lambda subject: True,
+            "nose shape": lambda subject: True,
+            "eye size": lambda subject: True,
+            "eye shape": lambda subject: True,
+        }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
             # These values represent means (for someone with memory value of self.memory_mean),
@@ -1641,6 +1778,7 @@ class Config(object):
             # if a feature isn't remembered perfectly, it will immediately deteriorate by
             # mutation, transference, or forgetting
             #                               MEAN    FLOOR   CAP
+            "hyphenated surname":           (0.98,  0.90,   0.99),
             "skin color":                   (0.95,  0.80,   0.99),
             "tattoo":                       (0.95,  0.80,   0.99),
             "birthmark":                    (0.90,  0.70,   0.99),
@@ -1654,6 +1792,7 @@ class Config(object):
             "head size":                    (0.75,  0.45,   0.90),
             "head shape":                   (0.75,  0.45,   0.90),
             "first name":                   (0.75,  0.45,   0.90),
+            "surname ethnicity":            (0.70,  0.45,   0.90),
             "eye horizontal settedness":    (0.70,  0.40,   0.90),
             "eye vertical settedness":      (0.70,  0.40,   0.90),
             "eye size":                     (0.67,  0.40,   0.90),
@@ -1670,7 +1809,7 @@ class Config(object):
             "eyebrow color":                (0.45,  0.20,   0.70),
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
-            "middle name":                  (0.25,  0.05,   0.30),
+            "middle name":                  (0.01,  0.05,   0.30),
         }
         # Chance of memory deterioration happening on a given timestep -- the chance
         # for each belief facet of it deteriorating on a given timestep (can be thought

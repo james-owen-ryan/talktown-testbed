@@ -1419,6 +1419,30 @@ class Person(object):
             final_desire_to_live_near_family = config.desire_to_live_near_family_cap
         return final_desire_to_live_near_family
 
+    def implant_knowledge(self):
+        """Implant knowledge into this person to simulate knowledge
+        acquisition during the low-fidelity simulation.
+        """
+        # TODO INJECT KNOWLEDGE ABOUT PLACES
+        print "Implanting knowledge into {}'s mind...".format(self.name)
+        all_the_people_i_should_know_about = set(self.relationships) | set(self.salience_of_other_people)
+        for person in all_the_people_i_should_know_about:
+            if person in self.relationships:
+                total_interactions = self.relationships[person].total_interactions
+            else:
+                total_interactions = 0.0
+            if person in self.salience_of_other_people:
+                salience_of_subject = self.salience_of_other_people[person]
+            else:
+                salience_of_subject = 0.0
+            if person in self.relationships or self.relation_to_me(person):
+                salience_of_subject += 1.0
+                implant = Implant(
+                    subject=person, source=self, total_interactions=total_interactions,
+                    salience_of_subject=salience_of_subject
+                )
+                PersonMentalModel(owner=self, subject=person, observation_or_reflection=None, implant=implant)
+
     def reflect(self):
         """Reflect on one's own features."""
         reflection = Reflection(subject=self, source=self)
@@ -1653,8 +1677,10 @@ class Person(object):
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
+        # TODO EXPLORE WHY SOME PEOPLE ARE INDEXING OTHERS WITH
+        # NEGATIVE SALIENCE VALUES -- the max() is duct tape right now
         self.salience_of_other_people[entity] = (
-            self.salience_of_other_people.get(entity, 0.0) + change
+            max(0.0, self.salience_of_other_people.get(entity, 0.0) + change)
         )
 
 

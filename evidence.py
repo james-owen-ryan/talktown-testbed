@@ -106,9 +106,79 @@ class PieceOfEvidence(object):
             source_belief_strength_multiplier = config.function_to_determine_teller_strength_boost(
                 teller_belief_strength=teller_belief_strength
             )
-            return self.base_strength*source_belief_strength_multiplier
+            adjusted_strength = self.base_strength*source_belief_strength_multiplier
         else:
-            return self.base_strength
+            adjusted_strength = self.base_strength
+        # Finally, adjust the strength of this evidence according to the salience of the
+        # feature type -- this makes it so that, e.g., the strength of an observation of
+        # a person's nose shape is weaker than the strength of an observation of a person's
+        # hair color
+        adjusted_strength *= config.general_salience_of_features[feature_type]
+        return adjusted_strength
+
+
+class Implant(PieceOfEvidence):
+    """A cheat to produce the knowledge that would be ingrained in a person if we
+    simulated every timestep of their life.
+
+    This type of evidence is very strong and cannot deteriorate. We use these
+    to represent, e.g., a person's knowledge about their father who died before
+    the high-fidelity simulation (with knowledge phenomena) began, or a person's
+    knowledge about their spouse who they happen to have not seen much during the
+    high-fidelity simulation (e.g., due to working different shifts). It gets its
+    name from the fact that we actually implant this knowledge into the character's
+    mind at the beginning of the high-fidelity simulation.
+
+    As such, implants are instantiated only once (at the beginning of the
+    high-fidelity simulation). The strength of an implant depends on how salient
+    the subject is/was to owner and how many social interactions they actually had
+    in the low-fidelity simulation. Note that a salient subject whom owner never
+    met may still derive a high strength value for this implant -- this can
+    actually be considered realistic, since it simulates other people in owner's
+    life who *did* know subject telling owner about them.
+    """
+
+    def __init__(self, subject, source, total_interactions, salience_of_subject):
+        """Initialize a Reflection object."""
+        super(Implant, self).__init__(subject=subject, source=source)
+        # Set the total number of social interactions (that source had
+        # with subject) captured by this implant
+        self.total_interactions = total_interactions
+        # Set the salience of subject to source at the time this
+        # implant was formed
+        self.salience_of_subject = salience_of_subject
+        # Determine the base strength of this implant
+        self.base_strength = self.determine_strength(feature_type=None)
+
+    def determine_strength(self, feature_type):
+        """Determine the strength of this piece of evidence for the given feature type (overwrites
+        base-class method).
+        """
+        config = self.source.game.config
+        if not self.base_strength:
+            base_strength_given_salience_of_and_number_of_social_interactions_with_subject = (
+                config.social_and_salience_component_of_implant_strength(
+                    total_interactions=self.total_interactions, salience=self.salience_of_subject
+                )
+            )
+            strength = base_strength_given_salience_of_and_number_of_social_interactions_with_subject
+        else:
+            # Base strength represents the number of insinuated social interactions these two
+            # would have had -- its components are the actual number of social interactions
+            # they had during the lo-fi sim and an insinuated number of interactions that
+            # is determined by how salient subject is to source
+            base_strength_given_salience_of_and_number_of_social_interactions_with_subject = self.base_strength
+            # Multiply by the strength of a single observation as a way of simulating for the number of
+            # observations source would have made about subject across all the insinuated interactions
+            strength_given_all_the_insinuated_observations = (
+                base_strength_given_salience_of_and_number_of_social_interactions_with_subject *
+                config.base_strength_of_evidence_types['observation']
+            )
+            strength = (
+                strength_given_all_the_insinuated_observations *
+                config.salience_of_features_with_regard_to_implants[feature_type]
+            )
+        return strength
 
 
 class Reflection(PieceOfEvidence):

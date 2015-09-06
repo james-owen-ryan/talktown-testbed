@@ -91,6 +91,11 @@ class Game(object):
         n_days_until_hi_fi_sim_begins = n_days_until_gameplay_begins - 7
         n_timesteps_until_hi_fi_sim_begins = n_days_until_hi_fi_sim_begins * 2
         self.enact_lo_fi_simulation(n_timesteps=n_timesteps_until_hi_fi_sim_begins)
+        # Implant knowledge into everyone who is living to simulate knowledge
+        # phenomena that would have occurred during the lo-fi simulation but
+        # wasn't enacted due to reasons of computing efficiency
+        for p in self.city.residents:
+            p.implant_knowledge()
         # Now simulate at full fidelity for the remaining week
         while self.ordinal_date < self.ordinal_date_that_gameplay_begins:
             self.enact_hi_fi_simulation()
@@ -179,7 +184,7 @@ class Game(object):
                 ids_of_these_people.add(person.id)
         return ids_of_these_people
 
-    def enact_lo_fi_simulation(self, n_timesteps=51122):
+    def enact_lo_fi_simulation(self, n_timesteps=1):
         """Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay."""
         last_simulated_day = self.ordinal_date
         chance_of_a_day_being_simulated = 0.005
