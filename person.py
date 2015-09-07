@@ -631,6 +631,25 @@ class Person(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
+        # Status
+        if feature_type == "status":
+            if self.present:
+                return "alive"
+            elif self.dead:
+                return "dead"
+            elif self.departure:
+                return 'lol'
+        if feature_type == "departure year":
+            return 'None' if not self.departure else str(self.departure.year)
+        elif feature_type == "marital status":
+            if self.spouse:
+                return 'married'
+            elif not self.marriages:
+                return 'single'
+            elif self.widowed:
+                return 'widowed'
+            else:
+                return 'divorced'
         # Age
         if feature_type == "birth year":
             return str(self.birth_year)

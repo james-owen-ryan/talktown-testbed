@@ -1576,6 +1576,7 @@ class Config(object):
             # of evidence for a feature of the given type, and they are also used to
             # determine whether a feature type will even show up in an implant in
             # the first place
+            "status":                      0.99,
             "first name":                  0.80,
             "last name":                   0.80,
             "surname ethnicity":           0.70,
@@ -1584,6 +1585,7 @@ class Config(object):
             "tattoo":                      0.50,
             "suffix":                      0.70,
             "approximate age":             0.70,
+            "marital status":              0.65,
             "scar":                        0.40,
             "job title":                   0.40,
             "job shift":                   0.30,
@@ -1592,6 +1594,7 @@ class Config(object):
             "hyphenated surname":          0.15,
             "home":                        0.15,
             "death year":                  0.10,
+            "departure year":              0.08,
             "birthmark":                   0.05,
             "facial hair style":           0.05,
             "freckles":                    0.05,
@@ -1623,6 +1626,7 @@ class Config(object):
             # e.g., it will mean that an observation of a person's hair color is
             # self.general_salience_of_features["hair color"] *
             # self.strength_of_evidence_type["observation"]
+            "status":                      1.50,  # Seeing someone alive or dead makes a very strong observation
             "approximate age":             1.00,
             "hair color":                  1.00,
             "skin color":                  1.00,
@@ -1640,6 +1644,7 @@ class Config(object):
             "freckles":                    0.90,
             "glasses":                     0.85,
             "sunglasses":                  0.85,
+            "marital status":              0.80,
             "first name":                  0.80,
             "surname ethnicity":           0.80,
             "suffix":                      0.80,
@@ -1651,6 +1656,7 @@ class Config(object):
             "middle name":                 0.30,
             "home address":                0.30,
             "death year":                  0.15,
+            "departure year":              0.15,
             "business address":            0.10,
             "eye color":                   0.10,
             "head size":                   0.10,
@@ -1682,7 +1688,7 @@ class Config(object):
             "declaration": 2,
             "forgetting": 0.001,
         }
-        self.feature_types_that_do_not_mutate = {'job title', 'status', 'approximate age', 'suffix'}
+        self.feature_types_that_do_not_mutate = {'job title', 'status', 'approximate age', 'suffix', 'marital status'}
         self.decay_rate_of_belief_strength_per_day = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (
             self.base_strength_of_evidence_types['observation'] /
@@ -1704,6 +1710,7 @@ class Config(object):
         self.function_to_determine_evidence_boost_for_strength_of_teller_belief = (
             lambda teller_belief_strength: teller_belief_strength
         )
+        self.status_feature_types = ("status", "departure_year", "marital_status")
         self.age_feature_types = ("birth year", "death year", "approximate age")
         self.name_feature_types = (
             "first name", "middle name", "last name", "suffix", "hyphenated surname", "surname ethnicity"
@@ -1715,6 +1722,7 @@ class Config(object):
         self.amount_of_people_people_talk_about_floor = 2
         # self.amount_of_people_people_talk_about_cap = 7  # CAP IS NOW NATURALLY AT 7
         self.chance_someones_feature_comes_up_in_conversation_about_them = (
+            ("status",                      1.00),
             ("first name",                  0.80),
             ("approximate age",             0.70),
             ("workplace",                   0.50),
@@ -1724,6 +1732,7 @@ class Config(object):
             ("surname ethnicity",           0.15),
             ("hyphenated surname",          0.15),
             ("home",                        0.15),
+            ("marital status",              0.15),
             ("tattoo",                      0.10),
             ("skin color",                  0.10),
             ("hair color",                  0.08),
@@ -1738,6 +1747,7 @@ class Config(object):
             ("head size",                   0.04),
             ("death year",                  0.04),
             ("birth year",                  0.04),
+            ("departure year",              0.04),
             ("eye color",                   0.01),
             ("middle name",                 0.01),
             ("ear angle",                   0.01),
@@ -1795,6 +1805,9 @@ class Config(object):
             "birth year": lambda subject: False,
             "death year": lambda subject: False,
             "approximate age": lambda subject: True,
+            "status": lambda subject: True,  # whether subject is alive, dead, or departed
+            "marital_status": lambda subject: subject.wearing_wedding_ring,
+            "departure_year": lambda subject: False,
         }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
@@ -1804,6 +1817,7 @@ class Config(object):
             # if a feature isn't remembered perfectly, it will immediately deteriorate by
             # mutation, transference, or forgetting
             #                               MEAN    FLOOR   CAP
+            "status":                       (1.00,  1.00,   1.00),
             "approximate age":              (0.99,  0.97,   0.99),
             "hyphenated surname":           (0.98,  0.90,   0.99),
             "skin color":                   (0.95,  0.80,   0.99),
@@ -1816,6 +1830,7 @@ class Config(object):
             "freckles":                     (0.85,  0.50,   0.95),
             "hair color":                   (0.85,  0.50,   0.95),
             "hair length":                  (0.80,  0.50,   0.95),
+            "marital status":               (0.80,  0.50,   0.95),
             "head size":                    (0.75,  0.45,   0.90),
             "head shape":                   (0.75,  0.45,   0.90),
             "first name":                   (0.75,  0.45,   0.90),
@@ -1838,6 +1853,7 @@ class Config(object):
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
             "death year":                   (0.30,  0.10,   0.50),
+            "departure year":               (0.20,  0.10,   0.35),
             "birth year":                   (0.20,  0.10,   0.35),
             "middle name":                  (0.01,  0.05,   0.30),
         }
@@ -1847,6 +1863,7 @@ class Config(object):
         # without a person seeing the person in question to reinforce the true feature);
         # this gets divided by a person's memory and divided by the strength of the belief facet
         self.chance_of_memory_deterioration_on_a_given_timestep = {
+            "status":                       0.0025,
             "hyphenated surname":           0.005,
             "approximate age":              0.01,
             "skin color":                   0.01,
@@ -1869,6 +1886,7 @@ class Config(object):
             "job title":                    0.15,
             "freckles":                     0.15,
             "hair color":                   0.15,
+            "marital status":               0.15,
             "death year":                   0.20,
             "middle name":                  0.20,
             "head size":                    0.20,
@@ -1882,6 +1900,7 @@ class Config(object):
             "home block":                   0.25,
             "mouth size":                   0.35,
             "birth year":                   0.35,
+            "departure year":               0.35,
             "nose size":                    0.35,
             "nose shape":                   0.35,
             "eyebrow size":                 0.40,
