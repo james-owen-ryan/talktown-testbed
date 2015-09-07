@@ -1732,15 +1732,18 @@ class PersonExNihilo(Person):
         if (job_opportunity_impetus and
                 job_opportunity_impetus in self.game.config.occupations_requiring_college_degree):
             self.college_graduate = True
-        # Potentially generate and retcon a family that this person will have
-        # had prior to moving into the city
+        # Potentially generate and retcon a family that this person will have had prior
+        # to moving into the city; if the person is moving here to be a farmer, force that
+        # a family be retconned (mostly to ensure that at least some people in the present
+        # day will have roots in the town going back to its early foundations when it
+        # comprised a handful of farms)
         if not spouse_already_generated:
             chance_of_having_family = (
                 self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
                     city_pop=game.city.population
                 )
             )
-            if random.random() < chance_of_having_family:
+            if random.random() < chance_of_having_family or job_opportunity_impetus.__name__ == 'Farmer':
                 self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
 
     def _get_random_birthday(self):
