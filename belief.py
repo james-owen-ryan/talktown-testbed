@@ -1369,6 +1369,7 @@ class NameBelief(object):
         self.first_name = None
         self.middle_name = None
         self.last_name = None
+        self.suffix = None
         self.surname_ethnicity = None  # Currently: English, French, German, Irish, or Scandinavian
         self.hyphenated_surname = None
 
@@ -1382,6 +1383,9 @@ class NameBelief(object):
         )
         self.last_name = self._init_name_facet(
             feature_type="last name", observation_or_reflection=observation_or_reflection
+        )
+        self.suffix = self._init_name_facet(
+            feature_type="suffix", observation_or_reflection=observation_or_reflection
         )
         self.surname_ethnicity = self._init_name_facet(
             feature_type="surname ethnicity", observation_or_reflection=observation_or_reflection

@@ -638,6 +638,8 @@ class Person(object):
             return self.middle_name
         elif feature_type == "last name":
             return self.last_name
+        elif feature_type == "suffix":
+            return self.suffix
         elif feature_type == "surname ethnicity":
             return self.last_name.ethnicity
         elif feature_type == "hyphenated surname":

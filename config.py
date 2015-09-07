@@ -1582,6 +1582,7 @@ class Config(object):
             "skin color":                  0.70,
             "workplace":                   0.50,
             "tattoo":                      0.50,
+            "suffix":                      0.70,
             "scar":                        0.40,
             "job title":                   0.40,
             "job shift":                   0.30,
@@ -1637,6 +1638,7 @@ class Config(object):
             "sunglasses":                  0.85,
             "first name":                  0.80,
             "surname ethnicity":           0.80,
+            "suffix":                      0.80,
             "whereabouts XYZ":             0.80,  # This is handled a little differently due to whereabouts naming
             "last name":                   0.70,
             "business block":              0.70,
@@ -1715,6 +1717,7 @@ class Config(object):
             ("skin color",                  0.10),
             ("hair color",                  0.08),
             ("hair length",                 0.08),
+            ("suffix",                      0.08),
             ("scar",                        0.05),
             ("birthmark",                   0.05),
             ("facial hair style",           0.05),
@@ -1763,6 +1766,7 @@ class Config(object):
             "head size": lambda subject: True,
             "eye color": lambda subject: True,
             "middle name": lambda subject: False,
+            "suffix": lambda subject: False,
             "ear angle": lambda subject: True,
             "eye horizontal settedness": lambda subject: True,
             "nose size": lambda subject: True,
@@ -1799,6 +1803,7 @@ class Config(object):
             "head shape":                   (0.75,  0.45,   0.90),
             "first name":                   (0.75,  0.45,   0.90),
             "surname ethnicity":            (0.70,  0.45,   0.90),
+            "suffix":                       (0.70,  0.45,   0.90),
             "eye horizontal settedness":    (0.70,  0.40,   0.90),
             "eye vertical settedness":      (0.70,  0.40,   0.90),
             "eye size":                     (0.67,  0.40,   0.90),
@@ -1828,6 +1833,7 @@ class Config(object):
             "tattoo":                       0.01,
             "birthmark":                    0.02,
             "scar":                         0.02,
+            "suffix":                       0.03,
             "hair length":                  0.05,
             "facial hair style":            0.05,
             "glasses":                      0.05,
@@ -2387,6 +2393,20 @@ class Config(object):
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0
         self.charge_threshold_enmity = -15.0
+
+            #################
+            ##  ARTIFACTS  ##
+            #################
+
+        self.occupations_that_may_appear_on_gravestones = [
+            'Groundskeeper', 'Nurse', 'Architect', 'Doctor', 'FireChief', 'Firefighter',
+            'Barber', 'Lawyer', 'Mortician', 'Optometrist', 'PoliceChief', 'PoliceOfficer',
+            'Principal', 'Professor', 'Teacher', 'Baker', 'Barkeeper', 'Blacksmith', 'Brewer',
+            'Bricklayer', 'Butcher', 'Carpenter', 'Clothier', 'Cooper', 'Dentist', 'Distiller',
+            'Dressmaker', 'Druggist', 'Engineer', 'Farmer', 'Grocer', 'Innkeeper', 'Jeweler',
+            'Joiner', 'Milkman', 'Miner', 'Painter', 'Plumber', 'Puddler', 'Quarryman', 'Seamstress',
+            'Shoemaker', 'Stonecutter', 'Tailor', 'Turner', 'Woodworker'
+        ]
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
