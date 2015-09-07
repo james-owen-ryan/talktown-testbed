@@ -1151,37 +1151,6 @@ class PersonMentalModel(MentalModel):
         mutated_feature_str = mutated_object_itself.name
         return mutated_feature_str, mutated_object_itself
 
-    # I'M REMOVING THIS BECAUSE I DON'T KNOW WHAT TO DO WHEN A WORKPLACE HAS ONLY ONE
-    # JOB TITLE, LIKE A BUTCHER SHOP, ETC.
-    # def _mutate_job_title_facet(self, facet_being_mutated):
-    #     """Mutate a belief about a person's job title."""
-    #     # If you have a belief about where this person works, mutate their job title
-    #     # to another job title attested at that business
-    #     if self.subject.occupation and self.subject.occupation.company:
-    #     # if self.owner.mind.mental_models[self.subject].occupation.company:
-    #         # other_job_titles_attested_there = [
-    #         #     e.__class__.__name__ for e in
-    #         #     self.owner.mind.mental_models[self.subject].occupation.company.employees if
-    #         #     e.__class__.__name__ != facet_being_mutated
-    #         # ]
-    #         other_job_titles_attested_there = [
-    #             e.__class__.__name__ for e in
-    #             self.subject.occupation.company.employees if
-    #             e.__class__.__name__ != facet_being_mutated
-    #         ]
-    #         if len(other_job_titles_attested_there) > 1:
-    #             mutated_feature_str = random.choice(other_job_titles_attested_there)
-    #             mutated_object_itself = None
-    #             return mutated_feature_str, mutated_object_itself
-    #         else:
-    #             # This isn't really mutable, so just return 'CNM', None, which means
-    #             # a mutation will in fact not happen
-    #             return None, None
-    #     else:
-    #         # This isn't really mutable, so just return None, None, which means
-    #         # a mutation will in fact not happen
-    #         return None, None
-
     def _mutate_home_belief_facet(self, feature_type, facet_being_mutated):
         """Mutate a belief facet pertaining to a person's home."""
         # TODO make this more realistic, e.g., mutate to a relative's house
@@ -1368,7 +1337,7 @@ class WhereaboutsBelief(object):
         location_str = self.person_model.owner.location.name
         location_obj = self.person_model.owner.location
         day_or_night_id = 0 if self.person_model.owner.game.time_of_day == "day" else 1
-        # Generate a unique hash so that we can maintain a trajectory for this belief
+        # Generate a unique key so that we can maintain a trajectory for this belief
         feature_type = "whereabouts {}-{}".format(self.person_model.owner.game.ordinal_date, day_or_night_id)
         self.date[(self.person_model.owner.game.ordinal_date, day_or_night_id)] = Facet(
             value=location_str, owner=self.person_model.owner, subject=self.person_model.subject,
