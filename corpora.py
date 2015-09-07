@@ -245,5 +245,27 @@ class Names(object):
 
     @classmethod
     def a_bar_name(cls):
-        """Return a random br name."""
+        """Return a random bar name."""
         return random.choice(cls.bar_names)
+
+
+class GravestoneDetails(object):
+    """A class that holds variants of various gravestone details, such as inscriptions."""
+    headers = tuple(
+        header.strip('\n') for header in
+        open(os.getcwd()+'/corpora/gravestone_headers.txt', 'r')
+    )
+    epitaphs = tuple(
+        epitaph.strip('\n') for epitaph in
+        open(os.getcwd()+'/corpora/gravestone_epitaphs.txt', 'r').read().split('\n\n')
+    )
+
+    @classmethod
+    def a_header(cls):
+        """Return a random gravestone header."""
+        return random.choice(cls.headers)
+
+    @classmethod
+    def an_epitaph(cls):
+        """Return a random gravestone epitaph."""
+        return random.choice(cls.epitaphs)

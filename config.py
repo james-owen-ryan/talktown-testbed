@@ -1583,6 +1583,7 @@ class Config(object):
             "workplace":                   0.50,
             "tattoo":                      0.50,
             "suffix":                      0.70,
+            "approximate age":             0.70,
             "scar":                        0.40,
             "job title":                   0.40,
             "job shift":                   0.30,
@@ -1590,11 +1591,13 @@ class Config(object):
             "hair length":                 0.20,
             "hyphenated surname":          0.15,
             "home":                        0.15,
+            "death year":                  0.10,
             "birthmark":                   0.05,
             "facial hair style":           0.05,
             "freckles":                    0.05,
             "glasses":                     0.05,
             "sunglasses":                  0.05,
+            "birth year":                  0.05,
             "head size":                   0.04,
             "eye color":                   0.01,
             "middle name":                 0.01,
@@ -1620,6 +1623,7 @@ class Config(object):
             # e.g., it will mean that an observation of a person's hair color is
             # self.general_salience_of_features["hair color"] *
             # self.strength_of_evidence_type["observation"]
+            "approximate age":             1.00,
             "hair color":                  1.00,
             "skin color":                  1.00,
             "tattoo":                      1.00,
@@ -1646,9 +1650,11 @@ class Config(object):
             "nose size":                   0.40,
             "middle name":                 0.30,
             "home address":                0.30,
+            "death year":                  0.15,
             "business address":            0.10,
             "eye color":                   0.10,
             "head size":                   0.10,
+            "birth year":                  0.10,
             "ear angle":                   0.08,
             "eye horizontal settedness":   0.05,
             "eye vertical settedness":     0.05,
@@ -1666,6 +1672,7 @@ class Config(object):
         self.base_strength_of_evidence_types = {
             "reflection": 9999,
             "observation": 20,
+            "examination": 15,
             "statement": 5,
             "lie": 5,
             "eavesdropping": 5,
@@ -1675,7 +1682,7 @@ class Config(object):
             "declaration": 2,
             "forgetting": 0.001,
         }
-        self.feature_types_that_do_not_mutate = {'job title'}
+        self.feature_types_that_do_not_mutate = {'job title', 'status', 'approximate age', 'suffix'}
         self.decay_rate_of_belief_strength_per_day = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (
             self.base_strength_of_evidence_types['observation'] /
@@ -1697,7 +1704,10 @@ class Config(object):
         self.function_to_determine_evidence_boost_for_strength_of_teller_belief = (
             lambda teller_belief_strength: teller_belief_strength
         )
-        self.name_feature_types = ("first name", "middle name", "last name", "hyphenated surname", "surname ethnicity")
+        self.age_feature_types = ("birth year", "death year", "approximate age")
+        self.name_feature_types = (
+            "first name", "middle name", "last name", "suffix", "hyphenated surname", "surname ethnicity"
+        )
         self.work_feature_types = ("workplace", "job title", "job shift")
         self.home_feature_types = ("home",)
         self.chance_someone_lies_floor = 0.02
@@ -1706,6 +1716,7 @@ class Config(object):
         # self.amount_of_people_people_talk_about_cap = 7  # CAP IS NOW NATURALLY AT 7
         self.chance_someones_feature_comes_up_in_conversation_about_them = (
             ("first name",                  0.80),
+            ("approximate age",             0.70),
             ("workplace",                   0.50),
             ("job title",                   0.30),
             ("job shift",                   0.30),
@@ -1725,6 +1736,8 @@ class Config(object):
             ("glasses",                     0.05),
             ("sunglasses",                  0.05),
             ("head size",                   0.04),
+            ("death year",                  0.04),
+            ("birth year",                  0.04),
             ("eye color",                   0.01),
             ("middle name",                 0.01),
             ("ear angle",                   0.01),
@@ -1779,6 +1792,9 @@ class Config(object):
             "nose shape": lambda subject: True,
             "eye size": lambda subject: True,
             "eye shape": lambda subject: True,
+            "birth year": lambda subject: False,
+            "death year": lambda subject: False,
+            "approximate age": lambda subject: True,
         }
         self.person_feature_salience = {
             # (Sources [2, 3] show that hair, eyes > mouth > nose, chin.)
@@ -1788,6 +1804,7 @@ class Config(object):
             # if a feature isn't remembered perfectly, it will immediately deteriorate by
             # mutation, transference, or forgetting
             #                               MEAN    FLOOR   CAP
+            "approximate age":              (0.99,  0.97,   0.99),
             "hyphenated surname":           (0.98,  0.90,   0.99),
             "skin color":                   (0.95,  0.80,   0.99),
             "tattoo":                       (0.95,  0.80,   0.99),
@@ -1820,6 +1837,8 @@ class Config(object):
             "eyebrow color":                (0.45,  0.20,   0.70),
             "ear size":                     (0.30,  0.10,   0.50),
             "ear angle":                    (0.30,  0.10,   0.50),
+            "death year":                   (0.30,  0.10,   0.50),
+            "birth year":                   (0.20,  0.10,   0.35),
             "middle name":                  (0.01,  0.05,   0.30),
         }
         # Chance of memory deterioration happening on a given timestep -- the chance
@@ -1829,6 +1848,7 @@ class Config(object):
         # this gets divided by a person's memory and divided by the strength of the belief facet
         self.chance_of_memory_deterioration_on_a_given_timestep = {
             "hyphenated surname":           0.005,
+            "approximate age":              0.01,
             "skin color":                   0.01,
             "tattoo":                       0.01,
             "birthmark":                    0.02,
@@ -1849,6 +1869,7 @@ class Config(object):
             "job title":                    0.15,
             "freckles":                     0.15,
             "hair color":                   0.15,
+            "death year":                   0.20,
             "middle name":                  0.20,
             "head size":                    0.20,
             "head shape":                   0.20,
@@ -1860,6 +1881,7 @@ class Config(object):
             "eye shape":                    0.25,
             "home block":                   0.25,
             "mouth size":                   0.35,
+            "birth year":                   0.35,
             "nose size":                    0.35,
             "nose shape":                   0.35,
             "eyebrow size":                 0.40,
@@ -1879,6 +1901,8 @@ class Config(object):
             ((0.9, 1.0), 't'),  # Transference
         )
         self.chance_of_confabulation_on_a_given_timestep = 0.02
+        self.chance_someone_confabulates_a_suffix = 0.05  # Else they will confabulate 'None'
+        self.age_confabulation_max_offset = lambda subject: subject.age/7.0
         self.memory_mutations = {
             # Probabilities specifying how feature values are likely to degrade
             # NAMES [handled differently]

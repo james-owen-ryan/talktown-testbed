@@ -215,6 +215,15 @@ class Observation(PieceOfEvidence):
             )
 
 
+class Examination(PieceOfEvidence):
+    """An of an artifact that transmits knowledge about some entity."""
+
+    def __init__(self, subject, source, artifact):
+        """Initialize an Observation object."""
+        super(Examination, self).__init__(subject=subject, source=source)
+        self.artifact = artifact
+
+
 class Confabulation(PieceOfEvidence):
     """A confabulation by which a person unintentionally concocts new false knowledge (i.e., changes an
     attribute's value from None to something).

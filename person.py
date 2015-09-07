@@ -631,6 +631,13 @@ class Person(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
+        # Age
+        if feature_type == "birth year":
+            return str(self.birth_year)
+        elif feature_type == "death year":
+            return str(self.death_year)
+        elif feature_type == "approximate age":
+            return '{}0s'.format(self.age/10)
         # Name
         if feature_type == "first name":
             return self.first_name
@@ -639,7 +646,7 @@ class Person(object):
         elif feature_type == "last name":
             return self.last_name
         elif feature_type == "suffix":
-            return self.suffix
+            return self.suffix if self.suffix else 'None'  # Because '' reserve for forgettings
         elif feature_type == "surname ethnicity":
             return self.last_name.ethnicity
         elif feature_type == "hyphenated surname":

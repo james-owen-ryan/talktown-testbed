@@ -872,18 +872,21 @@ class PersonMentalModel(MentalModel):
         """
         super(PersonMentalModel, self).__init__(owner, subject)
         # Prepare the belief hierarchy encapsulated by this object
+        self.age = AgeBelief(person_model=self)
         self.name = NameBelief(person_model=self)
         self.occupation = WorkBelief(person_model=self)
         self.face = FaceBelief(person_model=self)
         self.whereabouts = WhereaboutsBelief(person_model=self)
-        self.home = None  # Currently a straggler because there's only one facet component to it
+        # These are currently stragglers because there's only one or two facets to each concept
+        self.home = None
+        self.status = None  # 'alive', 'dead', or 'departed' (i.e., departed the city)
         # Establish initial belief facets according to an initial observation/reflection
         if observation_or_reflection:
             self.name.establish(observation_or_reflection=observation_or_reflection)
             self.occupation.establish(observation_or_reflection=observation_or_reflection)
             self.face.establish(observation_or_reflection=observation_or_reflection)
             self.whereabouts.establish(observation_or_reflection=observation_or_reflection)
-            self.home = self._init_home_facet(observation_or_reflection=observation_or_reflection)
+            self._init_home_facet(observation_or_reflection=observation_or_reflection)
         elif implant:
             self.implant_knowledge(implant=implant)
 
@@ -903,7 +906,7 @@ class PersonMentalModel(MentalModel):
             home_facet = self.init_belief_facet(
                 feature_type="home", observation_or_reflection=None
             )
-        return home_facet
+        self.home = home_facet
 
     def build_up(self, new_observation_or_reflection):
         """Build up a mental model from a new observation or reflection."""
@@ -983,7 +986,10 @@ class PersonMentalModel(MentalModel):
         """
         config = self.owner.game.config
         confabulation = Confabulation(subject=self.subject, source=self.owner)
-        if feature_type in config.name_feature_types:
+        if feature_type in config.age_feature_types:
+            confabulated_feature_str = self._confabulate_age_facet(feature_type=feature_type)
+            confabulated_object_itself = None
+        elif feature_type in config.name_feature_types:
             confabulated_feature_str = self._confabulate_name_facet(feature_type=feature_type)
             confabulated_object_itself = None
         elif feature_type in config.work_feature_types:
@@ -1012,16 +1018,48 @@ class PersonMentalModel(MentalModel):
         )
         return belief_facet_object
 
+    def _confabulate_age_facet(self, feature_type):
+        """Confabulate a facet to a belief about a person's name."""
+        if feature_type == "birth year" or feature_type == "death year":
+            # Confabulate a birth/death year a few years off from the actual year, with how
+            # many 'a few' is depending on the person's actual age (so that someone doesn't
+            # confabulate that, e.g., a 6-year-old is 16)
+            if feature_type == "birth year":
+                birth_or_death_year = self.subject.birth_year
+            elif self.subject.death_year:
+                birth_or_death_year = self.subject.death_year
+            else:  # You are confabulating that they recently died when they didn't
+                birth_or_death_year = self.subject.game.year
+            max_offset = self.owner.game.config.age_confabulation_max_offset(subject=self.subject)
+            offset = min(1, int(random.random() * max_offset))
+            if random.random() < 0.5 or self.subject.game:
+                offset *= -1
+            confabulated_year = birth_or_death_year + offset
+            if confabulated_year > self.subject.game.year-1:
+                confabulated_year = self.subject.game.year-1
+            confabulated_feature_str = str(confabulated_year)
+        else:  # approximate
+            subject_age_decade = self.subject.age / 10  # Don't use float here
+            offset = random.choice([-1, 1])
+            confabulated_age_decade = subject_age_decade + offset
+            confabulated_feature_str = '{}0s'.format(confabulated_age_decade)
+        return confabulated_feature_str
+
     def _confabulate_name_facet(self, feature_type):
         """Confabulate a facet to a belief about a person's name."""
         if feature_type == "last name":
             confabulated_feature_str = Names.any_surname()
-        elif feature_type == "first name" or feature_type == "last name":
+        elif feature_type == "first name" or feature_type == "middle name":
             if self.subject.male:
                 # Confabulate a name that is appropriate given the subject's birth year
                 confabulated_feature_str = Names.a_masculine_name(year=self.subject.birth_year)
             else:
                 confabulated_feature_str = Names.a_feminine_name(year=self.subject.birth_year)
+        elif feature_type == "suffix":
+            if self.subject.male and random.random() < self.owner.game.config.chance_someone_confabulates_a_suffix:
+                confabulated_feature_str = random.choice(['II', 'III'])
+            else:
+                confabulated_feature_str = 'None'
         elif feature_type == "surname ethnicity":
             # Randomly choose another ethnicity  -- TODO choose according to distribution in the town
             confabulated_feature_str = random.choice(['English', 'French', 'German', 'Irish', 'Scandinavian'])
@@ -1065,7 +1103,12 @@ class PersonMentalModel(MentalModel):
     def _mutate_belief_facet(self, feature_type, facet_being_mutated):
         """Mutate a belief facet."""
         config = self.subject.game.config
-        if feature_type in config.name_feature_types:
+        if feature_type in config.age_feature_types:
+            mutated_feature_str = self._mutate_age_belief_facet(
+                feature_type=feature_type, feature_being_mutated_from_str=str(facet_being_mutated)
+            )
+            mutated_object_itself = None
+        elif feature_type in config.name_feature_types:
             mutated_feature_str = self._mutate_name_belief_facet(
                 feature_type=feature_type, feature_being_mutated_from_str=str(facet_being_mutated)
             )
@@ -1093,6 +1136,27 @@ class PersonMentalModel(MentalModel):
             object_itself=mutated_object_itself
         )
         return belief_facet_obj
+
+    def _mutate_age_belief_facet(self, feature_type, feature_being_mutated_from_str):
+        """Mutate a belief facet pertaining to a person's name."""
+        # Mutate to a year that is a few off from the subject's actual year (note:
+        # this is currently the same exact procedure as confabulation for these
+        # feature types)
+        if feature_type == "birth year":
+            birth_or_death_year = self.subject.birth_year
+        elif self.subject.death_year:
+            birth_or_death_year = self.subject.death_year
+        else:  # You are confabulating that they recently died when they didn't
+            birth_or_death_year = self.subject.game.year
+        max_offset = self.owner.game.config.age_confabulation_max_offset(subject=self.subject)
+        offset = min(1, int(random.random() * max_offset))
+        if random.random() < 0.5 or self.subject.game:
+            offset *= -1
+        confabulated_year = birth_or_death_year + offset
+        if confabulated_year > self.subject.game.year-1:
+            confabulated_year = self.subject.game.year-1
+        mutated_feature_str = str(confabulated_year)
+        return mutated_feature_str
 
     def _mutate_name_belief_facet(self, feature_type, feature_being_mutated_from_str):
         """Mutate a belief facet pertaining to a person's name."""
@@ -1193,6 +1257,13 @@ class PersonMentalModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
+        # Age
+        if feature_type == "birth year":
+            return self.age.birth_year
+        elif feature_type == "death year":
+            return self.age.death_year
+        elif feature_type == "approximate age":
+            return self.age.approximate
         # Names
         if feature_type == "first name":
             return self.name.first_name
@@ -1272,10 +1343,15 @@ class PersonMentalModel(MentalModel):
     def get_command_to_access_a_belief_facet(feature_type):
         """Return a command that will allow the belief facet for this feature type to be directly modified."""
         feature_type_to_command = {
+            # Age
+            "birth year": "self.age.birth_year",
+            "death year": "self.age.death_year",
+            "approximate age": "self.age.approximate",
             # Name
             "first name": "self.name.first_name",
             "middle name": "self.name.middle_name",
             "last name": "self.name.last_name",
+            "suffix": "self.name.suffix",
             "surname ethnicity": "self.name.surname_ethnicity",
             "hyphenated surname": "self.name.hyphenated_surname",
             # Occupation
@@ -1358,6 +1434,126 @@ class WhereaboutsBelief(object):
                 feature_type=feature_type, initial_evidence=new_observation_or_reflection,
                 object_itself=location_obj
             )
+
+
+class AgeBelief(object):
+    """A person's mental model of a person's age."""
+
+    def __init__(self, person_model):
+        """Initialize a NameBelief object."""
+        self.person_model = person_model
+        self.birth_year = None
+        self.death_year = None
+        self.approximate = None
+
+    def establish(self, observation_or_reflection):
+        """Establish initial belief facets in response to an initial observation/reflection."""
+        self.birth_year = self._init_age_facet(
+            feature_type="birth year", observation_or_reflection=observation_or_reflection
+        )
+        self.death_year = self._init_age_facet(
+            feature_type="death year", observation_or_reflection=observation_or_reflection
+        )
+        self.approximate = self._init_age_facet(
+            feature_type="approximate age", observation_or_reflection=observation_or_reflection
+        )
+
+    def _init_age_facet(self, feature_type, observation_or_reflection):
+        """Establish a belief, or lack of belief, pertaining to a person's name."""
+        if observation_or_reflection and observation_or_reflection.type == "reflection":
+            age_facet = self.person_model.init_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        elif self.person_model.owner.game.config.feature_is_observable[feature_type](
+            subject=self.person_model.subject
+        ):
+            age_facet = self.person_model.init_belief_facet(
+                feature_type=feature_type, observation_or_reflection=observation_or_reflection
+            )
+        else:
+            # Build empty age facet -- having None for observation_or_reflection will automate this
+            age_facet = self.person_model.init_belief_facet(
+                feature_type=feature_type, observation_or_reflection=None
+            )
+        return age_facet
+
+    def build_up(self, new_observation_or_reflection):
+        """Build up the components of this belief by potentially filling in missing information
+        and/or repairing wrong information, or else by updating the evidence for already correct facets.
+        """
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                feature_type = self.attribute_to_feature_type(feature)
+                if self.person_model.owner.game.config.feature_is_observable[feature_type](
+                        subject=self.person_model.subject
+                ):
+                    current_belief_facet = self.__dict__[feature]
+                    if current_belief_facet is None or not current_belief_facet.accurate:
+                        feature_type = self.attribute_to_feature_type(attribute=feature)
+                        # Adopt a new, accurate belief facet (unless init_belief_facet returns None) --
+                        # if a Facet object is instantiated, it will automatically be adopted because
+                        # it's initial evidence will be a reflection or observation; specifically,
+                        # Facet.init() will call attribute_new_evidence() which will call adopt_belief()
+                        self.person_model.init_belief_facet(
+                            feature_type=feature_type,
+                            observation_or_reflection=new_observation_or_reflection
+                        )
+                    else:
+                        # Belief facet is already accurate, but update its evidence to point to the new
+                        # observation or reflection (which will slow any potential deterioration) -- this
+                        # will also increment the strength of the belief facet, which will make it less
+                        # likely to deteriorate in this future
+                        current_belief_facet.attribute_new_evidence(new_evidence=new_observation_or_reflection)
+
+    def deteriorate(self):
+        """Deteriorate the components of this belief (potentially) by mutation, transference, and/or forgetting."""
+        config = self.person_model.owner.game.config
+        for feature in self.__dict__:  # Iterates over all attributes defined in __init__()
+            if feature != 'person_model':  # This should be the only one that doesn't resolve to a belief type
+                current_belief_facet = self.__dict__[feature]
+                if current_belief_facet is not None:
+                    feature_type_str = current_belief_facet.feature_type
+                    belief_facet_strength = current_belief_facet.strength
+                else:
+                    feature_type_str = self.attribute_to_feature_type(attribute=feature)
+                    belief_facet_strength = 1
+                # Determine the chance of memory deterioration, which starts from a base value
+                # that gets affected by the person's memory and the strength of the belief facet
+                chance_of_memory_deterioration = (
+                    config.chance_of_memory_deterioration_on_a_given_timestep[feature_type_str] /
+                    self.person_model.owner.mind.memory /
+                    belief_facet_strength
+                )
+                if random.random() < chance_of_memory_deterioration:
+                    # Instantiate a new belief facet that represents a deterioration of
+                    # the existing one (which itself may be a deterioration already) --
+                    # when the facet object's init() method is called, it will call
+                    # attribute_new_evidence(), which will automatically call adopt_belief()
+                    # because its initial evidence will be of a deterioration type
+                    self.person_model.deteriorate_belief_facet(
+                        feature_type=feature_type_str, current_belief_facet=current_belief_facet
+                    )
+
+    @staticmethod
+    def attribute_to_feature_type(attribute):
+        """Return the belief type of an attribute."""
+        attribute_to_belief_type = {
+            "birth_year": "birth year",
+            "death_year": "death year",
+            "approximate": "approximate age",
+        }
+        return attribute_to_belief_type[attribute]
+
+    @property
+    def exact(self):
+        """Return owner's belief as to the exact age of subject."""
+        if self.birth_year:
+            if self.death_year:
+                return int(self.death_year)-int(self.birth_year)
+            else:
+                return self.person_model.owner.game.year-int(self.birth_year)
+        else:
+            return None
 
 
 class NameBelief(object):
@@ -1477,6 +1673,7 @@ class NameBelief(object):
             "first_name": "first name",
             "middle_name": "middle name",
             "last_name": "last name",
+            "suffix": "suffix",
             "surname_ethnicity": "surname ethnicity",
             "hyphenated_surname": "hyphenated surname"
         }
