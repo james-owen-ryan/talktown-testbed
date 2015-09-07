@@ -573,9 +573,9 @@ class Business(object):
         elif person in decision_maker.extended_family:
             score += config.preference_to_hire_extended_family
         if person.immediate_family & self.employees:
-            score + config.preference_to_hire_immediate_family_of_an_employee
+            score += config.preference_to_hire_immediate_family_of_an_employee
         elif person.extended_family & self.employees:
-            score + config.preference_to_hire_extended_family_of_an_employee
+            score += config.preference_to_hire_extended_family_of_an_employee
         if person in decision_maker.friends:
             score += config.preference_to_hire_friend
         elif person in decision_maker.acquaintances:
@@ -628,7 +628,8 @@ class Business(object):
                     qualified = True
             else:
                 qualified = True
-        # Make sure the candidates gender would not make their hiring historically inaccurate
+        # Make sure the candidate meets the essential preconditions for this position;
+        # note: most of these preconditions are meant to maintain basic historically accuracy
         if not config.employable_as_a[occupation_of_need](applicant=candidate):
             qualified = False
         # Lastly, make sure they have been at their old job for at least a year,
