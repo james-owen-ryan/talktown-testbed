@@ -8,7 +8,7 @@ class PieceOfEvidence(object):
         """Initialize a PieceOfEvidence object."""
         self.type = self.__class__.__name__.lower()
         self.location = source.location
-        self.time = source.game.date
+        self.date = source.game.date
         self.ordinal_date = source.game.ordinal_date
         # Also request and attribute an event number, so that we can later
         # determine the precise ordering of events that happen on the same timestep
@@ -17,6 +17,7 @@ class PieceOfEvidence(object):
         self.source = source
         self.recipient = None  # Will get overwritten in case of Lie, Statement, Declaration, Eavesdropping
         self.eavesdropper = None  # Will get overwritten in case of Eavesdropping
+        self.artifact = None  # Will get overwritten in case of Examination
         self.attribute_transferred = None  # Will get overwritten in case of Transference
         self.beliefs_evidenced = set()  # Gets added to by Belief.Facet.__init__()
         self.base_strength = None  # Used to hold partial results of determine_strength()
@@ -24,7 +25,7 @@ class PieceOfEvidence(object):
     def __str__(self):
         """Return string representation."""
         location_and_time = "at {} on the {}".format(
-            self.location.name, self.time[0].lower()+self.time[1:]
+            self.location.name, self.date[0].lower()+self.date[1:]
         )
         if self.type == 'eavesdropping':
             return "{}'s eavesdropping of {}'s statement to {} about {} {}".format(
@@ -70,6 +71,14 @@ class PieceOfEvidence(object):
         elif self.type == 'forgetting':
             return "{}'s forgetting of knowledge about {} {}".format(
                 self.source.name, self.subject.name, location_and_time
+            )
+        elif self.type == 'implant':
+            return "{}'s ingrained knowledge about {}".format(
+                self.source.name, self.subject.name
+            )
+        elif self.type == 'examination':
+            return "{}'s examination of {} {}".format(
+                self.source.name, self.artifact.name, location_and_time
             )
 
     def determine_strength(self, feature_type):

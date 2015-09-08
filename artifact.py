@@ -168,7 +168,7 @@ class Gravestone(Artifact):
         if deceased not in examiner.mind.mental_models:
             # Instantiate a blank mental model (it will have no belief facets because
             # there is no initial observation or reflection)
-            mental_model = PersonMentalModel(owner=self, subject=deceased, observation_or_reflection=None)
+            mental_model = PersonMentalModel(owner=examiner, subject=deceased, observation_or_reflection=None)
         else:
             mental_model = examiner.mind.mental_models[deceased]
         # Prepare an Examination piece of evidence
