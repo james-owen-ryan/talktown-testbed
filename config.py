@@ -278,7 +278,7 @@ class Config(object):
                 ###############
 
         # Misc
-        self.age_people_start_working = lambda year: 14 if year < 1920 else 18
+        self.age_people_start_working = lambda year: 14 if year < 1920 else 16 if year < 1960 else 18
         self.amount_of_money_generated_people_from_outside_city_start_with = 5000
         # Housing
         self.number_of_apartment_units_in_new_complex_min = 4
@@ -496,6 +496,7 @@ class Config(object):
         # Chance a business shuts downs ome timestep after its specified demise -- i.e., chance a business
         # will shut down once its anachronistic, like a blacksmith shop after 1945
         self.chance_a_business_shuts_down_on_timestep_after_its_demise = (1/730.) / 3  # Average will last 3 years
+        self.chance_a_new_adult_decides_to_leave_town = 0.1
         # Chance an unemployed person leaves the city on a *simulated* timestep
         self.chance_an_unemployed_person_departs_on_a_simulated_timestep = (
             # Currently set so that an unemployed person would be expected to leave the
@@ -503,7 +504,7 @@ class Config(object):
             # I have it set at four so that characters in times where people start working at
             # 18 may get a college degree (which currently happens automatically when someone
             # is 22 and unemployed)
-            1.0 / (self.chance_of_a_timestep_being_simulated * 720 * 4)
+            1.0 / (self.chance_of_a_timestep_being_simulated * 730 * 4)
         )
         # Occupation classes for owners/proprietors of each business type
         self.owner_occupations_for_each_business_type = {

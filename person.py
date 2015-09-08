@@ -423,18 +423,12 @@ class Person(object):
     @property
     def reflexive(self):
         """Return appropriately gendered reflexive pronoun."""
-        if self.male:
-            return 'himself'
-        else:
-            return 'herself'
+        return 'himself' if self.male else 'herself'
 
     @property
     def possessive(self):
         """Return appropriately gendered possessive pronoun."""
-        if self.male:
-            return 'his'
-        else:
-            return 'her'
+        return 'his' if self.male else 'her'
 
     @property
     def full_name(self):
@@ -1722,9 +1716,11 @@ class Person(object):
     def grow_older(self):
         """Check if it's this persons birth day; if it is, age them."""
         config = self.game.config
+        consider_leaving_town = False
         self.age = age = self.game.true_year - self.birth_year
         if age == config.age_people_start_working(year=self.game.year):
             self.ready_to_work = True
+            consider_leaving_town = True
         if age == 18:
             self.adult = True
         # If you haven't in a while (in the logarithmic sense, rather than absolute
@@ -1762,6 +1758,8 @@ class Person(object):
                     value='bald', variant_id=variant_id, inherited_from=inherited_from,
                     exact_variant_inherited=exact_variant_inherited
                 )
+        if consider_leaving_town and random.random() < config.chance_a_new_adult_decides_to_leave_town:
+            self.depart_city()
 
     def update_salience_of(self, entity, change):
         """Increment your salience value for entity by change."""
