@@ -188,14 +188,17 @@ class Game(object):
     def enact_lo_fi_simulation(self, n_timesteps=1):
         """Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay."""
         last_simulated_day = self.ordinal_date
-        chance_of_a_day_being_simulated = 0.005
+        chance_of_a_timestep_being_simulated = self.config.chance_of_a_timestep_being_simulated
+        chance_an_unemployed_person_departs_on_a_simulated_timestep = (
+            self.config.chance_an_unemployed_person_departs_on_a_simulated_timestep
+        )
         for i in xrange(n_timesteps):
             self._advance_time()
             # Potentially have a new business open or an existing business close
             self.potentially_establish_a_new_business()
             self.potentially_shut_down_businesses()
-            # Simulate births, even if this day will not actually be simulated
             for person in list(self.city.residents):
+                # Simulate births, even if this day will not actually be simulated
                 if person.pregnant:
                     if self.ordinal_date >= person.due_date:
                         if self.time_of_day == 'day':
@@ -203,10 +206,11 @@ class Game(object):
                                 person.give_birth()
                         else:
                             person.give_birth()
-                # if person.ready_to_work and not person.occupation:
-                #     # If this person's father owns a farm, go to work on the farm
-                #     if person.father and person.father.occupation.company
-            if random.random() < chance_of_a_day_being_simulated:
+                # Simulate people leaving the city to find work (if they can't find any here)
+                if person.ready_to_work and not person.occupation:
+                    if random.random() < chance_an_unemployed_person_departs_on_a_simulated_timestep:
+                        person.depart_city()
+            if random.random() < chance_of_a_timestep_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
                     if person.marriage:
@@ -215,7 +219,7 @@ class Game(object):
                                 n_kids=len(person.marriage.children_produced)
                             )
                         )
-                        chance_they_are_trying_to_conceive_this_year /= chance_of_a_day_being_simulated*365
+                        chance_they_are_trying_to_conceive_this_year /= chance_of_a_timestep_being_simulated*365
                         if random.random() < chance_they_are_trying_to_conceive_this_year:
                             person.have_sex(partner=person.spouse, protection=False)
                         elif random.random() < self.config.chance_a_divorce_happens_some_timestep:
