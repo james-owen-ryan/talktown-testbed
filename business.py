@@ -61,8 +61,8 @@ class Business(object):
         # up gradually by people seeking employment (most often, this will be kids who
         # grow up and are ready to work and people who were recently laid off)
         self.supplemental_vacancies = {
-            'day': config.initial_job_vacancies[self.__class__]['supplemental day'],
-            'night': config.initial_job_vacancies[self.__class__]['supplemental night']
+            'day': list(config.initial_job_vacancies[self.__class__]['supplemental day']),
+            'night': list(config.initial_job_vacancies[self.__class__]['supplemental night'])
         }
         if self.__class__ not in config.companies_that_get_established_on_tracts:
             # Try to find an architect -- if you can't, you'll have to build it yourself
@@ -614,14 +614,16 @@ class Business(object):
         config = self.city.game.config
         qualified = False
         level_of_this_position = config.job_levels[occupation_of_need]
-        # Make sure they are not overqualified
+        # Make sure they are not already at a job of higher prestige; people that
+        # used to work higher-level jobs may stoop back to lower levels if they are
+        # now out of work
         if candidate.occupation:
             candidate_job_level = candidate.occupation.level
         elif candidate.occupations:
             candidate_job_level = max(candidate.occupations, key=lambda o: o.level).level
         else:
             candidate_job_level = 0
-        if not candidate_job_level >= level_of_this_position:
+        if not (candidate.occupation and candidate_job_level >= level_of_this_position):
             # Make sure they have a college degree if one is required to have this occupation
             if occupation_of_need in self.city.game.config.occupations_requiring_college_degree:
                 if candidate.college_graduate:
