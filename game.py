@@ -49,6 +49,11 @@ class Game(object):
         """Return a random person living in the city of this gameplay instance."""
         return random.choice(list(self.city.residents))
 
+    @property
+    def random_company(self):
+        """Return a random company in the city of this gameplay instance."""
+        return random.choice(list(self.city.companies))
+
     def recent_events(self):
         """Pretty-print the last five in-game events (for debugging purposes)."""
         for recent_event in self.events[-5:]:
