@@ -1588,6 +1588,7 @@ class Config(object):
             "marital status":              0.65,
             "scar":                        0.40,
             "job title":                   0.40,
+            "job status":                  0.35,
             "job shift":                   0.30,
             "hair color":                  0.20,
             "hair length":                 0.20,
@@ -1635,6 +1636,7 @@ class Config(object):
             "hyphenated surname":          1.00,
             "birthmark":                   1.00,
             "home is apartment":           1.00,
+            "job status":                  1.00,
             "home":                        0.90,
             "hair length":                 0.90,
             "workplace":                   0.90,
@@ -1715,7 +1717,7 @@ class Config(object):
         self.name_feature_types = (
             "first name", "middle name", "last name", "suffix", "hyphenated surname", "surname ethnicity"
         )
-        self.work_feature_types = ("workplace", "job title", "job shift")
+        self.work_feature_types = ("workplace", "job title", "job shift", "job status")
         self.home_feature_types = ("home",)
         self.chance_someone_lies_floor = 0.02
         self.chance_someone_lies_cap = 0.2
@@ -1725,6 +1727,7 @@ class Config(object):
             ("status",                      1.00),
             ("first name",                  0.80),
             ("approximate age",             0.70),
+            ("job status",                  0.70),
             ("workplace",                   0.50),
             ("job title",                   0.30),
             ("job shift",                   0.30),
@@ -1775,6 +1778,7 @@ class Config(object):
             "workplace": lambda subject: subject.routine.working,
             "tattoo": lambda subject: True,
             "scar": lambda subject: True,
+            "job status": lambda subject: subject.routine.working,
             "job title": lambda subject: subject.routine.working,
             "job shift": lambda subject: subject.routine.working,
             "hair color": lambda subject: True,
@@ -1823,6 +1827,7 @@ class Config(object):
             "skin color":                   (0.95,  0.80,   0.99),
             "tattoo":                       (0.95,  0.80,   0.99),
             "birthmark":                    (0.90,  0.70,   0.99),
+            "job status":                   (0.90,  0.70,   0.99),
             "scar":                         (0.90,  0.70,   0.99),
             "facial hair style":            (0.90,  0.70,   0.99),
             "glasses":                      (0.90,  0.70,   0.96),
@@ -1870,6 +1875,7 @@ class Config(object):
             "tattoo":                       0.01,
             "birthmark":                    0.02,
             "scar":                         0.02,
+            "job status":                   0.02,
             "suffix":                       0.03,
             "hair length":                  0.05,
             "facial hair style":            0.05,

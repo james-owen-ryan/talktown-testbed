@@ -1123,10 +1123,19 @@ class PersonMentalModel(MentalModel):
         elif feature_type == "job shift":
             confabulated_feature_str = random.choice(["day", "day", "night"])
             confabulated_object_itself = None
-        else:   # job title
+        elif feature_type == "job title":
             random_company = random.choice(list(self.owner.city.companies))
             random_job_title = random.choice(list(random_company.employees)).__class__.__name__
             confabulated_feature_str = random_job_title
+            confabulated_object_itself = None
+        else:  # job status
+            # Confabulate a job status befitting the subject's age
+            if self.subject.age < 20:
+                confabulated_feature_str = "unemployed"
+            elif self.subject.age < 65:
+                confabulated_feature_str = "employed"
+            else:
+                confabulated_feature_str = "retired"
             confabulated_object_itself = None
         return confabulated_feature_str, confabulated_object_itself
 
@@ -1252,13 +1261,27 @@ class PersonMentalModel(MentalModel):
             mutated_feature_str, mutated_object_itself = self._mutate_workplace_facet(
                 facet_being_mutated=facet_being_mutated
             )
-        else:  # "job shift"
+        elif feature_type == "job shift":
             mutated_feature_str = "night" if facet_being_mutated == "day" else "day"
             mutated_object_itself = None
-        # else:   # job title
-        #     mutated_feature_str, mutated_object_itself = self._mutate_job_title_facet(
-        #         facet_being_mutated=facet_being_mutated
-        #     )
+        else:  # job status (job title does not mutate)
+            if facet_being_mutated == 'employed':
+                if self.subject.age > 65:
+                    mutated_feature_str = 'retired'
+                    mutated_object_itself = None
+                else:
+                    mutated_feature_str = 'unemployed'
+                    mutated_object_itself = None
+            elif facet_being_mutated == "unemployed":
+                if self.subject.age > 65:
+                    mutated_feature_str = 'retired'
+                    mutated_object_itself = None
+                else:
+                    mutated_feature_str = 'employed'
+                    mutated_object_itself = None
+            else:  # 'retired'
+                mutated_feature_str = random.choice(['employed', 'unemployed'])
+                mutated_object_itself = None
         return mutated_feature_str, mutated_object_itself
 
     def _mutate_workplace_facet(self, facet_being_mutated):
@@ -1319,6 +1342,13 @@ class PersonMentalModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
+        # Status
+        if feature_type == "status":
+            return self.status.status
+        elif feature_type == "departure year":
+            return self.status.departure_year
+        elif feature_type == "marital status":
+            return self.status.marital_status
         # Age
         if feature_type == "birth year":
             return self.age.birth_year
@@ -1340,6 +1370,8 @@ class PersonMentalModel(MentalModel):
             return self.occupation.job_title
         elif feature_type == "job shift":
             return self.occupation.shift
+        elif feature_type == "job status":
+            return self.occupation.status
         # Home
         elif feature_type == "home":
             return self.home
@@ -1424,6 +1456,7 @@ class PersonMentalModel(MentalModel):
             "workplace": "self.occupation.company",
             "job title": "self.occupation.job_title",
             "job shift": "self.occupation.shift",
+            "job status": "self.occupation.status",
             # Home
             "home": "self.home",
             # Appearance
@@ -1654,14 +1687,16 @@ class NameBelief(Belief):
 
 class WorkBelief(Belief):
     """A person's mental model of a person's work life."""
-    attributes = ("company", "job_title", "shift")
+    attributes = ("company", "job_title", "shift", "status")
 
     def __init__(self, person_model):
         """Initialize a WorkBelief object."""
         super(WorkBelief, self).__init__(person_model)
+        # These pertain to a character's most recent occupation
         self.company = None
         self.job_title = None
         self.shift = None
+        self.status = None  # 'employed', 'unemployed', 'retired'
 
     @staticmethod
     def attribute_to_feature_type(attribute):
@@ -1669,7 +1704,8 @@ class WorkBelief(Belief):
         attribute_to_belief_type = {
             "company": "workplace",
             "job_title": "job title",
-            "shift": "job shift"
+            "shift": "job shift",
+            "status": "job status",
         }
         return attribute_to_belief_type[attribute]
 
