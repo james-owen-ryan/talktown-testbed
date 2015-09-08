@@ -50,7 +50,7 @@ class Game(object):
         return random.choice(list(self.city.residents))
 
     def recent_events(self):
-        """Pretty-print the last five in-game events."""
+        """Pretty-print the last five in-game events (for debugging purposes)."""
         for recent_event in self.events[-5:]:
             print recent_event
 
@@ -206,39 +206,42 @@ class Game(object):
                                 person.give_birth()
                         else:
                             person.give_birth()
-                # Simulate people leaving the city to find work (if they can't find any here)
-                if person.ready_to_work and not person.occupation:
-                    if random.random() < chance_an_unemployed_person_departs_on_a_simulated_timestep:
-                        person.depart_city()
             if random.random() < chance_of_a_timestep_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
-                    if person.marriage:
-                        chance_they_are_trying_to_conceive_this_year = (
-                            self.config.function_to_determine_chance_married_couple_are_trying_to_conceive(
-                                n_kids=len(person.marriage.children_produced)
+                    if person.present:
+                        # Need to check this because an earlier iteration may have caused this
+                        # person to live the city (e.g., if their parent died)
+                        if person.marriage:
+                            chance_they_are_trying_to_conceive_this_year = (
+                                self.config.function_to_determine_chance_married_couple_are_trying_to_conceive(
+                                    n_kids=len(person.marriage.children_produced)
+                                )
                             )
-                        )
-                        chance_they_are_trying_to_conceive_this_year /= chance_of_a_timestep_being_simulated*365
-                        if random.random() < chance_they_are_trying_to_conceive_this_year:
-                            person.have_sex(partner=person.spouse, protection=False)
-                        elif random.random() < self.config.chance_a_divorce_happens_some_timestep:
-                            lawyer = person.contract_person_of_certain_occupation(occupation_in_question=Lawyer)
-                            lawyer = None if not lawyer else lawyer.occupation
-                            Divorce(subjects=(person, person.spouse), lawyer=lawyer)
-                    if person.age > max(72, random.random() * 100):
-                        # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
-                        person.die(cause_of_death="Natural causes")
-                    elif person.occupation and person.age > max(65, random.random() * 100):
-                        person.retire()
-                    elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
-                        if random.random() < 0.03:
-                            person.find_work()
-                        elif person.age > 22 and person.male if self.year > 1920 else True:
-                            person.college_graduate = True
-                    elif (person.male and person.occupation and person not in person.home.owners and
-                          random.random() > 0.005):
-                        person.move_out_of_parents()
+                            chance_they_are_trying_to_conceive_this_year /= chance_of_a_timestep_being_simulated*365
+                            if random.random() < chance_they_are_trying_to_conceive_this_year:
+                                person.have_sex(partner=person.spouse, protection=False)
+                            elif random.random() < self.config.chance_a_divorce_happens_some_timestep:
+                                lawyer = person.contract_person_of_certain_occupation(occupation_in_question=Lawyer)
+                                lawyer = None if not lawyer else lawyer.occupation
+                                Divorce(subjects=(person, person.spouse), lawyer=lawyer)
+                        if person.age > max(72, random.random() * 100):
+                            # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
+                            person.die(cause_of_death="Natural causes")
+                        elif person.occupation and person.age > max(65, random.random() * 100):
+                            person.retire()
+                        # Simulate unemployed people searching for work (and potentially getting a college education)
+                        elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
+                            person.look_for_work()
+                            if not person.occupation:  # Means look_for_work() didn't succeed
+                                if (not person.college_graduate and person.age > 22 and
+                                        person.male if self.year > 1920 else True):
+                                    person.college_graduate = True
+                                elif random.random() < chance_an_unemployed_person_departs_on_a_simulated_timestep:
+                                    person.depart_city()
+                        elif (person.male and person.occupation and person not in person.home.owners and
+                              random.random() > 0.005):
+                            person.move_out_of_parents()
                 days_since_last_simulated_day = self.ordinal_date-last_simulated_day
                 # Reset all Relationship interacted_this_timestep attributes
                 for person in list(self.city.residents):

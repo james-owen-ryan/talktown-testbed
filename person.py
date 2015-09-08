@@ -177,6 +177,7 @@ class Person(object):
         self.divorces = []
         self.adoptions = []
         self.moves = []  # From one home to another
+        self.lay_offs = []  # Being laid off by a company that goes out of business
         self.name_changes = []
         self.building_commissions = set()  # Constructions of houses or buildings that they commissioned
         self.home_purchases = []
@@ -205,10 +206,12 @@ class Person(object):
 
     def __str__(self):
         """Return string representation."""
-        if self.alive:
-            return "{0}, {1} years old".format(self.name, self.age)
+        if self.present:
+            return "{}, {} years old".format(self.name, self.age)
+        elif self.departure:
+            return "{}, left city in {}".format(self.name, self.departure.year)
         else:
-            return "{0}, {1}-{2}".format(self.name, self.birth_year, self.death_year)
+            return "{}, {}-{}".format(self.name, self.birth_year, self.death_year)
 
     @staticmethod
     def _init_fertility(male, config):
@@ -554,6 +557,7 @@ class Person(object):
         """Return the major events of this person's life."""
         events = [self.birth, self.adoption]
         events += self.moves
+        events += self.lay_offs
         events += [job.hiring for job in self.occupations]
         events += self.marriages
         events += [kid.birth for kid in self.kids]
@@ -1121,7 +1125,7 @@ class Person(object):
         else:  # This is probably the mortician themself dying
             event.Death(subject=self, mortician=None, cause_of_death=cause_of_death)
 
-    def find_work(self):
+    def look_for_work(self):
         """Attempt to find a job at a local business.
 
         This method has every business in town that had potential job vacancies
@@ -1129,31 +1133,12 @@ class Person(object):
         gets hired by the company who has rated them highest, assuming they
         qualify for any positions at all.
         """
-        # If your father owns a company, and you're employable at that position,
-        # have him be very likely to hire you at a supplemental position
-        if self.father and self.father.occupation and self.father.occupation.company.owner is self.father:
-            dads_company = self.father.occupation.company
-            if dads_company.supplemental_vacancies['day']:
-                position, shift = dads_company.supplemental_vacancies['day'][0], 'day'
-            elif dads_company.supplemental_vacancies['night']:
-                position, shift = dads_company.supplemental_vacancies['night'][0], 'night'
-            else:
-                # Father can accommodate and add another supplemental position
-                if self.game.config.initial_job_vacancies['day']:
-                    position, shift = self.game.config.initial_job_vacancies['day'][0], 'day'
-                else:
-                    position, shift = self.game.config.initial_job_vacancies['night'][0], 'night'
-            i_am_qualified_for_this_position = (
-                dads_company.check_if_person_is_qualified_for_the_position(
-                    candidate=self, occupation_of_need=position
-                )
-            )
-            if i_am_qualified_for_this_position:
-                dads_company.hire(
-                    occupation_of_need=position, shift=shift, to_replace=None,
-                    fills_supplemental_job_vacancy=True, selected_candidate=self
-                )
+        # If a family member owns a company, and you're employable at that position,
+        # try to get hired by that company for one of their supplemental positions
+        if any(f for f in self.extended_family if f.occupation and f.occupation.company.owner is f.occupation):
+            self._find_job_at_the_family_company()
         else:
+            # Try to get hired by any company in town for one of their supplemental positions
             scores = self._get_scored_as_job_candidate_by_all_companies()
             # If this person qualified for any position, have them be hired to the one
             # for which they were scored mostly highly
@@ -1163,6 +1148,72 @@ class Person(object):
                     occupation_of_need=position, shift=shift, to_replace=None,
                     fills_supplemental_job_vacancy=True, selected_candidate=self
                 )
+
+    def _find_job_at_the_family_company(self):
+        """Try to get hired by a company that your family member owns."""
+        must_add_supplemental_position = False
+        # First, see if your father or mother owns a company
+        family_companies = self._assemble_family_companies()
+        for family_company in family_companies:
+            if family_company.supplemental_vacancies['day']:
+                position, shift = family_company.supplemental_vacancies['day'][0], 'day'
+            elif family_company.supplemental_vacancies['night']:
+                position, shift = family_company.supplemental_vacancies['night'][0], 'night'
+            # If its your parent, they will accommodate and add another supplemental position
+            elif family_company.owner.person in self.parents:
+                must_add_supplemental_position = True
+                initial_job_vacancies = self.game.config.initial_job_vacancies
+                if self.game.config.initial_job_vacancies[family_company.__class__]['day']:
+                    position, shift = (
+                        initial_job_vacancies[family_company.__class__]['day'][0], 'day'
+                    )
+                elif self.game.config.initial_job_vacancies[family_company.__class__]['night']:
+                    position, shift = (
+                        initial_job_vacancies[family_company.__class__]['night'][0], 'night'
+                    )
+                elif self.game.config.initial_job_vacancies[family_company.__class__]['supplemental day']:
+                    position, shift = (
+                        initial_job_vacancies[family_company.__class__]['supplemental day'][0], 'day'
+                    )
+                else:
+                    position, shift = (
+                        initial_job_vacancies[family_company.__class__]['supplemental night'][0], 'night'
+                    )
+            else:
+                # Nothing can be done in this circumstance, so move on to the next
+                # family company
+                break
+            i_am_qualified_for_this_position = (
+                family_company.check_if_person_is_qualified_for_the_position(
+                    candidate=self, occupation_of_need=position
+                )
+            )
+            if i_am_qualified_for_this_position:
+                if must_add_supplemental_position:
+                    family_company.supplemental_vacancies[shift].append(position)
+                family_company.hire(
+                    occupation_of_need=position, shift=shift, to_replace=None,
+                    fills_supplemental_job_vacancy=True, selected_candidate=self
+                )
+                break
+
+    def _assemble_family_companies(self):
+        """Assemble all the companies in town owned by a family member of yours."""
+        family_companies = []
+        # If one of your parents owns a company, put that one first in the list
+        # of family companies you'll try to get hired by
+        if any(p for p in self.parents if p.occupation and p.occupation.company.owner is p.occupation):
+            parent_who_owns_a_company = next(
+                p for p in self.parents if p.occupation and p.occupation.company.owner is p.occupation
+            )
+            family_companies.append(parent_who_owns_a_company.occupation.company)
+        else:
+            family_members_who_own_companies = (
+                f for f in self.extended_family if f.occupation and f.occupation.company.owner is f.occupation
+            )
+            for relative in family_members_who_own_companies:
+                family_companies.append(relative.occupation.company)
+        return family_companies
 
     def _get_scored_as_job_candidate_by_all_companies(self):
         """Get scored as a job candidate by all companies in town for all their supplemental positions."""

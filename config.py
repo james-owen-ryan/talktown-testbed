@@ -499,8 +499,11 @@ class Config(object):
         # Chance an unemployed person leaves the city on a *simulated* timestep
         self.chance_an_unemployed_person_departs_on_a_simulated_timestep = (
             # Currently set so that an unemployed person would be expected to leave the
-            # city after three years of being unemployed (so change the 3 to change this)
-            1.0 / (self.chance_of_a_timestep_being_simulated * 720 * 3)
+            # city after three years of being unemployed (so change the 4 to change this) --
+            # I have it set at four so that characters in times where people start working at
+            # 18 may get a college degree (which currently happens automatically when someone
+            # is 22 and unemployed)
+            1.0 / (self.chance_of_a_timestep_being_simulated * 720 * 4)
         )
         # Occupation classes for owners/proprietors of each business type
         self.owner_occupations_for_each_business_type = {
