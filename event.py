@@ -931,6 +931,7 @@ class LayOff(Event):
         """Initialize a LayOff object."""
         super(LayOff, self).__init__(game=subject.game)
         self.subject = subject
+        subject.lay_offs.append(self)
         self.company = company
         self.reason = company.closure
         self.occupation = occupation
