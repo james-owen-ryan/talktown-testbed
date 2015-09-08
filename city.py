@@ -533,7 +533,7 @@ class City(object):
         unemployed_people = set()
         for resident in self.residents:
             if not resident.occupation and not resident.retired:
-                if resident.age >= self.game.config.age_people_start_working:
+                if resident.ready_to_work:
                     unemployed_people.add(resident)
         return unemployed_people
 
