@@ -49,13 +49,13 @@ class Config(object):
             # The actual chance is a person's extroversion, but these represent
             # the minimum chance. (Keep in mind, they currently will be spending
             # the entire day/night cycle at some particular place in public
-            "day": 0.3, "night": 0.05
+            "day": 0.3, "night": 0.15
         }
         self.chance_someone_leaves_home_on_day_off_cap = {
             # The actual chance is a person's extroversion, but these represent
             # the maximum chance. (Keep in mind, they currently will be spending
             # the entire day/night cycle at some particular place in public
-            "day": 0.9, "night": 0.8
+            "day": 0.95, "night": 0.9
         }
         self.chance_someone_leaves_home_on_sick_day = 0.05
         self.chance_someone_goes_on_errand_vs_visits_someone = 0.75  # thus 0.25 of visiting someone

@@ -33,6 +33,7 @@ class Routine(object):
         occasion for them doing so.
         """
         config = self.person.game.config
+        # If they're a kid, potentially send them to school or daycare -- TODO NO DAYCARE IF PARENT HOME
         if not self.person.adult:
             if self.person.game.time_of_day == "day":
                 location, occasion = self._go_to_school_or_daycare(), 'school'
@@ -40,6 +41,7 @@ class Routine(object):
                     occasion = 'home'
             else:
                 location, occasion = self.person.home, 'home'  # Kids stay home at night
+        # If they have a job...
         elif self.person.occupation and self.person.occupation.shift == self.person.game.time_of_day:
             if random.random() < config.chance_someone_doesnt_have_to_work_some_day:
                 if random.random() < config.chance_someone_leaves_home_on_day_off[self.person.game.time_of_day]:
@@ -55,8 +57,11 @@ class Routine(object):
                 # We specifically note that they are working, because they could be going into
                 # their place of work on an off-day (e.g., restaurant)
                 location, occasion = self.person.occupation.company, 'work'
+        # If they don't have a job...
         else:
-            chance_of_leaving_home = self.person.personality.extroversion
+            chance_of_leaving_home = (
+                (self.person.personality.extroversion + self.person.personality.openness_to_experience) / 2.0
+            )
             if self.person.kids_at_home:
                 chance_of_leaving_home *= config.chance_someone_leaves_home_multiplier_due_to_kids
             floor = config.chance_someone_leaves_home_on_day_off_floor[self.person.game.time_of_day]
@@ -110,7 +115,7 @@ class Routine(object):
         service_type_of_errand = next(
             # See config.py to understand what's going on here
             e for e in service_type_probs if service_type_probs[e][0] <= x <= service_type_probs[e][1]
-        )[1]
+        )
         businesses_in_town_providing_that_service = [
             b for b in self.person.city.companies if service_type_of_errand in b.services
         ]
