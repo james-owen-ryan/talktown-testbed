@@ -198,6 +198,8 @@ class Person(object):
         self.location = None
         # Prepare attributes pertaining to this person's knowledge
         self.all_belief_facets = set()  # Used to make batch calls to Facet.decay_strength()
+        # Miscellaneous attributes pertaining to artifacts this person is wearing
+        self.wedding_ring_on_finger = None
         # Prepare Bad News helper attributes
         self.temp_address_number = -1
 
@@ -674,7 +676,7 @@ class Person(object):
         elif feature_type == "workplace":
             return "None" if not self.occupation else self.occupation.company.name  # Name of company
         elif feature_type == "job title":
-            return "None" if not self.occupation else self.occupation.__class__.__name__
+            return "None" if not self.occupation else self.occupation.vocation
         elif feature_type == "job shift":
             return "None" if not self.occupation else self.occupation.shift
         elif feature_type == "workplace address":

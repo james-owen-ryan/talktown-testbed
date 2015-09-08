@@ -3,6 +3,7 @@ from name import Name
 from person import Person
 from corpora import Names
 from residence import House
+from artifact import WeddingRing
 
 
 # TODO HOW TO GIVE RETCONNED EVENTS PROPERLY ORDERED EVENT NUMBERS?
@@ -400,6 +401,7 @@ class Death(Event):
         self.subject = subject
         self.subject.death_year = self.year
         self.subject.death = self
+        self.widow = None  # Will get set by _update_attributes_of_deceased_and_spouse() if person was married
         self.cause = cause_of_death
         self.mortician = mortician
         self.cemetery = self.subject.city.cemetery
@@ -407,6 +409,7 @@ class Death(Event):
         subject.city.residents.remove(subject)
         subject.city.deceased.add(subject)
         self._update_attributes_of_deceased_and_spouse()  # Must come before self.subject.go_to()
+        self._have_widow_take_off_wedding_ring()
         self._vacate_job_position_of_the_deceased()
         if mortician:
             # Death shouldn't be possible outside the city, but I'm doing
@@ -443,7 +446,7 @@ class Death(Event):
         config = self.subject.game.config
         self.subject.alive = False
         if self.subject.marriage:
-            widow = self.subject.spouse
+            self.widow = widow = self.subject.spouse
             widow.marriage.terminus = self
             widow.marriage = None
             widow.spouse = None
@@ -453,6 +456,16 @@ class Death(Event):
             widow.chance_of_remarrying = config.function_to_derive_chance_spouse_changes_name_back(
                 years_married=self.subject.marriage.duration
             )
+
+    def _have_widow_take_off_wedding_ring(self):
+        """Have the widow take off their wedding ring.
+
+        This will make the widow no longer have an observable marital status of 'married'.
+        """
+        # TODO SHOULD GRIEVING WIDOWS KEEP THEIR RING ON?
+        # TODO WHERE DOES THE ARTIFACT GO? HAVE THEM PUT IT IN A DRAWER OR SOMETHING.
+        if self.widow:
+            self.widow.wedding_ring_on_finger = None
 
     def _vacate_job_position_of_the_deceased(self):
         """Vacate the deceased's job position, if any."""
@@ -596,6 +609,7 @@ class Divorce(Event):
         self.marriage = subjects[0].marriage
         self.marriage.terminus = self
         self._update_divorcee_attributes()
+        self._have_divorcees_take_off_wedding_rings()
         self._have_divorcees_split_up_money()
         self._have_a_spouse_and_possibly_kids_change_name_back()
         if lawyer:
@@ -646,6 +660,16 @@ class Divorce(Event):
         )
         spouse1.update_salience_of(entity=spouse2, change=-salience_change)  # Notice the minus sign
         spouse2.update_salience_of(entity=spouse1, change=-salience_change)
+
+    def _have_divorcees_take_off_wedding_rings(self):
+        """Have the divorces take off their wedding rings.
+
+        This will make the divorcees no longer have an observable marital status of 'married'.
+        """
+        # TODO SHOULD DIVORCEES THAT DON'T FALL OUT OF LOVE KEEP THEIR RING ON?
+        # TODO WHERE DOES THE ARTIFACT GO? HAVE THEM PUT IT IN A DRAWER OR SOMETHING.
+        for newlywed in self.subjects:
+            newlywed.wedding_ring_on_finger = None
 
     @staticmethod
     def _have_divorcees_fall_out_of_love(divorcees, config):
@@ -933,6 +957,7 @@ class Marriage(Event):
         self.money = None  # Gets set by self._have_newlyweds_pool_money_together()
         self.children_produced = set()  # Gets set by Birth objects, as appropriate
         self._update_newlywed_attributes()
+        self._have_newlyweds_put_on_wedding_rings()
         self._have_newlyweds_pool_money_together()
         self._have_one_spouse_and_possibly_stepchildren_take_the_others_name()
         self.will_hyphenate_child_surnames = self._decide_whether_children_will_get_hyphenated_names()
@@ -986,6 +1011,15 @@ class Marriage(Event):
         if any(newlywed for newlywed in newlyweds if newlywed.grieving):
             for newlywed in newlyweds:
                 newlywed.grieving = False
+
+    def _have_newlyweds_put_on_wedding_rings(self):
+        """Have the newlyweds put on wedding rings.
+
+        This will make the newlyweds' marital statuses become observable by other people.
+        """
+        # TODO HAVE THEM BUY THESE AT THE LOCAL JEWELRY STORE, IF THERE IS ONE
+        for newlywed in self.subjects:
+            newlywed.wedding_ring_on_finger = WeddingRing()
 
     def _have_newlyweds_pool_money_together(self):
         """Have the newlyweds combine their money holdings into a single account."""

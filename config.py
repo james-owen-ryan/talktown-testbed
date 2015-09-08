@@ -1806,7 +1806,7 @@ class Config(object):
             "death year": lambda subject: False,
             "approximate age": lambda subject: True,
             "status": lambda subject: True,  # whether subject is alive, dead, or departed
-            "marital_status": lambda subject: subject.wearing_wedding_ring,
+            "marital_status": lambda subject: subject.wedding_ring_on_finger,
             "departure_year": lambda subject: False,
         }
         self.person_feature_salience = {
