@@ -533,7 +533,8 @@ class City(object):
         unemployed_people = set()
         for resident in self.residents:
             if not resident.occupation and not resident.retired:
-                if resident.ready_to_work:
+                # TODO NOT ALL WOMEN WILL WANT TO STAY HOME WITH KIDS
+                if resident.ready_to_work and not (resident.female and resident.kids_at_home):
                     unemployed_people.add(resident)
         return unemployed_people
 
