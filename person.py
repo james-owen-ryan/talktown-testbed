@@ -674,15 +674,22 @@ class Person(object):
             return 'yes' if self.last_name.hyphenated else 'no'
         # Occupation
         elif feature_type == "workplace":
-            return "None" if not self.occupation else self.occupation.company.name  # Name of company
+            return "None" if not self.occupations else self.occupations[-1].company.name  # Name of company
         elif feature_type == "job title":
-            return "None" if not self.occupation else self.occupation.vocation
+            return "None" if not self.occupations else self.occupations[-1].vocation
         elif feature_type == "job shift":
-            return "None" if not self.occupation else self.occupation.shift
+            return "None" if not self.occupations else self.occupations[-1].shift
         elif feature_type == "workplace address":
-            return "None" if not self.occupation else self.occupation.company.address
+            return "None" if not self.occupations else self.occupations[-1].company.address
         elif feature_type == "workplace block":
-            return "None" if not self.occupation else self.occupation.company.block
+            return "None" if not self.occupations else self.occupations[-1].company.block
+        elif feature_type == "job status":
+            if self.occupation:
+                return "employed"
+            elif self.retired:
+                return "retired"
+            else:
+                return "unemployed"
         # Home
         elif feature_type == "home":
             return self.home.name
