@@ -650,7 +650,7 @@ class Person(object):
             elif self.dead:
                 return "dead"
             elif self.departure:
-                return 'lol'
+                return 'departed'
         if feature_type == "departure year":
             return 'None' if not self.departure else str(self.departure.year)
         elif feature_type == "marital status":
