@@ -12,6 +12,7 @@ class Personality(object):
         self.extroversion = self._determine_personality_feature(feature_type="extroversion")
         self.agreeableness = self._determine_personality_feature(feature_type="agreeableness")
         self.neuroticism = self._determine_personality_feature(feature_type="neuroticism")
+        self.interest_in_history = self._determine_interest_in_history()
 
     def __str__(self):
         """Return string representation."""
@@ -68,6 +69,19 @@ class Personality(object):
             feature_value = config.big_five_cap
         feature_object = Feature(value=feature_value, inherited_from=takes_after)
         return feature_object
+
+    def _determine_interest_in_history(self):
+        """Determine this person's interest in history, given their other personality traits.
+
+        In lieu of any actual sources (since I couldn't find any), this is entirely home-cooked
+        based on my intuitions.
+        """
+        personality_component = (float(self.o)*2 + float(self.c)*0.5 + float(self.a))
+        chance_component = random.random() * (1.0 if random.random() < 0.5 else -1.0)
+        # Now divide by 4.5 to get this on the -1 to 1 scale (since -4.5 is the lowest
+        # possible sum of personality_component+chance_component and 4.5 is the highest)
+        interest_in_history = (personality_component + chance_component) / 4.5
+        return interest_in_history
 
     @staticmethod
     def _get_a_persons_feature_of_type(person, feature_type):
