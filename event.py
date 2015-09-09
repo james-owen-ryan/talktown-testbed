@@ -745,7 +745,7 @@ class Divorce(Event):
         spouse_staying = next(s for s in self.subjects if s is not spouse_moving)
         # In case of a blended family, have kids go with their own parent (these
         # will be empty sets otherwise)
-        living_with_spouse_moving = spouse_moving.kids - spouse_staying.kids
+        living_with_spouse_moving = spouse_moving.kids_at_home - spouse_staying.kids_at_home
         # Have any kids they had together stay in the home with that spouse
         return living_with_spouse_moving
 
