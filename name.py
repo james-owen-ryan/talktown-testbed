@@ -37,16 +37,16 @@ class Name(str):
         is not a surname, it will return None.
         """
         name_to_check_for = str(self) if not self.derived_from else str(self.derived_from[0])
-        if name_to_check_for in Names.english_surnames:
-            return 'English'
-        elif name_to_check_for in Names.french_surnames:
-            return 'French'
-        elif name_to_check_for in Names.german_surnames:
-            return 'German'
+        if name_to_check_for in Names.scandinavian_surnames:
+            return 'Scandinavian'
         elif name_to_check_for in Names.irish_surnames:
             return 'Irish'
-        elif name_to_check_for in Names.scandinavian_surnames:
-            return 'Scandinavian'
+        elif name_to_check_for in Names.german_surnames:
+            return 'German'
+        elif name_to_check_for in Names.french_surnames:
+            return 'French'
+        elif name_to_check_for in Names.english_surnames:
+            return 'English'
         else:
             return None
 
