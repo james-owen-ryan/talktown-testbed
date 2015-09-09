@@ -650,8 +650,8 @@ class Person(object):
             elif self.dead:
                 return "dead"
             elif self.departure:
-                return 'departed'
-        if feature_type == "departure year":
+                return "departed"
+        elif feature_type == "departure year":
             return 'None' if not self.departure else str(self.departure.year)
         elif feature_type == "marital status":
             if self.spouse:
@@ -663,14 +663,14 @@ class Person(object):
             else:
                 return 'divorced'
         # Age
-        if feature_type == "birth year":
+        elif feature_type == "birth year":
             return str(self.birth_year)
         elif feature_type == "death year":
             return str(self.death_year)
         elif feature_type == "approximate age":
             return '{}0s'.format(self.age/10)
         # Name
-        if feature_type == "first name":
+        elif feature_type == "first name":
             return self.first_name
         elif feature_type == "middle name":
             return self.middle_name
