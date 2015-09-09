@@ -1979,18 +1979,6 @@ Burdon
 Burdsall
 Burfield
 Burford
-Burgamy
-Burgan
-Burge
-Burgen
-Burger
-Burges
-Burgess
-Burgett
-Burgh
-Burgher
-Burgin
-Burgoyne
 Burham
 Burk
 Burkart
@@ -9935,7 +9923,6 @@ Petit
 Petitt
 Peto
 Petre
-Petschauer
 Pett
 Pettengill
 Petter
@@ -10515,7 +10502,6 @@ Rapson
 Rasband
 Rasberry
 Rasbury
-Rasch
 Rasco
 Rasey
 Rash
@@ -11247,12 +11233,6 @@ Scarrow
 Scates
 Scattergood
 Scearce
-Schade
-Schofield
-Scholar
-Scholer
-Scholes
-Scholfield
 Schoolcraft
 Schooley
 Schooling
