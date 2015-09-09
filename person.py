@@ -917,7 +917,9 @@ class Person(object):
         dialogue, it won't return specific relationships like 'first cousin, once removed',
         because everyday people don't know or reference these relationships.
         """
-        if person in self.greatgrandparents:
+        if person is self:
+            return 'self'
+        elif person in self.greatgrandparents:
             return 'greatgrandfather' if person.male else 'greatgrandmother'
         elif person in self.grandparents:
             return 'grandfather' if person.male else 'grandmother'
