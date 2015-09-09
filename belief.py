@@ -1342,6 +1342,8 @@ class PersonMentalModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
+        if feature_type == "sex":
+            return 'male' if self.subject.male else 'female'
         # Status
         if feature_type == "status":
             return self.status.status
@@ -1350,14 +1352,14 @@ class PersonMentalModel(MentalModel):
         elif feature_type == "marital status":
             return self.status.marital_status
         # Age
-        if feature_type == "birth year":
+        elif feature_type == "birth year":
             return self.age.birth_year
         elif feature_type == "death year":
             return self.age.death_year
         elif feature_type == "approximate age":
             return self.age.approximate
         # Names
-        if feature_type == "first name":
+        elif feature_type == "first name":
             return self.name.first_name
         elif feature_type == "middle name":
             return self.name.middle_name
@@ -1495,6 +1497,70 @@ class PersonMentalModel(MentalModel):
             return 'self.whereabouts.date[{}]'.format(tuple_string)
         else:
             return feature_type_to_command[feature_type]
+
+    @property
+    def basic_description(self):
+        """Return a one-line description of owner's conception of subject."""
+        return "{name}, {sex}, {approximate_age} years old".format(
+            name=self.name.exhaustive,
+            sex='male' if self.subject.male else 'female',
+            approximate_age=self.age.approximate if self.age.approximate else '[?]'
+        )
+
+    def outline(self):
+        """Print a description of subject grounded in owner's knowledge of them."""
+        print '\n'
+        for feature_type in (
+            'first name', 'last name', 'status', 'approximate age',
+            'job status', 'job title', 'job shift', 'workplace',
+            'skin color', 'hair color', 'hair length',
+            'tattoo', 'scar', 'birthmark', 'freckles', 'glasses'
+        ):
+            if feature_type == 'approximate age' and self.age.exact and self.age.exact != '':
+                self._outline_exact_age()  # Needs special treatment
+            elif feature_type == 'skin color':
+                self._outline_skin_tone()
+            else:
+                facet = eval(self.get_command_to_access_a_belief_facet(feature_type=feature_type))
+                if facet == '':
+                    facet = '[forgot]'
+                print "{feature_type}: {value} ({confidence})".format(
+                    feature_type=feature_type.capitalize() if feature_type != 'approximate age' else 'Age',
+                    value=facet if facet else '?',
+                    confidence='-' if not facet or facet == '[forgot]' else facet.strength_str
+                )
+        print '\n'
+
+    def _outline_exact_age(self):
+        """Print owner's conception of subject's age."""
+        if self.age.death_year and self.age.death_year != 'None':
+            least_confident_about = min(
+                self.age.birth_year, self.age.death_year, key=lambda facet: facet.strength
+            )
+            strength_str = least_confident_about.strength_str
+        else:
+            # Owner believes person is still alive, so strength of this exact-age
+            # belief is actually just the strength of the belief about the birth year
+            strength_str = self.age.birth_year.strength_str
+        print "Age: {exact_age} ({confidence})".format(
+            exact_age=self.age.exact,
+            confidence=strength_str
+        )
+
+    def _outline_skin_tone(self):
+        """Print owner's conception of subject's skin tone."""
+        broader_skin_tone = {
+            'black': 'dark', 'brown': 'dark',
+            'beige': 'light', 'pink': 'light',
+            'white': 'light', '[forgot]': '[forgot]'
+        }
+        facet = self.face.skin.color
+        if facet == '':
+            facet = '[forgot]'
+        print "Skin: {tone} ({confidence})".format(
+            tone=broader_skin_tone[facet] if self.face.skin.color else '?',
+            confidence='-' if not self.face.skin.color or facet == '[forgot]' else self.face.skin.color.strength_str
+        )
 
 
 class Belief(object):
@@ -1646,7 +1712,7 @@ class AgeBelief(Belief):
     def exact(self):
         """Return owner's belief as to the exact age of subject."""
         if self.birth_year:
-            if self.death_year:
+            if self.death_year and self.death_year != 'None':
                 return int(self.death_year)-int(self.birth_year)
             else:
                 return self.person_model.owner.game.year-int(self.birth_year)
@@ -1670,6 +1736,29 @@ class NameBelief(Belief):
         self.suffix = None
         self.surname_ethnicity = None  # Currently: English, French, German, Irish, or Scandinavian
         self.hyphenated_surname = None
+
+    @property
+    def exhaustive(self):
+        """Return owner's exhaustive conception of subject's name."""
+        first_name = self.first_name if self.first_name else '[?]'
+        middle_name = self.middle_name if self.middle_name else '[?]'
+        if self.last_name:
+            last_name = self.last_name
+        elif self.hyphenated_surname and self.hyphenated_surname == 'yes' and self.surname_ethnicity:
+            last_name = '[hyphenated, {}-sounding]'.format(self.surname_ethnicity)
+        elif self.surname_ethnicity:
+            last_name = '[{}-sounding]'.format(self.surname_ethnicity)
+        else:
+            last_name = '[?]'
+        if self.suffix and self.suffix != 'None':
+            suffix = ' ' + self.suffix
+        elif self.person_model.subject.male and not self.suffix:
+            suffix = ' [?]'
+        else:
+            suffix = ''
+        return '{first_name} {middle_name} {last_name}{suffix}'.format(
+            first_name=first_name, middle_name=middle_name, last_name=last_name, suffix=suffix
+        )
 
     @staticmethod
     def attribute_to_feature_type(attribute):
@@ -2249,6 +2338,22 @@ class Facet(str):
             return True
         else:
             return False
+
+    @property
+    def strength_str(self):
+        """Return a short description of the strength of this belief."""
+        if self.strength > 100:
+            return "positive"
+        elif self.strength > 50:
+            return "sure"
+        elif self.strength > 20:
+            return "pretty sure"
+        elif self.strength > 10:
+            return "somewhat sure"
+        elif self.strength > 5:
+            return "not sure"
+        else:
+            return "not confident"
 
     def decay_strength(self):
         """Decay the strength of this belief due to time passing."""
