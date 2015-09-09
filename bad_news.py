@@ -55,10 +55,9 @@ class Game(object):
         }
         for feature_type in (
             'full name', 'age', 'purpose here', 'extroversion', 'agreeableness', 'neuroticism',
-            'openness', 'conscientiousness', 'moved to town', 'marital status',
-            'home address', 'job status', 'job title', 'job shift',
-            'workplace', 'workplace address', 'skin color', 'hair color', 'hair length',
-            'tattoo', 'scar', 'birthmark', 'freckles', 'glasses',
+            'openness', 'conscientiousness', 'moved to town', 'marital status', 'home address',
+            'job status', 'workplace', 'workplace address', 'job title', 'job shift', 'skin color',
+            'hair color', 'hair length', 'tattoo', 'scar', 'birthmark', 'freckles', 'glasses',
         ):
             if feature_type == 'skin color':
                 feature_value = broader_skin_tone[interlocutor.face.skin.color]
