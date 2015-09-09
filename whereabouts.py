@@ -34,6 +34,15 @@ class Whereabouts(object):
                 whereabout.time_of_day, whereabout.location.name, whereabout.occasion
             )
 
+    @property
+    def current_occasion(self):
+        """Return the occasion for this person's current whereabouts."""
+        game = self.person.game
+        ordinal_date = game.ordinal_date
+        day_or_night_bit = 0 if game.time_of_day == 'day' else 1
+        timestep_key = (ordinal_date, day_or_night_bit)
+        return self.date[timestep_key].occasion
+
 
 class Whereabout(object):
     """A character's true location on a single timestep, with associated metadata."""
