@@ -626,8 +626,19 @@ class Person(object):
     @property
     def description(self):
         """Return a basic description of this person."""
-        return "{} with {}".format(
-            self.age_and_gender_description, self.basic_appearance_description
+        broader_skin_color = {
+            'black': 'dark', 'brown': 'dark',
+            'beige': 'light', 'pink': 'light',
+            'white': 'light'
+        }
+        # Cut off the article ('a' or 'an') at the beginning of the
+        # age_and_gender_description so that we can prepend a
+        # skin-color tidbit
+        age_and_gender_description = ' '.join(self.age_and_gender_description.split()[1:])
+        return "a {broad_skin_color}-skinned {age_and_gender} with {prominent_features}".format(
+            broad_skin_color=broader_skin_color[self.face.skin.color],
+            age_and_gender=age_and_gender_description,
+            prominent_features=self.basic_appearance_description
         )
 
     def get_feature(self, feature_type):
@@ -1190,7 +1201,8 @@ class Person(object):
                     family_company.supplemental_vacancies[shift].append(position)
                 family_company.hire(
                     occupation_of_need=position, shift=shift, to_replace=None,
-                    fills_supplemental_job_vacancy=True, selected_candidate=self
+                    fills_supplemental_job_vacancy=True, selected_candidate=self,
+                    hired_as_a_favor=must_add_supplemental_position
                 )
                 break
 
