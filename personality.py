@@ -81,6 +81,24 @@ class Personality(object):
         }
         return features[feature_type]
 
+    def component_str(self, component_letter):
+        """Return a short string indicating the value for a personality component."""
+        component_value = eval('self.{}'.format(component_letter))
+        if component_value > 0.7:
+            return 'very high'
+        elif component_value > 0.4:
+            return 'high'
+        elif component_value > 0.1:
+            return 'somewhat high'
+        elif component_value > -0.1:
+            return 'neutral'
+        elif component_value > -0.4:
+            return 'somewhat low'
+        elif component_value > -0.7:
+            return 'low'
+        else:
+            return 'very low'
+
 
 class Feature(float):
     """A particular personality feature, i.e., a value for a particular personality attribute."""
