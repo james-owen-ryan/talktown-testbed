@@ -48,20 +48,6 @@ class Mind(object):
         """Return string representation."""
         return "Mind of {}".format(self.person.name)
 
-    def search_by_name(self, first_name, last_name, suffix=None):
-        """Search this person's mind for a mental models for a person matching the given name."""
-        potential_matches = [
-            p for p in self.mental_models if
-            p.type == "person" and
-            (self.mental_models[p].name.first_name == first_name or not first_name) and
-            (self.mental_models[p].name.last_name == last_name or not last_name)
-        ]
-        if suffix:  # Further refine the list of potential matches
-            potential_matches = [
-                p for p in potential_matches if self.mental_models[p].name.suffix == suffix
-            ]
-        return potential_matches
-
 
 class Feature(float):
     """A feature representing a person's memory capability and metadata about that."""
