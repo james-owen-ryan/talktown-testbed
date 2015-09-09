@@ -55,7 +55,7 @@ class Game(object):
         }
         for feature_type in (
             'full name', 'age', 'purpose here', 'extroversion', 'agreeableness', 'neuroticism',
-            'openness', 'conscientiousness', 'moved here', 'marital status',
+            'openness', 'conscientiousness', 'moved to town', 'marital status',
             'home address', 'job status', 'job title', 'job shift',
             'workplace', 'workplace address', 'skin color', 'hair color', 'hair length',
             'tattoo', 'scar', 'birthmark', 'freckles', 'glasses',
@@ -64,7 +64,7 @@ class Game(object):
                 feature_value = broader_skin_tone[interlocutor.face.skin.color]
             elif feature_type in ('extroversion', 'agreeableness', 'neuroticism', 'openness', 'conscientiousness'):
                 feature_value = interlocutor.personality.component_str(component_letter=feature_type[0])
-            elif feature_type == "moved here":
+            elif feature_type == "moved to town":
                 if interlocutor.birth and interlocutor.birth.city is self.city:
                     feature_value = "birth"
                 else:
@@ -288,7 +288,7 @@ class Player(object):
         self.outside = True
         self.observe()
 
-    def go_to_street(self):
+    def go_outside(self):
         """Go into the street and the observe the block you are on."""
         self.outside = True
         self.location = self.location.block
@@ -720,6 +720,7 @@ class Player(object):
                 answers=verb_phrase
             )
         self.interlocutor = answerer
+        self.game.sketch_interlocutor()
 
     def knock(self):
         """Print exposition surrounding the knocking of a house's door."""
