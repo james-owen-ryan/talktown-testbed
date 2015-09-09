@@ -488,6 +488,14 @@ class Game(object):
         except StopIteration:
             raise Exception('There is no one with that hex ID')
 
+    def find_co(self, name):
+        """Return company in this city with the given name."""
+        try:
+            company = next(c for c in self.city.companies if c.name == name)
+            return company
+        except StopIteration:
+            raise Exception('There is no company in {} named {}'.format(self.city.name, name))
+
 
 g = Game()
 g.establish_setting()
