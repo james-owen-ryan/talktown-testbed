@@ -203,7 +203,7 @@ class Person(object):
         self.wedding_ring_on_finger = None
         # Prepare Bad News helper attributes
         self.temp_address_number = -1
-        self.potential_matches = []
+        self.potential_matches = []  # Potential matches to a mind query
 
     def __str__(self):
         """Return string representation."""
