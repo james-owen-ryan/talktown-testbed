@@ -311,7 +311,7 @@ class Config(object):
         self.dispreference_to_hire_enemy = -1  # TODO modify this according to charge
         self.preference_to_hire_acquaintance = 0.5  # TODO modify this according to charge
         self.unemployment_occupation_level = 0.5  # Affects scoring of job candidates
-        self.chance_a_business_opens_some_timestep = (1/730.) * 2  # About two will open a year
+        self.chance_a_business_opens_some_timestep = (1/730.) * 0.7  # 1.3 will open a year
         # This dictionary specifies three things about each business type: the year
         # at which it may be established in the simulation (its advent), the year at
         # which its closure will become highly likely (its demise), and the minimum
@@ -1317,11 +1317,11 @@ class Config(object):
             "skin color": [
                 # A random float between 0.0 and 1.0 will be generated and the skin
                 # color whose range that number falls in will be assigned
-                ((0.0, 0.2), 'black'),
-                ((0.2, 0.4), 'brown'),
-                ((0.4, 0.6), 'beige'),
-                ((0.6, 0.8), 'pink'),
-                ((0.8, 1.0), 'white')
+                ((0.0, 0.1), 'black'),
+                ((0.1, 0.2), 'brown'),
+                ((0.2, 0.4), 'beige'),
+                ((0.4, 0.6), 'pink'),
+                ((0.6, 1.0), 'white')
             ],
             "head size": [
                 ((0.0, 0.2), 'small'),
