@@ -327,15 +327,19 @@ class Game(object):
         else:
             if config.job_levels[occupation_type_for_owner_of_this_type_of_business] < 3:
                 # Have a young person step up and start their career as a tradesman
-                if any(p for p in g.city.residents if p.ready_to_work and not p.occupations and
+                if any(p for p in self.city.residents if p.ready_to_work and not p.occupations and
                        config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
-                    owner = next(p for p in g.city.residents if p.ready_to_work and not p.occupations and
-                       config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
+                    owner = next(
+                        p for p in self.city.residents if p.ready_to_work and not p.occupations and
+                        config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)
+                    )
                 # Have any unemployed person in town try their hand at running a business
-                elif any(p for p in g.city.residents if not p.retired and not p.occupation and p.ready_to_work and
+                elif any(p for p in self.city.residents if not p.retired and not p.occupation and p.ready_to_work and
                          config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
-                    owner = next(p for p in g.city.residents if not p.retired and not p.occupation and
-                         config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
+                    owner = next(
+                        p for p in self.city.residents if not p.retired and not p.occupation and
+                        config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)
+                    )
                 else:
                     # Have someone from outside the city come in
                     owner = PersonExNihilo(
@@ -495,7 +499,3 @@ class Game(object):
             return company
         except StopIteration:
             raise Exception('There is no company in {} named {}'.format(self.city.name, name))
-
-
-g = Game()
-g.establish_setting()
