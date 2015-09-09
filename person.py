@@ -1531,6 +1531,22 @@ class Person(object):
                 salience_of_subject = 0.0
             if person in self.relationships or self.relation_to_me(person):
                 salience_of_subject += 1.0
+            implant_will_happen = False
+            if person in self.immediate_family or person in self.friends:
+                implant_will_happen = True
+            elif salience_of_subject > 0.0:
+                salience_of_subject = max(1.01, salience_of_subject)  # Needed to make the next line work
+                chance_implant_even_happens = 1.0 - (1.0/salience_of_subject)
+                # If the person died before I was born and is not in my immediate family,
+                # alter the chance of me caring by my interest in history
+                if person.death_year and person.death_year < self.birth_year and person not in self.immediate_family:
+                    interest_in_history_multiplier = 1.0 + self.personality.interest_in_history
+                    chance_implant_even_happens *= interest_in_history_multiplier
+                if random.random() < chance_implant_even_happens:
+                    implant_will_happen = True
+            if self.age < 4:
+                implant_will_happen = False
+            if implant_will_happen:
                 implant = Implant(
                     subject=person, source=self, total_interactions=total_interactions,
                     salience_of_subject=salience_of_subject
