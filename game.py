@@ -332,7 +332,7 @@ class Game(object):
                     owner = next(p for p in g.city.residents if p.ready_to_work and not p.occupations and
                        config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
                 # Have any unemployed person in town try their hand at running a business
-                elif any(p for p in g.city.residents if not p.retired and not p.occupation and
+                elif any(p for p in g.city.residents if not p.retired and not p.occupation and p.ready_to_work and
                          config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
                     owner = next(p for p in g.city.residents if not p.retired and not p.occupation and
                          config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p))
