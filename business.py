@@ -482,7 +482,7 @@ class Business(object):
         return selected_candidate
 
     def hire(self, occupation_of_need, shift, to_replace=None,
-             fills_supplemental_job_vacancy=False, selected_candidate=None):
+             fills_supplemental_job_vacancy=False, selected_candidate=None, hired_as_a_favor=False):
         """Hire the given selected candidate."""
         # If no candidate has yet been selected, scour the job market to find one
         if not selected_candidate:
@@ -527,6 +527,15 @@ class Business(object):
             # This position doesn't have to be refilled immediately if terminated, so
             # attribute to it that it is supplemental
             selected_candidate.occupation.supplemental = True
+        # Being hired as a favor means this business created an additional position
+        # beyond all their supplemental positions (because those were all filled)
+        # specifically to facilitate the hiring of this person (who will have been
+        # a family member of this company's owner); because of this, when this position
+        # terminates we don't want to add it back to the supplemental vacancies of this
+        # company, because they really don't need to refill the position ever and if they
+        # do, it yields rampant population growth due to there being way too many jobs
+        # in town
+        selected_candidate.occupation.hired_as_favor = hired_as_a_favor
         # Lastly, if the person was hired from outside the city, have them move to it
         if selected_candidate.city is not self.city:
             selected_candidate.move_into_the_city(hiring_that_instigated_move=hiring)

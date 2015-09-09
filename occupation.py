@@ -23,6 +23,7 @@ class Occupation(object):
         self.preceded_by = None  # Employee that preceded this one in its occupation -- gets set by Business.hire()
         self.succeeded_by = None  # Employee that succeeded this one in its occupation -- gets set by Business.hire()
         self.supplemental = False  # Whether this position must be immediately refilled if terminated -- Business.hire()
+        self.hired_as_favor = False  # Whether this position must ever be refilled if terminated -- Business.hire()
         self.vocation = self._init_generate_vocation_string()
         # Note: self.person.occupation gets set by Business.hire(), because there's
         # a really tricky pipeline that has to be maintained
@@ -119,14 +120,18 @@ class Occupation(object):
         # this position is supplemental (i.e., not vital to this businesses' basic
         # operation), in which case we add it back into the business's listing of
         # supplemental positions that may be filled at some point that someone really
-        # needs work
+        # needs work; if this person was hired as a favor by a family member who owned
+        # the associated company, we don't even do that much, since that company doesn't
+        # ever need to refill that position (i.e., the position was more supplemental than
+        # even supplemental positions and was created solely for the purpose of helping out
+        # a family member seeking work)
         if not self.company.out_of_business:
             position_that_is_now_vacant = self.__class__
             if not self.supplemental:
                 self.company.hire(
                     occupation_of_need=position_that_is_now_vacant, shift=self.shift, to_replace=self
                 )
-            else:
+            elif not self.hired_as_favor:
                 self.company.supplemental_vacancies[self.shift].append(position_that_is_now_vacant)
         # If the person hasn't already been hired to a new position, set their occupation
         # attribute to None
