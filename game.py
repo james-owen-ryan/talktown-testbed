@@ -337,7 +337,7 @@ class Game(object):
                 elif any(p for p in self.city.residents if not p.retired and not p.occupation and p.ready_to_work and
                          config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)):
                     owner = next(
-                        p for p in self.city.residents if not p.retired and not p.occupation and
+                        p for p in self.city.residents if not p.retired and not p.occupation and p.ready_to_work and
                         config.employable_as_a[occupation_type_for_owner_of_this_type_of_business](applicant=p)
                     )
                 else:
