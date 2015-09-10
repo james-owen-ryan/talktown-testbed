@@ -194,6 +194,52 @@ class Relationship(object):
         """Return string representation."""
         return "{}'s {} with {}".format(self.owner.name, self.type, self.subject.name)
 
+    @property
+    def charge_str(self):
+        """Return a short string expressing the charge of this relationship."""
+        if self.charge > 4000:  # ~100th percentile of positive charges
+            return "extremely high"
+        elif self.charge > 1000:  # ~80th percentile of positive charges
+            return "very high"
+        elif self.charge > 100:  # ~45th percentile of positive charges
+            return "high"
+        elif self.charge > 20:  # ~27th percentile of positive charges
+            return "somewhat high"
+        elif self.charge > 0:
+            return "neutral"
+        elif self.charge > -3:  # ~27th percentile of negative charges
+            return "somewhat low"
+        elif self.charge > -15:  # ~45th percentile of negative charges
+            return "low"
+        elif self.charge > -200:  # ~80th percentile of negative charges
+            return "very low"
+        else:
+            return "extremely low"
+
+    @property
+    def spark_str(self):
+        """Return a short string expressing the charge of this relationship."""
+        if self.spark > 550:  # ~100th percentile of positive sparks
+            return "extremely high"
+        elif self.spark > 75:  # ~80th percentile of positive sparks
+            return "very high"
+        elif self.spark > 12.5:  # ~45th percentile of positive sparks
+            return "high"
+        elif self.spark > 5:  # ~27th percentile of positive sparks
+            return "somewhat high"
+        elif self.spark > 0:
+            return "neutral"
+        elif self.spark == 0:  # Preconditions for romantic attraction aren't met
+            return "n/a"
+        elif self.spark > -2.5:  # ~27th percentile of negative sparks
+            return "somewhat low"
+        elif self.spark > -6.5:  # ~45th percentile of negative sparks
+            return "low"
+        elif self.spark > 50:  # ~80th percentile of negative sparks
+            return "very low"
+        else:
+            return "extremely low"
+
     def update_spark_and_charge_increments_for_new_age_difference(self):
         """Set a new charge increment for this relationship that reflects a new age difference.
 
