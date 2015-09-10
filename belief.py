@@ -1501,10 +1501,10 @@ class PersonMentalModel(MentalModel):
     @property
     def basic_description(self):
         """Return a one-line description of owner's conception of subject."""
-        return "{name}, {sex}, {approximate_age} years old".format(
+        return "{name}, {sex}, {approximate_age}".format(
             name=self.name.exhaustive,
             sex='male' if self.subject.male else 'female',
-            approximate_age=self.age.approximate if self.age.approximate else '[?]'
+            approximate_age=self.age.approximate if self.age.approximate else 'unknown age'
         )
 
     def outline(self):
