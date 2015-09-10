@@ -883,9 +883,9 @@ class Person(object):
         """Return the immediate common familial relation to the given person, if any.
 
         This method gets called by decision-making methods that get executed often,
-        since it runs much more quickly than relation_to_me, which itself is much
+        since it runs much more quickly than known_relation_to_me, which itself is much
         richer in the number of relations it checks for. Basically, this method
-        is meant for quick decision making, and relation_to_me for dialogue generation.
+        is meant for quick decision making, and known_relation_to_me for dialogue generation.
         """
         if person is self.spouse:
             return 'husband' if person.male else 'wife'
@@ -921,7 +921,7 @@ class Person(object):
             return None
 
     def relation_to_me(self, person):
-        """Return the primary relation to another person, if any.
+        """Return the primary relation of another person to me, if any.
 
         This method is much richer than _common_familial_relation_to_me
         in the number of relationships that it checks for. While the former is meant
@@ -1066,6 +1066,298 @@ class Person(object):
             return 'acquaintance'
         else:
             return None
+
+    def known_relation_to_me(self, person):
+        """Return the primary relations of another person to me that are grounded in my knowledge, if any,
+        as well as the hinge in our relationship, if any.
+
+        An example of a hinge: if someone is my wife's friend, then my wife is the hinge.
+        """
+        # TODO ADD FURTHER PRECONDITIONS ON SOME, E.G., YOU MUST KNOW WHERE YOUR MOM WORKS
+        relations = []
+        if person is self:
+            relation = 'self'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.greatgrandparents:
+            relation = 'greatgrandfather' if person.male else 'greatgrandmother'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.grandparents:
+            relation = 'grandfather' if person.male else 'grandmother'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.father:
+            relation = 'father'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.mother:
+            relation = 'mother'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.aunts:
+            relation = 'aunt'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.uncles:
+            relation = 'uncle'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.brothers:
+            relation = 'brother'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.sisters:
+            relation = 'sister'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.cousins:
+            relation = 'cousin'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.sons:
+            relation = 'son'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.daughters:
+            relation = 'daughter'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.nephews:
+            relation = 'nephew'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.nieces:
+            relation = 'niece'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.spouse:
+            relation = 'husband' if person.male else 'wife'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.divorces and any(d for d in self.divorces if person in d.subjects):
+            relation = 'ex-husband' if person.male else 'ex-wife'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.widowed and any(m for m in self.marriages if person in m.subjects and m.terminus is person.death):
+            relation = 'deceased husband' if person.male else 'deceased wife'
+            hinge = None
+            relations.append((relation, hinge))
+        if person.spouse in self.siblings:
+            relation = "{}'s {}".format(
+                'sister' if person.spouse.female else 'brother', 'husband' if person.male else 'wife'
+            )
+            hinge = person.spouse
+            relations.append((relation, hinge))
+        if self.spouse in person.siblings:
+            relation = "{}'s {}".format(
+                'husband' if self.spouse.male else 'wife', 'brother' if person.male else 'sister'
+            )
+            hinge = self.spouse
+            relations.append((relation, hinge))
+        if self.father and any(d for d in self.father.divorces if person in d.subjects):
+            relation = "father's ex-{}".format('husband' if person.male else 'wife')
+            hinge = self.father
+            relations.append((relation, hinge))
+        if self.mother and any(d for d in self.mother.divorces if person in d.subjects):
+            relation = "mother's ex-{}".format('husband' if person.male else 'wife')
+            hinge = self.mother
+            relations.append((relation, hinge))
+        if any(s for s in self.brothers if any(d for d in s.divorces if person in d.subjects)):
+            relation = "brother's ex-{}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.brothers if any(d for d in s.divorces if person in d.subjects)
+            )
+            relations.append((relation, hinge))
+        if any(s for s in self.sisters if any(d for d in s.divorces if person in d.subjects)):
+            relation = "sister's ex-{}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.sisters if any(d for d in s.divorces if person in d.subjects)
+            )
+            relations.append((relation, hinge))
+        if any(s for s in self.brothers if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+            relation = "brother's deceased {}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.brothers if any(
+                    m for m in s.marriages if person in m.subjects and m.terminus is person.death)
+            )
+            relations.append((relation, hinge))
+        if any(s for s in self.sisters if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+            relation = "sister's deceased {}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.sisters if any(
+                    m for m in s.marriages if person in m.subjects and m.terminus is person.death)
+            )
+            relations.append((relation, hinge))
+        if any(s for s in self.brothers if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+            relation = "deceased brother's former {}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.brothers if any(
+                    m for m in s.marriages if person in m.subjects and m.terminus is s.death)
+            )
+            relations.append((relation, hinge))
+        if any(s for s in self.sisters if any(
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+            relation = "deceased sister's former {}".format('husband' if person.male else 'wife')
+            hinge = next(
+                s for s in self.sisters if any(
+                    m for m in s.marriages if person in m.subjects and m.terminus is s.death)
+            )
+            relations.append((relation, hinge))
+        if person.spouse in self.kids:
+            relation = "{}'s {}".format(
+                "son" if person.spouse.male else "daughter", "husband" if person.male else "wife"
+            )
+            hinge = person.spouse
+            relations.append((relation, hinge))
+        if self.spouse and person in self.spouse.parents:
+            relation = "{}'s {}".format(
+                "husband" if self.spouse.male else "wife", "father" if person.male else "mother"
+            )
+            hinge = self.spouse
+            relations.append((relation, hinge))
+        if self.spouse and person in self.spouse.sons:
+            relation = 'stepson'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.spouse and person in self.spouse.daughters:
+            relation = 'stepdaughter'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.mother and person is self.mother.spouse:
+            relation = 'stepfather' if person.male else 'stepmother'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.father and person is self.father.spouse:
+            relation = 'stepfather' if person.male else 'stepmother'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.greatgrandparents & person.greatgrandparents:
+            relation = 'second cousin'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.greatgrandparents & person.siblings:
+            relation = 'great uncle' if person.male else 'great aunt'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.best_friend:
+            relation = 'best friend'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.worst_enemy:
+            relation = 'worst enemy'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.significant_other:
+            relation = 'boyfriend' if person.male else 'girlfriend'
+            hinge = None
+            relations.append((relation, hinge))
+        if person is self.love_interest:
+            relation = 'love interest'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.coworkers:
+            relation = 'coworker'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.enemies:
+            relation = 'enemy'
+            hinge = None
+            relations.append((relation, hinge))
+        if any(p for p in self.parents if person is p.significant_other):
+            p = next(p for p in self.parents if person is p.significant_other)
+            relation = "{}'s {}".format(
+                'father' if p.male else 'mother', 'boyfriend' if person.male else 'girlfriend'
+            )
+            hinge = p
+            relations.append((relation, hinge))
+        if any(k for k in self.kids if person is k.significant_other):
+            k = next(k for k in self.kids if person is k.significant_other)
+            relation = "{}'s {}".format(
+                'son' if k.male else 'daughter', 'boyfriend' if person.male else 'girlfriend'
+            )
+            hinge = k
+            relations.append((relation, hinge))
+        if any(s for s in self.siblings if person is s.significant_other):
+            s = next(s for s in self.siblings if person is s.significant_other)
+            relation = "{}'s {}".format(
+                'brother' if s.male else 'sister', 'boyfriend' if person.male else 'girlfriend'
+            )
+            hinge = s
+            relations.append((relation, hinge))
+        if self.spouse and person is self.spouse.best_friend:
+            relation = "{}'s best friend".format('husband' if self.spouse.male else 'wife')
+            hinge = self.spouse
+            relations.append((relation, hinge))
+        if self.mother and person is self.mother.best_friend:
+            relation = "mother's best friend"
+            hinge = self.mother
+            relations.append((relation, hinge))
+        if self.father and person is self.father.best_friend:
+            relation = "father's best friend"
+            hinge = self.father
+            relations.append((relation, hinge))
+        if any(s for s in self.siblings if person is s.best_friend):
+            s = next(s for s in self.siblings if person is s.best_friend)
+            relation = "{}'s best friend".format('brother' if s.male else 'sister')
+            hinge = s
+            relations.append((relation, hinge))
+        if any(k for k in self.kids if person is k.best_friend):
+            k = next(k for k in self.kids if person is k.best_friend)
+            relation = "{}'s best friend".format('son' if k.male else 'daughter')
+            hinge = k
+            relations.append((relation, hinge))
+        if self.spouse and person in self.spouse.coworkers:
+            relation = "{}'s coworker".format('husband' if self.spouse.male else 'wife')
+            hinge = self.spouse
+            relations.append((relation, hinge))
+        if self.mother and person in self.mother.coworkers:
+            relation = "mother's coworker"
+            hinge = self.mother
+            relations.append((relation, hinge))
+        if self.father and person in self.father.coworkers:
+            relation = "father's coworker"
+            hinge = self.father
+            relations.append((relation, hinge))
+        if person in self.friends:
+            relation = 'friend'
+            hinge = None
+            relations.append((relation, hinge))
+        if self.spouse and person in self.spouse.friends:
+            relation = "{}'s friend".format('husband' if self.spouse.male else 'wife')
+            hinge = self.spouse
+            relations.append((relation, hinge))
+        if self.mother and person in self.mother.friends:
+            relation = "mother's friend"
+            hinge = self.mother
+            relations.append((relation, hinge))
+        if self.father and person in self.father.friends:
+            relation = "father's friend"
+            hinge = self.father
+            relations.append((relation, hinge))
+        if any(k for k in self.kids if person in k.friends):
+            k = next(k for k in self.kids if person in k.friends)
+            relation = "{}'s friend".format('son' if k.male else 'daughter')
+            hinge = k
+            relations.append((relation, hinge))
+        if any(s for s in self.siblings if person in s.friends):
+            s = next(s for s in self.siblings if person in s.friends)
+            relation = "{}'s friend".format('brother' if s.male else 'sister')
+            hinge = s
+            relations.append((relation, hinge))
+        if person in self.acquaintances:
+            relation = 'acquaintance'
+            hinge = None
+            relations.append((relation, hinge))
+        # Throw out any for which hinge in not in my mental model
+        keepers = []
+        for relation, hinge in relations:
+            if not hinge or hinge in self.mind.mental_models:
+                keepers.append((relation, hinge))
+        return keepers
 
     def change_name(self, new_last_name, reason):
         """Change this person's (official) name."""
@@ -1534,7 +1826,7 @@ class Person(object):
                 salience_of_subject = self.salience_of_other_people[person]
             else:
                 salience_of_subject = 0.0
-            if person in self.relationships or self.relation_to_me(person):
+            if person in self.relationships or self.known_relation_to_me(person):
                 salience_of_subject += 1.0
             implant_will_happen = False
             if person in self.immediate_family or person in self.friends:
