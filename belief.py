@@ -1523,8 +1523,9 @@ class PersonMentalModel(MentalModel):
         """Print a description of subject grounded in owner's knowledge of them."""
         print '\n'
         for feature_type in (
+            'first name', 'last name', 'status',
             'relation to me', 'charge and spark',
-            'first name', 'last name', 'status', 'approximate age',
+            'approximate age',
             'job status', 'job title', 'job shift', 'workplace',
             'skin color', 'hair color', 'hair length',
             'tattoo', 'scar', 'birthmark', 'freckles', 'glasses'
