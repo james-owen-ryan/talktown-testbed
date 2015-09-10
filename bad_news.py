@@ -512,7 +512,7 @@ class Player(object):
 
     def talk_about_hinge(self, address_number=None):
         """Change the subject of conversation to the hinge between interlocutor and the current subject."""
-        if not address_number:
+        if address_number is not None:
             self.subject_of_conversation = self.current_hinge_between_interlocutor_and_subject
         else:
             self.subject_of_conversation = next(
