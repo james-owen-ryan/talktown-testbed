@@ -25,8 +25,14 @@ class Relationship(object):
         self.succeeded_by = None
         self.where_they_met = owner.location
         self.when_they_met = owner.game.date
-        self.where_they_last_met = owner.location  # Changes as appropriate
+        self.first_met_str = '{date} at {location}'.format(
+            date=owner.game.year, location=owner.location.name
+        )
+        self.where_they_last_met = owner.location  # These change as appropriate
         self.when_they_last_met = owner.game.date
+        self.last_met_str = '{date} at {location}'.format(
+            date=owner.game.year, location=owner.location.name
+        )
         self.total_interactions = 0
         # Set this as the primary relationship owner has with subject
         owner.relationships[subject] = self
@@ -303,6 +309,9 @@ class Relationship(object):
         self.total_interactions += 1
         self.where_they_last_met = owner.location  # Changes as appropriate
         self.when_they_last_met = owner.game.date
+        self.last_met_str = '{date} at {location}'.format(
+            date=owner.game.year, location=owner.location.name
+        )
         # Increment salience
         self.owner.salience_of_other_people[self.subject] += config.salience_increment_for_social_interaction
         # Progress charge, possibly leading to a Friendship or Enmity
@@ -398,6 +407,15 @@ class Relationship(object):
             owner.update_salience_of(entity=subject, change=-salience_change)
             owner.love_interest = None
             owner.spark_of_love_interest = 0.0
+
+    def outline(self):
+        """Outline this relationship for display during gameplay."""
+        print "\nType: {}".format(self.type)
+        print "First met: {}".format(self.first_met_str)
+        print "Last met: {}".format(self.last_met_str)
+        print "N interactions: {}".format(self.total_interactions)
+        print "Charge: {}".format(self.charge_str)
+        print "Spark: {}".format(self.spark_str)
 
 
 class Acquaintance(Relationship):
