@@ -47,7 +47,7 @@ class City(object):
         self.blocks = set()
         self.generate_lots(game.config)
         for lot in self.lots | self.tracts:
-            lot.set_neighboring_lots()
+            lot.set_neighboring_lots_for_citygen()
             lot.init_generate_address()
         # Survey all city lots to instantiate conventional city blocks
         for lot in self.lots | self.tracts:
@@ -88,6 +88,10 @@ class City(object):
                 highest_density = density
                 self.downtown = lot
         self.name = None  # Gets set by Game.establish_setting() so that it may be named after an early settler
+        # Finally, reset the neighboring lots to all lots to be the other
+        # lots on the same city block
+        for lot in self.lots:
+            lot.init_set_neighbors_lots_as_other_lots_on_same_city_block()
         # These get set when these businesses get established (by their __init__() magic methods)
         self.cemetery = None
         self.city_hall = None
@@ -712,11 +716,12 @@ class Lot(object):
         self.city = city
         self.streets = []
         self.parcels = []
+        self.block = None
         self.sides_of_street = []
         self.house_numbers = []  # In the event a business is erected here, it inherits this
         self.building = None
         self.positions_in_parcel = []
-        self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots after all lots have been generated
+        self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots_for_citygen after all lots have been generated
         # These get set by init_generate_address(), which gets called by City
         self.house_number = None
         self.address = None
@@ -758,7 +763,7 @@ class Lot(object):
         self.house_numbers.append(number)
         self.positions_in_parcel.append(position_in_parcel)
 
-    def set_neighboring_lots(self):
+    def set_neighboring_lots_for_citygen(self):
         neighboring_lots = set()
         for parcel in self.parcels:
             for lot in parcel.lots:
@@ -775,6 +780,15 @@ class Lot(object):
         self.address = "{} {}".format(house_number, street.name)
         self.street_address_is_on = street
         self.parcel_address_is_on = self.parcels[self.index_of_street_address_will_be_on]
+
+    def init_set_neighbors_lots_as_other_lots_on_same_city_block(self):
+        """Set the neighbors to this lot as all the other lots on the same city block.
+
+        This makes for more intuitive gameplay, since we're delimiting the player's
+        gameplay to city blocks, so it would seem right that people reason about
+        other people in that same locality when asked about their neighbors.
+        """
+        self.neighboring_lots = set(self.block.lots)
 
 
 class Tract(Lot):
