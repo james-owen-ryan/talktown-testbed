@@ -1,3 +1,4 @@
+from game import Game as Sim
 import random
 import string
 
@@ -27,6 +28,12 @@ class Game(object):
         self.next_of_kin = self.deceased_character.next_of_kin
         self.player.observe()
         # TODO INITIAL EXPOSITION RIGHT NOW
+
+    def _init_set_up_helper_attributes(self):
+        """Set all helper attributes that pertain solely to this gameplay experience."""
+        for person in self.city.residents:
+            person.temp_address_number = -1
+            person.matches = []  # Matches to a mind query
 
     def select_deceased_character(self):
         """Prepare the soon-to-be deceased character whose next-of-kin the
@@ -110,7 +117,7 @@ class Player(object):
         self.last_unit_number_i_heard = None
         self.last_block_i_heard = None
         self.interlocutor = None
-        self.current_subject_of_conversation = None  # Name of whom player and interlocutor are currently talking about
+        self.subject_of_conversation = None  # Name of whom player and interlocutor are currently talking about
 
     @property
     def buildings_on_this_block(self):
@@ -173,6 +180,11 @@ class Player(object):
         self.location = block
         self.outside = True
         self.observe()
+
+    def goto_business(self, name):
+        """Go to the business in town with the given name."""
+        business = next(c for c in self.city.companies if c.name == name)
+        self.goto(business.address)
 
     def move(self, direction):
         """Move to an adjacent block."""
@@ -355,30 +367,103 @@ class Player(object):
         else:
             print '\nNo one is here.\n'.format(name)
 
-    def ask(self, interlocutor=None, subject=None, feature_type=None):
-        """Ask interlocutor about subject's feature of the given type."""
-        interlocutor = interlocutor if interlocutor else self.interlocutor
-        subject = subject if subject else self.current_subject_of_conversation
-        self.current_subject_of_conversation = subject
-        if type(subject) is str:
-            if len(subject.split()) == 3:
-                first_name, last_name, suffix = subject.split()
-            else:
-                first_name, last_name = subject.split()
-                suffix = None
-        else:
-            first_name, last_name, suffix = subject.first_name, subject.last_name, subject.suffix
-        # See if the interlocutor has a mental model whose first name and last name
-        # match whom the player is asking about
-        interlocutor.potential_matches = interlocutor.mind.search_by_name(
-            first_name=first_name, last_name=last_name, suffix=suffix
+    def do_you_know(self, features):
+        """Return a list of all the mental models interlocutor has that match the given features.
+
+        Features should be a list of tuples, where the first element of each tuple is a feature
+        type and the second element is the corresponding feature value, e.g., ('hair color',
+        'brown') or ('first name', 'Paul').
+        """
+        # Parse features if a name was passed -- this is hacky, but allows a
+        # nicely idiomatic default usage of do_you_know(name) while still
+        # allowing the more general usage that I specify in the docstring
+        if type(features) == str:
+            first_name, last_name = features.split()
+            features = [('first name', first_name), ('last name', last_name)]
+        # Build a lambda function that we will use to build a list of
+        # all the people in interlocutor's mind that match the given features
+        matches_description = (
+            lambda mental_model: all(
+                mental_model.get_facet_to_this_belief_of_type(feature[0]).lower() == feature[1].lower()
+                for feature in features
+            )
         )
-        print "\n{} matches\n".format(len(interlocutor.potential_matches))
+        self.interlocutor.matches = [
+            p for p in self.interlocutor.mind.mental_models if
+            p.type == "person" and
+            matches_description(self.interlocutor.mind.mental_models[p])
+        ]
+        # If a single match was found, make them the new subject of conversation;
+        # further, if that person is at this very location right now, make that known
+        if len(self.interlocutor.matches) == 1:
+            if self.interlocutor.matches[0].location is self.location:
+                if self.interlocutor.matches[0] is self.interlocutor:
+                    and_they_are_right_here = " (and {pronoun} is me!)".format(
+                        pronoun=self.interlocutor.matches[0].pronoun
+                    )
+                else:
+                    and_they_are_right_here = " (and {pronoun} is here right now)".format(
+                        pronoun=self.interlocutor.matches[0].pronoun
+                    )
+            else:
+                and_they_are_right_here = ''
+            print "\nFound a match{and_they_are_right_here}:".format(and_they_are_right_here)
+            self.talk_about(subject=self.interlocutor.matches[0])
+        else:
+            print "\nFound {} matches.\n".format(len(self.interlocutor.matches))
+
+    def narrow(self, features):
+        """Narrow the matches interlocutor has found by specifying additional features."""
+        # Build a lambda function that we will use to build a list of
+        # all the people in interlocutor's mind that match the given features
+        matches_description = (
+            lambda mental_model: all(
+                mental_model.get_facet_to_this_belief_of_type(feature[0]).lower() == feature[1].lower()
+                for feature in features
+            )
+        )
+        self.interlocutor.matches = [
+            p for p in self.interlocutor.matches if
+            p.type == "person" and
+            matches_description(self.interlocutor.mind.mental_models[p])
+        ]
+        if len(self.interlocutor.matches) == 1:
+            print "\nFound a match:\n"
+            self.subject_of_conversation = self.interlocutor.matches[0]
+            self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
+        else:
+            print "\nFound {} matches.\n".format(len(self.interlocutor.matches))
 
     def ask_to_list(self):
         """Ask interlocutor to list their potential matches to the player's question."""
-        for potential_match in self.interlocutor.potential_matches:
-            print
+        for i in xrange(len(self.interlocutor.matches)):
+            match = self.interlocutor.matches[i]
+            match.temp_address_number = i
+            print "\t{i}\t{basic_description}".format(
+                i=i,
+                basic_description=self.interlocutor.mind.mental_models[match].basic_description
+            )
+
+    def talk_about(self, subject=None, address_number=None):
+        """Change the person with the given address number to the subject of conversation."""
+        if subject:
+            self.subject_of_conversation = subject
+        else:
+            self.subject_of_conversation = next(
+                p for p in self.interlocutor.matches if p.temp_address_number == address_number
+            )
+        self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
+
+    def ask_about(self, feature_type):
+        """Ask about the given feature of the current subject of conversation."""
+        mental_model = self.interlocutor.mind.mental_models[self.subject_of_conversation]
+        facet = mental_model.get_facet_to_this_belief_of_type(feature_type=feature_type)
+        if facet == '':
+            facet = '[forgot]'
+        print '\n{feature_value} ({confidence})\n'.format(
+            feature_value=facet if facet else '?',
+            confidence='-' if not facet else facet.strength_str
+        )
 
     def remember(self):
         """Remember the name of the person you are talking to."""
@@ -801,3 +886,9 @@ class Player(object):
     def i(self):
         """Wrapper for self.interlocutor."""
         return self.interlocutor
+
+
+g = Sim()
+g.establish_setting()
+bn = Game(g)
+pc = bn.player
