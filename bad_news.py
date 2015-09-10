@@ -26,7 +26,8 @@ class Game(object):
         self.player.location = self.deceased_character.location
         self.deceased_character.die('Unknown causes')
         self.next_of_kin = self.deceased_character.next_of_kin
-        self.player.observe()
+        self.print_opening_exposition()
+        self._init_set_up_helper_attributes()
         # TODO INITIAL EXPOSITION RIGHT NOW
 
     def _init_set_up_helper_attributes(self):
@@ -34,6 +35,8 @@ class Game(object):
         for person in self.city.residents:
             person.temp_address_number = -1
             person.matches = []  # Matches to a mind query
+            person.earlier_matches = []  # Allows going back to the last good set of matches after narrowing too far
+            person.hinges = []  # Allows use of address numbers with hinges
 
     def select_deceased_character(self):
         """Prepare the soon-to-be deceased character whose next-of-kin the
@@ -51,54 +54,72 @@ class Game(object):
         ]
         return random.choice(potential_selections)
 
+    def print_opening_exposition(self):
+        """Print the initial exposition that opens the game."""
+        print (
+            "\nYou are alone in {a_house_or_apartment} at {address}. A deceased person lies "
+            "before you. {pronoun} is {description}.\n".format(
+                a_house_or_apartment="a house" if self.player.location.house else "an apartment",
+                address=self.player.location.address,
+                pronoun=self.deceased_character.pronoun.capitalize(),
+                description=self.deceased_character.description
+            )
+        )
+
     def sketch_interlocutor(self):
         """Give a basic outline of the current interlocutor."""
-        print '\n'
-        interlocutor = self.player.interlocutor
-        broader_skin_tone = {
-            'black': 'dark', 'brown': 'dark',
-            'beige': 'light', 'pink': 'light',
-            'white': 'light',
-        }
-        for feature_type in (
-            'full name', 'age', 'purpose here', 'extroversion', 'agreeableness', 'neuroticism',
-            'openness', 'conscientiousness', 'moved to town', 'marital status', 'home address',
-            'job status', 'workplace', 'workplace address', 'job title', 'job shift', 'skin color',
-            'hair color', 'hair length', 'tattoo', 'scar', 'birthmark', 'freckles', 'glasses',
-        ):
-            if feature_type == 'skin color':
-                feature_value = broader_skin_tone[interlocutor.face.skin.color]
-            elif feature_type in ('extroversion', 'agreeableness', 'neuroticism', 'openness', 'conscientiousness'):
-                feature_value = interlocutor.personality.component_str(component_letter=feature_type[0])
-            elif feature_type == "moved to town":
-                if interlocutor.birth and interlocutor.birth.city is self.city:
-                    feature_value = "birth"
+        if self.player.interlocutor:
+            print '\n'
+            interlocutor = self.player.interlocutor
+            broader_skin_tone = {
+                'black': 'dark', 'brown': 'dark',
+                'beige': 'light', 'pink': 'light',
+                'white': 'light',
+            }
+            for feature_type in (
+                'full name', 'age', 'purpose here', 'other people here', 'extroversion', 'agreeableness', 'neuroticism',
+                'openness', 'conscientiousness', 'moved to town', 'marital status', 'home address',
+                'job status', 'workplace', 'workplace address', 'job title', 'job shift', 'skin color',
+                'hair color', 'hair length', 'tattoo', 'scar', 'birthmark', 'freckles', 'glasses',
+            ):
+                if feature_type == 'skin color':
+                    feature_value = broader_skin_tone[interlocutor.face.skin.color]
+                elif feature_type == "other people here":
+                    if self.player.outside:  # Talking to someone at their door/buzzer
+                        feature_value = ', '.join(p.name for p in interlocutor.location.people_here_now)
+                    else:
+                        feature_value = '[Player can see]'
+                elif feature_type in ('extroversion', 'agreeableness', 'neuroticism', 'openness', 'conscientiousness'):
+                    feature_value = interlocutor.personality.component_str(component_letter=feature_type[0])
+                elif feature_type == "moved to town":
+                    if interlocutor.birth and interlocutor.birth.city is self.city:
+                        feature_value = "birth"
+                    else:
+                        feature_value = str(interlocutor.moves[0].year)
+                elif feature_type == "age":
+                    feature_value = str(interlocutor.age)
+                elif feature_type == "full name":
+                    feature_value = interlocutor.full_name
+                elif feature_type == "purpose here":
+                    feature_value = interlocutor.whereabouts.current_occasion
                 else:
-                    feature_value = str(interlocutor.moves[0].year)
-            elif feature_type == "age":
-                feature_value = str(interlocutor.age)
-            elif feature_type == "full name":
-                feature_value = interlocutor.full_name
-            elif feature_type == "purpose here":
-                feature_value = interlocutor.whereabouts.current_occasion
-            else:
-                feature_value = interlocutor.get_feature(feature_type)
-            if feature_type == 'job status' and feature_value in ('retired', 'unemployed'):
-                extra = ' (since {})'.format(
-                    'always' if not interlocutor.occupations else interlocutor.occupations[-1].terminus.year
+                    feature_value = interlocutor.get_feature(feature_type)
+                if feature_type == 'job status' and feature_value in ('retired', 'unemployed'):
+                    extra = ' (since {})'.format(
+                        'always' if not interlocutor.occupations else interlocutor.occupations[-1].terminus.year
+                    )
+                elif feature_type == 'workplace' and interlocutor.occupation:
+                    extra = ' (since {})'.format(interlocutor.occupation.start_date)
+                elif feature_type == 'home address':
+                    extra = ' (since {})'.format(interlocutor.moves[-1].year)
+                else:
+                    extra = ''
+                print "{feature_type}: {value}{extra}".format(
+                    feature_type=feature_type.capitalize(),
+                    value=feature_value,
+                    extra=extra
                 )
-            elif feature_type == 'workplace' and interlocutor.occupation:
-                extra = ' (since {})'.format(interlocutor.occupation.start_date)
-            elif feature_type == 'home address':
-                extra = ' (since {})'.format(interlocutor.moves[-1].year)
-            else:
-                extra = ''
-            print "{feature_type}: {value}{extra}".format(
-                feature_type=feature_type.capitalize(),
-                value=feature_value,
-                extra=extra
-            )
-        print '\n'
+            print '\n'
 
 
 class Player(object):
@@ -118,10 +139,13 @@ class Player(object):
         self.last_block_i_heard = None
         self.interlocutor = None
         self.subject_of_conversation = None  # Name of whom player and interlocutor are currently talking about
+        self.current_hinge_between_interlocutor_and_subject = None  # E.g., interlocutor's wife is subject is her friend
+        self.current_list_index = 0  # Facilitates ask_to_list methods
+        self.refrain = ()  # Features they keep asking about
 
     @property
     def buildings_on_this_block(self):
-        """Return a list of the buildings on the player's current block."""
+        """Return a ask_to_list of the buildings on the player's current block."""
         block = self.location if self.location.type == 'block' else self.location.block
         return [b for b in self.city.buildings if b.block is block]
 
@@ -185,6 +209,20 @@ class Player(object):
         """Go to the business in town with the given name."""
         business = next(c for c in self.city.companies if c.name == name)
         self.goto(business.address)
+
+    def goto_bar(self):
+        """Go to the closest bar in town."""
+        bars = self.city.businesses_of_type('Bar')
+        if self.location.__class__.__name__ == 'Block':
+            lot_i_am_on = random.choice(list(self.location.lots))
+        else:
+            lot_i_am_on = self.location.lot
+        closest = min(bars, key=lambda bar: self.city.distance_between(lot_i_am_on, bar.lot))
+        self.goto(closest.address)
+
+    def goto_school(self):
+        """Go to the K-12 school in town."""
+        self.goto(self.city.school.address)
 
     def move(self, direction):
         """Move to an adjacent block."""
@@ -250,29 +288,25 @@ class Player(object):
         self.outside = True  # Make sure elsewhere to check for outside + location being an apartment unit
         self.observe()
 
-    def enter(self, house_number=None):
+    def enter(self, house_number=None, let_in=False):
         """Enter a building."""
         if not house_number:
             # Then attempt to enter the building you are outside of
-            if not self.location.locked:
+            if not self.location.locked or let_in:
                 self.outside = False
                 self.observe()
-            elif self.location.lot.tract:
-                print 'The gate is locked.'
             else:
-                print 'The door is locked.'
+                print '\nThe gate is locked.\n' if self.location.lot.tract else '\nThe door is locked.\n'
         else:
             if self.location.__class__.__name__ != 'Block':
                 self.location = self.location.block
             building_to_approach = next(b for b in self.location.buildings if b.house_number == house_number)
             self.location = building_to_approach
-            if not self.location.locked:
+            if not self.location.locked or let_in:
                 self.outside = False
                 self.observe()
-            elif self.location.lot.tract:
-                print 'The gate is locked.'
             else:
-                print 'The door is locked.'
+                print '\nThe gate is locked.\n' if self.location.lot.tract else '\nThe door is locked.\n'
 
     def enter_apt(self, unit_number=None):
         """Enter a building."""
@@ -367,32 +401,46 @@ class Player(object):
         else:
             print '\nNo one is here.\n'.format(name)
 
-    def do_you_know(self, features):
-        """Return a list of all the mental models interlocutor has that match the given features.
+    def do_you_know(self, *features, **narrow):
+        """Return a ask_to_list of all the mental models interlocutor has that match the given features.
 
-        Features should be a list of tuples, where the first element of each tuple is a feature
+        Features should be a ask_to_list of tuples, where the first element of each tuple is a feature
         type and the second element is the corresponding feature value, e.g., ('hair color',
         'brown') or ('first name', 'Paul').
         """
-        # Parse features if a name was passed -- this is hacky, but allows a
-        # nicely idiomatic default usage of do_you_know(name) while still
-        # allowing the more general usage that I specify in the docstring
-        if type(features) == str:
-            first_name, last_name = features.split()
-            features = [('first name', first_name), ('last name', last_name)]
-        # Build a lambda function that we will use to build a list of
+        if not features:
+            features = self.refrain
+        else:
+            self.refrain = features
+        # Check if we are narrowing, i.e., whether we are refining a ask_to_list of
+        # matches to an earlier query
+        narrowing = any(k for k in narrow if k == 'narrow' and narrow[k] is True)
+        # First, try to parse as if a name was passed -- this is hacky, but allows a
+        # nicely idiomatic default usage of do_you_know(name) while still allowing
+        # the more general usage that I specify in the docstring
+        if '=' not in features[0]:
+            first_name, last_name = features[0].split()
+            features = ('first name={}'.format(first_name), 'last name={}'.format(last_name))
+        # Build a lambda function that we will use to build a ask_to_list of
         # all the people in interlocutor's mind that match the given features
         matches_description = (
             lambda mental_model: all(
-                mental_model.get_facet_to_this_belief_of_type(feature[0]).lower() == feature[1].lower()
-                for feature in features
+                str(mental_model.get_facet_to_this_belief_of_type(feature.split('=')[0])).lower() ==
+                feature.split('=')[1].lower()
+                for feature in features if features
             )
         )
+        pool_searching_in = self.interlocutor.mind.mental_models if not narrowing else self.interlocutor.matches
+        self.interlocutor.earlier_matches = list(self.interlocutor.matches)
         self.interlocutor.matches = [
-            p for p in self.interlocutor.mind.mental_models if
+            p for p in pool_searching_in if
             p.type == "person" and
             matches_description(self.interlocutor.mind.mental_models[p])
         ]
+        self.express_matches()
+
+    def express_matches(self):
+        """Express the number matches interlocutor found from the mind query."""
         # If a single match was found, make them the new subject of conversation;
         # further, if that person is at this very location right now, make that known
         if len(self.interlocutor.matches) == 1:
@@ -407,52 +455,120 @@ class Player(object):
                     )
             else:
                 and_they_are_right_here = ''
-            print "\nFound a match{and_they_are_right_here}:".format(and_they_are_right_here)
-            self.talk_about(subject=self.interlocutor.matches[0])
+            print "\nFound a match{and_they_are_right_here}:".format(and_they_are_right_here=and_they_are_right_here)
+            self.interlocutor.matches[0].temp_address_number = 99
+            self.talk_about(address_number=99)
         else:
             print "\nFound {} matches.\n".format(len(self.interlocutor.matches))
 
-    def narrow(self, features):
+    def narrow(self, *features):
         """Narrow the matches interlocutor has found by specifying additional features."""
-        # Build a lambda function that we will use to build a list of
-        # all the people in interlocutor's mind that match the given features
-        matches_description = (
-            lambda mental_model: all(
-                mental_model.get_facet_to_this_belief_of_type(feature[0]).lower() == feature[1].lower()
-                for feature in features
-            )
-        )
-        self.interlocutor.matches = [
-            p for p in self.interlocutor.matches if
-            p.type == "person" and
-            matches_description(self.interlocutor.mind.mental_models[p])
-        ]
-        if len(self.interlocutor.matches) == 1:
-            print "\nFound a match:\n"
-            self.subject_of_conversation = self.interlocutor.matches[0]
-            self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
-        else:
-            print "\nFound {} matches.\n".format(len(self.interlocutor.matches))
+        self.do_you_know(*features, narrow=True)
 
-    def ask_to_list(self):
-        """Ask interlocutor to list their potential matches to the player's question."""
-        for i in xrange(len(self.interlocutor.matches)):
+    def pop_back(self):
+        """Pop back to the last good set of matches after narrowing too far."""
+        self.interlocutor.matches = list(self.interlocutor.earlier_matches)
+
+    def ask_to_list(self, start_index=0, n_to_list=None):
+        """Ask interlocutor to ask_to_list their potential matches to the player's question."""
+        if not n_to_list:
+            n_to_list = len(self.interlocutor.matches)
+        print '\n'
+        for i in xrange(start_index, n_to_list):
             match = self.interlocutor.matches[i]
             match.temp_address_number = i
             print "\t{i}\t{basic_description}".format(
                 i=i,
                 basic_description=self.interlocutor.mind.mental_models[match].basic_description
             )
+            self.current_list_index = i
+        print '\n'
 
-    def talk_about(self, subject=None, address_number=None):
-        """Change the person with the given address number to the subject of conversation."""
-        if subject:
-            self.subject_of_conversation = subject
+    def list_a_few(self):
+        """Ask interlocutor to list a few of their potential matches to the player's question."""
+        self.ask_to_list(start_index=0, n_to_list=5)
+
+    def list_a_few_more(self):
+        """Ask interlocutor to list a few more of their potential matches to the player's question."""
+        self.ask_to_list(start_index=self.current_list_index, n_to_list=5)
+
+    def talk_about(self, address_number=None):
+        """Change the subject of conversation to the person with the given address number."""
+        self.subject_of_conversation = next(
+            p for p in self.interlocutor.matches if p.temp_address_number == address_number
+        )
+        self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
+        if self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me:
+            self.current_hinge_between_interlocutor_and_subject = (
+                self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me[0][1]
+            )
+        else:
+            self.current_hinge_between_interlocutor_and_subject = None
+
+    def talk_about_hinge(self, address_number=None):
+        """Change the subject of conversation to the hinge between interlocutor and the current subject."""
+        if not address_number:
+            self.subject_of_conversation = self.current_hinge_between_interlocutor_and_subject
         else:
             self.subject_of_conversation = next(
-                p for p in self.interlocutor.matches if p.temp_address_number == address_number
+                p for p in self.interlocutor.hinges if p.temp_address_number == address_number
             )
         self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
+        if self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me:
+            self.current_hinge_between_interlocutor_and_subject = (
+                self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me[0][1]
+            )
+        else:
+            self.current_hinge_between_interlocutor_and_subject = None
+
+    def how_do_you_know(self):
+        """List data about interlocutor's relationship with subject, including all of subject's
+        relations to interlocutor, which also facilitates setting a hinge as the new subject of conversation.
+        """
+        self.interlocutor.hinges = []
+        print "\n"
+        if self.subject_of_conversation in self.interlocutor.relationships:
+            print self.interlocutor.relationships[self.subject_of_conversation].outline()
+        else:
+            print "Type: None"
+        print '\nRelations:\n'
+        temp_address_number = 0
+        for relation, hinge in self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me:
+            if hinge:
+                self.interlocutor.hinges.append(hinge)
+                hinge.temp_address_number = temp_address_number
+            print '{temp_address_number}\t{relation}'.format(
+                temp_address_number=temp_address_number if hinge else '',
+                relation=relation
+            )
+            if hinge:
+                temp_address_number += 1
+        print '\n'
+
+    def who_lives_in(self, house_or_unit_number=None):
+        """Ask interlocutor if they know who lives in a neighboring home with the given house_or_unit_number."""
+        # Pre-narrow the interlocutor's matches to all the people that live nearby them
+        self.interlocutor.earlier_matches = list(self.interlocutor.matches)
+        self.interlocutor.matches = [
+            p for p in self.interlocutor.mind.mental_models if p.type == 'person' and
+            p in self.interlocutor.neighbors
+        ]
+        if house_or_unit_number:  # Having default be None facilitates wrapper calls from who_lives_nearby()
+            if house_or_unit_number > 99:  # Must be house number
+                self.interlocutor.matches = [
+                    p for p in self.interlocutor.matches if p.home.house and
+                    p.home.house_number == house_or_unit_number
+                ]
+            else:  # Must be unit number
+                self.interlocutor.matches = [
+                    p for p in self.interlocutor.matches if p.home.apartment and
+                    p.home.unit_number == house_or_unit_number
+                ]
+        self.express_matches()
+
+    def who_lives_by_you(self):
+        """Ask interlocutor if they know their neighbors."""
+        self.who_lives_in(house_or_unit_number=None)
 
     def ask_about(self, feature_type):
         """Ask about the given feature of the current subject of conversation."""
@@ -787,14 +903,17 @@ class Player(object):
     def ring(self):
         """Print exposition surrounding the ringing of a doorbell."""
         answerer = self._determine_who_answers_buzzer_or_doorbell(dwelling_place=self.location)
+        if answerer:
+            self.interlocutor = answerer
+            self.game.sketch_interlocutor()
         verb_phrase = 'comes to the gate' if self.location.lot.tract else 'answers the door'
         if answerer in self.people_i_know_by_name:
-            print '\n{answerer_name} {answers}.\n'.format(
+            print '{answerer_name} {answers}.\n'.format(
                 answerer_name=answerer.name,
                 answers=verb_phrase
             ).capitalize()
         elif answerer:
-            print '\n{age_and_gender} with {appearance} {answers}.\n'.format(
+            print '{age_and_gender} with {appearance} {answers}.\n'.format(
                 age_and_gender=answerer.age_and_gender_description,
                 appearance=answerer.basic_appearance_description,
                 answers=verb_phrase
@@ -803,8 +922,6 @@ class Player(object):
             print '\nNo one {answers}.\n'.format(
                 answers=verb_phrase
             )
-        self.interlocutor = answerer
-        self.game.sketch_interlocutor()
 
     def knock(self):
         """Print exposition surrounding the knocking of a house's door."""
@@ -821,11 +938,14 @@ class Player(object):
                 dwelling_place=apartment_unit_buzzed
             )
         if answerer:
-            print '{} speaks into the intercom.'.format(
+            self.interlocutor = answerer
+            self.game.sketch_interlocutor()
+        if answerer:
+            print '{} speaks into the intercom.\n'.format(
                 answerer.age_and_gender_description
             ).capitalize()
         else:
-            print 'No one answers.'
+            print '\nNo one answers.\n'
         self.interlocutor = answerer
 
     def _buzz_apartment_complex_office(self):
@@ -887,8 +1007,17 @@ class Player(object):
         """Wrapper for self.interlocutor."""
         return self.interlocutor
 
+    def dyk(self, *features):
+        """A wrapper around do_you_know()."""
+        self.do_you_know(*features, narrow=False)
+
 
 g = Sim()
-g.establish_setting()
+try:
+    g.establish_setting()
+except KeyboardInterrupt:
+    pass
+print "\nPreparing for gameplay..."
+g.enact_hi_fi_simulation()
 bn = Game(g)
 pc = bn.player

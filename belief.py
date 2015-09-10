@@ -1501,22 +1501,39 @@ class PersonMentalModel(MentalModel):
     @property
     def basic_description(self):
         """Return a one-line description of owner's conception of subject."""
-        return "{name}, {sex}, {approximate_age}".format(
+        relations_to_me = list(self.relations_to_me)
+        return "{name}, {sex}, {approximate_age}{relation_to_me}".format(
             name=self.name.exhaustive,
             sex='male' if self.subject.male else 'female',
-            approximate_age=self.age.approximate if self.age.approximate else 'unknown age'
+            approximate_age=self.age.approximate if self.age.approximate else 'unknown age',
+            relation_to_me='' if not relations_to_me else ' ({})'.format(relations_to_me[0][0])
         )
+
+    @property
+    def relations_to_me(self):
+        """Returns a list of all the relations subject has toward owner and any third parties
+        those may hinge on.
+
+        For example, in the case of the relation "wife's coworker", the hinge would be the wife,
+        and so the entry for that relation would be a tuple ("wife's coworker", wife).
+        """
+        return self.owner.known_relation_to_me(self.subject)
 
     def outline(self):
         """Print a description of subject grounded in owner's knowledge of them."""
         print '\n'
         for feature_type in (
+            'relation to me', 'charge and spark',
             'first name', 'last name', 'status', 'approximate age',
             'job status', 'job title', 'job shift', 'workplace',
             'skin color', 'hair color', 'hair length',
             'tattoo', 'scar', 'birthmark', 'freckles', 'glasses'
         ):
-            if feature_type == 'approximate age' and self.age.exact and self.age.exact != '':
+            if feature_type == "relation to me":
+                self._outline_relation_to_me()
+            elif feature_type == "charge and spark":
+                self._outline_charge_and_spark()
+            elif feature_type == 'approximate age' and self.age.exact and self.age.exact != '':
                 self._outline_exact_age()  # Needs special treatment
             elif feature_type == 'skin color':
                 self._outline_skin_tone()
@@ -1530,6 +1547,30 @@ class PersonMentalModel(MentalModel):
                     confidence='-' if not facet or facet == '[forgot]' else facet.strength_str
                 )
         print '\n'
+
+    def _outline_relation_to_me(self):
+        """Outline the known relation(s) of subject to owner."""
+        relations_to_me = list(self.relations_to_me)
+        if len(relations_to_me) > 1:
+            and_n_more_str = " (and {} more)".format(len(relations_to_me)-1)
+        else:
+            and_n_more_str = ""
+        print "Relation to me: {relation}{and_n_more}".format(
+            relation='None' if not relations_to_me else relations_to_me[0][0],
+            and_n_more=and_n_more_str
+        )
+
+    def _outline_charge_and_spark(self):
+        """Outline owner's charge and spark toward subject."""
+        if self.subject in self.owner.relationships:
+            charge_str = self.owner.relationships[self.subject].charge_str
+            spark_str = self.owner.relationships[self.subject].spark_str
+        else:
+            charge_str = '-'
+            spark_str = '-'
+        print "Charge: {charge_str}\nSpark: {spark_str}".format(
+            charge_str=charge_str, spark_str=spark_str
+        )
 
     def _outline_exact_age(self):
         """Print owner's conception of subject's age."""
