@@ -410,12 +410,14 @@ class Relationship(object):
 
     def outline(self):
         """Outline this relationship for display during gameplay."""
-        print "\nType: {}".format(self.type)
-        print "First met: {}".format(self.first_met_str)
-        print "Last met: {}".format(self.last_met_str)
-        print "N interactions: {}".format(self.total_interactions)
-        print "Charge: {}".format(self.charge_str)
-        print "Spark: {}".format(self.spark_str)
+        outline_str = ""
+        outline_str += "Type: {}\n".format(self.type)
+        outline_str += "First met: {}\n".format(self.first_met_str)
+        outline_str += "Last met: {}\n".format(self.last_met_str)
+        outline_str += "N interactions: {}\n".format(self.total_interactions)
+        outline_str += "Charge: {}\n".format(self.charge_str)
+        outline_str += "Spark: {}".format(self.spark_str)
+        return outline_str
 
 
 class Acquaintance(Relationship):
