@@ -437,9 +437,12 @@ class Player(object):
             p.type == "person" and
             matches_description(self.interlocutor.mind.mental_models[p])
         ]
-        self.express_matches()
+        if any(f for f in features if '_' in f):
+            self.express_matches(underscore_warning=True)
+        else:
+            self.express_matches()
 
-    def express_matches(self):
+    def express_matches(self, underscore_warning=False):
         """Express the number matches interlocutor found from the mind query."""
         # If a single match was found, make them the new subject of conversation;
         # further, if that person is at this very location right now, make that known
@@ -460,6 +463,8 @@ class Player(object):
             self.talk_about(address_number=99)
         else:
             print "\nFound {} matches.\n".format(len(self.interlocutor.matches))
+            if underscore_warning:
+                print '\nWarning: You put an underscore in one of the features.\n'
 
     def narrow(self, *features):
         """Narrow the matches interlocutor has found by specifying additional features."""
