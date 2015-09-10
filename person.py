@@ -1013,6 +1013,8 @@ class Person(object):
         #     return 'love interest'
         elif person in self.coworkers:
             return 'coworker'
+        elif person in self.neighbors:
+            return 'neighbor'
         elif person in self.enemies:
             return 'enemy'
         elif any(p for p in self.parents if person is p.significant_other):
@@ -1261,6 +1263,10 @@ class Person(object):
             relations.append((relation, hinge))
         if person in self.coworkers:
             relation = 'coworker'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.neighbors:
+            relation = 'neighbor'
             hinge = None
             relations.append((relation, hinge))
         if person in self.enemies:
