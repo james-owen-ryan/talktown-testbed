@@ -298,13 +298,11 @@ Campbell
 Canaan
 Canal Fulton
 Canal Winchester
-Canandaigua
 Canfield
 Canterbury
 Canton
 Cantwell
 Capshaw
-Carbon Hill
 Cardiff
 Carlisle
 Carnation
@@ -806,8 +804,6 @@ Haines
 Haleburg
 Haleyville
 Halibut Cove
-Halifax
-Halls
 Hamden
 Hamilton
 Hammondville
@@ -932,7 +928,6 @@ Ivanof Bay
 Jack
 Jacksboro
 Jackson
-Jacksons' Gap
 Jacksonville
 Jamestown
 Jasper
@@ -1190,9 +1185,6 @@ Meriden
 Merrimac
 Mertarvik
 Mesa
-Methuen
-Metlakatla
-Meyers Chuck
 Miamisburg
 Michie
 Middleborough
