@@ -699,9 +699,9 @@ class Config(object):
                 'supplemental night': [Professor],
             },
             Cemetery: {
-                'day': (),
+                'day': (Mortician,),
                 'night': (Groundskeeper,),
-                'supplemental day': [Mortician],
+                'supplemental day': [],
                 'supplemental night': [],
             },
             Park: {
