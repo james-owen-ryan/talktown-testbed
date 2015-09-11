@@ -1221,23 +1221,23 @@ class Person(object):
             )
             hinge = self.spouse
             relations.append((relation, hinge))
-        if self.spouse and person in self.spouse.sons:
+        if self.spouse and person in self.spouse.sons and person not in self.sons:
             relation = 'stepson'
             hinge = None
             relations.append((relation, hinge))
-        if self.spouse and person in self.spouse.daughters:
+        if self.spouse and person in self.spouse.daughters and person not in self.daughters:
             relation = 'stepdaughter'
             hinge = None
             relations.append((relation, hinge))
-        if self.mother and person is self.mother.spouse:
+        if self.mother and person is self.mother.spouse and person is not self.father:
             relation = 'stepfather' if person.male else 'stepmother'
             hinge = None
             relations.append((relation, hinge))
-        if self.father and person is self.father.spouse:
+        if self.father and person is self.father.spouse and person is not self.mother:
             relation = 'stepfather' if person.male else 'stepmother'
             hinge = None
             relations.append((relation, hinge))
-        if self.greatgrandparents & person.greatgrandparents:
+        if self.greatgrandparents & person.greatgrandparents and person not in self.siblings | self.cousins | {self}:
             relation = 'second cousin'
             hinge = None
             relations.append((relation, hinge))
@@ -1253,7 +1253,7 @@ class Person(object):
             relation = 'worst enemy'
             hinge = None
             relations.append((relation, hinge))
-        if person is self.significant_other:
+        if person is self.significant_other and person is not self.spouse:
             relation = 'boyfriend' if person.male else 'girlfriend'
             hinge = None
             relations.append((relation, hinge))
@@ -1265,8 +1265,20 @@ class Person(object):
             relation = 'coworker'
             hinge = None
             relations.append((relation, hinge))
+        if person in self.former_coworkers:
+            relation = 'former coworker'
+            hinge = None
+            relations.append((relation, hinge))
         if person in self.neighbors:
             relation = 'neighbor'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.former_neighbors:
+            relation = 'former neighbor'
+            hinge = None
+            relations.append((relation, hinge))
+        if person in self.former_contractors:
+            relation = 'former contractor'
             hinge = None
             relations.append((relation, hinge))
         if person in self.enemies:
