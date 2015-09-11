@@ -238,7 +238,8 @@ class Game(object):
                         elif person.occupation and person.age > max(65, random.random() * 100):
                             person.retire()
                         # Simulate unemployed people searching for work (and potentially getting a college education)
-                        elif person.ready_to_work and not person.occupation and not (person.female and person.kids_at_home):
+                        elif (person.ready_to_work and not person.occupation and not person.retired and
+                                not (person.female and person.kids_at_home)):
                             person.look_for_work()
                             if not person.occupation:  # Means look_for_work() didn't succeed
                                 if (not person.college_graduate and person.age > 22 and
@@ -421,6 +422,13 @@ class Game(object):
             # COMMENTED OUT FOR NOW BECAUSE IT GETS MUCH FASTER WITHOUT THIS
             # if person.age > 3:
             #     person.reflect()
+
+    def enact_no_fi_simulation(self):
+        """Enact people's routines only, to make sure they're where they're supposed to be on a timestep."""
+        self.advance_time()
+        # Have people go to the location they will be at this timestep
+        for person in list(self.city.residents):
+            person.routine.enact()
 
     def advance_time(self):
         """Advance time of day and date, if it's a new day."""
