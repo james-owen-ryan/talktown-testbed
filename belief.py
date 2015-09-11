@@ -1377,6 +1377,16 @@ class PersonMentalModel(MentalModel):
         # Home
         elif feature_type == "home":
             return self.home
+        elif feature_type == "home address":
+            if self.home.mental_model:
+                return self.home.mental_model.address
+            else:
+                return None
+        elif feature_type == "home block":
+            if self.home.mental_model:
+                return self.home.mental_model.block
+            else:
+                return None
         # Appearance
         elif feature_type == "skin color":
             return self.face.skin.color
