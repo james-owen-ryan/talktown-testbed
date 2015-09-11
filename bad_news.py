@@ -89,7 +89,12 @@ class Game(object):
                     feature_value = broader_skin_tone[interlocutor.face.skin.color]
                 elif feature_type == "other people here":
                     if self.player.outside:  # Talking to someone at their door/buzzer
-                        feature_value = ', '.join(p.name for p in interlocutor.location.people_here_now)
+                        if len(self.player.interlocutor.people_here_now) == 1:
+                            feature_value = 'None'
+                        else:
+                            feature_value = (
+                                ', '.join(p.name for p in interlocutor.location.people_here_now-{interlocutor})
+                            )
                     else:
                         feature_value = '[Player can see]'
                 elif feature_type in ('extroversion', 'agreeableness', 'neuroticism', 'openness', 'conscientiousness'):
