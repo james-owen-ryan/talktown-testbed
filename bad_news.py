@@ -32,7 +32,7 @@ class Game(object):
 
     def _init_set_up_helper_attributes(self):
         """Set all helper attributes that pertain solely to this gameplay experience."""
-        for person in self.city.residents:
+        for person in self.city.residents|self.city.departed|self.city.deceased:
             person.temp_address_number = -1
             person.matches = [p for p in person.mind.mental_models if p.type == "person"]  # Matches to a mind query
             person.earlier_matches = []  # Allows going back to the last good set of matches after narrowing too far
@@ -57,9 +57,11 @@ class Game(object):
     def print_opening_exposition(self):
         """Print the initial exposition that opens the game."""
         print (
-            "\nIt is the {date}. You are alone in {a_house_or_apartment} at {address} in the town of {city_name}, "
-            "population {city_pop}. A deceased person lies before you. {pronoun} is {description}.\n".format(
-                date=self.sim.date[0].lower()+self.sim.date[1:],
+            "\nIt is {nighttime_or_daytime}, {date}. You are alone in {a_house_or_apartment} at {address} "
+            "in the town of {city_name}, population {city_pop}. A deceased person lies before you. "
+            "{pronoun} is {description}.\n".format(
+                nighttime_or_daytime='nighttime' if self.sim.time_of_day == 'night' else 'daytime',
+                date=self.sim.date[7:] if self.sim.time_of_day == 'day' else self.sim.date[9:],
                 a_house_or_apartment="a house" if self.player.location.house else "an apartment",
                 address=self.player.location.address,
                 city_name=self.city.name,
@@ -131,11 +133,7 @@ class Game(object):
 
     def advance_timestep(self):
         """Advance to the next timestep."""
-        # Literally advance the simulation timestep
-        self.sim.advance_time()
-        # Have people go to the location they will be at this timestep
-        for person in list(self.city.residents):
-            person.routine.enact()
+        self.sim.enact_no_fi_simulation()
 
 
 class Player(object):
@@ -155,7 +153,6 @@ class Player(object):
         self.last_block_i_heard = None
         self.interlocutor = None
         self.subject_of_conversation = None  # Name of whom player and interlocutor are currently talking about
-        self.current_hinge_between_interlocutor_and_subject = None  # E.g., interlocutor's wife is subject is her friend
         self.current_list_index = 0  # Facilitates ask_to_list methods
         self.refrain = ()  # Features they keep asking about
 
@@ -226,15 +223,27 @@ class Player(object):
         business = next(c for c in self.city.companies if c.name == name)
         self.goto(business.address)
 
+    def goto_nearest(self, business_type):
+        """Go to the nearest business of the given type."""
+        businesses_of_that_type = self.city.businesses_of_type(business_type)
+        if businesses_of_that_type:
+            if self.location.__class__.__name__ == 'Block':
+                lot_i_am_on = random.choice(list(self.location.lots))
+            else:
+                lot_i_am_on = self.location.lot
+            closest_business = min(
+                businesses_of_that_type,
+                key=lambda bar: self.city.distance_between(lot_i_am_on, bar.lot)
+            )
+            self.goto(closest_business.address)
+        else:
+            print "\nThere are no businesses of that type in {}.\n".format(
+                self.city.name
+            )
+
     def goto_bar(self):
         """Go to the closest bar in town."""
-        bars = self.city.businesses_of_type('Bar')
-        if self.location.__class__.__name__ == 'Block':
-            lot_i_am_on = random.choice(list(self.location.lots))
-        else:
-            lot_i_am_on = self.location.lot
-        closest = min(bars, key=lambda bar: self.city.distance_between(lot_i_am_on, bar.lot))
-        self.goto(closest.address)
+        self.goto_nearest('Bar')
 
     def goto_school(self):
         """Go to the K-12 school in town."""
@@ -496,7 +505,7 @@ class Player(object):
         if not n_to_list:
             n_to_list = len(self.interlocutor.matches)
         print '\n'
-        for i in xrange(start_index, n_to_list):
+        for i in xrange(start_index, start_index+n_to_list):
             match = self.interlocutor.matches[i]
             match.temp_address_number = i
             print "\t{i}\t{basic_description}".format(
@@ -521,27 +530,27 @@ class Player(object):
         )
         self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
         if self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me:
-            self.current_hinge_between_interlocutor_and_subject = (
+            self.interlocutor.hinges = [
                 self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me[0][1]
-            )
+            ]
         else:
-            self.current_hinge_between_interlocutor_and_subject = None
+            self.interlocutor.hinges = []
 
     def talk_about_hinge(self, address_number=None):
         """Change the subject of conversation to the hinge between interlocutor and the current subject."""
-        if address_number is not None:
-            self.subject_of_conversation = self.current_hinge_between_interlocutor_and_subject
+        if address_number is None:
+            self.subject_of_conversation = self.interlocutor.hinges[0]
         else:
             self.subject_of_conversation = next(
                 p for p in self.interlocutor.hinges if p.temp_address_number == address_number
             )
         self.interlocutor.mind.mental_models[self.subject_of_conversation].outline()
         if self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me:
-            self.current_hinge_between_interlocutor_and_subject = (
+            self.interlocutor.hinges = [
                 self.interlocutor.mind.mental_models[self.subject_of_conversation].relations_to_me[0][1]
-            )
+            ]
         else:
-            self.current_hinge_between_interlocutor_and_subject = None
+            self.interlocutor.hinges = []
 
     def how_do_you_know(self):
         """List data about interlocutor's relationship with subject, including all of subject's
@@ -596,10 +605,8 @@ class Player(object):
         """Ask about the given feature of the current subject of conversation."""
         mental_model = self.interlocutor.mind.mental_models[self.subject_of_conversation]
         facet = mental_model.get_facet_to_this_belief_of_type(feature_type=feature_type)
-        if facet == '':
-            facet = '[forgot]'
         print '\n{feature_value} ({confidence})\n'.format(
-            feature_value=facet if facet else '?',
+            feature_value=facet if facet else '[forgot]' if facet == '' else '?',
             confidence='-' if not facet else facet.strength_str
         )
 
@@ -1033,9 +1040,18 @@ class Player(object):
         """Wrapper for self.interlocutor."""
         return self.interlocutor
 
+    @property
+    def s(self):
+        """Wrapper for self.subject_of_conversation."""
+        return self.subject_of_conversation
+
     def dyk(self, *features):
         """A wrapper around do_you_know()."""
         self.do_you_know(*features, narrow=False)
+
+    def atl(self):
+        """Wrapper around ask_to_list()."""
+        self.ask_to_list()
 
     def hdyk(self):
         """Wrapper around how_do_you_know()."""
@@ -1043,7 +1059,7 @@ class Player(object):
 
     def hinge(self, address_number=None):
         """Wrapper around talk_about_hinge()."""
-        self.talk_about(address_number=address_number)
+        self.talk_about_hinge(address_number=address_number)
 
 
 g = Sim()
@@ -1052,6 +1068,8 @@ try:
 except KeyboardInterrupt:
     pass
 print "\nPreparing for gameplay..."
-g.enact_hi_fi_simulation()
+g.enact_no_fi_simulation()
 bn = Game(g)
 pc = bn.player
+d = bn.deceased_character
+nok = bn.next_of_kin
