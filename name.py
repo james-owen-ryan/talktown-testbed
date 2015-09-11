@@ -55,6 +55,9 @@ class Name(str):
         """Return all people who have had this name."""
         bearers = set()
         for person in self.progenitor.game.city.all_time_residents:
-            if person.first_name is self or person.middle_name is self or person.last_name is self:
+            if (person.first_name is self or
+                    person.middle_name is self or
+                    person.last_name is self or
+                    person.maiden_name is self):
                 bearers.add(person)
         return bearers
