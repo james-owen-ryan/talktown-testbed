@@ -1273,21 +1273,21 @@ class Person(object):
             relation = 'enemy'
             hinge = None
             relations.append((relation, hinge))
-        if any(p for p in self.parents if person is p.significant_other):
+        if any(p for p in self.parents if person is p.significant_other and person is not p.spouse):
             p = next(p for p in self.parents if person is p.significant_other)
             relation = "{}'s {}".format(
                 'father' if p.male else 'mother', 'boyfriend' if person.male else 'girlfriend'
             )
             hinge = p
             relations.append((relation, hinge))
-        if any(k for k in self.kids if person is k.significant_other):
+        if any(k for k in self.kids if person is k.significant_other and person is not k.spouse):
             k = next(k for k in self.kids if person is k.significant_other)
             relation = "{}'s {}".format(
                 'son' if k.male else 'daughter', 'boyfriend' if person.male else 'girlfriend'
             )
             hinge = k
             relations.append((relation, hinge))
-        if any(s for s in self.siblings if person is s.significant_other):
+        if any(s for s in self.siblings if person is s.significant_other and person is not s.spouse):
             s = next(s for s in self.siblings if person is s.significant_other)
             relation = "{}'s {}".format(
                 'brother' if s.male else 'sister', 'boyfriend' if person.male else 'girlfriend'
