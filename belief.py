@@ -1533,14 +1533,18 @@ class PersonMentalModel(MentalModel):
         """Print a description of subject grounded in owner's knowledge of them."""
         print '\n'
         for feature_type in (
-            'first name', 'last name', 'status',
+            'first name', 'last name', 'status', 'death year', 'departure year',
             'relation to me', 'charge and spark',
             'approximate age',
             'job status', 'job title', 'job shift', 'workplace',
             'skin color', 'hair color', 'hair length',
             'tattoo', 'scar', 'birthmark', 'freckles', 'glasses'
         ):
-            if feature_type == "relation to me":
+            if feature_type == "death year" and self.status.status == 'dead':
+                self._outline_death_year()
+            elif feature_type == "departure year" and self.status.status == 'departed':
+                self._outline_departure_year()
+            elif feature_type == "relation to me":
                 self._outline_relation_to_me()
             elif feature_type == "charge and spark":
                 self._outline_charge_and_spark()
@@ -1558,6 +1562,35 @@ class PersonMentalModel(MentalModel):
                     confidence='-' if not facet or facet == '[forgot]' else facet.strength_str
                 )
         print '\n'
+
+    def _outline_death_year(self):
+        """Outline owner's belief about subject's death year.
+
+        This method exists because it's not worth printing anything about a
+        death year in the case that owner doesn't believe subject has died.
+        """
+        facet = self.age.death_year
+        if facet == '':
+            facet = '[forgot]'
+        print "Death year: {value} ({confidence})".format(
+            value=facet if facet else '?',
+            confidence='-' if not facet or facet == '[forgot]' else facet.strength_str
+        )
+
+    def _outline_departure_year(self):
+        """Outline owner's belief about subject's departure year.
+
+        This method exists because it's not worth printing anything about a
+        departure year in the case that owner doesn't believe subject has departed
+        the city.
+        """
+        facet = self.status.departure_year
+        if facet == '':
+            facet = '[forgot]'
+        print "Departure year: {value} ({confidence})".format(
+            value=facet if facet else '?',
+            confidence='-' if not facet or facet == '[forgot]' else facet.strength_str
+        )
 
     def _outline_relation_to_me(self):
         """Outline the known relation(s) of subject to owner."""
