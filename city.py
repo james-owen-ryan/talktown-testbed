@@ -34,6 +34,7 @@ class City(object):
         """Initialize a City object."""
         self.game = game
         self.founded = game.year
+        self.settlers = set()  # Will get added to during Game.establish_setting()
         self.residents = set()
         self.departed = set()  # People who left the city (i.e., left the simulation)
         self.deceased = set()  # People who died in in the city

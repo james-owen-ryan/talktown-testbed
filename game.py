@@ -91,6 +91,8 @@ class Game(object):
         # public institutions like a cemetery, it will just be used as a
         # reference with which to access this game instance
         Cemetery(owner=self.random_person)
+        # Set the city's 'settlers' attribute
+        self.city.settlers = set(self.city.residents)
         # Now simulate to a week before gameplay
         n_days_until_gameplay_begins = self.ordinal_date_that_gameplay_begins-self.ordinal_date
         n_days_until_hi_fi_sim_begins = n_days_until_gameplay_begins - 7
@@ -198,7 +200,7 @@ class Game(object):
             self.config.chance_an_unemployed_person_departs_on_a_simulated_timestep
         )
         for i in xrange(n_timesteps):
-            self._advance_time()
+            self.advance_time()
             # Potentially have a new business open or an existing business close
             self.potentially_establish_a_new_business()
             self.potentially_shut_down_businesses()
@@ -379,7 +381,7 @@ class Game(object):
 
     def enact_hi_fi_simulation(self, timestep_during_gameplay=False):
         """Advance to the next day/night cycle."""
-        self._advance_time()
+        self.advance_time()
         # this_is_the_night_in_question = (
         #     self.ordinal_date == self.ordinal_date_that_the_founder_dies and self.time_of_day == "night"
         # )
@@ -420,7 +422,7 @@ class Game(object):
             # if person.age > 3:
             #     person.reflect()
 
-    def _advance_time(self):
+    def advance_time(self):
         """Advance time of day and date, if it's a new day."""
         self.time_of_day = "night" if self.time_of_day == "day" else "day"
         if self.time_of_day == "day":
