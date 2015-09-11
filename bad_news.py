@@ -25,7 +25,7 @@ class Game(object):
         self.deceased_character = self.select_deceased_character()
         self.player.location = self.deceased_character.location
         self.deceased_character.die('Unknown causes')
-        self.next_of_kin = self.deceased_character.next_of_kin
+        self.nok = self.next_of_kin = self.deceased_character.next_of_kin
         self.print_opening_exposition()
         self._init_set_up_helper_attributes()
         # TODO INITIAL EXPOSITION RIGHT NOW
@@ -34,7 +34,7 @@ class Game(object):
         """Set all helper attributes that pertain solely to this gameplay experience."""
         for person in self.city.residents:
             person.temp_address_number = -1
-            person.matches = []  # Matches to a mind query
+            person.matches = [p for p in person.mind.mental_models if p.type == "person"]  # Matches to a mind query
             person.earlier_matches = []  # Allows going back to the last good set of matches after narrowing too far
             person.hinges = []  # Allows use of address numbers with hinges
 
@@ -57,10 +57,13 @@ class Game(object):
     def print_opening_exposition(self):
         """Print the initial exposition that opens the game."""
         print (
-            "\nYou are alone in {a_house_or_apartment} at {address}. A deceased person lies "
-            "before you. {pronoun} is {description}.\n".format(
+            "\nIt is the {date}. You are alone in {a_house_or_apartment} at {address} in the town of {city_name}, "
+            "population {city_pop}. A deceased person lies before you. {pronoun} is {description}.\n".format(
+                date=self.sim.date[0].lower()+self.sim.date[1:],
                 a_house_or_apartment="a house" if self.player.location.house else "an apartment",
                 address=self.player.location.address,
+                city_name=self.city.name,
+                city_pop=self.city.population,
                 pronoun=self.deceased_character.pronoun.capitalize(),
                 description=self.deceased_character.description
             )
@@ -120,6 +123,14 @@ class Game(object):
                     extra=extra
                 )
             print '\n'
+
+    def advance_timestep(self):
+        """Advance to the next timestep."""
+        # Literally advance the simulation timestep
+        self.sim.advance_time()
+        # Have people go to the location they will be at this timestep
+        for person in list(self.city.residents):
+            person.routine.enact()
 
 
 class Player(object):
@@ -374,28 +385,28 @@ class Player(object):
         if self.location.people_here_now:
             if len(self.location.people_here_now) == 1:
                 self.interlocutor = list(self.location.people_here_now)[0]
+                self.game.sketch_interlocutor()
                 print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
                     age_and_gender_nominal=self.interlocutor.age_and_gender_description,
                     appearance=self.interlocutor.basic_appearance_description
                 )
-                self.game.sketch_interlocutor()
             else:
                 if any(p for p in self.location.people_here_now if p.name == name):
                     self.interlocutor = next(p for p in self.location.people_here_now if p.name == name)
+                    self.game.sketch_interlocutor()
                     print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
                         age_and_gender_nominal=self.interlocutor.age_and_gender_description,
                         appearance=self.interlocutor.basic_appearance_description
                     )
-                    self.game.sketch_interlocutor()
                 elif any(p for p in self.location.people_here_now if p.temp_address_number == address_number):
                     self.interlocutor = next(
                         p for p in self.location.people_here_now if p.temp_address_number == address_number
                     )
+                    self.game.sketch_interlocutor()
                     print "\nYou are talking to {age_and_gender_nominal} with {appearance}.\n".format(
                         age_and_gender_nominal=self.interlocutor.age_and_gender_description,
                         appearance=self.interlocutor.basic_appearance_description
                     )
-                    self.game.sketch_interlocutor()
                 else:
                     print "\nI'm not sure whom you met.\n".format(name)
         else:
@@ -468,6 +479,7 @@ class Player(object):
 
     def narrow(self, *features):
         """Narrow the matches interlocutor has found by specifying additional features."""
+        assert self.interlocutor.matches != [], "Cannot narrow down an empty list any further."
         self.do_you_know(*features, narrow=True)
 
     def pop_back(self):
@@ -1007,6 +1019,10 @@ class Player(object):
                         else:
                             return None
 
+    def wait_until(self):
+        """Wait here until the next timestep."""
+        self.game.advance_timestep()
+
     @property
     def i(self):
         """Wrapper for self.interlocutor."""
@@ -1015,6 +1031,14 @@ class Player(object):
     def dyk(self, *features):
         """A wrapper around do_you_know()."""
         self.do_you_know(*features, narrow=False)
+
+    def hdyk(self):
+        """Wrapper around how_do_you_know()."""
+        self.how_do_you_know()
+
+    def hinge(self, address_number=None):
+        """Wrapper around talk_about_hinge()."""
+        self.talk_about(address_number=address_number)
 
 
 g = Sim()
