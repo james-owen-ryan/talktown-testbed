@@ -90,7 +90,7 @@ class Routine(object):
         """Return the location in public that this person will go to."""
         config = self.person.game.config
         if random.random() < config.chance_someone_goes_on_errand_vs_visits_someone:
-            location, occasion = self._go_on_errand()
+            location, occasion = self._go_on_errand_or_out_for_leisure()
         else:
             person_they_will_visit = self._visit_someone()
             if person_they_will_visit:
@@ -103,7 +103,7 @@ class Routine(object):
             location, occasion = self.person.home, 'home'
         return location, occasion
 
-    def _go_on_errand(self):
+    def _go_on_errand_or_out_for_leisure(self):
         """Return the location associated with some errand this person will go on."""
         config = self.person.game.config
         # TODO -- if someone goes on one of these errands, have them actually get
@@ -120,18 +120,35 @@ class Routine(object):
             b for b in self.person.city.companies if service_type_of_errand in b.services
         ]
         if businesses_in_town_providing_that_service:
-            location = random.choice(businesses_in_town_providing_that_service)
+            if random.random() < config.chance_someone_goes_to_closest_business_of_type:
+                # Choose between the one closest to your house and the one closest to your work
+                closest_to_home = min(
+                    businesses_in_town_providing_that_service,
+                    key=lambda business: self.person.city.distance_between(self.person.home.lot, business.lot)
+                )
+                if self.person.occupation:
+                    closest_to_work = min(
+                        businesses_in_town_providing_that_service,
+                        key=lambda business: self.person.city.distance_between(
+                            self.person.occupation.company.lot, business.lot
+                        )
+                    )
+                    one_i_will_go_to = closest_to_home if random.random() < 0.5 else closest_to_work
+                else:
+                    one_i_will_go_to = closest_to_home
+            else:
+                one_i_will_go_to = random.choice(businesses_in_town_providing_that_service)
         else:
-            location = None
+            one_i_will_go_to = None
         # Determine whether the occasion is an errand or just leisure -- in the case of location
         # being None, which happens if there is no business of that type in town currently,
         # simply set occasion to None, since _go_in_public() will end up having the
         # person staying home anyway (and will change occasion to 'home')
-        if location:
-            occasion = config.business_type_to_occasion_for_visit[location.__class__.__name__]
+        if one_i_will_go_to:
+            occasion = config.business_type_to_occasion_for_visit[one_i_will_go_to.__class__.__name__]
         else:
             occasion = None
-        return location, occasion
+        return one_i_will_go_to, occasion
 
     def _visit_someone(self):
         """Return the residence of the person who this person will go visit."""
