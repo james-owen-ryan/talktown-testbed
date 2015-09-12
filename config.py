@@ -68,7 +68,8 @@ class Config(object):
         )
         self.chance_someone_visiting_someone_visits_immediate_family = 0.3
         self.chance_someone_visiting_someone_visits_friend = 0.5
-        self.chance_someone_visiting_someone_visits_extended_family = 0.
+        self.chance_someone_visiting_someone_visits_extended_family = 0.15
+        self.chance_someone_goes_to_closest_business_of_type = 0.75
         self.relative_frequencies_of_errands_for_service_types = {
             # Keep in mind, this person will be spending the entire day/night cycle there
             "day": {
@@ -1590,9 +1591,10 @@ class Config(object):
             "status":                      0.99,
             "first name":                  0.80,
             "last name":                   0.80,
+            "home":                        0.70,
+            "workplace":                   0.70,
             "surname ethnicity":           0.70,
             "skin color":                  0.70,
-            "workplace":                   0.50,
             "tattoo":                      0.50,
             "suffix":                      0.70,
             "approximate age":             0.70,
@@ -1604,7 +1606,6 @@ class Config(object):
             "hair color":                  0.20,
             "hair length":                 0.20,
             "hyphenated surname":          0.15,
-            "home":                        0.15,
             "death year":                  0.10,
             "departure year":              0.08,
             "birthmark":                   0.05,
@@ -1882,6 +1883,7 @@ class Config(object):
             "status":                       0.0025,
             "hyphenated surname":           0.005,
             "approximate age":              0.01,
+            "home block":                   0.01,
             "skin color":                   0.01,
             "tattoo":                       0.01,
             "birthmark":                    0.02,
@@ -1904,6 +1906,7 @@ class Config(object):
             "freckles":                     0.15,
             "hair color":                   0.15,
             "marital status":               0.15,
+            "home address":                 0.15,
             "death year":                   0.20,
             "middle name":                  0.20,
             "head size":                    0.20,
@@ -1914,7 +1917,6 @@ class Config(object):
             "eye size":                     0.25,
             "eye color":                    0.25,
             "eye shape":                    0.25,
-            "home block":                   0.25,
             "mouth size":                   0.35,
             "birth year":                   0.35,
             "departure year":               0.35,
@@ -1923,7 +1925,6 @@ class Config(object):
             "eyebrow size":                 0.40,
             "eyebrow color":                0.40,
             "ear size":                     0.40,
-            "home address":                 0.60,
             "business address":             0.65,
             "":                             0.03,  # Chance of confabulation, essentially
         }
