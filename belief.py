@@ -1514,13 +1514,15 @@ class PersonMentalModel(MentalModel):
         """Return a one-line description of owner's conception of subject."""
         relations_to_me = list(self.relations_to_me)
         if self.status.status == 'dead':
-            dead_or_approximate_age = 'dead'
+            dead_departed_or_approximate_age = 'dead'
+        elif self.status.status == 'departed':
+            dead_departed_or_approximate_age = 'left town'
         else:
-            dead_or_approximate_age = self.age.approximate if self.age.approximate else 'unknown age'
+            dead_departed_or_approximate_age = self.age.approximate if self.age.approximate else 'unknown age'
         return "{name}, {sex}, {dead_or_approximate_age}{relation_to_me}".format(
             name=self.name.exhaustive,
             sex='male' if self.subject.male else 'female',
-            dead_or_approximate_age=dead_or_approximate_age,
+            dead_or_approximate_age=dead_departed_or_approximate_age,
             relation_to_me='' if not relations_to_me else ' ({})'.format(relations_to_me[0][0])
         )
 
