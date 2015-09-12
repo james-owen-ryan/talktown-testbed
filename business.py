@@ -87,6 +87,7 @@ class Business(object):
         self.people_here_now = set()
         self.demolition = None  # Potentially gets set by event.Demolition.__init__()
         self.out_of_business = False  # Potentially gets changed by go_out_of_business()
+        self.closure = None  # BusinessClosure object itself
         self.closed = None  # Year closed
         self.former_owners = []
 
