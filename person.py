@@ -510,7 +510,7 @@ class Person(object):
         """Return next of kin.
 
         A person's next of kin will make decisions about their estate and
-        so forth upon the person's death.
+        so forth upon the person's eeath.
         """
         if self.spouse and self.spouse.present:
             next_of_kin = self.spouse
@@ -1178,7 +1178,8 @@ class Person(object):
             )
             relations.append((relation, hinge))
         if any(s for s in self.brothers if any(
-                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death and
+                person is not s)):
             relation = "brother's deceased {}".format('husband' if person.male else 'wife')
             hinge = next(
                 s for s in self.brothers if any(
@@ -1186,7 +1187,8 @@ class Person(object):
             )
             relations.append((relation, hinge))
         if any(s for s in self.sisters if any(
-                m for m in s.marriages if person in m.subjects and m.terminus is person.death)):
+                m for m in s.marriages if person in m.subjects and m.terminus is person.death and
+                person is not s)):
             relation = "sister's deceased {}".format('husband' if person.male else 'wife')
             hinge = next(
                 s for s in self.sisters if any(
@@ -1194,7 +1196,8 @@ class Person(object):
             )
             relations.append((relation, hinge))
         if any(s for s in self.brothers if any(
-                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death and
+                person is not s)):
             relation = "deceased brother's former {}".format('husband' if person.male else 'wife')
             hinge = next(
                 s for s in self.brothers if any(
@@ -1202,7 +1205,8 @@ class Person(object):
             )
             relations.append((relation, hinge))
         if any(s for s in self.sisters if any(
-                m for m in s.marriages if person in m.subjects and m.terminus is s.death)):
+                m for m in s.marriages if person in m.subjects and m.terminus is s.death and
+                person is not s)):
             relation = "deceased sister's former {}".format('husband' if person.male else 'wife')
             hinge = next(
                 s for s in self.sisters if any(
