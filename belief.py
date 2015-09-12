@@ -605,6 +605,7 @@ class DwellingPlaceModel(MentalModel):
         """Return all the people that owner believes lives here."""
         believed_residents = [
             p for p in self.owner.mind.mental_models if p.type == "person" and
+            self.owner.mind.mental_models[p].home and
             self.owner.mind.mental_models[p].home.object_itself is self.subject
         ]
         return believed_residents
@@ -1512,10 +1513,14 @@ class PersonMentalModel(MentalModel):
     def basic_description(self):
         """Return a one-line description of owner's conception of subject."""
         relations_to_me = list(self.relations_to_me)
-        return "{name}, {sex}, {approximate_age}{relation_to_me}".format(
+        if self.status.status == 'dead':
+            dead_or_approximate_age = 'dead'
+        else:
+            dead_or_approximate_age = self.age.approximate if self.age.approximate else 'unknown age'
+        return "{name}, {sex}, {dead_or_approximate_age}{relation_to_me}".format(
             name=self.name.exhaustive,
             sex='male' if self.subject.male else 'female',
-            approximate_age=self.age.approximate if self.age.approximate else 'unknown age',
+            dead_or_approximate_age=dead_or_approximate_age,
             relation_to_me='' if not relations_to_me else ' ({})'.format(relations_to_me[0][0])
         )
 
