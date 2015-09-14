@@ -241,6 +241,7 @@ class Config(object):
         self.chance_someones_hair_goes_gray_or_white = 0.02
         self.chance_someones_loses_their_hair_some_year = 0.02
         # Death
+        self.chance_someone_dies_some_timestep = 0.125
         self.function_to_derive_chance_a_widow_remarries = (
             lambda years_married: 1.0 / (int(years_married) + 4)
         )
