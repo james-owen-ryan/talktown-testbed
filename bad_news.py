@@ -60,7 +60,8 @@ class Game(object):
         print (
             "\nIt is {nighttime_or_daytime}, {date}. You are alone in {a_house_or_apartment} at {address} "
             "in the town of {city_name}, population {city_pop}. A deceased person lies before you. "
-            "{pronoun} is {description}.\n".format(
+            "{pronoun} is {description}. You must locate {possessive} next of kin and inform "
+            "that person of this death.\n".format(
                 nighttime_or_daytime='nighttime' if self.sim.time_of_day == 'night' else 'daytime',
                 date=self.sim.date[7:] if self.sim.time_of_day == 'day' else self.sim.date[9:],
                 a_house_or_apartment="a house" if self.player.location.house else "an apartment",
@@ -68,7 +69,8 @@ class Game(object):
                 city_name=self.city.name,
                 city_pop=self.city.population,
                 pronoun=self.deceased_character.pronoun.capitalize(),
-                description=self.deceased_character.description
+                description=self.deceased_character.description,
+                possessive=self.deceased_character.possessive
             )
         )
 
