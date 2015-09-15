@@ -957,12 +957,12 @@ class Player(object):
             self.game.sketch_interlocutor()
         verb_phrase = 'comes to the gate' if self.location.lot.tract else 'answers the door'
         if answerer in self.people_i_know_by_name:
-            print '{answerer_name} {answers}.\n'.format(
+            print '\n{answerer_name} {answers}.\n'.format(
                 answerer_name=answerer.name,
                 answers=verb_phrase
             ).capitalize()
         elif answerer:
-            print '{age_and_gender} with {appearance} {answers}.\n'.format(
+            print '\n{age_and_gender} with {appearance} {answers}.\n'.format(
                 age_and_gender=answerer.age_and_gender_description,
                 appearance=answerer.basic_appearance_description,
                 answers=verb_phrase
