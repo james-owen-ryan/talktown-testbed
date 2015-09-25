@@ -1,2 +1,2 @@
-# testament
-An asymmetric multiplayer game underpinned by a rich knowledge-propagation simulation.
+# anytown
+A simulation of a generic American small town from 1839-1979 that emphasizes social concerns and character knowledge
