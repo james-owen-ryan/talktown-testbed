@@ -616,9 +616,9 @@ class Person(object):
                 'blond' if self.male and self.face.hair.color == 'blonde' else self.face.hair.color
             )
             )
-        if self.face.facial_hair.style == 'sideburns' and self.male:  # DT: Just don't express women having facial hair
+        if self.face.facial_hair.style == 'sideburns' and self.male and self.age > 14:
             features.append('sideburns')
-        elif self.face.facial_hair.style != 'none' and self.male:  # DT: Just don't express women having facial hair
+        elif self.face.facial_hair.style != 'none' and self.male and self.age > 14:
             features.append('a {}'.format(str(self.face.facial_hair.style)))
         if len(features) > 2:
             return '{}, and {}'.format(', '.join(feature for feature in features[:-1]), features[-1])
