@@ -107,7 +107,7 @@ class Face(object):
             distribution = config.facial_feature_distributions_female[feature_type]
         x = random.random()
         type_str = next(  # See config.py to understand what this is doing
-            feature_type[1] for feature_type in distribution if feature_type[0][0] <= x <= feature_type[0][1]
+            feature_type[1] for feature_type in distribution if feature_type[0][0] < x < feature_type[0][1]
         )
         variant_id = int(random.random() * 1000)
         return type_str, variant_id
