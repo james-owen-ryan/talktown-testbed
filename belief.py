@@ -1437,6 +1437,112 @@ class PersonMentalModel(MentalModel):
             return self.face.distinctive_features.glasses
         elif feature_type == "sunglasses":
             return self.face.distinctive_features.sunglasses
+        # These are convenience wrappers for Bad News that allow the wizard
+        # to quickly compose 'do_you_know()' features; they also afford
+        # queries regarding binned skin color and age
+        elif feature_type == 's':
+            return 'male' if self.subject.male else 'female'
+        elif feature_type == 'hc':
+            return self.face.hair.color
+        elif feature_type == 'hl':
+            return self.face.hair.length
+        elif feature_type == 'f':
+            return self.face.distinctive_features.freckles
+        elif feature_type == 'b':
+            return self.face.distinctive_features.birthmark
+        elif feature_type == 's':
+            return self.face.distinctive_features.scar
+        elif feature_type == 't':
+            return self.face.distinctive_features.tattoo
+        elif feature_type == 'g':
+            return self.face.distinctive_features.glasses
+        elif feature_type == 'fhs':
+            if str(self.face.facial_hair.style) == 'sideburns':
+                return 'yes'
+            elif self.face.facial_hair.style:
+                return 'no'
+            else:
+                return None
+        elif feature_type == 'fhg':
+            if str(self.face.facial_hair.style) == 'goatee':
+                return 'yes'
+            elif self.face.facial_hair.style:
+                return 'no'
+            else:
+                return None
+        elif feature_type == 'fhfb':
+            if str(self.face.facial_hair.style) == 'full beard':
+                return 'yes'
+            elif self.face.facial_hair.style:
+                return 'no'
+            else:
+                return None
+        elif feature_type == 'fhsp':
+            if str(self.face.facial_hair.style) == 'soul patch':
+                return 'yes'
+            elif self.face.facial_hair.style:
+                return 'no'
+            else:
+                return None
+        elif feature_type == 'fhm':
+            if str(self.face.facial_hair.style) == 'mustache':
+                return 'yes'
+            elif self.face.facial_hair.style:
+                return 'no'
+            else:
+                return None
+        elif feature_type == 'sc':
+            if str(self.face.skin.color) in ('black', 'brown'):
+                return 'dark'
+            elif str(self.face.skin.color) in ('beige', 'pink', 'white'):
+                return 'light'
+            else:
+                return self.face.skin.color
+        elif feature_type == 'ar':  # Age range
+            if self.age.exact in (0, 1):
+                return 'infant'
+            elif self.age.exact in (2, 3):
+                return 'toddler'
+            elif (
+                (self.age.exact and self.age.exact in xrange(4, 10)) or
+                str(self.age.approximate) == '00s'
+            ):
+                return 'young'
+            elif (
+                (self.age.exact and self.age.exact in xrange(10, 13))
+            ):
+                return 'preteen'
+            elif (
+                (self.age.exact and self.age.exact in xrange(13, 20)) or
+                str(self.age.approximate) == '10s'
+            ):
+                return 'teenage'
+            elif (
+                (self.age.exact and self.age.exact in xrange(20, 26))
+            ):
+                return 'young adult'
+            elif (
+                (self.age.exact and self.age.exact in xrange(25, 45)) or
+                str(self.age.approximate) in ('20s', '30s', '40s')
+            ):
+                return 'adult'
+            elif (
+                (self.age.exact and self.age.exact in xrange(45, 65)) or
+                str(self.age.approximate) == '50s'
+            ):
+                return 'middle-aged'
+            elif (
+                (self.age.exact and self.age.exact in xrange(65, 75)) or
+                str(self.age.approximate) == '60s'
+            ):
+                return 'older'
+            elif (
+                (self.age.exact and self.age.exact > 74) or
+                str(self.age.approximate) in ('60s', '70s', '80s', '90s', '100s', '110s')
+            ):
+                return 'elderly'
+            else:
+                return None
 
     @staticmethod
     def attribute_to_feature_type(attribute):
