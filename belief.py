@@ -1440,65 +1440,49 @@ class PersonMentalModel(MentalModel):
         # These are convenience wrappers for Bad News that allow the wizard
         # to quickly compose 'do_you_know()' features; they also afford
         # queries regarding binned skin color and age
-        elif feature_type == 's':
-            return 'male' if self.subject.male else 'female'
-        elif feature_type == 'hc':
-            return self.face.hair.color
-        elif feature_type == 'hl':
-            return self.face.hair.length
-        elif feature_type == 'f':
-            return self.face.distinctive_features.freckles
-        elif feature_type == 'b':
-            return self.face.distinctive_features.birthmark
-        elif feature_type == 's':
-            return self.face.distinctive_features.scar
-        elif feature_type == 't':
-            return self.face.distinctive_features.tattoo
-        elif feature_type == 'g':
-            return self.face.distinctive_features.glasses
-        elif feature_type == 'fhs':
+        elif feature_type == 'sideburns':
             if str(self.face.facial_hair.style) == 'sideburns':
                 return 'yes'
             elif self.face.facial_hair.style:
                 return 'no'
             else:
                 return None
-        elif feature_type == 'fhg':
+        elif feature_type == 'goatee':
             if str(self.face.facial_hair.style) == 'goatee':
                 return 'yes'
             elif self.face.facial_hair.style:
                 return 'no'
             else:
                 return None
-        elif feature_type == 'fhfb':
+        elif feature_type == 'full beard':
             if str(self.face.facial_hair.style) == 'full beard':
                 return 'yes'
             elif self.face.facial_hair.style:
                 return 'no'
             else:
                 return None
-        elif feature_type == 'fhsp':
+        elif feature_type == 'soul patch':
             if str(self.face.facial_hair.style) == 'soul patch':
                 return 'yes'
             elif self.face.facial_hair.style:
                 return 'no'
             else:
                 return None
-        elif feature_type == 'fhm':
+        elif feature_type == 'mustache':
             if str(self.face.facial_hair.style) == 'mustache':
                 return 'yes'
             elif self.face.facial_hair.style:
                 return 'no'
             else:
                 return None
-        elif feature_type == 'sc':
+        elif feature_type == 'broad skin color':
             if str(self.face.skin.color) in ('black', 'brown'):
                 return 'dark'
             elif str(self.face.skin.color) in ('beige', 'pink', 'white'):
                 return 'light'
             else:
                 return self.face.skin.color
-        elif feature_type == 'ar':  # Age range
+        elif feature_type == 'age range':  # Age range
             if self.age.exact in (0, 1):
                 return 'infant'
             elif self.age.exact in (2, 3):
