@@ -637,10 +637,11 @@ class Person(object):
         # age_and_gender_description so that we can prepend a
         # skin-color tidbit
         age_and_gender_description = ' '.join(self.age_and_gender_description.split()[1:])
-        return "a {broad_skin_color}-skinned {age_and_gender} with {prominent_features}".format(
+        return "a {broad_skin_color}-skinned {age_and_gender} with {prominent_features}{deceased}".format(
             broad_skin_color=broader_skin_color[self.face.skin.color],
             age_and_gender=age_and_gender_description,
-            prominent_features=self.basic_appearance_description
+            prominent_features=self.basic_appearance_description,
+            deceased=' (deceased)' if self.dead else ''
         )
 
     def get_feature(self, feature_type):
