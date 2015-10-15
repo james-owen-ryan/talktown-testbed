@@ -1335,7 +1335,7 @@ class PersonMentalModel(MentalModel):
 
     def _get_true_feature_object(self, feature_type):
         if feature_type == "workplace":
-            return self.subject.occupation.company if self.subject.occupation else None
+            return self.subject.occupations[-1].company if self.subject.occupations else None
         elif feature_type == "home":
             return self.subject.home
         else:
