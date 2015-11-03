@@ -177,10 +177,8 @@ class Business(object):
         if self.__class__ not in classes_that_get_special_names:
             if random.random() < config.chance_company_gets_named_after_owner:
                 prefix = self.owner.person.last_name
-            elif random.random() < 0.9:
-                prefix = self.street_address_is_on.name
             else:
-                prefix = Names.a_place_name()
+                prefix = self.street_address_is_on.name
             name = "{0} {1}".format(prefix, class_to_company_name_component[self.__class__])
         elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, School, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
