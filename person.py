@@ -880,6 +880,23 @@ class Person(object):
         elif feature_type == "home address":
             return self.mind.mental_models[place].address
 
+    def knows(self, entity, feature_type):
+        """Return a boolean indicating whether this person has a belief about entity's feature_type."""
+        if entity is None:  # E.g., if querying p.knows(p.father, 'first name'), but p is a PersonExNihilo
+            return False
+        if entity.type == 'person':
+            if self.get_knowledge_about_person(other_person=entity, feature_type=feature_type):
+                return True
+            else:
+                return False
+        elif entity.type == 'residence' or entity.type == 'business':
+            if self.get_knowledge_about_place(place=entity, feature_type=feature_type):
+                return True
+            else:
+                return False
+        else:
+            raise Exception('knows() was called about something that is not a person, home, or business.')
+
     def _common_familial_relation_to_me(self, person):
         """Return the immediate common familial relation to the given person, if any.
 
