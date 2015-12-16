@@ -1,6 +1,7 @@
 from occupation import *
 from event import *
 from business import *
+from conversation import *
 import math
 
 
@@ -16,7 +17,7 @@ class Config(object):
         self.chance_of_a_coal_mine_at_time_of_town_founding = 0.2
         self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
-        self.date_gameplay_begins = (1979, 8, 19)
+        self.date_gameplay_begins = (1859, 8, 19)
         self.date_city_gets_founded = (1839, 8, 19)  # Date world gen begins
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
         # City generation (in a topological sense)
@@ -2470,6 +2471,80 @@ class Config(object):
             'Joiner', 'Milkman', 'Miner', 'Painter', 'Plumber', 'Puddler', 'Quarryman', 'Seamstress',
             'Shoemaker', 'Stonecutter', 'Tailor', 'Turner', 'Woodworker'
         ]
+
+            ####################
+            ##  CONVERSATION  ##
+            ####################
+
+        # Frame definitions
+        self.conversational_frames = {
+            'FACE-TO-FACE': {
+                'preconditions': lambda conversation: not conversation.phone_call,
+                'obligations': {
+                    'initiator': ['greet'],
+                    'recipient': []
+                },
+                'goals': {
+                    'initiator': [],
+                    'recipient': []
+                }
+            },
+            'PHONE CALL': {
+                'preconditions': lambda conversation: conversation.phone_call,
+                'obligations': {
+                    'initiator': ['report identity'],
+                    'recipient': ['answer phone']
+                },
+                'goals': {
+                    'initiator': [],
+                    'recipient': ['learn caller identity']
+                }
+            },
+            'PHONE CALL FROM STRANGER': {
+                'preconditions': lambda conversation: (
+                    conversation.phone_call and conversation.initiator not in conversation.recipient.relationships
+                ),
+                'obligations': {
+                    'initiator': ['explain reason for call'],
+                    'recipient': []
+                },
+                'goals': {
+                    'initiator': [],
+                    'recipient': ['learn reason for call']
+                }
+            },
+            'STRANGERS IN PUBLIC': {
+                'preconditions': lambda conversation: not conversation.phone_call,
+                'obligations': {
+                    'initiator': [],
+                    'recipient': []
+                },
+                'goals': {
+                    'initiator': ['learn interlocutor name'],
+                    'recipient': ['learn interlocutor name']
+                }
+            },
+        }
+        # Definitions for conversational goals in terms of their steps and subgoals
+        self.conversational_goals = {
+            'learn caller identity': [
+                # Speaker, act name, number of times act must occur for step to be achieved
+                ('me', 'answer phone', 1),
+                ('me', 'request caller identity', 1),
+                ('them', 'report identity', 1),
+            ],
+            'learn interlocutor name': [
+                ('me', 'introduce self to stranger in public', 1),
+                ('me', 'request interlocutor name', 1),
+                ('them', 'tell name', 1)
+
+            ],
+            'introduce self to stranger in public': [
+                ('either', 'make small talk', 4),
+                ('me', 'introduce self', 1)
+            ],
+
+        }
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):

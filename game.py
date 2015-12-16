@@ -1,4 +1,5 @@
 from config import Config
+from dialogue import DialogueBase
 from person import *
 from business import *
 from city import *
@@ -10,6 +11,8 @@ class Game(object):
 
     def __init__(self):
         """Initialize a Game object."""
+        # Load the content authored for this game
+        self.dialogue_base = DialogueBase()
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0
