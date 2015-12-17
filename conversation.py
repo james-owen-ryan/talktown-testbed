@@ -554,8 +554,7 @@ class Step(object):
 
     def __str__(self):
         """Return string representation."""
-        return 'STEP:{}:{}_{}{}'.format(
-            self.owner.name,
+        return 'STEP:{}:{}{}'.format(
             '|'.join(s.name for s in self.move_acceptable_speakers),
             self.move_name,
             '' if self.required_number_of_occurrences == 1 else ' (x{})'.format(self.required_number_of_occurrences)
