@@ -46,6 +46,7 @@ class Game(object):
         self.random_number_this_timestep = random.random()
         # self.establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
+        self.weather = None
 
     @property
     def random_person(self):
@@ -436,6 +437,7 @@ class Game(object):
     def advance_time(self):
         """Advance time of day and date, if it's a new day."""
         self.time_of_day = "night" if self.time_of_day == "day" else "day"
+        self.weather = random.choice(['good', 'bad'])
         if self.time_of_day == "day":
             self.ordinal_date += 1
             new_date_tuple = datetime.date.fromordinal(self.ordinal_date)
