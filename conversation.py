@@ -232,8 +232,8 @@ class Turn(object):
         self.targeted_goal = targeted_goal
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
-        self.line_of_dialogue = self._select_line_of_dialogue()
         self.realization = ''  # Dialogue template as it was filled in during this turn
+        self.line_of_dialogue = self._select_line_of_dialogue()
         self._realize_line_of_dialogue()
         self._update_conversational_context()
 
@@ -261,7 +261,7 @@ class Turn(object):
         else:
             # Either engage in small talk or adopt a goal to end the conversation
             if random.random() < max(self.speaker.personality.extroversion, 0.05):
-                return self.conversation.target_move(move_name='small talk')
+                return self.conversation.target_move(move_name='make small talk')
             else:
                 new_goal_to_end_conversation = Goal(
                     conversation=self.conversation, owner=self.speaker, name='END CONVERSATION'
@@ -471,7 +471,7 @@ class Goal(object):
             print "[{} is searching for a line that will resolve {}]".format(
                 self.conversation.speaker.first_name, self
             )
-        self.plan.execute()
+        return self.plan.execute()
 
 
 class Plan(object):
