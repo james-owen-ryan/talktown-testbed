@@ -65,7 +65,7 @@ class LineOfDialogue(object):
         self.topics_addressed = set()  # Line addresses a topic of conversation
         self.ends_conversation = False  # Whether the line ends a conversation upon being delivered
         # Parse the TSV line specifying this line of dialogue
-        discourse_act_name, raw_line, markup, probability_range = tsv_line.strip('\r\n').split('\t')
+        discourse_act_name, raw_line, raw_markup, probability_range = tsv_line.strip('\r\n').split('\t')
         discourse_act_name = discourse_act_name[2:-2]  # Parse out the double brackets surrounding the discourse act
         self.discourse_act = next(
             discourse_act for discourse_act in dialogue_base.discourse_acts if
@@ -76,8 +76,16 @@ class LineOfDialogue(object):
         self.template = self._prepare_template(raw_line=raw_line)
         self.probability_range = probability_range
         # Parse the markup, specifically
-        markup = markup.split('^')
-        for annotation in markup:
+        raw_markup = raw_markup.split('^')
+        self._init_parse_markup(raw_markup=raw_markup)
+
+    def __str__(self):
+        """Print the template characterizing this line of dialogue."""
+        return self.raw_line
+
+    def _init_parse_markup(self, raw_markup):
+        """Parse the markup attributed to this line of dialogue during its authoring."""
+        for annotation in raw_markup:
             if annotation:
                 index_of_split = annotation.index(':')
                 tagset = annotation[:index_of_split]
@@ -92,6 +100,17 @@ class LineOfDialogue(object):
                 # here are only represented as a tag
                 elif tagset == "Moves":
                     self.moves.add(tag)
+                elif tagset == "OnlyIfObligated":
+                    # This specifies that this line have a precondition enforcing that it only
+                    # be deployed when its potential speaker is obligated to perform one of the
+                    # discourse moves that it performs
+                    only_if_obligated_precondition = (
+                        'lambda conversation, speaker: any(o for o in conversation.obligations[speaker] if ' +
+                        '{o.move_name} and self.moves)'
+                    )
+                    self.preconditions.add(
+                        Precondition(tag=only_if_obligated_precondition)
+                    )
                 elif tagset == "PushObligation":  # Obligations pushed onto interlocutor
                     self.interlocutor_obligations_pushed.add(tag)
                 elif tagset == "PushSpeakerObligation":  # Obligations pushed onto speaker (by their own line)
@@ -102,10 +121,6 @@ class LineOfDialogue(object):
                     self.topics_addressed.add(tag)
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
-
-    def __str__(self):
-        """Print the template characterizing this line of dialogue."""
-        return self.raw_line
 
     @staticmethod
     def _prepare_template(raw_line):
@@ -219,12 +234,3 @@ class Proposition(object):
     def __init__(self, tag):
         """Initialize an Proposition object."""
         self.content = tag
-
-
-# class Update(object):
-#     """An _update_conversational_context to the conversation state that would occur upon this line being deployed."""
-#
-#     def __init__(self, tag):
-#         """Initialize an Update object."""
-#         self.specification = tag  # Raw Python code that if executed will _update_conversational_context the conversation state
-
