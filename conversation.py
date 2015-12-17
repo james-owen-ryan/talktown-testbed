@@ -194,7 +194,7 @@ class Turn(object):
         # TODO ACTUALLY USE THE LINE'S PROBABILITIES HERE (EXCEPT THEY AREN'T PROPERLY RELATIVE?)
         if self.targeted_obligation:
             if self.conversation.debug:
-                print "[{} is searching for a line that will resolve obligation {}]".format(
+                print "[{} is searching for a line that will resolve {}]".format(
                     self.conversation.speaker.first_name, self.targeted_obligation
                 )
             return self.targeted_obligation.target()
