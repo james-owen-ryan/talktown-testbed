@@ -17,7 +17,7 @@ class Conversation(Event):
         self.debug = debug
         self.subject = None  # The subject of conversation at a given point
         self.turns = []  # A record of the conversation as an ordered list of its turns
-        self.over = False  # Whether the conversation is over
+        self.over = False  # Whether the conversation is over (gets set by Move.fire())
         # Obligations and goals -- these get populated as frames are inherited from
         self.obligations = {self.initiator: set(), self.recipient: set()}
         self.goals = {self.initiator: set(), self.recipient: set()}
@@ -100,8 +100,6 @@ class Conversation(Event):
                 targeted_obligation=targeted_obligation,
                 targeted_goal=targeted_goal
             )
-            if self.turns[-1].line_of_dialogue.ends_conversation:
-                self.over = True
 
     def allocate_turn(self):
         """Allocate the next turn."""
@@ -351,14 +349,26 @@ class Turn(object):
 class Move(object):
     """A dialogue move by a conversational party."""
 
-    def __init__(self, speaker, name):
+    def __init__(self, conversation, speaker, name):
         """Initialize a Move object."""
+        self.conversation = conversation
         self.speaker = speaker
+        self.interlocutor = conversation.interlocutor_to(speaker)
         self.name = name
 
     def __str__(self):
         """Return string representation."""
         return "MOVE:{}:{}".format(self.speaker.name, self.name)
+
+    def fire(self):
+        """Change the world according to the illocutionary force of this move."""
+        if self.name == 'storm off':
+            self.conversation.over = True
+        elif self.name == "end conversation":
+            if self.conversation.count_move_occurrences(
+                acceptable_speakers=(self.interlocutor,), name="end conversation"
+            ):
+                self.conversation.over = True
 
 
 class Obligation(object):
