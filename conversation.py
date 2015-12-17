@@ -280,7 +280,7 @@ class Turn(object):
     def _reify_dialogue_moves(self):
         """Instantiate objects for the dialogue moves constituted by the delivery of this line."""
         for move_name in self.line_of_dialogue.moves:
-            move_object = Move(speaker=self.speaker, name=move_name)
+            move_object = Move(conversation=self.conversation, speaker=self.speaker, name=move_name)
             self.conversation.moves.add(move_object)
             if self.conversation.debug:
                 print '-- Reified {}'.format(move_object)
