@@ -61,8 +61,6 @@ class LineOfDialogue(object):
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
         self.speaker_obligations_pushed = set()  # Line asserts speaker conversational obligations
         self.interlocutor_obligations_pushed = set()  # Line asserts interlocutor conversational obligations
-        self.speaker_obligations_resolved = set()  # Line resolves speaker conversational obligations
-        self.interlocutor_obligations_resolved = set()  # Line asserts interlocutor conversational obligations
         self.topics_pushed = set()  # Line introduces a new topic of conversation
         self.topics_addressed = set()  # Line addresses a topic of conversation
         self.ends_conversation = False  # Whether the line ends a conversation upon being delivered
@@ -96,19 +94,12 @@ class LineOfDialogue(object):
                     self.moves.add(tag)
                 elif tagset == "PushObligation":  # Obligations pushed onto interlocutor
                     self.interlocutor_obligations_pushed.add(tag)
-                elif tagset == "ResolveObligation":  # Speaker's obligations that are resolved by this line
-                    self.speaker_obligations_resolved.add(tag)
                 elif tagset == "PushSpeakerObligation":  # Obligations pushed onto speaker (by their own line)
                     self.speaker_obligations_pushed.add(tag)
-                elif tagset == "ResolveInterlocutorObligation":  # Interlocutor obligations resolved by this line
-                    self.interlocutor_obligations_resolved.add(tag)
                 elif tagset == "PushTopic":
                     self.topics_pushed.add(tag)
                 elif tagset == "AddressTopic":
                     self.topics_addressed.add(tag)
-                elif tagset == "MiscFunctions":
-                    if tag == 'EndConversation':
-                        self.ends_conversation = True
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
