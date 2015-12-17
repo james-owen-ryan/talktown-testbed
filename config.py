@@ -2505,12 +2505,12 @@ class Config(object):
                     conversation.phone_call and conversation.initiator not in conversation.recipient.relationships
                 ),
                 'obligations': {
-                    'initiator': ['explain reason for call'],
+                    'initiator': ['EXPLAIN REASON FOR CALL'],
                     'recipient': []
                 },
                 'goals': {
                     'initiator': [],
-                    'recipient': ['learn reason for call']
+                    'recipient': ['LEARN REASON FOR CALL']
                 }
             },
             'STRANGERS IN PUBLIC': {
@@ -2520,30 +2520,45 @@ class Config(object):
                     'recipient': []
                 },
                 'goals': {
-                    'initiator': ['learn interlocutor name'],
-                    'recipient': ['learn interlocutor name']
+                    'initiator': ['LEARN INTERLOCUTOR NAME'],
+                    'recipient': ['LEARN INTERLOCUTOR NAME']
+                }
+            },
+            'EXTREMELY INTROVERTED RECIPIENT': {
+                'preconditions': lambda conversation: conversation.recipient.personality.extroversion < -0.4,
+                'obligations': {
+                    'initiator': [],
+                    'recipient': []
+                },
+                'goals': {
+                    'initiator': [],
+                    'recipient': ['END CONVERSATION']
                 }
             },
         }
         # Definitions for conversational goals in terms of their steps and subgoals
         self.conversational_goals = {
-            'learn caller identity': [
-                # Speaker, act name, number of times act must occur for step to be achieved
+            # Goal name (in alphabetical order)
+            #   Speaker, act name, number of times act must occur for step to be achieved
+            'END CONVERSATION': [
+                ('me', 'end conversation', 1),
+                ('them', 'end conversation', 1)
+            ],
+            'INTRODUCE SELF TO STRANGER IN PUBLIC': [
+                ('either', 'make small talk', 4),
+                ('me', 'introduce self', 1)
+            ],
+            'LEARN CALLER IDENTITY': [
                 ('me', 'answer phone', 1),
                 ('me', 'request caller identity', 1),
                 ('them', 'report identity', 1),
             ],
-            'learn interlocutor name': [
+            'LEARN INTERLOCUTOR NAME': [
                 ('me', 'introduce self to stranger in public', 1),
                 ('me', 'request interlocutor name', 1),
                 ('them', 'tell name', 1)
 
             ],
-            'introduce self to stranger in public': [
-                ('either', 'make small talk', 4),
-                ('me', 'introduce self', 1)
-            ],
-
         }
 
     @staticmethod
