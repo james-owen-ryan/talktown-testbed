@@ -169,6 +169,10 @@ class Conversation(Event):
 
     def target_move(self, move_name):
         """Select a line of dialogue that may be used to perform a targeted dialogue move."""
+        if self.debug:
+            print "[{} is searching for a line that will perform MOVE:{}]".format(
+                self.speaker.first_name, move_name
+            )
         lines_that_perform_this_move = [
             line for line in self.dialogue_base.all_lines_of_dialogue if
             move_name in line.moves and
@@ -193,6 +197,8 @@ class Conversation(Event):
         of them; otherwise, it will select a line that addresses any active topic.
         """
         # TODO MAYBE DO SEARCH BY ITERATING OVER TOPICS IN ORDER OF MOST RECENT TO LEAST RECENT
+        if self.debug:
+            print "[{} is searching for a line that will address a topic]".format(self.speaker.first_name)
         topics = self.topics if not topics else topics
         lines_that_address_one_of_these_topics = [
             line for line in self.dialogue_base.all_lines_of_dialogue if
@@ -239,10 +245,6 @@ class Turn(object):
         """Have the speaker select a line of dialogue to deploy on this turn."""
         # TODO ACTUALLY USE THE LINE'S PROBABILITIES HERE (EXCEPT THEY AREN'T PROPERLY RELATIVE?)
         if self.targeted_obligation:
-            if self.conversation.debug:
-                print "[{} is searching for a line that will resolve {}]".format(
-                    self.conversation.speaker.first_name, self.targeted_obligation
-                )
             return self.targeted_obligation.target()
         elif self.targeted_goal:
             if self.conversation.debug:
@@ -465,6 +467,10 @@ class Goal(object):
 
     def target(self):
         """Select a line of dialogue to target the achievement of this goal."""
+        if self.conversation.debug:
+            print "[{} is searching for a line that will resolve {}]".format(
+                self.conversation.speaker.first_name, self
+            )
         self.plan.execute()
 
 
@@ -585,6 +591,10 @@ class Step(object):
 
     def target(self):
         """Select a line of dialogue to target the achievement of this step."""
+        if self.conversation.debug:
+            print "[{} is searching for a line that will realize {}]".format(
+                self.conversation.speaker.first_name, self
+            )
         return self.conversation.target_move(move_name=self.move_name)
 
 
