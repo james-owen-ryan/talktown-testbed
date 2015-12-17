@@ -345,10 +345,11 @@ class Turn(object):
     def _push_topics(self):
         """Push new topics of conversation according to the mark-up of this line."""
         for topic_name in self.line_of_dialogue.topics_pushed:
-            topic_object = Topic(name=topic_name)
-            self.conversation.topics.add(topic_object)
-            if self.conversation.debug:
-                print '-- Pushed "{}"'.format(topic_object)
+            if not any(t for t in self.conversation.topics if t.name == topic_name):
+                topic_object = Topic(name=topic_name)
+                self.conversation.topics.add(topic_object)
+                if self.conversation.debug:
+                    print '-- Pushed "{}"'.format(topic_object)
 
     def _satisfy_goals(self):
         """Satisfy any goals whose targeted move was constituted by the execution of this turn."""
