@@ -178,9 +178,12 @@ class Conversation(Event):
         # lines_that_resolve_this_obligation = [
         #     line for line in lines_that_resolve_this_obligation if not
         #     line.speaker_obligations_resolved -
-        #     {o.name for o in self.conversation.obligations[self.conversation.speaker]}
+        #     {o.move_name for o in self.conversation.obligations[self.conversation.speaker]}
         # ]
-        selected_line = random.choice(lines_that_perform_this_move)
+        try:
+            selected_line = random.choice(lines_that_perform_this_move)
+        except IndexError:
+            raise Exception("Could not select a line of dialogue.")
         return selected_line
 
     def target_topic(self, topics=None):
@@ -196,7 +199,10 @@ class Conversation(Event):
             line.topics_addressed & {topic.name for topic in topics} and
             line.preconditions_satisfied(conversation_turn=self)
         ]
-        selected_line = random.choice(lines_that_address_one_of_these_topics)
+        try:
+            selected_line = random.choice(lines_that_address_one_of_these_topics)
+        except IndexError:
+            raise Exception("Could not select a line of dialogue.")
         return selected_line
 
     def count_move_occurrences(self, acceptable_speakers, name):
@@ -301,33 +307,21 @@ class Turn(object):
     def _resolve_obligations(self):
         """Resolve any conversational obligations according to the mark-up of the selected line."""
         # Resolve speaker obligations
-        for obligation_name in self.line_of_dialogue.speaker_obligations_resolved:
+        for move_name in self.line_of_dialogue.moves:
             if any(obligation for obligation in self.conversation.obligations[self.speaker] if
-                   obligation.name == obligation_name):
+                   obligation.move_name == move_name):
                 obligation_to_resolve = next(
                     obligation for obligation in self.conversation.obligations[self.speaker] if
-                    obligation.name == obligation_name
+                    obligation.move_name == move_name
                 )
                 self.conversation.obligations[self.speaker].remove(obligation_to_resolve)
                 self.conversation.resolved_obligations[self.speaker].add(obligation_to_resolve)
                 if self.conversation.debug:
                     print '-- Resolved "{}:{}"'.format(
-                        obligation_to_resolve.obligated_party.name, obligation_to_resolve.name
+                        obligation_to_resolve.obligated_party.name, obligation_to_resolve.move_name
                     )
         # Resolve interlocutor obligations
-        for obligation_name in self.line_of_dialogue.interlocutor_obligations_resolved:
-            if any(obligation for obligation in self.conversation.obligations[self.interlocutor] if
-                   obligation.name == obligation_name):
-                obligation_to_resolve = next(
-                    obligation for obligation in self.conversation.obligations[self.interlocutor] if
-                    obligation.name == obligation_name
-                )
-                self.conversation.obligations[self.interlocutor].remove(obligation_to_resolve)
-                self.conversation.resolved_obligations[self.interlocutor].add(obligation_to_resolve)
-                if self.conversation.debug:
-                    print '-- Resolved "{}:{}"'.format(
-                        obligation_to_resolve.obligated_party.name, obligation_to_resolve.name
-                    )
+        # TODO SUPPORT THIS ONCE YOU HAVE A USE CASE
 
     def _push_obligations(self):
         """Push new conversational obligations according to the mark-up of this line."""
