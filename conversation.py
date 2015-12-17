@@ -74,6 +74,15 @@ class Conversation(Event):
         """Return all turns that have already been completed."""
         return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')]
 
+    @property
+    def goals_not_on_hold(self):
+        """Return a dictionary listing the active goals for each conversational party whose plans are not on hold."""
+        goals_not_on_hold = {
+            self.initiator: {goal for goal in self.goals[self.initiator] if not goal.plan.on_hold},
+            self.recipient: {goal for goal in self.goals[self.recipient] if not goal.plan.on_hold}
+        }
+        return goals_not_on_hold
+
     def interlocutor_to(self, speaker):
         """Return the interlocutor to the given speaker."""
         return self.initiator if self.recipient is speaker else self.recipient
@@ -109,6 +118,7 @@ class Conversation(Event):
         """Allocate the next turn."""
         targeted_obligation = None
         targeted_goal = None
+        # If both conversational parties have obligations, randomly allocate the turn
         if self.obligations[self.initiator] and self.obligations[self.recipient]:
             next_speaker = random.choice(self.participants)
             targeted_obligation = list(self.obligations[next_speaker])[0]
@@ -118,43 +128,43 @@ class Conversation(Event):
                         targeted_obligation
                     )
                 )
+        # If the initiator has obligations, allocate the turn to them
         elif self.obligations[self.initiator]:
             next_speaker = self.initiator
             targeted_obligation = list(self.obligations[next_speaker])[0]
             if self.debug:
                 print '[Allocating turn according to {}]'.format(targeted_obligation)
+        # If the recipient has obligations, allocate the turn to them
         elif self.obligations[self.recipient]:
             next_speaker = self.recipient
             targeted_obligation = list(self.obligations[next_speaker])[0]
             if self.debug:
                 print '[Allocating turn according to {}]'.format(targeted_obligation)
-        elif self.goals[self.initiator]:
+        # If both conversational parties have goals whose plans are not on hold, allocate randomly
+        elif self.goals_not_on_hold[self.initiator] and self.goals_not_on_hold[self.recipient]:
+            next_speaker = random.choice(self.participants)
+            targeted_goal = list(self.goals_not_on_hold[next_speaker])[0]
+        # If the initiator has a goal whose plan is not on hold, allocate to them
+        elif self.goals_not_on_hold[self.initiator]:
             next_speaker = self.initiator
-            targeted_goal = list(self.goals[next_speaker])[0]
+            targeted_goal = list(self.goals_not_on_hold[next_speaker])[0]
             if self.debug:
                 print '[Allocating turn according to {}]'.format(targeted_goal)
-        elif self.goals[self.recipient]:
+        # If the recipient has a goal whose plan is not on hold, allocate to them
+        elif self.goals_not_on_hold[self.recipient]:
             next_speaker = self.recipient
-            targeted_goal = list(self.goals[next_speaker])[0]
+            targeted_goal = list(self.goals_not_on_hold[next_speaker])[0]
             if self.debug:
                 print '[Allocating turn according to {}]'.format(targeted_goal)
+        # If there are no obligations or unheld goals, probabilistically allocate the
+        # turn with consideration given to the parties' relative extroversion values
+        # TODO IMPROVE THE REASONING ABOUT ALLOCATION HERE
         else:
-            # No obligations or goals currently -- just pick the most extroverted participant
-            next_speaker = max(self.participants, key=lambda p: p.personality.extroversion)
-            if random.random() < 0.5:
-                # Have them seek to end the conversation
-                targeted_goal = Goal(conversation=self, owner=next_speaker, name='end_conversation')
-                if self.debug:
-                    print (
-                        '[No obligations or goals. Allocating turn to most extroverted party ' +
-                        'and assigning them {}]'.format(
-                            targeted_goal
-                        )
-                    )
+            if random.random() < 0.75:
+                next_speaker = max(self.participants, key=lambda p: p.personality.extroversion)
             else:
-                print '[No obligations or goals. Allocating turn to most extroverted party: {}]'.format(
-                    next_speaker.name
-                )
+                next_speaker = min(self.participants, key=lambda p: p.personality.extroversion)
+            print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
         return next_speaker, targeted_obligation, targeted_goal
 
     def target_move(self, move_name):
