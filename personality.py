@@ -16,26 +16,35 @@ class Personality(object):
         # Binned scores used as convenient personality hooks during Expressionist authoring
         config = person.game.config
         if self.openness_to_experience > config.threshold_for_high_binned_personality_score:
-            self.high_o = True
+            self.high_o, self.low_o = True, False
         elif self.openness_to_experience < config.threshold_for_low_binned_personality_score:
-            self.low_o = True
+            self.high_o, self.low_o = False, True
+        else:
+            self.high_o, self.low_o = False, False
         if self.conscientiousness > config.threshold_for_high_binned_personality_score:
-            self.high_c = True
+            self.high_c, self.low_c = True, False
         elif self.conscientiousness < config.threshold_for_low_binned_personality_score:
-            self.low_c = True
+            self.high_c, self.low_c = False, True
+        else:
+            self.high_c, self.low_c = False, False
         if self.extroversion > config.threshold_for_high_binned_personality_score:
-            self.high_e = True
+            self.high_e, self.low_e = True, False
         elif self.extroversion < config.threshold_for_low_binned_personality_score:
-            self.low_e = True
+            self.high_e, self.low_e = False, True
+        else:
+            self.high_e, self.low_e = False, False
         if self.agreeableness > config.threshold_for_high_binned_personality_score:
-            self.high_a = True
+            self.high_a, self.low_a = True, False
         elif self.agreeableness < config.threshold_for_low_binned_personality_score:
-            self.low_a = True
+            self.high_a, self.low_a = False, True
+        else:
+            self.high_a, self.low_a = False, False
         if self.neuroticism > config.threshold_for_high_binned_personality_score:
-            self.high_n = True
+            self.high_n, self.low_n = True, False
         elif self.neuroticism < config.threshold_for_low_binned_personality_score:
-            self.low_n = True
-
+            self.high_n, self.low_n = False, True
+        else:
+            self.high_n, self.low_n = False, False
 
     def __str__(self):
         """Return string representation."""
