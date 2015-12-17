@@ -226,6 +226,8 @@ class Precondition(object):
             raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
         except AttributeError:
             raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
+        except NameError:
+            raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
 
 
 class Proposition(object):
