@@ -2558,7 +2558,7 @@ class Config(object):
                 ('them', 'report identity', 1),
             ],
             'LEARN INTERLOCUTOR NAME': [
-                ('me', 'introduce self to stranger in public', 1),
+                ('me', 'INTRODUCE SELF TO STRANGER IN PUBLIC', 1),
                 ('me', 'request interlocutor name', 1),
                 ('them', 'tell name', 1)
 
