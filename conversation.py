@@ -28,7 +28,7 @@ class Conversation(Event):
         self.moves = set()  # A record of all dialogue moves, which are used as planning operators for goals
         # Inherit from conversational frames that pertain to the contexts of this conversation
         self.frames = set()
-        self._inherit_from_frames()
+        self._init_inherit_from_frames()
 
     def __str__(self):
         """Return string representation."""
@@ -41,20 +41,7 @@ class Conversation(Event):
         )
         return s
 
-    @property
-    def speaker(self):
-        """Return the current speaker."""
-        if self.turns:
-            return self.turns[-1].speaker
-        else:
-            return None
-
-    @property
-    def completed_turns(self):
-        """Return all turns that have already been completed."""
-        return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')]
-
-    def _inherit_from_frames(self):
+    def _init_inherit_from_frames(self):
         """Inherit goals and initial obligations from conversational frames pertaining to the contexts
         of this conversation.
         """
@@ -73,6 +60,23 @@ class Conversation(Event):
                 # Inherit its goals
                 self.goals[self.initiator] |= frame.goals[self.initiator]
                 self.goals[self.recipient] |= frame.goals[self.recipient]
+
+    @property
+    def speaker(self):
+        """Return the current speaker."""
+        if self.turns:
+            return self.turns[-1].speaker
+        else:
+            return None
+
+    @property
+    def completed_turns(self):
+        """Return all turns that have already been completed."""
+        return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')]
+
+    def interlocutor_to(self, speaker):
+        """Return the interlocutor to the given speaker."""
+        return self.initiator if self.recipient is speaker else self.recipient
 
     def outline(self):
         """Outline the conversational frames underpinning this conversation, including the
@@ -153,9 +157,37 @@ class Conversation(Event):
                 )
         return next_speaker, targeted_obligation, targeted_goal
 
-    def interlocutor_to(self, speaker):
-        """Return the interlocutor to the given speaker."""
-        return self.initiator if self.recipient is speaker else self.recipient
+    def target_move(self, move_name):
+        """Select a line of dialogue that may be used to perform a targeted dialogue move."""
+        lines_that_perform_this_move = [
+            line for line in self.dialogue_base.all_lines_of_dialogue if
+            move_name in line.moves and
+            line.preconditions_satisfied(conversation_turn=self.turns[-1])
+        ]
+        # # Make sure to avoid lines that resolve obligations that you do not have
+        # lines_that_resolve_this_obligation = [
+        #     line for line in lines_that_resolve_this_obligation if not
+        #     line.speaker_obligations_resolved -
+        #     {o.name for o in self.conversation.obligations[self.conversation.speaker]}
+        # ]
+        selected_line = random.choice(lines_that_perform_this_move)
+        return selected_line
+
+    def target_topic(self, topics=None):
+        """Select a line of dialogue that addresses one of the specified topics of conversation.
+
+        If particular topics are specified, this method will target a line that addresses any one
+        of them; otherwise, it will select a line that addresses any active topic.
+        """
+        # TODO MAYBE DO SEARCH BY ITERATING OVER TOPICS IN ORDER OF MOST RECENT TO LEAST RECENT
+        topics = self.topics if not topics else topics
+        lines_that_address_one_of_these_topics = [
+            line for line in self.dialogue_base.all_lines_of_dialogue if
+            line.topics_addressed & {topic.name for topic in topics} and
+            line.preconditions_satisfied(conversation_turn=self)
+        ]
+        selected_line = random.choice(lines_that_address_one_of_these_topics)
+        return selected_line
 
     def count_move_occurrences(self, acceptable_speakers, name):
         """Count the number of times the acceptable speakers have performed a dialogue move with the given name."""
@@ -207,32 +239,18 @@ class Turn(object):
                 print "[{} is searching for a line that will address a relevant topic]".format(
                     self.speaker.first_name, self.targeted_goal
                 )
-            return self._address_an_active_topic()
+            return self.conversation.target_topic()
         else:
-            # Either engage in small talk or end the conversation
-            # Pick a line that has its preconditions satisfied and does not resolve
-            # any obligations (since it's awkward to resolve obligations that have not been pushed)
-            lines_with_preconditions_satisfied_that_do_not_resolve_obligations = [
-                line for line in self.speaker.game.dialogue_base.all_lines_of_dialogue if
-                not line.speaker_obligations_resolved and
-                line.preconditions_satisfied(conversation_turn=self)
-            ]
-            return random.choice(lines_with_preconditions_satisfied_that_do_not_resolve_obligations)
-
-    def _address_an_active_topic(self):
-        """Select a line that will address an active topic of conversation."""
-        # TODO MAYBE DO SEARCH BY ITERATING OVER TOPICS IN ORDER OF MOST RECENT TO LEAST RECENT
-        lines_that_address_an_active_topic = [
-            line for line in self.speaker.game.dialogue_base.all_lines_of_dialogue if
-            line.topics_addressed & {topic.name for topic in self.conversation.topics} and
-            line.preconditions_satisfied(conversation_turn=self)
-        ]
-        # Make sure to avoid lines that resolve obligations that you do not have -- TODO keep this?
-        lines_that_address_an_active_topic = [
-            line for line in lines_that_address_an_active_topic if not
-            line.speaker_obligations_resolved - {o.name for o in self.conversation.obligations[self.speaker]}
-        ]
-        return random.choice(lines_that_address_an_active_topic)
+            # Either engage in small talk or adopt a goal to end the conversation
+            if random.random() < max(self.speaker.personality.extroversion, 0.05):
+                return self.conversation.target_move(move_name='small talk')
+            else:
+                new_goal_to_end_conversation = Goal(
+                    conversation=self.conversation, owner=self.speaker, name='END CONVERSATION'
+                )
+                self.conversation.goals[self.speaker].add(new_goal_to_end_conversation)
+                self.targeted_goal = new_goal_to_end_conversation
+                return self._select_line_of_dialogue()  # Which will now target the new goal
 
     def _realize_line_of_dialogue(self):
         """Display the line of dialogue on screen."""
@@ -306,7 +324,7 @@ class Turn(object):
         # Push speaker obligations
         for obligation_name in self.line_of_dialogue.speaker_obligations_pushed:
             obligation_object = Obligation(
-                conversation=self.conversation, obligated_party=self.speaker, name=obligation_name
+                conversation=self.conversation, obligated_party=self.speaker, move_name=obligation_name
             )
             self.conversation.obligations[self.speaker].add(obligation_object)
             if self.conversation.debug:
@@ -314,7 +332,7 @@ class Turn(object):
         # Push interlocutor obligations
         for obligation_name in self.line_of_dialogue.interlocutor_obligations_pushed:
             obligation_object = Obligation(
-                conversation=self.conversation, obligated_party=self.interlocutor, name=obligation_name
+                conversation=self.conversation, obligated_party=self.interlocutor, move_name=obligation_name
             )
             self.conversation.obligations[self.interlocutor].add(obligation_object)
             if self.conversation.debug:
@@ -374,15 +392,15 @@ class Move(object):
 class Obligation(object):
     """A conversational obligation imposed on one conversational party by a line of dialogue."""
 
-    def __init__(self, conversation, obligated_party, name):
+    def __init__(self, conversation, obligated_party, move_name):
         """Initialize an Obligation object."""
         self.conversation = conversation
         self.obligated_party = obligated_party
-        self.name = name
+        self.move_name = move_name
 
     def __str__(self):
         """Return string representation."""
-        return 'OBLIGATION:{}:{}'.format(self.obligated_party.name, self.name)
+        return 'OBLIGATION:{}:{}'.format(self.obligated_party.name, self.move_name)
 
     def outline(self, n_tabs):
         """Outline this obligation for debugging purposes."""
@@ -390,18 +408,7 @@ class Obligation(object):
 
     def target(self):
         """Select a line of dialogue that would resolve this obligation."""
-        lines_that_resolve_this_obligation = [
-            line for line in self.conversation.dialogue_base.all_lines_of_dialogue if
-            self.name in line.speaker_obligations_resolved and
-            line.preconditions_satisfied(conversation_turn=self.conversation.turns[-1])
-        ]
-        # Make sure to avoid lines that resolve obligations that you do not have
-        lines_that_resolve_this_obligation = [
-            line for line in lines_that_resolve_this_obligation if not
-            line.speaker_obligations_resolved -
-            {o.name for o in self.conversation.obligations[self.conversation.speaker]}
-        ]
-        return random.choice(lines_that_resolve_this_obligation)
+        return self.conversation.target_move(move_name=self.move_name)
 
 
 class Flouting(object):
@@ -574,18 +581,7 @@ class Step(object):
 
     def target(self):
         """Select a line of dialogue to target the achievement of this step."""
-        lines_that_would_constitute_this_step = [
-            line for line in self.conversation.dialogue_base.all_lines_of_dialogue if
-            self.move_name in line.moves and
-            line.preconditions_satisfied(conversation_turn=self.conversation.turns[-1])
-        ]
-        # Make sure to avoid lines that resolve obligations that you do not have -- TODO keep this?
-        lines_that_would_constitute_this_step = [
-            line for line in lines_that_would_constitute_this_step if not
-            line.speaker_obligations_resolved -
-            {o.name for o in self.conversation.obligations[self.conversation.speaker]}
-        ]
-        return random.choice(lines_that_would_constitute_this_step)
+        return self.conversation.target_move(move_name=self.move_name)
 
 
 class Topic(object):
@@ -623,11 +619,11 @@ class Frame(object):
         obligations = {initiator: set(), recipient: set()}
         for obligation_name in config.conversational_frames[self.name]['obligations']['initiator']:
             obligations[initiator].add(
-                Obligation(conversation=self.conversation, obligated_party=initiator, name=obligation_name)
+                Obligation(conversation=self.conversation, obligated_party=initiator, move_name=obligation_name)
             )
         for obligation_name in config.conversational_frames[self.name]['obligations']['recipient']:
             obligations[recipient].add(
-                Obligation(conversation=self.conversation, obligated_party=recipient, name=obligation_name)
+                Obligation(conversation=self.conversation, obligated_party=recipient, move_name=obligation_name)
             )
         return obligations
 
