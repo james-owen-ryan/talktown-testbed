@@ -75,6 +75,11 @@ class Conversation(Event):
         return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')]
 
     @property
+    def last_turn(self):
+        """Return the last completed turn."""
+        return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')][-1]
+
+    @property
     def goals_not_on_hold(self):
         """Return a dictionary listing the active goals for each conversational party whose plans are not on hold."""
         goals_not_on_hold = {
@@ -174,21 +179,9 @@ class Conversation(Event):
                 self.speaker.first_name, move_name
             )
         lines_that_perform_this_move = [
-            line for line in self.dialogue_base.all_lines_of_dialogue if
-            move_name in line.moves and
-            line.preconditions_satisfied(conversation_turn=self.turns[-1])
+            line for line in self.dialogue_base.all_lines_of_dialogue if move_name in line.moves
         ]
-        # # Make sure to avoid lines that resolve obligations that you do not have
-        # lines_that_resolve_this_obligation = [
-        #     line for line in lines_that_resolve_this_obligation if not
-        #     line.speaker_obligations_resolved -
-        #     {o.move_name for o in self.conversation.obligations[self.conversation.speaker]}
-        # ]
-        try:
-            selected_line = random.choice(lines_that_perform_this_move)
-        except IndexError:
-            raise Exception("Could not select a line of dialogue.")
-        return selected_line
+        return self._select_line(candidates=lines_that_perform_this_move)
 
     def target_topic(self, topics=None):
         """Select a line of dialogue that addresses one of the specified topics of conversation.
@@ -202,13 +195,22 @@ class Conversation(Event):
         topics = self.topics if not topics else topics
         lines_that_address_one_of_these_topics = [
             line for line in self.dialogue_base.all_lines_of_dialogue if
-            line.topics_addressed & {topic.name for topic in topics} and
-            line.preconditions_satisfied(conversation_turn=self)
+            line.topics_addressed & {topic.name for topic in topics}
         ]
-        try:
-            selected_line = random.choice(lines_that_address_one_of_these_topics)
-        except IndexError:
-            raise Exception("Could not select a line of dialogue.")
+        return self._select_line(candidates=lines_that_address_one_of_these_topics)
+
+    def _select_line(self, candidates):
+        """Return a line selected from the given candidates."""
+        # Throw out lines whose preconditions aren't met
+        candidates = [line for line in candidates if line.preconditions_satisfied(conversation_turn=self.turns[-1])]
+        # Throw out lines that would incur a conversational violation
+        candidates = [
+            line for line in candidates if not line.violations(conversation_turn=self.turns[-1])
+        ]
+        if not candidates:
+            raise Exception("There are no viable lines of dialogue in the content base.")
+        else:
+            selected_line = random.choice(candidates)  # TODO ACTUALLY UTILIZE PROBABILITIES
         return selected_line
 
     def count_move_occurrences(self, acceptable_speakers, name):
@@ -217,6 +219,18 @@ class Conversation(Event):
             move for move in self.moves if move.speaker in acceptable_speakers and move.name == name
         ]
         return len(moves_meeting_the_specification)
+
+    def earlier_move(self, speaker, name):
+        """Return whether speaker has already performed a dialogue move with the given name."""
+        return any(move for move in self.moves if move.speaker is speaker and move.name == name)
+
+    def has_obligation(self, conversational_party, move_name):
+        """Return whether the conversational party currently has an obligation to perform a move with the given name."""
+        return any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
+
+    def no_obligation(self, conversational_party, move_name):
+        """Return whether the conversational party currently has no obligation to perform a move with the given name."""
+        return not any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
 
 
 class Turn(object):
@@ -230,6 +244,7 @@ class Turn(object):
         self.subject = conversation.subject
         self.targeted_obligation = targeted_obligation
         self.targeted_goal = targeted_goal
+        self.topics_addressed = set()
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
@@ -319,9 +334,7 @@ class Turn(object):
                 self.conversation.obligations[self.speaker].remove(obligation_to_resolve)
                 self.conversation.resolved_obligations[self.speaker].add(obligation_to_resolve)
                 if self.conversation.debug:
-                    print '-- Resolved "{}:{}"'.format(
-                        obligation_to_resolve.obligated_party.name, obligation_to_resolve.move_name
-                    )
+                    print '-- Resolved {}'.format(obligation_to_resolve)
         # Resolve interlocutor obligations
         # TODO SUPPORT THIS ONCE YOU HAVE A USE CASE
 
@@ -350,6 +363,7 @@ class Turn(object):
             if not any(t for t in self.conversation.topics if t.name == topic_name):
                 topic_object = Topic(name=topic_name)
                 self.conversation.topics.add(topic_object)
+                self.topics_addressed.add(topic_object)
                 if self.conversation.debug:
                     print '-- Pushed "{}"'.format(topic_object)
 
@@ -369,6 +383,14 @@ class Turn(object):
                 self.conversation.satisfied_goals[self.interlocutor].add(goal)
                 if self.conversation.debug:
                     print '-- Satisfied {}'.format(goal)
+
+    def addressed_topic(self, name):
+        """Return whether this turn addressed a topic with the given name."""
+        return any(t for t in self.topics_addressed if t.name == name)
+
+    def did_not_address_topic(self, name):
+        """Return whether this turn did *not* address a topic with the given name."""
+        return not any(t for t in self.topics_addressed if t.name == name)
 
 
 class Move(object):
@@ -418,8 +440,19 @@ class Obligation(object):
         return self.conversation.target_move(move_name=self.move_name)
 
 
+class Violation(object):
+    """A violate of a conversational obligation or norm by a conversational party."""
+
+    def __init__(self):
+        """Initialize a Violation of object."""
+        pass
+
+
 class Flouting(object):
-    """A flouting of a conversational obligation, in the Gricean sense."""
+    """An intentional violation of a conversational obligation or norm,
+
+    This is an operationalization of the notion of a flouting in Grice's theory of
+    the cooperative principle, which is famous in linguistic pragmatics."""
 
     def __init__(self):
         """Initialize a Flouting object."""

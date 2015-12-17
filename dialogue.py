@@ -56,6 +56,7 @@ class LineOfDialogue(object):
         """Initialize a LineOfDialogue object."""
         # Prepare the markup sets
         self.preconditions = set()
+        self.potential_violations = set()
         self.propositions = set()
         self.change_subject_to = ''  # Raw Python snippet that when executed will change the subject of conversation
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
@@ -91,7 +92,9 @@ class LineOfDialogue(object):
                 tagset = annotation[:index_of_split]
                 tag = annotation[index_of_split+1:]
                 if tagset == "Preconditions":
-                    self.preconditions.add(Precondition(line_of_dialogue=self, tag=tag))
+                    self.preconditions.add(Precondition(tag=tag))
+                elif tagset == "ViolationConditions":
+                    self.potential_violations.add(PotentialViolation(tag=tag))
                 elif tagset == "Propositions":
                     self.propositions.add(Proposition(tag=tag))
                 elif tagset == "ChangeSubjectTo":
@@ -100,17 +103,6 @@ class LineOfDialogue(object):
                 # here are only represented as a tag
                 elif tagset == "Moves":
                     self.moves.add(tag)
-                elif tagset == "OnlyIfObligated":
-                    # This specifies that this line have a precondition enforcing that it only
-                    # be deployed when its potential speaker is obligated to perform one of the
-                    # discourse moves that it performs
-                    only_if_obligated_precondition = (
-                        'lambda conversation, speaker, line: ' +
-                        'any(o for o in conversation.obligations[speaker] if o.move_name in line.moves)'
-                    )
-                    self.preconditions.add(
-                        Precondition(line_of_dialogue=self, tag=only_if_obligated_precondition)
-                    )
                 elif tagset == "PushObligation":  # Obligations pushed onto interlocutor
                     self.interlocutor_obligations_pushed.add(tag)
                 elif tagset == "PushSpeakerObligation":  # Obligations pushed onto speaker (by their own line)
@@ -146,6 +138,14 @@ class LineOfDialogue(object):
     def preconditions_satisfied(self, conversation_turn):
         """Return whether this line's preconditions are satisfied given the state of the world."""
         return all(precondition.evaluate(conversation_turn=conversation_turn) for precondition in self.preconditions)
+
+    def violations(self, conversation_turn):
+        """Return a list of names of conversational violations that will be incurred if this line is deployed now."""
+        violations_incurred = [
+            potential_violation.name for potential_violation in self.potential_violations if
+            potential_violation.evaluate(conversation_turn=conversation_turn)
+        ]
+        return violations_incurred
 
     def realize(self, conversation_turn):
         """Return a filled-in template according to the world state during a conversation turn."""
@@ -188,48 +188,67 @@ class Gap(object):
         return eval(self.specification)
 
 
-class Precondition(object):
-    """A precondition for the use of a line of dialogue."""
+class Condition(object):
+    """A condition super class that is inherited from by Precondition and ViolationCondition."""
 
-    def __init__(self, line_of_dialogue, tag):
-        """Initialize a Precondition object."""
-        self.line_of_dialogue = line_of_dialogue
-        self.specification = tag
-        self.test = eval(tag)  # The tag is literally a lambda function
-        self.arguments = self._init_parse_function_for_its_arguments(function=tag)
-
-    def __str__(self):
-        """Return the lambda function itself."""
-        return self.specification
+    def __init__(self, condition):
+        """Initialize a Condition object."""
+        self.condition = condition
+        self.test = eval(condition)  # The tag is literally a lambda function
+        self.arguments = self._init_parse_condition_for_its_arguments(condition=condition)
 
     @staticmethod
-    def _init_parse_function_for_its_arguments(function):
-        """Parse this precondition's lambda function to gather the arguments that it requires."""
-        index_of_end_of_arguments = function.index(':')
-        arguments = function[:index_of_end_of_arguments]
+    def _init_parse_condition_for_its_arguments(condition):
+        """Parse this condition's specification (a lambda function) to gather the arguments that it requires."""
+        index_of_end_of_arguments = condition.index(':')
+        arguments = condition[:index_of_end_of_arguments]
         arguments = arguments[len('lambda '):]  # Excise 'lambda ' prefix
         arguments = arguments.split(', ')
         return arguments
 
-    def evaluate(self, conversation_turn, line_of_dialogue=None):
-        """Evaluate this precondition given the state of the world at the beginning of a conversation turn."""
+    def evaluate(self, conversation_turn):
+        """Evaluate this condition given the state of the world at the beginning of a conversation turn."""
         # Instantiate all the arguments we might need as local variables
         speaker = conversation_turn.speaker
         interlocutor = conversation_turn.interlocutor
         subject = conversation_turn.subject
         conversation = conversation_turn.conversation
-        line = self.line_of_dialogue
         # Prepare the list of arguments by evaluating to bind them to the needed local variables
         filled_in_arguments = [eval(argument) for argument in self.arguments]
         # Return a boolean indicating whether this precondition is satisfied
         try:
             return self.test(*filled_in_arguments)
         except ValueError:
-            raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
+            raise Exception('Cannot evaluate the precondition {}'.format(self.condition))
         # except AttributeError:
         #     raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
         # except NameError:
         #     raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
+
+
+class Precondition(Condition):
+    """A precondition for the use of a line of dialogue."""
+
+    def __init__(self, tag):
+        """Initialize a Precondition object."""
+        super(Precondition, self).__init__(condition=tag)
+
+    def __str__(self):
+        """Return a string specifying the lambda function itself."""
+        return self.condition
+
+
+class PotentialViolation(Condition):
+    """A potential violation that will be incurred by the use of this line if its conditions hold."""
+
+    def __init__(self, tag):
+        """Initialize a PotentialViolation object."""
+        self.name, condition = tag.split('<--')
+        super(PotentialViolation, self).__init__(condition=condition)
+
+    def __str__(self):
+        """Return string representation."""
+        return '{} <-- {}'.format(self.name, self.condition)
 
 
 class Proposition(object):
