@@ -1214,6 +1214,8 @@ class Config(object):
             'agreeableness': 0.05,
             'neuroticism': 0.05
         }
+        self.threshold_for_high_binned_personality_score = 0.4
+        self.threshold_for_low_binned_personality_score = -0.4
         # Face
         self.chance_eyebrows_are_same_color_as_hair = 0.8
         self.child_skin_color_given_parents = {

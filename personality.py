@@ -13,10 +13,33 @@ class Personality(object):
         self.agreeableness = self._determine_personality_feature(feature_type="agreeableness")
         self.neuroticism = self._determine_personality_feature(feature_type="neuroticism")
         self.interest_in_history = self._determine_interest_in_history()
+        # Binned scores used as convenient personality hooks during Expressionist authoring
+        config = person.game.config
+        if self.openness_to_experience > config.threshold_for_high_binned_personality_score:
+            self.high_o = True
+        elif self.openness_to_experience < config.threshold_for_low_binned_personality_score:
+            self.low_o = True
+        if self.conscientiousness > config.threshold_for_high_binned_personality_score:
+            self.high_c = True
+        elif self.conscientiousness < config.threshold_for_low_binned_personality_score:
+            self.low_c = True
+        if self.extroversion > config.threshold_for_high_binned_personality_score:
+            self.high_e = True
+        elif self.extroversion < config.threshold_for_low_binned_personality_score:
+            self.low_e = True
+        if self.agreeableness > config.threshold_for_high_binned_personality_score:
+            self.high_a = True
+        elif self.agreeableness < config.threshold_for_low_binned_personality_score:
+            self.low_a = True
+        if self.neuroticism > config.threshold_for_high_binned_personality_score:
+            self.high_n = True
+        elif self.neuroticism < config.threshold_for_low_binned_personality_score:
+            self.low_n = True
+
 
     def __str__(self):
         """Return string representation."""
-        return "Personality of {0}".format(self.person.name)
+        return "Personality of {}".format(self.person.name)
 
     @property
     def o(self):
