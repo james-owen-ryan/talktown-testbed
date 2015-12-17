@@ -2514,7 +2514,9 @@ class Config(object):
                 }
             },
             'STRANGERS IN PUBLIC': {
-                'preconditions': lambda conversation: not conversation.phone_call,
+                'preconditions': lambda conversation: (
+                    conversation.initiator not in conversation.recipient.relationships
+                ),
                 'obligations': {
                     'initiator': [],
                     'recipient': []
