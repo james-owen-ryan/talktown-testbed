@@ -91,7 +91,7 @@ class LineOfDialogue(object):
                 tagset = annotation[:index_of_split]
                 tag = annotation[index_of_split+1:]
                 if tagset == "Preconditions":
-                    self.preconditions.add(Precondition(tag=tag))
+                    self.preconditions.add(Precondition(line_of_dialogue=self, tag=tag))
                 elif tagset == "Propositions":
                     self.propositions.add(Proposition(tag=tag))
                 elif tagset == "ChangeSubjectTo":
@@ -105,11 +105,11 @@ class LineOfDialogue(object):
                     # be deployed when its potential speaker is obligated to perform one of the
                     # discourse moves that it performs
                     only_if_obligated_precondition = (
-                        'lambda conversation, speaker: any(o for o in conversation.obligations[speaker] if ' +
-                        '{o.move_name} and self.moves)'
+                        'lambda conversation, speaker, line: ' +
+                        'any(o for o in conversation.obligations[speaker] if o.move_name in line.moves)'
                     )
                     self.preconditions.add(
-                        Precondition(tag=only_if_obligated_precondition)
+                        Precondition(line_of_dialogue=self, tag=only_if_obligated_precondition)
                     )
                 elif tagset == "PushObligation":  # Obligations pushed onto interlocutor
                     self.interlocutor_obligations_pushed.add(tag)
@@ -191,8 +191,9 @@ class Gap(object):
 class Precondition(object):
     """A precondition for the use of a line of dialogue."""
 
-    def __init__(self, tag):
+    def __init__(self, line_of_dialogue, tag):
         """Initialize a Precondition object."""
+        self.line_of_dialogue = line_of_dialogue
         self.specification = tag
         self.test = eval(tag)  # The tag is literally a lambda function
         self.arguments = self._init_parse_function_for_its_arguments(function=tag)
@@ -210,24 +211,25 @@ class Precondition(object):
         arguments = arguments.split(', ')
         return arguments
 
-    def evaluate(self, conversation_turn):
+    def evaluate(self, conversation_turn, line_of_dialogue=None):
         """Evaluate this precondition given the state of the world at the beginning of a conversation turn."""
         # Instantiate all the arguments we might need as local variables
         speaker = conversation_turn.speaker
         interlocutor = conversation_turn.interlocutor
         subject = conversation_turn.subject
         conversation = conversation_turn.conversation
-        # Prepare the list of arguments by evaluating to the needed local variables
+        line = self.line_of_dialogue
+        # Prepare the list of arguments by evaluating to bind them to the needed local variables
         filled_in_arguments = [eval(argument) for argument in self.arguments]
         # Return a boolean indicating whether this precondition is satisfied
         try:
             return self.test(*filled_in_arguments)
         except ValueError:
             raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
-        except AttributeError:
-            raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
-        except NameError:
-            raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
+        # except AttributeError:
+        #     raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
+        # except NameError:
+        #     raise Exception('Cannot evaluate the precondition {}'.format(self.specification))
 
 
 class Proposition(object):
