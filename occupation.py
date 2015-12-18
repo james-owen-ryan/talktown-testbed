@@ -84,6 +84,11 @@ class Occupation(object):
         """Return years this person has had this occupation."""
         return self.person.game.year - self.start_date
 
+    @property
+    def has_a_boss(self):
+        """Return whether the person with this occupation has a boss."""
+        return True if self.company.owner is not self else False
+
     def terminate(self, reason):
         """Terminate this occupation, due to another hiring, retirement, or death or departure."""
         self.end_date = self.person.game.year
