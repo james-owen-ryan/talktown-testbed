@@ -2545,8 +2545,9 @@ class Config(object):
             # Goal name (in alphabetical order)
             #   Speaker, act name, number of times act must occur for step to be achieved
             'END CONVERSATION': [
-                ('me', 'end conversation', 1),
-                ('them', 'end conversation', 1)
+                ('me', 'wrap up conversation', 1),
+                ('them', 'say goodbye', 1),
+                ('me', 'say goodbye', 1),
             ],
             'INTRODUCE SELF TO STRANGER IN PUBLIC': [
                 ('either', 'make small talk', 4),
@@ -2559,8 +2560,8 @@ class Config(object):
             ],
             'LEARN INTERLOCUTOR NAME': [
                 ('me', 'INTRODUCE SELF TO STRANGER IN PUBLIC', 1),
-                ('me', 'request interlocutor name', 1),
-                ('them', 'tell name', 1)
+                ('me', 'request name', 1),
+                ('them', 'introduce self', 1)
 
             ],
         }
