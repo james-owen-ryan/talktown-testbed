@@ -246,6 +246,10 @@ class Conversation(Event):
         """Return whether the conversational party currently has no obligation to perform a move with the given name."""
         return not any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
 
+    def already_a_topic(self, name):
+        """Return whether there is already an active topic with the given name."""
+        return any(t for t in self.topics if t.name == name)
+
 
 class Turn(object):
     """An utterance delivered by one character to another; a unit of conversation."""
