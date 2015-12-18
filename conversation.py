@@ -70,6 +70,11 @@ class Conversation(Event):
             return None
 
     @property
+    def interlocutor(self):
+        """Return the current interlocutor."""
+        return self.interlocutor_to(self.speaker)
+
+    @property
     def completed_turns(self):
         """Return all turns that have already been completed."""
         return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')]
@@ -78,6 +83,14 @@ class Conversation(Event):
     def last_turn(self):
         """Return the last completed turn."""
         return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')][-1]
+
+    @property
+    def last_interlocutor_turn(self):
+        """Return the last turn completed by the current interlocutor."""
+        all_completed_interlocutor_turns = [
+            turn for turn in self.turns if hasattr(turn, 'line_of_dialogue') and turn.speaker is self.interlocutor
+        ]
+        return all_completed_interlocutor_turns[-1]
 
     @property
     def goals_not_on_hold(self):
@@ -222,7 +235,8 @@ class Conversation(Event):
 
     def earlier_move(self, speaker, name):
         """Return whether speaker has already performed a dialogue move with the given name."""
-        return any(move for move in self.moves if move.speaker is speaker and move.name == name)
+        relevant_speakers = self.participants if speaker == 'either' else (speaker,)
+        return any(move for move in self.moves if move.speaker in relevant_speakers and move.name == name)
 
     def has_obligation(self, conversational_party, move_name):
         """Return whether the conversational party currently has an obligation to perform a move with the given name."""
@@ -244,6 +258,7 @@ class Turn(object):
         self.subject = conversation.subject
         self.targeted_obligation = targeted_obligation
         self.targeted_goal = targeted_goal
+        self.moves_performed = set()
         self.topics_addressed = set()
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
@@ -383,6 +398,14 @@ class Turn(object):
                 self.conversation.satisfied_goals[self.interlocutor].add(goal)
                 if self.conversation.debug:
                     print '-- Satisfied {}'.format(goal)
+
+    def performed_move(self, name):
+        """Return whether this turn performed a move with the given name."""
+        return any(m for m in self.moves_performed if m.name == name)
+
+    def did_not_perform_move(self, name):
+        """Return whether this turn did *not* perform a move with the given name."""
+        return not any(m for m in self.moves_performed if m.name == name)
 
     def addressed_topic(self, name):
         """Return whether this turn addressed a topic with the given name."""
