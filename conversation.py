@@ -217,9 +217,7 @@ class Conversation(Event):
         # Throw out lines whose preconditions aren't met
         candidates = [line for line in candidates if line.preconditions_satisfied(conversation_turn=self.turns[-1])]
         # Throw out lines that would incur a conversational violation
-        candidates = [
-            line for line in candidates if not line.violations(conversation_turn=self.turns[-1])
-        ]
+        candidates = [line for line in candidates if not line.violations(conversation_turn=self.turns[-1])]
         if not candidates:
             raise Exception("There are no viable lines of dialogue in the content base.")
         else:
@@ -324,6 +322,7 @@ class Turn(object):
         for move_name in self.line_of_dialogue.moves:
             move_object = Move(conversation=self.conversation, speaker=self.speaker, name=move_name)
             self.conversation.moves.add(move_object)
+            self.moves_performed.add(move_object)
             if self.conversation.debug:
                 print '-- Reified {}'.format(move_object)
 
@@ -429,6 +428,7 @@ class Move(object):
         self.speaker = speaker
         self.interlocutor = conversation.interlocutor_to(speaker)
         self.name = name
+        self.fire()
 
     def __str__(self):
         """Return string representation."""
@@ -436,12 +436,11 @@ class Move(object):
 
     def fire(self):
         """Change the world according to the illocutionary force of this move."""
+        # If someone storms off, or both parties say goodbye, end the conversation
         if self.name == 'storm off':
             self.conversation.over = True
-        elif self.name == "end conversation":
-            if self.conversation.count_move_occurrences(
-                acceptable_speakers=(self.interlocutor,), name="end conversation"
-            ):
+        elif self.name == "say goodbye":
+            if self.conversation.earlier_move(speaker=self.interlocutor, name='say goodbye'):
                 self.conversation.over = True
 
 
