@@ -389,14 +389,14 @@ class Turn(object):
     def _satisfy_goals(self):
         """Satisfy any goals whose targeted move was constituted by the execution of this turn."""
         # Satisfy speaker goals
-        for goal in self.conversation.goals[self.speaker]:
+        for goal in list(self.conversation.goals[self.speaker]):
             if goal.achieved:
                 self.conversation.goals[self.speaker].remove(goal)
                 self.conversation.satisfied_goals[self.speaker].add(goal)
                 if self.conversation.debug:
                     print '-- Satisfied {}'.format(goal)
         # Satisfy interlocutor goals
-        for goal in self.conversation.goals[self.interlocutor]:
+        for goal in list(self.conversation.goals[self.interlocutor]):
             if goal.achieved:
                 self.conversation.goals[self.interlocutor].remove(goal)
                 self.conversation.satisfied_goals[self.interlocutor].add(goal)
