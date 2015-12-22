@@ -219,7 +219,8 @@ class Conversation(Event):
         # Throw out lines that would incur a conversational violation
         candidates = [line for line in candidates if not line.violations(conversation_turn=self.turns[-1])]
         if not candidates:
-            raise Exception("There are no viable lines of dialogue in the content base.")
+            print "There are no viable lines of dialogue in the content base. Returning None."
+            return None
         else:
             selected_line = random.choice(candidates)  # TODO ACTUALLY UTILIZE PROBABILITIES
         return selected_line
@@ -277,30 +278,40 @@ class Turn(object):
         """Have the speaker select a line of dialogue to deploy on this turn."""
         # TODO ACTUALLY USE THE LINE'S PROBABILITIES HERE (EXCEPT THEY AREN'T PROPERLY RELATIVE?)
         if self.targeted_obligation:
-            return self.targeted_obligation.target()
+            selected_line = self.targeted_obligation.target()
         elif self.targeted_goal:
             if self.conversation.debug:
                 print "[{} is searching for a line that will achieve {}]".format(
                     self.conversation.speaker.first_name, self.targeted_goal
                 )
-            return self.targeted_goal.target()
+            selected_line = self.targeted_goal.target()
         elif self.conversation.topics:
             if self.conversation.debug:
                 print "[{} is searching for a line that will address a relevant topic]".format(
                     self.speaker.first_name, self.targeted_goal
                 )
-            return self.conversation.target_topic()
+            selected_line = self.conversation.target_topic()
         else:
             # Either engage in small talk or adopt a goal to end the conversation
             if random.random() < max(self.speaker.personality.extroversion, 0.05):
-                return self.conversation.target_move(move_name='make small talk')
+                selected_line = self.conversation.target_move(move_name='make small talk')
             else:
                 new_goal_to_end_conversation = Goal(
                     conversation=self.conversation, owner=self.speaker, name='END CONVERSATION'
                 )
                 self.conversation.goals[self.speaker].add(new_goal_to_end_conversation)
                 self.targeted_goal = new_goal_to_end_conversation
-                return self._select_line_of_dialogue()  # Which will now target the new goal
+                selected_line = self._select_line_of_dialogue()  # Which will now target the new goal
+        if selected_line is None:
+            # You couldn't find a viable line, so just adopt and target a goal to
+            # end the conversation
+            new_goal_to_end_conversation = Goal(
+                conversation=self.conversation, owner=self.speaker, name='END CONVERSATION'
+            )
+            self.targeted_goal = new_goal_to_end_conversation
+            return self._select_line_of_dialogue()
+        else:
+            return selected_line
 
     def _realize_line_of_dialogue(self):
         """Display the line of dialogue on screen."""
