@@ -75,6 +75,16 @@ class Personality(object):
         """Return this person's neuroticism."""
         return self.neuroticism
 
+    @property
+    def gregarious(self):
+        """Return whether this person has a gregarious personality, which is a E+A+N- signal."""
+        return True if self.high_e and self.high_a and self.low_n else False
+
+    @property
+    def cold(self):
+        """Return whether this person has a cold personality, which is a E-A+C+ signal."""
+        return True if self.low_e and self.high_a and self.high_c else False
+
     def _determine_personality_feature(self, feature_type):
         """Determine a value for a Big Five personality trait."""
         config = self.person.game.config
