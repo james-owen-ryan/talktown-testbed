@@ -70,6 +70,8 @@ class Relationship(object):
         # set to True by progress_relationship() and then turned back to False by
         # Game.enact_hi_fi_simulation()
         self.interacted_this_timestep = False
+        # Keep track of all the conversations they've had during hi-fi timesteps
+        self.conversations = []
 
     def _init_get_compatibility(self):
         """Determine the objective compatibility of these two people.
@@ -509,3 +511,5 @@ class Romance(Relationship):
         )
         owner.significant_other = subject
         # TODO AUTOMATICALLY CALL SUBJECT.ROMANCE RIGHT? ROMANCE CAN'T BE UNIDIRECTIONAL, right?
+
+
