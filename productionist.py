@@ -258,8 +258,8 @@ class Productionist(object):
                 print "Symbol {} is currently violated".format(symbol)
             return None
         candidate_production_rules = symbol.forward_chaining_rules
-        # If any of these production rules are on the backward chain, we can just pick
-        # them mindlessly, since we already know that's the route to go
+        # If one of these production rules is already known to be on a chain, we can just pick
+        # that one mindlessly, since we already know that's the route to go
         try:
             rule_on_our_chain = next(r for r in candidate_production_rules if r.viable)
             return self._target_production_rule(
@@ -267,8 +267,8 @@ class Productionist(object):
             )
         except StopIteration:
             pass
-        # For now, order production rules randomly  # TODO use application rates
-        random.shuffle(candidate_production_rules)
+        # Sort the candidate production rules probabilistically by utilizing their application rates
+        candidate_production_rules = self._probabilistically_sort_production_rules(rules=candidate_production_rules)
         # Iterate over these rules, attempting to utilize them successfully; return
         # a template snippet if a rule may be utilized successfully
         for production_rule in candidate_production_rules:
@@ -315,9 +315,9 @@ class Productionist(object):
                     not symbol.preconditions_satisfied(conversation=conversation)):
                 print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
-        # For now, order production rules randomly
         candidate_production_rules = symbol.backward_chaining_rules
-        random.shuffle(candidate_production_rules)
+        # Sort the candidate production rules probabilistically by utilizing their application rates
+        candidate_production_rules = self._probabilistically_sort_production_rules(rules=candidate_production_rules)
         for production_rule in candidate_production_rules:
             this_production_rule_successfully_fired = (
                 self._target_production_rule(rule=production_rule, conversation=conversation)
@@ -383,6 +383,85 @@ class Productionist(object):
         rule.viable = True
         expansion_yielded_by_this_rule = ''.join(terminally_expanded_symbols_in_this_rule_body)
         return expansion_yielded_by_this_rule
+
+    def _probabilistically_sort_production_rules(self, rules):
+        """Sort a collection of production rules probabilistically by utilizing their application rates.
+
+        Because the application rates of a group of rules are only relative to one another
+        if those rules have the same head (which is not a guarantee when backward chaining),
+        we need to probabilistically sort rules within rule-head groups first, and then we really
+        have no viable option except randomly shuffling the head groups (while retaining the
+        probabilistically determined orderings within each head group)
+        """
+        probabilistic_sort = []
+        # Assemble all the rule heads
+        rule_heads = list({rule.head for rule in rules})
+        # Randomly shuffle the rule heads (we have no way deciding how to order the
+        # rule-head groups, since the application rates of rules in different groups
+        # only mean anything relative to the other rules in that same group, not to
+        # rules in other groups)
+        random.shuffle(rule_heads)
+        # Probabilistically sort each head group
+        for head in rule_heads:
+            rules_sharing_this_head = [rule for rule in rules if rule.head is head]
+            probabilistic_sort_of_this_head_group = (
+                self._probabilistically_sort_a_rule_head_group(rules=rules_sharing_this_head)
+            )
+            probabilistic_sort += probabilistic_sort_of_this_head_group
+        return probabilistic_sort
+
+    def _probabilistically_sort_a_rule_head_group(self, rules):
+        """Probabilistically sort a collection of production rules that share the same rule head.
+
+        This method works by fitting a probability range to each of the given set of rules, rolling
+        a random number and selecting the rule whose range it falls within, and then repeating this
+        on the set of remaining rules, and so forth until every rule has been selecting.
+        """
+        probabilistic_sort = []
+        remaining_rules = list(rules)
+        while len(remaining_rules) > 1:
+            probability_ranges = (
+                self._fit_probability_distribution_to_rules_according_to_their_application_rates(rules=remaining_rules)
+            )
+            x = random.random()
+            probabilistically_selected_rule = next(
+                rule for rule in remaining_rules if probability_ranges[rule][0] <= x <= probability_ranges[rule][1]
+            )
+            probabilistic_sort.append(probabilistically_selected_rule)
+            remaining_rules.remove(probabilistically_selected_rule)
+        # Add the only rule that's left (no need to fit a probability distribution to
+        # this set containing just one rule)
+        last_one_to_be_selected = remaining_rules[0]
+        probabilistic_sort.append(last_one_to_be_selected)
+        return probabilistic_sort
+
+    @staticmethod
+    def _fit_probability_distribution_to_rules_according_to_their_application_rates(rules):
+        """Return a dictionary mapping each of the rules to a probability range."""
+        # Determine the individual probabilities of each production rule, given the
+        # rules' application rates
+        individual_probabilities = {}
+        sum_of_all_application_rates = float(sum(rule.application_rate for rule in rules))
+        for rule in rules:
+            probability = rule.application_rate/sum_of_all_application_rates
+            individual_probabilities[rule] = probability
+        # Use those individual probabilities to associate each production rule with a specific
+        # probability range, such that generating a random value between 0.0 and 1.0 will fall
+        # into one and only one production rule's probability range
+        probability_ranges = {}
+        current_bound = 0.0
+        for rule in rules:
+            probability = individual_probabilities[rule]
+            probability_range_for_this_rule = (current_bound, current_bound+probability)
+            probability_ranges[rule] = probability_range_for_this_rule
+            current_bound += probability
+        # Make sure the last bound indeed extends to 1.0 (necessary because of
+        # float rounding issues)
+        last_rule_to_have_a_range_attributed = rules[-1]
+        probability_ranges[last_rule_to_have_a_range_attributed] = (
+            probability_ranges[last_rule_to_have_a_range_attributed][0], 1.0
+        )
+        return probability_ranges
 
     def _reset_temporary_attributes(self):
         """Clear all temporary symbol and rule attributes that we set during this generation session."""
