@@ -115,6 +115,12 @@ class Conversation(Event):
         for frame in self.frames:
             frame.outline(n_tabs=1)
 
+    def restart(self):
+        """Return a new Conversation object with the same context as this one."""
+        return Conversation(
+            initiator=self.initiator, recipient=self.recipient, phone_call=self.phone_call, debug=self.debug
+        )
+
     def replay(self):
         """Replay the conversation by printing out each of its lines."""
         for turn in self.turns:
