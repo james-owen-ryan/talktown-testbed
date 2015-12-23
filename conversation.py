@@ -8,7 +8,9 @@ class Conversation(Event):
     def __init__(self, initiator, recipient, phone_call=False, debug=True):
         """Initialize a Conversation object."""
         super(Conversation, self).__init__(game=initiator.game)
-        self.dialogue_base = initiator.game.dialogue_base
+        self.game = initiator.game
+        self.productionist = self.game.productionist  # NLG module
+        self.productionist.debug = debug
         self.initiator = initiator
         self.recipient = recipient
         self.participants = [initiator, recipient]
@@ -82,7 +84,8 @@ class Conversation(Event):
     @property
     def last_turn(self):
         """Return the last completed turn."""
-        return [turn for turn in self.turns if hasattr(turn, 'line_of_dialogue')][-1]
+        completed_turns = self.completed_turns
+        return None if not completed_turns else completed_turns[-1]
 
     @property
     def last_interlocutor_turn(self):
@@ -186,15 +189,14 @@ class Conversation(Event):
         return next_speaker, targeted_obligation, targeted_goal
 
     def target_move(self, move_name):
-        """Select a line of dialogue that may be used to perform a targeted dialogue move."""
+        """Request that Productionist generate a line of dialogue that may be used to perform a
+        targeted dialogue move.
+        """
         if self.debug:
-            print "[{} is searching for a line that will perform MOVE:{}]".format(
+            print "[{} is requesting that Productionist generate a line that will perform MOVE:{}]".format(
                 self.speaker.first_name, move_name
             )
-        lines_that_perform_this_move = [
-            line for line in self.dialogue_base.all_lines_of_dialogue if move_name in line.moves
-        ]
-        return self._select_line(candidates=lines_that_perform_this_move)
+        return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
 
     def target_topic(self, topics=None):
         """Select a line of dialogue that addresses one of the specified topics of conversation.
@@ -211,19 +213,6 @@ class Conversation(Event):
             line.topics_addressed & {topic.name for topic in topics}
         ]
         return self._select_line(candidates=lines_that_address_one_of_these_topics)
-
-    def _select_line(self, candidates):
-        """Return a line selected from the given candidates."""
-        # Throw out lines whose preconditions aren't met
-        candidates = [line for line in candidates if line.preconditions_satisfied(conversation_turn=self.turns[-1])]
-        # Throw out lines that would incur a conversational violation
-        candidates = [line for line in candidates if not line.violations(conversation_turn=self.turns[-1])]
-        if not candidates:
-            print "There are no viable lines of dialogue in the content base. Returning None."
-            return None
-        else:
-            selected_line = random.choice(candidates)  # TODO ACTUALLY UTILIZE PROBABILITIES
-        return selected_line
 
     def count_move_occurrences(self, acceptable_speakers, name):
         """Count the number of times the acceptable speakers have performed a dialogue move with the given name."""
