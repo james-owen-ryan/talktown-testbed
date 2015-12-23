@@ -21,7 +21,6 @@ class Productionist(object):
         self.nonterminal_symbols = self._init_parse_json_grammar_specification()
         self._init_resolve_symbol_references_in_all_production_rule_bodies()
         self._init_attribute_backward_chaining_and_forward_chaining_rules_to_symbols()
-        self._init_attribute_max_backward_and_forward_chaining_distances_for_symbols()
         self.move_satisficers = self._init_structure_symbols_according_to_dialogue_moves_they_satisfice()
         self.topic_satisficers = self._init_structure_symbols_according_to_topics_they_satisfice()
         # This method is used to collect all the nonterminal symbols that were expanded
@@ -88,17 +87,6 @@ class Productionist(object):
             for symbol in rule.body:
                 if type(symbol) is NonterminalSymbol:
                     symbol.backward_chaining_rules.append(rule)
-
-    def _init_attribute_max_backward_and_forward_chaining_distances_for_symbols(self):
-        """Attribute to symbols their maximum backward- and forward-chaining distances.
-
-        By 'backward-chaining distance', I mean the maximum number of production rules that may
-        have to be traversed to construct a terminal backward chain (i.e., one that reaches a
-        top-level symbol). By 'forward-chaining distance', I then mean the maximum number of
-        production rules that may have to be traversed to a construct a terminal forward chain
-        (i.e., one that reaches an expansion containing no nonterminal symbols).
-        """
-        pass
 
     def _init_structure_symbols_according_to_dialogue_moves_they_satisfice(self):
         """Return a dictionary mapping dialogue-move names to the symbols that satisfice them.
@@ -335,6 +323,7 @@ class Productionist(object):
                 self._target_production_rule(rule=production_rule, conversation=conversation)
             )
             if this_production_rule_successfully_fired:
+                production_rule.viable = True
                 # Set breadcrumbs so that we can reconstruct our path if this backward chain
                 # is successful (by 'reconstruct our path', I mean fire all the production rules
                 # along our successful backward chain until we've generated a complete dialogue template)
@@ -344,7 +333,6 @@ class Productionist(object):
                 if top_level_symbol_we_successfully_chained_back_to:
                     if self.debug:
                         print "Added production rule {} to the chain".format(production_rule)
-                    production_rule.viable = True
                     return top_level_symbol_we_successfully_chained_back_to
         if self.debug:
             print "Failed to backward chain from symbol {}".format(symbol)
@@ -439,8 +427,6 @@ class NonterminalSymbol(object):
         # Productionist._init_attribute_backward_chaining_and_forward_chaining_rules_to_symbols()
         self.backward_chaining_rules = []
         self.forward_chaining_rules = []
-        self.max_backward_chaining_distance = -1  # Max number of production rules traversed to terminal backward chain
-        self.max_forward_chaining_distance = -1  # Max number of production rules traversed to terminal forward chain
         # This attribute will hold the successful expansion of this symbol during a
         # generation procedure; we keep track of this so as to not reduplicate expansion
         # efforts while we are firing production rules during backward- and forward-chaining,
