@@ -199,20 +199,20 @@ class Conversation(Event):
         return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
 
     def target_topic(self, topics=None):
-        """Select a line of dialogue that addresses one of the specified topics of conversation.
+        """Request that Productionist generate a line of dialogue that may be used to address one of the
+        given topics of conversation.
 
-        If particular topics are specified, this method will target a line that addresses any one
-        of them; otherwise, it will select a line that addresses any active topic.
+        If particular topics are specified, this method will request a line that addresses any one
+        of them; otherwise, it will request a line that addresses any active topic.
         """
-        # TODO MAYBE DO SEARCH BY ITERATING OVER TOPICS IN ORDER OF MOST RECENT TO LEAST RECENT
+        # TODO PUT TOPICS IN ORDER OF MOST RECENT TO LEAST RECENT
         if self.debug:
-            print "[{} is searching for a line that will address a topic]".format(self.speaker.first_name)
+            print "[{} is requesting that Productionist generate a line that will address a topic]".format(
+                self.speaker.first_name
+            )
         topics = self.topics if not topics else topics
-        lines_that_address_one_of_these_topics = [
-            line for line in self.dialogue_base.all_lines_of_dialogue if
-            line.topics_addressed & {topic.name for topic in topics}
-        ]
-        return self._select_line(candidates=lines_that_address_one_of_these_topics)
+        topic_names = [topic.name for topic in topics]
+        return self.productionist.target_topics_of_conversation(topic_names=topic_names, conversation=self)
 
     def count_move_occurrences(self, acceptable_speakers, name):
         """Count the number of times the acceptable speakers have performed a dialogue move with the given name."""
@@ -255,7 +255,7 @@ class Turn(object):
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
-        self.line_of_dialogue = self._select_line_of_dialogue()
+        self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
         self._update_conversational_context()
 
@@ -263,7 +263,7 @@ class Turn(object):
         """Return string representation."""
         return '{}: {}'.format(self.speaker.name, self.realization)
 
-    def _select_line_of_dialogue(self):
+    def _decide_what_to_say(self):
         """Have the speaker select a line of dialogue to deploy on this turn."""
         # TODO ACTUALLY USE THE LINE'S PROBABILITIES HERE (EXCEPT THEY AREN'T PROPERLY RELATIVE?)
         if self.targeted_obligation:
@@ -290,7 +290,7 @@ class Turn(object):
                 )
                 self.conversation.goals[self.speaker].add(new_goal_to_end_conversation)
                 self.targeted_goal = new_goal_to_end_conversation
-                selected_line = self._select_line_of_dialogue()  # Which will now target the new goal
+                selected_line = self._decide_what_to_say()  # Which will now target the new goal
         if selected_line is None:
             # You couldn't find a viable line, so just adopt and target a goal to
             # end the conversation
@@ -298,7 +298,7 @@ class Turn(object):
                 conversation=self.conversation, owner=self.speaker, name='END CONVERSATION'
             )
             self.targeted_goal = new_goal_to_end_conversation
-            return self._select_line_of_dialogue()
+            return self._decide_what_to_say()
         else:
             return selected_line
 

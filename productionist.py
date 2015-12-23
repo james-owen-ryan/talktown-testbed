@@ -153,7 +153,6 @@ class Productionist(object):
             raw_dialogue_template_built_by_targeting_this_symbol = self._target_symbol(
                 symbol=symbol, conversation=conversation
             )
-            self._reset_temporary_attributes()
             if raw_dialogue_template_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
                 # Reify the template as a LineOfDialogue object and return that
                 line_of_dialogue_object = LineOfDialogue(
@@ -161,7 +160,53 @@ class Productionist(object):
                     symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_dialogue_template,
                     conversation=conversation
                 )
+                self._reset_temporary_attributes()
                 return line_of_dialogue_object
+            self._reset_temporary_attributes()
+        if self.debug:
+            print "Productionist could not generate a line of dialogue that performs the move {}".format(move_name)
+
+    def target_topics_of_conversation(self, topic_names, conversation):
+        """Attempt to construct a line of dialogue that would address the given topic.
+
+        This act of dialogue construction is rendered as a search task over the tree specified
+        by a grammar authored in Expressionist. Specifically, we target individual symbols that
+        are annotated as addressing the desired topic of conversation, attempting to successfully
+        terminally backward-chain (i.e., follow production rules *backward* until we reach a
+        top-level symbol) and successfully terminally forward-chain (i.e., follow production
+        rules *forward* until we reach an expansion containing no nonterminal symbols). The
+        notion of success here is articulated by the Conversation object that calls this method,
+        but generally it will constrain this search procedure such that no symbol with
+        unsatisfied preconditions (given the state of the conversation/world, which we have
+        access to via the Conversation object's attributes) may be expanded at any point.
+        """
+        # Collect all symbols that satisfice this move (see above or ctrl+f for more explanation)
+        satisficing_symbols = set()
+        for topic_name in topic_names:
+            satisficing_symbols |= self.topic_satisficers[topic_name]
+        satisficing_symbols = list(satisficing_symbols)
+        # Randomly shuffle this list (to promote conversational variability)
+        random.shuffle(satisficing_symbols)
+        # Iteratively attempt to successfully build a line of dialogue by backward-chaining
+        # and forward-chaining from this symbol
+        for symbol in satisficing_symbols:
+            raw_dialogue_template_built_by_targeting_this_symbol = self._target_symbol(
+                symbol=symbol, conversation=conversation
+            )
+            if raw_dialogue_template_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
+                # Reify the template as a LineOfDialogue object and return that
+                line_of_dialogue_object = LineOfDialogue(
+                    raw_line=raw_dialogue_template_built_by_targeting_this_symbol,
+                    symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_dialogue_template,
+                    conversation=conversation
+                )
+                self._reset_temporary_attributes()
+                return line_of_dialogue_object
+            self._reset_temporary_attributes()
+        if self.debug:
+            print "Productionist could not generate a line of dialogue that addresses the topics {}".format(
+                ' ,'.join(topic_name for topic_name in topic_names)
+            )
 
     def _target_symbol(self, symbol, conversation):
         """Attempt to successfully terminally backward-chain and forward-chain from this symbol.
@@ -177,15 +222,22 @@ class Productionist(object):
             symbol=symbol, conversation=conversation, symbol_is_the_targeted_symbol=True
         )
         if not partial_raw_template_built_by_forward_chaining:
+            if self.debug:
+                print "Could not successfully forward chain from the targeted symbol {}".format(symbol)
             return None
+        if self.debug:
+            print "Successfully forward chained from targeted symbol {} all the way to terminal expansion {}".format(
+                symbol, symbol.expansion
+            )
         # Forward chaining was successful, so now attempt backward chaining, unless the
         # targeted symbol is a top-level symbol, in which case we can return the template
         # we built by forward-chaining
         if symbol.top_level:
             if self.debug:
-                print "{} is a top-level symbol, so we can skip backward chaining".format(symbol)
+                print "Targeted symbol {} is a top-level symbol, so we can skip backward chaining".format(symbol)
             top_level_symbol_that_we_successfully_backward_chained_to = symbol
         else:
+            print "Now I will attempt to backward chain from the targeted symbol {}".format(symbol)
             top_level_symbol_that_we_successfully_backward_chained_to = (
                 self._backward_chain_from_symbol(symbol=symbol, conversation=conversation)
             )
@@ -208,15 +260,26 @@ class Productionist(object):
         symbol. If this method fails at any point, it will immediately return None.
         """
         if self.debug:
-            print "Forward-chaining from symbol {}...".format(symbol)
+            print "Attempting to forward chain from symbol {}...".format(symbol)
         # First check for whether this symbol's preconditions are satisfied and whether
         # the use of its expansion in a line of dialogue would cause a conversational
         # violation to be incurred
         if (symbol.violations(conversation=conversation) or
                 not symbol.preconditions_satisfied(conversation=conversation)):
+            if self.debug:
+                print "Symbol {} is currently violated".format(symbol)
             return None
-        # For now, order production rules randomly  # TODO use application rates
         candidate_production_rules = symbol.forward_chaining_rules
+        # If any of these production rules are on the backward chain, we can just pick
+        # them mindlessly, since we already know that's the route to go
+        try:
+            rule_on_the_back_ward_chain = next(r for r in candidate_production_rules if r.on_the_backward_chain)
+            return self._target_production_rule(
+                rule=rule_on_the_back_ward_chain, conversation=conversation, retracing_chains=retracing_chains
+            )
+        except StopIteration:
+            pass
+        # For now, order production rules randomly  # TODO use application rates
         random.shuffle(candidate_production_rules)
         # Iterate over these rules, attempting to utilize them successfully; return
         # a template snippet if a rule may be utilized successfully
@@ -230,8 +293,6 @@ class Productionist(object):
                 # Save this successful terminal expansion of this symbol, in case we
                 # need it later (so that we don't reduplicate this completed effort)
                 symbol.expansion = terminal_expansion_yielded_by_firing_that_production_rule
-                print "ADDING SYMBOL {} (77)".format(symbol)
-                self.symbols_expanded_to_produce_the_dialogue_template.add(symbol)
                 # If the symbol we're forward chaining from is a top-level symbol and is
                 # the symbol that we are ultimately targeting, then save the production rule
                 # that allowed us to terminally expand it, since we'll need this information
@@ -239,10 +300,14 @@ class Productionist(object):
                 # the symbols we expanded on the chain (for the LineOfDialogue object we
                 # end up instantiating to inherit)
                 if symbol.top_level and symbol_is_the_targeted_symbol:
+                    if self.debug:
+                        print "Added production rule {} to the backward chain".format(production_rule)
                     production_rule.on_the_backward_chain = True
                 return terminal_expansion_yielded_by_firing_that_production_rule
         # If we tried every production rule and failed to return a terminal expansion,
         # then we must give up on this symbol by returning None
+        if self.debug:
+            print "Failed to forward chain from symbol {}".format(symbol)
         return None
 
     def _backward_chain_from_symbol(self, symbol, conversation):
@@ -254,13 +319,13 @@ class Productionist(object):
         at any point, it will immediately return None.
         """
         if self.debug:
-            print "Backward-chaining from symbol {}...".format(symbol)
+            print "Attempting to backward chain from symbol {}...".format(symbol)
         if symbol.top_level:
             # Make sure this symbol doesn't violate any preconditions, since this hasn't
             # been checked yet during backward chaining
             if not (symbol.violations(conversation=conversation) or
                     not symbol.preconditions_satisfied(conversation=conversation)):
-                print "Successfully backward-chained to top-level symbol {}".format(symbol)
+                print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
         # For now, order production rules randomly
         candidate_production_rules = symbol.backward_chaining_rules
@@ -273,12 +338,16 @@ class Productionist(object):
                 # Set breadcrumbs so that we can reconstruct our path if this backward chain
                 # is successful (by 'reconstruct our path', I mean fire all the production rules
                 # along our successful backward chain until we've generated a complete dialogue template)
-                production_rule.on_the_backward_chain = True
                 top_level_symbol_we_successfully_chained_back_to = (
                     self._backward_chain_from_symbol(production_rule.head, conversation=conversation)
                 )
                 if top_level_symbol_we_successfully_chained_back_to:
+                    if self.debug:
+                        print "Added production rule {} to the backward chain".format(production_rule)
+                    production_rule.on_the_backward_chain = True
                     return top_level_symbol_we_successfully_chained_back_to
+        if self.debug:
+            print "Failed to backward chain from symbol {}".format(symbol)
         return None
 
     def _retrace_backward_and_forward_chains_to_generate_a_complete_template(self, start_symbol, conversation):
@@ -295,6 +364,11 @@ class Productionist(object):
 
     def _target_production_rule(self, rule, conversation, retracing_chains=False):
         """Attempt to terminally expand this rule's head."""
+        if self.debug:
+            if rule.on_the_backward_chain:
+                print "Retracing the backward chain via rule {}".format(rule)
+            else:
+                print "Targeting production rule {}...".format(rule)
         terminally_expanded_symbols_in_this_rule_body = []
         for symbol in rule.body:
             if type(symbol) == unicode:  # Terminal symbol (no need to expand)
@@ -314,6 +388,8 @@ class Productionist(object):
                         print "ADDED SYMBOL {} (99)".format(symbol)
                     terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
                 else:
+                    if self.debug:
+                        print "Abandoning production rule {}".format(rule)
                     return None
         expansion_yielded_by_this_rule = ''.join(terminally_expanded_symbols_in_this_rule_body)
         return expansion_yielded_by_this_rule
@@ -469,7 +545,7 @@ class LineOfDialogue(object):
         self._init_inherit_markup(conversation=conversation)
 
     def __str__(self):
-        """Print the raw template characterizing this line of dialogue."""
+        """Return the raw template characterizing this line of dialogue."""
         return self.raw_line
 
     @staticmethod
