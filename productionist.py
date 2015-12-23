@@ -273,9 +273,9 @@ class Productionist(object):
         # If any of these production rules are on the backward chain, we can just pick
         # them mindlessly, since we already know that's the route to go
         try:
-            rule_on_the_back_ward_chain = next(r for r in candidate_production_rules if r.on_the_backward_chain)
+            rule_on_our_chain = next(r for r in candidate_production_rules if r.viable)
             return self._target_production_rule(
-                rule=rule_on_the_back_ward_chain, conversation=conversation, retracing_chains=retracing_chains
+                rule=rule_on_our_chain, conversation=conversation, retracing_chains=retracing_chains
             )
         except StopIteration:
             pass
@@ -301,8 +301,8 @@ class Productionist(object):
                 # end up instantiating to inherit)
                 if symbol.top_level and symbol_is_the_targeted_symbol:
                     if self.debug:
-                        print "Added production rule {} to the backward chain".format(production_rule)
-                    production_rule.on_the_backward_chain = True
+                        print "Added production rule {} to the chain".format(production_rule)
+                    production_rule.viable = True
                 return terminal_expansion_yielded_by_firing_that_production_rule
         # If we tried every production rule and failed to return a terminal expansion,
         # then we must give up on this symbol by returning None
@@ -343,8 +343,8 @@ class Productionist(object):
                 )
                 if top_level_symbol_we_successfully_chained_back_to:
                     if self.debug:
-                        print "Added production rule {} to the backward chain".format(production_rule)
-                    production_rule.on_the_backward_chain = True
+                        print "Added production rule {} to the chain".format(production_rule)
+                    production_rule.viable = True
                     return top_level_symbol_we_successfully_chained_back_to
         if self.debug:
             print "Failed to backward chain from symbol {}".format(symbol)
@@ -359,14 +359,14 @@ class Productionist(object):
         """
         self.symbols_expanded_to_produce_the_dialogue_template = {start_symbol}
         print "ADDING START SYMBOL {} (55)".format(start_symbol)
-        first_breadcrumb = next(rule for rule in start_symbol.production_rules if rule.on_the_backward_chain)
+        first_breadcrumb = next(rule for rule in start_symbol.production_rules if rule.viable)
         return self._target_production_rule(rule=first_breadcrumb, conversation=conversation, retracing_chains=True)
 
     def _target_production_rule(self, rule, conversation, retracing_chains=False):
         """Attempt to terminally expand this rule's head."""
         if self.debug:
-            if rule.on_the_backward_chain:
-                print "Retracing the backward chain via rule {}".format(rule)
+            if rule.viable:
+                print "Retracing our chains via rule {}".format(rule)
             else:
                 print "Targeting production rule {}...".format(rule)
         terminally_expanded_symbols_in_this_rule_body = []
@@ -391,6 +391,8 @@ class Productionist(object):
                     if self.debug:
                         print "Abandoning production rule {}".format(rule)
                     return None
+        # You successfully expanded all the symbols in this rule body
+        rule.viable = True
         expansion_yielded_by_this_rule = ''.join(terminally_expanded_symbols_in_this_rule_body)
         return expansion_yielded_by_this_rule
 
@@ -399,7 +401,7 @@ class Productionist(object):
         for symbol in self.nonterminal_symbols:
             symbol.expansion = None
             for rule in symbol.production_rules:
-                rule.on_the_backward_chain = False
+                rule.viable = False
         self.symbols_expanded_to_produce_the_dialogue_template = set()
 
     def find_symbol(self, symbol_name):
@@ -516,9 +518,9 @@ class ProductionRule(object):
         self.application_rate = application_rate
         # This attribute will mark whether this production rule successfully fired during the
         # backward-chaining routine of a generation procedure; we keep track of this because
-        # after we have successfully backward-chained all the way to a top-level symbol, we need
-        # to remember how we got there in order to construct the final dialogue template
-        self.on_the_backward_chain = False
+        # after we have successfully terminally backward-chained and forward-chained, we need
+        # to remember the rules on those chains in order to construct the final dialogue template
+        self.viable = False
 
     def __str__(self):
         """Return string representation."""
