@@ -322,6 +322,7 @@ class Turn(object):
         self._resolve_obligations()
         self._push_obligations()
         self._push_topics()
+        self._address_topics()
         self._satisfy_goals()
 
     def _reify_dialogue_moves(self):
@@ -392,6 +393,14 @@ class Turn(object):
                 self.topics_addressed.add(topic_object)
                 if self.conversation.debug:
                     print '-- Pushed "{}"'.format(topic_object)
+
+    def _address_topics(self):
+        """Address topics of conversation according to the mark-up of this line."""
+        for topic_name in self.line_of_dialogue.topics_addressed:
+            topic_object = next(t for t in self.conversation.topics if t.name == topic_name)
+            self.topics_addressed.add(topic_object)
+            if self.conversation.debug:
+                print '-- Addressed "{}"'.format(topic_object)
 
     def _satisfy_goals(self):
         """Satisfy any goals whose targeted move was constituted by the execution of this turn."""
