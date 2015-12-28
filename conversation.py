@@ -258,6 +258,7 @@ class Turn(object):
         self.targeted_goal = targeted_goal
         self.moves_performed = set()
         self.topics_addressed = set()
+        self.obligations_resolved = set()
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
@@ -357,6 +358,7 @@ class Turn(object):
                 )
                 self.conversation.obligations[self.speaker].remove(obligation_to_resolve)
                 self.conversation.resolved_obligations[self.speaker].add(obligation_to_resolve)
+                self.obligations_resolved.add(obligation_to_resolve)
                 if self.conversation.debug:
                     print '-- Resolved {}'.format(obligation_to_resolve)
         # Resolve interlocutor obligations
@@ -423,6 +425,16 @@ class Turn(object):
     def did_not_address_topic(self, name):
         """Return whether this turn did *not* address a topic with the given name."""
         return not any(t for t in self.topics_addressed if t.name == name)
+
+    def resolved_obligation(self, name=None):
+        """Return whether this turn resolved an obligation with the given name.
+
+        If None is passed for 'name', this method will return whether this turn resolved *any* obligation.
+        """
+        if name:
+            return any(o for o in self.obligations_resolved if o.name == name)
+        else:
+            return True if self.obligations_resolved else False
 
 
 class Move(object):
