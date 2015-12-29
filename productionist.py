@@ -694,7 +694,7 @@ class Gap(object):
         speaker, interlocutor, subject = (
             conversation_turn.speaker, conversation_turn.interlocutor, conversation_turn.subject
         )
-        return eval(self.specification)
+        return str(eval(self.specification))
 
 
 class Condition(object):
