@@ -2524,7 +2524,7 @@ class Config(object):
                     'recipient': []
                 },
                 'goals': {
-                    'initiator': ['LEARN INTERLOCUTOR NAME'],
+                    'initiator': ['LEARN INTERLOCUTOR NAME', 'LEARN IF INTERLOCUTOR IS FROM HERE'],
                     'recipient': ['LEARN INTERLOCUTOR NAME']
                 }
             },
@@ -2562,7 +2562,10 @@ class Config(object):
                 ('me', 'INTRODUCE SELF TO STRANGER IN PUBLIC', 1),
                 ('me', 'request name', 1),
                 ('them', 'introduce self', 1)
-
+            ],
+            'LEARN IF INTERLOCUTOR IS FROM HERE': [
+                ('me', 'ask how are you', 1),
+                ('me', 'ask are you from here', 1)
             ],
         }
 
