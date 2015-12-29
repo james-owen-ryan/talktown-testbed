@@ -571,6 +571,11 @@ class Person(object):
         return events
 
     @property
+    def year_i_moved_here(self):
+        """Return the year this person moved to this city."""
+        return self.moves[0].year
+
+    @property
     def age_and_gender_description(self):
         """Return a string broadly capturing this person's age."""
         if self.age < 1:
