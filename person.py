@@ -914,6 +914,31 @@ class Person(object):
         elif entity.type == 'residence' or entity.type == 'business':
             return self.get_knowledge_about_place(place=entity, feature_type=feature_type)
 
+    def sources(self, entity, feature_type=None):
+        """Return this person's sources, in order of most informative to least, for their
+        knowledge pertaining entity's feature_type (or to the entity in general, if
+        None is passed).
+        """
+        all_my_sources = []
+        if feature_type:
+            all_my_relevant_beliefs = [
+                f for f in self.all_belief_facets if f.subject is entity and f.feature_type == feature_type
+            ]
+        else:  # Just collect all facets pertaining to entity
+            all_my_relevant_beliefs = [f for f in self.all_belief_facets if f.subject is entity]
+        for facet in all_my_relevant_beliefs:
+            for piece in facet.evidence:
+                if piece.source:
+                    all_my_sources.append(piece.source)
+        all_my_sources.sort(key=lambda source: all_my_sources.count(source), reverse=True)
+        return all_my_sources
+
+    def top_source(self, entity, feature_type=None):
+        """Return this person's *top* source for their knowledge pertaining entity's
+        feature_type (or to the entity in general, if None is passed).
+        """
+        return self.sources(entity=entity, feature_type=feature_type)[0]
+
     def _common_familial_relation_to_me(self, person):
         """Return the immediate common familial relation to the given person, if any.
 
