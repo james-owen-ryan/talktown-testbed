@@ -902,6 +902,18 @@ class Person(object):
         else:
             raise Exception('knows() was called about something that is not a person, home, or business.')
 
+    def belief(self, entity, feature_type):
+        """Return this person's belief about entity's feature type."""
+        assert self.knows(entity=entity, feature_type=feature_type), (
+            "A call was made to {}.belief() when they do not have a belief about {}'s {}".format(
+                self.name, entity.name, feature_type
+            )
+        )
+        if entity.type == 'person':
+            return self.get_knowledge_about_person(other_person=entity, feature_type=feature_type)
+        elif entity.type == 'residence' or entity.type == 'business':
+            return self.get_knowledge_about_place(place=entity, feature_type=feature_type)
+
     def _common_familial_relation_to_me(self, person):
         """Return the immediate common familial relation to the given person, if any.
 
