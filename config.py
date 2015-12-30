@@ -2565,7 +2565,8 @@ class Config(object):
             ],
             'LEARN IF INTERLOCUTOR IS FROM HERE': [
                 ('me', 'ask how are you', 1),
-                ('me', 'ask are you from here', 1)
+                ('me', 'ask are you from here', 1),
+                ('them', 'answer are you from here', 1)
             ],
         }
 
