@@ -521,11 +521,14 @@ class NonterminalSymbol(object):
         for tagset in raw_markup:
             for tag in raw_markup[tagset]:
                 if tagset == "Preconditions":
-                    self.preconditions.add(Precondition(tag=tag))
+                    if not any(p for p in self.preconditions if p.condition == tag):  # Preclude duplicates
+                        self.preconditions.add(Precondition(tag=tag))
                 elif tagset == "ViolationConditions":
-                    self.potential_violations.add(PotentialViolation(tag=tag))
+                    if not any(pv for pv in self.potential_violations if pv.condition == tag):
+                        self.potential_violations.add(PotentialViolation(tag=tag))
                 elif tagset == "Propositions":
-                    self.propositions.add(Proposition(tag=tag))
+                    if not any(p for p in self.propositions if p.specification == tag):
+                        self.propositions.add(Proposition(specification=tag))
                 elif tagset == "ChangeSubjectTo":
                     self.change_subject_to = tag
                 # Acts, goals, obligations, and topics are reified as objects during a conversation, but
@@ -758,8 +761,41 @@ class PotentialViolation(Condition):
 
 
 class Proposition(object):
-    """A proposition about the world asserted by a line of dialogue."""
+    """A proposition about the world asserted by the content of a line of dialogue."""
 
-    def __init__(self, tag):
+    def __init__(self, specification):
         """Initialize an Proposition object."""
-        self.content = tag
+        self.specification = specification
+        # These attributes will be strings that when evaluated (against the state of the world
+        # on some conversational turn) will resolve to objects and strings that can be used to
+        # instantiate evidence objects and to compose method calls to MentalModel.consider_new_evidence()
+        # as appropriate; they are set by _init_parse_specification()
+        self.subject = ''
+        self.feature_type = ''
+        self.feature_value = ''
+        self.feature_object_itself = ''
+        self._init_parse_specification()
+
+    def _init_parse_specification(self):
+        """Parse the specification for this proposition to set this object's individual specification attributes."""
+        subject, feature_type, feature_value, feature_object_itself = self.specification.split(',')
+        # Make sure the specification is well-formed
+        assert 'subject=' in subject, 'Ill-formed proposition specification: {}'.format(self.specification)
+        assert 'feature_type=' in feature_type, 'Ill-formed proposition specification: {}'.format(self.specification)
+        assert 'feature_value=' in feature_value, 'Ill-formed proposition specification: {}'.format(self.specification)
+        assert 'feature_object_itself=' in feature_object_itself, (
+            'Ill-formed proposition specification: {}'.format(self.specification)
+        )
+        # Parse the individual elements of the specification
+        self.subject = subject[len('subject='):]
+        self.feature_type = feature_type[len('feature_type='):]
+        self.feature_value = feature_value[len('feature_value='):]
+        self.feature_object_itself = feature_object_itself[len('feature_object_itself='):]
+
+    def __str__(self):
+        """Return string representation."""
+        return 'PROPOSITION:{feature_type}({subject}, [{feature_value}])'.format(
+            feature_type=self.feature_type,
+            subject=self.subject,
+            feature_value=self.feature_value
+        )

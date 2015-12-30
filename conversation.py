@@ -1,5 +1,7 @@
 import random
 from event import Event
+from evidence import Statement, Declaration, Lie, Eavesdropping
+from belief import PersonMentalModel, DwellingPlaceModel, BusinessMentalModel
 
 
 class Conversation(Event):
@@ -31,6 +33,12 @@ class Conversation(Event):
         # Inherit from conversational frames that pertain to the contexts of this conversation
         self.frames = set()
         self._init_inherit_from_frames()
+        # Prepare containers for evidence objects that may be instantiated, depending on
+        # whether knowledge is propagated as part of this conversation
+        self.declarations = set()
+        self.statements = set()
+        self.lies = set()
+        self.eavesdroppings = set()
 
     def __str__(self):
         """Return string representation."""
@@ -130,6 +138,7 @@ class Conversation(Event):
         """Carry out the entire conversation."""
         while not self.over:
             self.proceed()
+        self.replay()
 
     def proceed(self):
         """Proceed with the conversation by advancing one turn."""
@@ -244,6 +253,42 @@ class Conversation(Event):
         """Return whether there is already an active topic with the given name."""
         return any(t for t in self.topics if t.name == name)
 
+    def get_evidence_object(self, evidence_type, subject, source, recipient, eavesdropper=None):
+        """Return an evidence object satisfying the given criteria, if one has already been instantiated."""
+        if evidence_type == 'declaration':
+            try:
+                evidence_object = next(
+                    d for d in self.declarations if d.subject == subject and d.source == source and
+                    d.recipient == recipient
+                )
+            except StopIteration:
+                evidence_object = None
+        elif evidence_type == 'statement':
+            try:
+                evidence_object = next(
+                    s for s in self.statements if s.subject == subject and s.source == source and
+                    s.recipient == recipient
+                )
+            except StopIteration:
+                evidence_object = None
+        elif evidence_type == 'lie':
+            try:
+                evidence_object = next(
+                    l for l in self.statements if l.subject == subject and l.source == source and
+                    l.recipient == recipient
+                )
+            except StopIteration:
+                evidence_object = None
+        else:  # evidence_type == 'eavesdropping'
+            try:
+                evidence_object = next(
+                    l for l in self.statements if l.subject == subject and l.source == source and
+                    l.recipient == recipient and eavesdropper == eavesdropper
+                )
+            except StopIteration:
+                evidence_object = None
+        return evidence_object
+
 
 class Turn(object):
     """An utterance delivered by one character to another; a unit of conversation."""
@@ -254,6 +299,7 @@ class Turn(object):
         self.speaker = speaker
         self.interlocutor = conversation.interlocutor_to(speaker)
         self.subject = conversation.subject
+        self.propositions = set()
         self.targeted_obligation = targeted_obligation
         self.targeted_goal = targeted_goal
         self.moves_performed = set()
@@ -316,30 +362,17 @@ class Turn(object):
 
     def _update_conversational_context(self):
         """Update the conversation state and have the interlocutor consider any propositions."""
-        self._reify_dialogue_moves()
-        self._instantiate_statements_for_propositions()
         self._change_subject_of_conversation()
+        self._assert_propositions()
+        self._reify_dialogue_moves()
+        self._satisfy_goals()
         self._resolve_obligations()
         self._push_obligations()
         self._push_topics()
         self._address_topics()
-        self._satisfy_goals()
-
-    def _reify_dialogue_moves(self):
-        """Instantiate objects for the dialogue moves constituted by the delivery of this line."""
-        for move_name in self.line_of_dialogue.moves:
-            move_object = Move(conversation=self.conversation, speaker=self.speaker, name=move_name)
-            self.conversation.moves.add(move_object)
-            self.moves_performed.add(move_object)
-            if self.conversation.debug:
-                print '-- Reified {}'.format(move_object)
-
-    def _instantiate_statements_for_propositions(self):
-        """Instantiate and deliver Statement pieces of evidence for the propositions of the selected line."""
-        pass
 
     def _change_subject_of_conversation(self):
-        """Potentially change the subject of conversation according to the mark-up of the selected line."""
+        """Potentially change the subject of conversation according to the mark-up of the generated line."""
         speaker, interlocutor, subject = self.speaker, self.interlocutor, self.subject
         if self.line_of_dialogue.change_subject_to:
             new_subject = eval(self.line_of_dialogue.change_subject_to)
@@ -347,8 +380,43 @@ class Turn(object):
             if self.conversation.debug:
                 print '-- Changed subject to {}'.format('[hypothetical]' if not self.subject else self.subject.name)
 
+    def _assert_propositions(self):
+        """Assert propositions about the world that are expressed by the content of the generated line."""
+        for proposition in self.line_of_dialogue.propositions:
+            # TODO INFER LIES VIA VIOLATIONS REASONING (PROB SHOULD JUST HAVE SEPARATE LIE-CONDITIONS TAGSET)
+            proposition_object = Proposition(
+                conversation=self.conversation, this_is_a_lie=False, subject_ref=proposition.subject,
+                feature_type=proposition.feature_type, feature_value=proposition.feature_value,
+                feature_object_itself=proposition.feature_object_itself
+            )
+            self.propositions.add(proposition_object)
+
+    def _reify_dialogue_moves(self):
+        """Instantiate objects for the dialogue moves constituted by the delivery of this line."""
+        for move_name in self.line_of_dialogue.moves:
+            move_object = Move(conversation=self.conversation, speaker=self.speaker, name=move_name)
+            self.conversation.moves.add(move_object)
+            self.moves_performed.add(move_object)
+
+    def _satisfy_goals(self):
+        """Satisfy any goals whose targeted move was constituted by the execution of this turn."""
+        # Satisfy speaker goals
+        for goal in list(self.conversation.goals[self.speaker]):
+            if goal.achieved:
+                self.conversation.goals[self.speaker].remove(goal)
+                self.conversation.satisfied_goals[self.speaker].add(goal)
+                if self.conversation.debug:
+                    print '-- Satisfied {}'.format(goal)
+        # Satisfy interlocutor goals
+        for goal in list(self.conversation.goals[self.interlocutor]):
+            if goal.achieved:
+                self.conversation.goals[self.interlocutor].remove(goal)
+                self.conversation.satisfied_goals[self.interlocutor].add(goal)
+                if self.conversation.debug:
+                    print '-- Satisfied {}'.format(goal)
+
     def _resolve_obligations(self):
-        """Resolve any conversational obligations according to the mark-up of the selected line."""
+        """Resolve any conversational obligations according to the mark-up of the generated line."""
         # Resolve speaker obligations
         for move_name in self.line_of_dialogue.moves:
             if any(obligation for obligation in self.conversation.obligations[self.speaker] if
@@ -402,23 +470,6 @@ class Turn(object):
             if self.conversation.debug:
                 print '-- Addressed "{}"'.format(topic_object)
 
-    def _satisfy_goals(self):
-        """Satisfy any goals whose targeted move was constituted by the execution of this turn."""
-        # Satisfy speaker goals
-        for goal in list(self.conversation.goals[self.speaker]):
-            if goal.achieved:
-                self.conversation.goals[self.speaker].remove(goal)
-                self.conversation.satisfied_goals[self.speaker].add(goal)
-                if self.conversation.debug:
-                    print '-- Satisfied {}'.format(goal)
-        # Satisfy interlocutor goals
-        for goal in list(self.conversation.goals[self.interlocutor]):
-            if goal.achieved:
-                self.conversation.goals[self.interlocutor].remove(goal)
-                self.conversation.satisfied_goals[self.interlocutor].add(goal)
-                if self.conversation.debug:
-                    print '-- Satisfied {}'.format(goal)
-
     def performed_move(self, name):
         """Return whether this turn performed a move with the given name."""
         return any(m for m in self.moves_performed if m.name == name)
@@ -455,6 +506,8 @@ class Move(object):
         self.speaker = speaker
         self.interlocutor = conversation.interlocutor_to(speaker)
         self.name = name
+        if conversation.debug:
+            print '-- Reified {}'.format(self)
         self.fire()
 
     def __str__(self):
@@ -478,7 +531,7 @@ class Obligation(object):
         """Initialize an Obligation object."""
         self.conversation = conversation
         self.obligated_party = obligated_party
-        self.move_name = move_name
+        self.move_name = move_name  # Name of the move that this obligates obligated_party to perform next
 
     def __str__(self):
         """Return string representation."""
@@ -491,6 +544,168 @@ class Obligation(object):
     def target(self):
         """Select a line of dialogue that would resolve this obligation."""
         return self.conversation.target_move(move_name=self.move_name)
+
+
+class Proposition(object):
+    """A proposition about the world asserted by the content of a line of dialogue."""
+
+    def __init__(self, conversation, this_is_a_lie, subject_ref, feature_type, feature_value, feature_object_itself):
+        """Initialize a Proposition object."""
+        self.conversation = conversation
+        # Pull in all the local variables that we need to evaluate the method arguments so that
+        # we may resolve them to actual objects
+        speaker, interlocutor, subject = conversation.speaker, conversation.interlocutor, conversation.subject
+        # Evaluate the method arguments that need to be evaluated
+        self.source = speaker
+        self.recipient = interlocutor
+        self.subject = eval(subject_ref)
+        self.feature_value = eval(feature_value)
+        self.feature_object_itself = eval(feature_object_itself)
+        # Feature type doesn't need to be evaluated, so just attribute it as is
+        self.feature_type = feature_type
+        # Determine if anyone will eavesdrop this proposition
+        self.eavesdropper = self._potentially_be_eavesdropped()
+        # Instantiate and/or attribute evidence objects
+        self.declaration = None
+        self.statement = None
+        self.lie = None
+        self.eavesdropping = None
+        # Print debug statement
+        if conversation.debug:
+            print '-- Asserting {}...'.format(self)
+        # If they don't exist yet, establish mental models pertaining to the subject of this
+        # proposition that will be owned by its source, recipient, and eavesdropper (if there
+        # is one)
+        self._establish_mental_models_of_subject()
+        # Instantiate Declaration, Statement, Lie, and Eavesdropping evidence objects, as appropriate
+        self._instantiate_and_or_attribute_evidence_objects(this_is_a_lie=this_is_a_lie)
+        # Have the source, recipient, and eavesdropper (if any) of this proposition consider
+        # adopting a belief in response to it by evaluating the appropriate pieces of evidence
+        self._have_all_parties_consider_this_proposition_as_evidence()
+
+    def __str__(self):
+        """Return string representation."""
+        return 'PROPOSITION:{feature_type}({subject}, "{feature_value}")'.format(
+            feature_type=self.feature_type,
+            subject=self.subject.name,
+            feature_value=self.feature_value
+        )
+
+    def _potentially_be_eavesdropped(self):
+        """Potentially have the line of dialogue asserting this proposition be eavesdropped by a nearby character."""
+        # TODO maybe affect this by how salient subject is to eavesdropper
+        people_in_earshot = self.conversation.speaker.location.people_here_now - {self.source, self.recipient}
+        eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
+        if eavesdropper and random.random() < self.source.game.config.chance_someone_eavesdrops_statement_or_lie:
+            return eavesdropper
+        else:
+            return None
+
+    def _establish_mental_models_of_subject(self):
+        """If necessary, reify mental models pertaining to the subject of this proposition that will be owned by its
+        source, recipient, and eavesdropper (if any)."""
+        if self.subject not in self.source.mind.mental_models:
+            PersonMentalModel(owner=self.source, subject=self.subject, observation_or_reflection=None)
+        if self.subject not in self.recipient.mind.mental_models:
+            PersonMentalModel(owner=self.recipient, subject=self.subject, observation_or_reflection=None)
+        if self.eavesdropper:
+            if self.subject not in self.eavesdropper.mind.mental_models:
+                PersonMentalModel(owner=self.eavesdropper, subject=self.subject, observation_or_reflection=None)
+
+    def _instantiate_and_or_attribute_evidence_objects(self, this_is_a_lie):
+        """Instantiate and/or attribute Declaration and Statement/Lie evidence objects."""
+        self._instantiate_and_or_attribute_declaration_object()
+        if self.conversation.debug:
+            print "\t- Reified declaration piece of evidence"
+        if this_is_a_lie:
+            self._instantiate_and_or_attribute_lie_object()
+            if self.conversation.debug:
+                print "\t- Reified lie piece of evidence"
+        else:
+            self._instantiate_and_or_attribute_statement_object()
+            if self.conversation.debug:
+                print "\t- Reified statement piece of evidence"
+        if self.eavesdropper:
+            self._instantiate_and_or_adopt_eavesdropping_object()
+            if self.conversation.debug:
+                print "\t- Reified eavesdropping piece of evidence ({} eavesdropped)".format(
+                    self.eavesdropper.name
+                )
+
+    def _instantiate_and_or_attribute_declaration_object(self):
+        """Instantiate and/or attribute a Declaration object."""
+        declaration_object = self.conversation.get_evidence_object(
+            evidence_type='declaration', source=self.source, subject=self.subject, recipient=self.recipient,
+        )
+        if declaration_object:
+            self.declaration = declaration_object
+        else:
+            declaration_object = Declaration(subject=self.subject, source=self.source, recipient=self.recipient)
+            self.declaration = declaration_object
+            self.conversation.declarations.add(declaration_object)
+
+    def _instantiate_and_or_attribute_statement_object(self):
+        """Instantiate and/or attribute a Statement object."""
+        statement_object = self.conversation.get_evidence_object(
+            evidence_type='statement', source=self.source, subject=self.subject, recipient=self.recipient,
+        )
+        if statement_object:
+            self.statement = statement_object
+        else:
+            statement_object = Statement(subject=self.subject, source=self.source, recipient=self.recipient)
+            self.statement = statement_object
+            self.conversation.statements.add(statement_object)
+
+    def _instantiate_and_or_attribute_lie_object(self):
+        """Instantiate and/or attribute a Lie object."""
+        lie_object = self.conversation.get_evidence_object(
+            evidence_type='lie', source=self.source, subject=self.subject, recipient=self.recipient,
+        )
+        if lie_object:
+            self.lie = lie_object
+        else:
+            lie_object = Lie(subject=self.subject, source=self.source, recipient=self.recipient)
+            self.lie = lie_object
+            self.conversation.lies.add(lie_object)
+
+    def _instantiate_and_or_adopt_eavesdropping_object(self):
+        """Instantiate and/or attribute a Eavesdropping object."""
+        # Instantiate and/or attribute the object
+        eavesdropping_object = self.conversation.get_evidence_object(
+            evidence_type='eavesdropping', source=self.source, subject=self.subject, recipient=self.recipient,
+            eavesdropper=self.eavesdropper
+        )
+        if eavesdropping_object:
+            self.eavesdropping = eavesdropping_object
+        else:
+            eavesdropping_object = Eavesdropping(
+                subject=self.subject, source=self.source, recipient=self.recipient, eavesdropper=self.eavesdropper
+            )
+            self.eavesdropping = eavesdropping_object
+            self.conversation.eavesdroppings.add(eavesdropping_object)
+
+    def _have_all_parties_consider_this_proposition_as_evidence(self):
+        """Have the source, recipient, and eavesdropper (if any) of this proposition consider adopting a
+        belief in response to it by evaluating the appropriate pieces of evidence
+        """
+        # Have the recipient consider the Statement object conveying this proposition
+        self.recipient.mind.mental_models[self.subject].consider_new_evidence(
+            feature_type=self.feature_type, feature_value=self.feature_value,
+            feature_object_itself=self.feature_object_itself, new_evidence=self.statement
+        )
+        # Have the source of this proposition reinforce their own belief with a Declaration object
+        self.source.mind.mental_models[self.subject].consider_new_evidence(
+            feature_type=self.feature_type, feature_value=self.feature_value,
+            feature_object_itself=self.feature_object_itself, new_evidence=self.declaration
+        )
+        # If someone is eavesdropping, have them consider this proposition via an Eavesdropping object
+        if self.eavesdropping:
+            self.eavesdropper.mind.mental_models[self.subject].consider_new_evidence(
+                feature_type=self.feature_type, feature_value=self.feature_value,
+                feature_object_itself=self.feature_object_itself, new_evidence=self.eavesdropping
+            )
+        if self.conversation.debug:
+            print "\t- All conversational parties considered their new evidence"
 
 
 class Violation(object):
