@@ -395,12 +395,10 @@ class Turn(object):
 
     def _assert_propositions(self):
         """Assert propositions about the world that are expressed by the content of the generated line."""
-        for proposition in self.line_of_dialogue.propositions:
+        for proposition_specification in self.line_of_dialogue.propositions:
             # TODO INFER LIES VIA VIOLATIONS REASONING (PROB SHOULD JUST HAVE SEPARATE LIE-CONDITIONS TAGSET)
             proposition_object = Proposition(
-                conversation=self.conversation, this_is_a_lie=False, subject_ref=proposition.subject,
-                feature_type=proposition.feature_type, feature_value=proposition.feature_value,
-                feature_object_itself=proposition.feature_object_itself
+                conversation=self.conversation, this_is_a_lie=False, specification=proposition_specification
             )
             self.propositions.add(proposition_object)
 
@@ -562,20 +560,18 @@ class Obligation(object):
 class Proposition(object):
     """A proposition about the world asserted by the content of a line of dialogue."""
 
-    def __init__(self, conversation, this_is_a_lie, subject_ref, feature_type, feature_value, feature_object_itself):
+    def __init__(self, conversation, this_is_a_lie, specification):
         """Initialize a Proposition object."""
         self.conversation = conversation
-        # Pull in all the local variables that we need to evaluate the method arguments so that
-        # we may resolve them to actual objects
-        speaker, interlocutor, subject = conversation.speaker, conversation.interlocutor, conversation.subject
-        # Evaluate the method arguments that need to be evaluated
-        self.source = speaker
-        self.recipient = interlocutor
-        self.subject = eval(subject_ref)
-        self.feature_value = eval(feature_value)
-        self.feature_object_itself = eval(feature_object_itself)
-        # Feature type doesn't need to be evaluated, so just attribute it as is
-        self.feature_type = feature_type
+        # Attribute speaker and interlocutor as source and recipient of this proposition, respectively
+        self.source = conversation.speaker
+        self.recipient = conversation.interlocutor
+        # Parse the specification to resolve and assign our other crucial attributes
+        self.subject = None
+        self.feature_value = ''
+        self.feature_object_itself = None
+        self.feature_type = ''
+        self._init_parse_specification(specification=specification)
         # Inherit eavesdropper of the current conversation turn, if any
         self.eavesdropper = conversation.turns[-1].eavesdropper
         # Instantiate and/or attribute evidence objects
@@ -603,6 +599,32 @@ class Proposition(object):
             subject=self.subject.name,
             feature_value=self.feature_value
         )
+
+    def _init_parse_specification(self, specification):
+        """Parse the specification for this proposition to set this object's individual specification attributes."""
+        subject, feature_type, feature_value, feature_object_itself = specification.split(',')
+        # Make sure the specification is well-formed
+        assert 'subject=' in subject, 'Ill-formed proposition specification: {}'.format(specification)
+        assert 'feature_type=' in feature_type, 'Ill-formed proposition specification: {}'.format(specification)
+        assert 'feature_value=' in feature_value, 'Ill-formed proposition specification: {}'.format(specification)
+        assert 'feature_object_itself=' in feature_object_itself, (
+            'Ill-formed proposition specification: {}'.format(specification)
+        )
+        # Parse the individual elements of the specification
+        subject_ref = subject[len('subject='):]
+        feature_type = feature_type[len('feature_type='):]
+        feature_value_ref = feature_value[len('feature_value='):]
+        feature_object_itself_ref = feature_object_itself[len('feature_object_itself='):]
+        # Evaluate the references to resolve to attributes for this object (this requires
+        # us to pull in some variables from the conversational context)
+        speaker, interlocutor, subject = (
+            self.conversation.speaker, self.conversation.interlocutor, self.conversation.subject
+        )
+        self.subject = eval(subject_ref)
+        self.feature_value = eval(feature_value_ref)
+        self.feature_object_itself = eval(feature_object_itself_ref)
+        # Feature type doesn't need to be evaluated (it's just a string), so attribute it as is
+        self.feature_type = feature_type
 
     def _establish_mental_models_of_subject(self):
         """If necessary, reify mental models pertaining to the subject of this proposition that will be owned by its
