@@ -16,7 +16,8 @@ class Routine(object):
     def __init__(self, person):
         """Initialize a Routine object."""
         self.person = person
-        self.working = False  # Whether or not the person is working at an exact timestep
+        self.working = False  # Whether or not the person is working on an exact timestep
+        self.occasion = None  # A person's purpose for being where they are on a timestep
 
     def __str__(self):
         """Return string representation."""
@@ -25,6 +26,7 @@ class Routine(object):
     def enact(self):
         """Enact this person's daily routine for a particular timestep."""
         new_location, occasion = self.decide_where_to_go()
+        self.occasion = occasion
         self.working = True if occasion == 'work' else False
         self.person.go_to(destination=new_location, occasion=occasion)
 
