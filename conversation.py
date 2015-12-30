@@ -367,6 +367,8 @@ class Turn(object):
         people_in_earshot = self.conversation.speaker.location.people_here_now - {self.speaker, self.interlocutor}
         eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
         if eavesdropper and random.random() < self.speaker.game.config.chance_someone_eavesdrops_statement_or_lie:
+            if self.conversation.debug:
+                print '-- Eavesdropped by {}'.format(eavesdropper.name)
             return eavesdropper
         else:
             return None
