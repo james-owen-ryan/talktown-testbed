@@ -282,7 +282,7 @@ class Conversation(Event):
         else:  # evidence_type == 'eavesdropping'
             try:
                 evidence_object = next(
-                    l for l in self.statements if l.subject == subject and l.source == source and
+                    l for l in self.eavesdroppings if l.subject == subject and l.source == source and
                     l.recipient == recipient and eavesdropper == eavesdropper
                 )
             except StopIteration:
@@ -310,6 +310,7 @@ class Turn(object):
         self.realization = ''  # Dialogue template as it was filled in during this turn
         self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
+        self.eavesdropper = self._potentially_be_eavesdropped()
         self._update_conversational_context()
 
     def __str__(self):
@@ -359,6 +360,16 @@ class Turn(object):
         """Display the line of dialogue on screen."""
         self.realization = self.line_of_dialogue.realize(conversation_turn=self)
         print '\n{}: {}\n'.format(self.speaker.name, self.realization)
+
+    def _potentially_be_eavesdropped(self):
+        """Potentially have the line of dialogue asserting this proposition be eavesdropped by a nearby character."""
+        # TODO maybe affect this by how salient subject is to eavesdropper
+        people_in_earshot = self.conversation.speaker.location.people_here_now - {self.speaker, self.interlocutor}
+        eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
+        if eavesdropper and random.random() < self.speaker.game.config.chance_someone_eavesdrops_statement_or_lie:
+            return eavesdropper
+        else:
+            return None
 
     def _update_conversational_context(self):
         """Update the conversation state and have the interlocutor consider any propositions."""
@@ -563,8 +574,8 @@ class Proposition(object):
         self.feature_object_itself = eval(feature_object_itself)
         # Feature type doesn't need to be evaluated, so just attribute it as is
         self.feature_type = feature_type
-        # Determine if anyone will eavesdrop this proposition
-        self.eavesdropper = self._potentially_be_eavesdropped()
+        # Inherit eavesdropper of the current conversation turn, if any
+        self.eavesdropper = conversation.turns[-1].eavesdropper
         # Instantiate and/or attribute evidence objects
         self.declaration = None
         self.statement = None
@@ -590,16 +601,6 @@ class Proposition(object):
             subject=self.subject.name,
             feature_value=self.feature_value
         )
-
-    def _potentially_be_eavesdropped(self):
-        """Potentially have the line of dialogue asserting this proposition be eavesdropped by a nearby character."""
-        # TODO maybe affect this by how salient subject is to eavesdropper
-        people_in_earshot = self.conversation.speaker.location.people_here_now - {self.source, self.recipient}
-        eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
-        if eavesdropper and random.random() < self.source.game.config.chance_someone_eavesdrops_statement_or_lie:
-            return eavesdropper
-        else:
-            return None
 
     def _establish_mental_models_of_subject(self):
         """If necessary, reify mental models pertaining to the subject of this proposition that will be owned by its
