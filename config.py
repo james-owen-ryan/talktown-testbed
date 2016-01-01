@@ -2499,7 +2499,7 @@ class Config(object):
                 },
                 'goals': {
                     'initiator': [],
-                    'recipient': ['learn caller identity']
+                    'recipient': ['LEARN CALLER IDENTITY']
                 }
             },
             'PHONE CALL FROM STRANGER': {
