@@ -490,7 +490,7 @@ class NonterminalSymbol(object):
         self.top_level = top_level
         # Prepare annotation sets that will be populated (as appropriate) by _init_parse_markup()
         self.preconditions = set()
-        self.potential_violations = set()
+        self.conditional_violations = set()
         self.propositions = set()
         self.change_subject_to = ''  # Raw Python snippet that when executed will change the subject of conversation
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
@@ -523,7 +523,7 @@ class NonterminalSymbol(object):
                 if tagset == "Preconditions":
                     self.preconditions.add(Precondition(tag=tag))
                 elif tagset == "ViolationConditions":
-                    self.potential_violations.add(PotentialViolation(tag=tag))
+                    self.conditional_violations.add(ConditionalViolation(tag=tag))
                 elif tagset == "Propositions":
                     self.propositions.add(tag)
                 elif tagset == "ChangeSubjectTo":
@@ -561,7 +561,7 @@ class NonterminalSymbol(object):
     def violations(self, conversation):
         """Return a list of names of conversational violations that will be incurred if this line is deployed now."""
         violations_incurred = [
-            potential_violation.name for potential_violation in self.potential_violations if
+            potential_violation.name for potential_violation in self.conditional_violations if
             potential_violation.evaluate(conversation=conversation)
         ]
         return violations_incurred
@@ -742,15 +742,15 @@ class Precondition(Condition):
         return self.condition
 
 
-class PotentialViolation(Condition):
-    """A potential conversational violation that will be incurred if a symbol is expanded
-    to generate a line of dialogue.
+class ConditionalViolation(Condition):
+    """A conversational violation that may be incurred, pending the evaluation of its conditions,
+    if a symbol is expanded to generate a line of dialogue.
     """
 
     def __init__(self, tag):
-        """Initialize a PotentialViolation object."""
+        """Initialize a ConditionalViolation object."""
         self.name, condition = tag.split('<--')
-        super(PotentialViolation, self).__init__(condition=condition)
+        super(ConditionalViolation, self).__init__(condition=condition)
 
     def __str__(self):
         """Return string representation."""
