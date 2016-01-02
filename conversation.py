@@ -319,7 +319,6 @@ class Turn(object):
 
     def _decide_what_to_say(self):
         """Have the speaker select a line of dialogue to deploy on this turn."""
-        # TODO ACTUALLY USE THE LINE'S PROBABILITIES HERE (EXCEPT THEY AREN'T PROPERLY RELATIVE?)
         if self.targeted_obligation:
             selected_line = self.targeted_obligation.target()
         elif self.targeted_goal:
