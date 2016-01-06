@@ -2524,8 +2524,8 @@ class Config(object):
                     'recipient': []
                 },
                 'goals': {
-                    'initiator': ['LEARN INTERLOCUTOR NAME', 'LEARN IF INTERLOCUTOR IS FROM HERE'],
-                    'recipient': ['LEARN INTERLOCUTOR NAME']
+                    'initiator': ['LEARN NAME OF STRANGER IN PUBLIC', 'LEARN IF STRANGER IN PUBLIC IS FROM HERE'],
+                    'recipient': ['LEARN NAME OF STRANGER IN PUBLIC']
                 }
             },
             'EXTREMELY INTROVERTED RECIPIENT': {
@@ -2558,12 +2558,12 @@ class Config(object):
                 ('me', 'request caller identity', 1),
                 ('them', 'report identity', 1),
             ],
-            'LEARN INTERLOCUTOR NAME': [
+            'LEARN NAME OF STRANGER IN PUBLIC': [
                 ('me', 'INTRODUCE SELF TO STRANGER IN PUBLIC', 1),
                 ('me', 'request name', 1),
                 ('them', 'introduce self', 1)
             ],
-            'LEARN IF INTERLOCUTOR IS FROM HERE': [
+            'LEARN IF STRANGER IN PUBLIC IS FROM HERE': [
                 ('me', 'ask how are you', 1),
                 ('me', 'ask are you from here', 1),
                 ('them', 'answer are you from here', 1)
