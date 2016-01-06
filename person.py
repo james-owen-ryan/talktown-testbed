@@ -904,11 +904,11 @@ class Person(object):
 
     def belief(self, entity, feature_type):
         """Return this person's currently held belief facet about entity's feature type."""
-        assert self.knows(entity=entity, feature_type=feature_type), (
-            "A call was made to {}.belief() when they do not have a belief about {}'s {}".format(
-                self.name, entity.name, feature_type
-            )
-        )
+        # assert self.knows(entity=entity, feature_type=feature_type), (
+        #     "A call was made to {}.belief() when they do not have a belief about {}'s {}".format(
+        #         self.name, entity.name, feature_type
+        #     )
+        # )
         if entity.type == 'person':
             return self.get_knowledge_about_person(other_person=entity, feature_type=feature_type)
         elif entity.type == 'residence' or entity.type == 'business':
@@ -1911,7 +1911,7 @@ class Person(object):
             if person in self.relationships or self.known_relation_to_me(person):
                 salience_of_subject += 1.0
             implant_will_happen = False
-            if person in self.immediate_family or person in self.friends:
+            if person in self.immediate_family or person in self.friends or person is self:
                 implant_will_happen = True
             elif salience_of_subject > 0.0:
                 salience_of_subject = max(1.01, salience_of_subject)  # Needed to make the next line work
