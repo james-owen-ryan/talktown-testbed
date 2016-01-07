@@ -726,7 +726,7 @@ class Condition(object):
         # Return a boolean indicating whether this precondition is satisfied
         try:
             return self.test(*filled_in_arguments)
-        except ValueError:
+        except (ValueError, AttributeError):
             raise Exception('Cannot evaluate the precondition {}'.format(self.condition))
 
 
