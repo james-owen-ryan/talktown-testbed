@@ -248,7 +248,7 @@ class Conversation(Event):
         relevant_speakers = self.participants if speaker == 'either' else (speaker,)
         earlier_turns_that_performed_that_move = [
             turn for turn in self.completed_turns if any(
-                move for move in turn.moves_performed if move.move.speaker in relevant_speakers and move.name == name
+                move for move in turn.moves_performed if move.speaker in relevant_speakers and move.name == name
             )
         ]
         latest_such_turn = max(earlier_turns_that_performed_that_move, key=lambda t: t.index)
