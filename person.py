@@ -891,7 +891,7 @@ class Person(object):
         If this person does not hold a belief about entity's feature type (or entity at
         all), return None.
         """
-        if entity is None:  # E.g., if querying p.knows(p.father, 'first name'), but p is a PersonExNihilo
+        if entity is None:  # E.g., if querying p.accurate_belief(p.father, 'first name'), but p is a PersonExNihilo
             return None
         elif entity not in self.mind.mental_models:
             return None
@@ -900,10 +900,21 @@ class Person(object):
         elif entity.type == 'residence' or entity.type == 'business':
             return self.get_knowledge_about_place(place=entity, feature_type=feature_type)
 
-    def knows(self, entity, feature_type):
+    def accurate_belief(self, entity, feature_type):
         """Return a boolean indicating whether this person has an *accurate* belief about entity's feature_type."""
         belief_facet = self.belief(entity=entity, feature_type=feature_type)
         if belief_facet and belief_facet.accurate:
+            return True
+        else:
+            return False
+
+    def inaccurate_belief(self, entity, feature_type):
+        """Return a boolean indicating whether this person has an *inaccurate* belief about entity's feature_type.
+
+        If this person has no such belief, False is returned.
+        """
+        belief_facet = self.belief(entity=entity, feature_type=feature_type)
+        if belief_facet and not belief_facet.accurate:
             return True
         else:
             return False
@@ -1860,7 +1871,7 @@ class Person(object):
             dist = self.city.distance_between(friend.home.lot, lot) + 1.0
             score += pull_to_live_near_a_friend / dist
         # Score for proximity to workplace (only positively) -- will be only criterion for person
-        # who is new to the city (and thus knows no one there yet)
+        # who is new to the city (and thus accurate_belief no one there yet)
         if self.occupation:
             dist = self.city.distance_between(self.occupation.company.lot, lot) + 1.0
             score += config.pull_to_live_near_workplace / dist
@@ -2021,7 +2032,7 @@ class Person(object):
             listener = self if talker is not self else interlocutor
             statement = Statement(subject=person_in_question, source=talker, recipient=listener)
             declaration = Declaration(subject=person_in_question, source=talker, recipient=listener)
-            # Potentially have someone eavesdrop -- TODO maybe affect this by whether eavesdropper knows subject
+            # Potentially have someone eavesdrop -- TODO maybe affect this by whether eavesdropper accurate_belief subject
             people_in_earshot = self.location.people_here_now - {talker, listener}
             eavesdropper = None if not people_in_earshot else random.choice(list(people_in_earshot))
             if eavesdropper and random.random() < config.chance_someone_eavesdrops_statement_or_lie:
@@ -2065,7 +2076,7 @@ class Person(object):
             chance = 0.0
         else:
             extroversion_component = self._get_extroversion_component_to_chance_of_social_interaction()
-            # If this person knows other_person, we look at their relationship to determine
+            # If this person accurate_belief other_person, we look at their relationship to determine
             # how its strength will factor into the decision; if they don't know this person,
             # we then factor in this person's openness to experience instead
             if other_person not in self.relationships:
