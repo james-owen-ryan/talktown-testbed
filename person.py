@@ -886,7 +886,7 @@ class Person(object):
             return self.mind.mental_models[place].address
 
     def belief(self, entity, feature_type):
-        """Return this person's currently held belief facet about entity's feature type.
+        """Return this person's currently held belief facet about entity's feature_type.
 
         If this person does not hold a belief about entity's feature type (or entity at
         all), return None.
@@ -901,7 +901,7 @@ class Person(object):
             return self.get_knowledge_about_place(place=entity, feature_type=feature_type)
 
     def knows(self, entity, feature_type):
-        """Return a boolean indicating whether this person has an accurate belief about entity's feature_type."""
+        """Return a boolean indicating whether this person has an *accurate* belief about entity's feature_type."""
         belief_facet = self.belief(entity=entity, feature_type=feature_type)
         if belief_facet and belief_facet.accurate:
             return True
