@@ -1918,7 +1918,6 @@ class Person(object):
         acquisition during the low-fidelity simulation.
         """
         # TODO INJECT KNOWLEDGE ABOUT PLACES
-        print "Implanting knowledge into {}'s mind...".format(self.name)
         all_the_people_i_should_know_about = set(self.relationships) | set(self.salience_of_other_people)
         for person in all_the_people_i_should_know_about:
             if person in self.relationships:
