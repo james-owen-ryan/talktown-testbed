@@ -241,6 +241,20 @@ class Conversation(Event):
         relevant_speakers = self.participants if speaker == 'either' else (speaker,)
         return any(move for move in self.moves if move.speaker in relevant_speakers and move.name == name)
 
+    def turns_since_earlier_move(self, speaker, name):
+        """Return the number of turns that have been completed since speaker performed a dialogue
+        move with the given name.
+        """
+        relevant_speakers = self.participants if speaker == 'either' else (speaker,)
+        earlier_turns_that_performed_that_move = [
+            turn for turn in self.completed_turns if any(
+                move for move in turn.moves_performed if move.move.speaker in relevant_speakers and move.name == name
+            )
+        ]
+        latest_such_turn = max(earlier_turns_that_performed_that_move, key=lambda t: t.index)
+        turns_completed_since_that_turn = self.completed_turns[-1].index - latest_such_turn.index
+        return turns_completed_since_that_turn
+
     def has_obligation(self, conversational_party, move_name):
         """Return whether the conversational party currently has an obligation to perform a move with the given name."""
         return any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
@@ -259,7 +273,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     d for d in self.declarations if d.subject == subject and d.source == source and
-                    d.recipient == recipient
+                                                    d.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -267,7 +281,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     s for s in self.statements if s.subject == subject and s.source == source and
-                    s.recipient == recipient
+                                                  s.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -275,7 +289,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     l for l in self.statements if l.subject == subject and l.source == source and
-                    l.recipient == recipient
+                                                  l.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -283,7 +297,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     l for l in self.eavesdroppings if l.subject == subject and l.source == source and
-                    l.recipient == recipient and eavesdropper == eavesdropper
+                                                      l.recipient == recipient and eavesdropper == eavesdropper
                 )
             except StopIteration:
                 evidence_object = None
