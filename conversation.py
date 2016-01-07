@@ -400,6 +400,7 @@ class Turn(object):
         self._push_obligations()
         self._push_topics()
         self._address_topics()
+        self._fire_dialogue_moves()
 
     def _change_subject_of_conversation(self):
         """Potentially change the subject of conversation according to the mark-up of the generated line."""
@@ -420,7 +421,7 @@ class Turn(object):
             self.propositions.add(proposition_object)
 
     def _reify_dialogue_moves(self):
-        """Instantiate objects for the dialogue moves constituted by the delivery of this line."""
+        """Instantiate objects for the dialogue moves performed on this turn."""
         for move_name in self.line_of_dialogue.moves:
             move_object = Move(conversation=self.conversation, speaker=self.speaker, name=move_name)
             self.conversation.moves.add(move_object)
@@ -498,6 +499,11 @@ class Turn(object):
             if self.conversation.debug:
                 print '-- Addressed "{}"'.format(topic_object)
 
+    def _fire_dialogue_moves(self):
+        """Fire rules associated with the dialogue moves performed on this turn."""
+        for move in self.moves_performed:
+            move.fire()
+
     def performed_move(self, name):
         """Return whether this turn performed a move with the given name."""
         return any(m for m in self.moves_performed if m.name == name)
@@ -536,7 +542,6 @@ class Move(object):
         self.name = name
         if conversation.debug:
             print '-- Reified {}'.format(self)
-        self.fire()
 
     def __str__(self):
         """Return string representation."""
