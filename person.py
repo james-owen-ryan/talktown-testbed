@@ -439,6 +439,17 @@ class Person(object):
         return 'himself' if self.male else 'herself'
 
     @property
+    def honorific(self):
+        """Return the correct honorific (e.g., 'Mr.') for this person."""
+        if self.male:
+            return 'Mr.'
+        elif self.female:
+            if self.spouse:
+                return 'Mrs.'
+            else:
+                return 'Ms.'
+
+    @property
     def full_name(self):
         """Return a person's full name."""
         if self.suffix:
