@@ -543,9 +543,8 @@ class Move(object):
         # If someone storms off, or both parties say goodbye, end the conversation
         if self.name == 'storm off':
             self.conversation.over = True
-        elif self.name == "say goodbye":
-            if self.conversation.earlier_move(speaker=self.interlocutor, name='say goodbye'):
-                self.conversation.over = True
+        elif self.name == "say goodbye back":
+            self.conversation.over = True
 
 
 class Obligation(object):
