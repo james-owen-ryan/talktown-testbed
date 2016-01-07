@@ -885,34 +885,28 @@ class Person(object):
         elif feature_type == "home address":
             return self.mind.mental_models[place].address
 
-    def knows(self, entity, feature_type):
-        """Return a boolean indicating whether this person has a belief about entity's feature_type."""
-        if entity is None:  # E.g., if querying p.knows(p.father, 'first name'), but p is a PersonExNihilo
-            return False
-        if entity.type == 'person':
-            if self.get_knowledge_about_person(other_person=entity, feature_type=feature_type):
-                return True
-            else:
-                return False
-        elif entity.type == 'residence' or entity.type == 'business':
-            if self.get_knowledge_about_place(place=entity, feature_type=feature_type):
-                return True
-            else:
-                return False
-        else:
-            raise Exception('knows() was called about something that is not a person, home, or business.')
-
     def belief(self, entity, feature_type):
-        """Return this person's currently held belief facet about entity's feature type."""
-        # assert self.knows(entity=entity, feature_type=feature_type), (
-        #     "A call was made to {}.belief() when they do not have a belief about {}'s {}".format(
-        #         self.name, entity.name, feature_type
-        #     )
-        # )
-        if entity.type == 'person':
+        """Return this person's currently held belief facet about entity's feature type.
+
+        If this person does not hold a belief about entity's feature type (or entity at
+        all), return None.
+        """
+        if entity is None:  # E.g., if querying p.knows(p.father, 'first name'), but p is a PersonExNihilo
+            return None
+        elif entity not in self.mind.mental_models:
+            return None
+        elif entity.type == 'person':
             return self.get_knowledge_about_person(other_person=entity, feature_type=feature_type)
         elif entity.type == 'residence' or entity.type == 'business':
             return self.get_knowledge_about_place(place=entity, feature_type=feature_type)
+
+    def knows(self, entity, feature_type):
+        """Return a boolean indicating whether this person has an accurate belief about entity's feature_type."""
+        belief_facet = self.belief(entity=entity, feature_type=feature_type)
+        if belief_facet and belief_facet.accurate:
+            return True
+        else:
+            return False
 
     def sources(self, entity, feature_type=None):
         """Return this person's sources, in order of most informative to least, for their
