@@ -419,18 +419,23 @@ class Person(object):
         return 0
 
     @property
-    def pronoun(self):
-        """Return the appropriately gendered third-person singular pronoun."""
+    def subject_pronoun(self):
+        """Return the appropriately gendered third-person singular subject pronoun."""
         return 'he' if self.male else 'she'
 
     @property
-    def possessive(self):
-        """Return appropriately gendered possessive pronoun."""
+    def object_pronoun(self):
+        """Return the appropriately gendered third-person singular object pronoun."""
+        return 'him' if self.male else 'her'
+
+    @property
+    def possessive_pronoun(self):
+        """Return appropriately gendered possessive subject_pronoun."""
         return 'his' if self.male else 'her'
 
     @property
-    def reflexive(self):
-        """Return appropriately gendered reflexive pronoun."""
+    def reflexive_pronoun(self):
+        """Return appropriately gendered reflexive subject_pronoun."""
         return 'himself' if self.male else 'herself'
 
     @property
