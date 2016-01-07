@@ -263,6 +263,10 @@ class Conversation(Event):
         """Return whether the conversational party currently has no obligation to perform a move with the given name."""
         return not any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
 
+    def outstanding_obligations(self):
+        """Return whether there are any outstanding conversational obligations."""
+        return self.obligations[self.initiator] or self.obligations[self.recipient]
+
     def already_a_topic(self, name):
         """Return whether there is already an active topic with the given name."""
         return any(t for t in self.topics if t.name == name)
@@ -540,10 +544,11 @@ class Move(object):
 
     def fire(self):
         """Change the world according to the illocutionary force of this move."""
-        # If someone storms off, or both parties say goodbye, end the conversation
-        if self.name == 'storm off':
+        # If someone storms off, or both parties say goodbye (and neither has any
+        # outstanding obligations), end the conversation
+        if not self.conversation.obligations and self.name == 'storm off':
             self.conversation.over = True
-        elif self.name == "say goodbye back":
+        elif self.name == "say goodbye back" and not self.conversation.outstanding_obligations():
             self.conversation.over = True
 
 
