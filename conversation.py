@@ -628,7 +628,7 @@ class Proposition(object):
 
     def _init_parse_specification(self, specification):
         """Parse the specification for this proposition to set this object's individual specification attributes."""
-        subject, feature_type, feature_value, feature_object_itself = specification.split(',')
+        subject, feature_type, feature_value, feature_object_itself = specification.split(';')
         # Make sure the specification is well-formed
         assert 'subject=' in subject, 'Ill-formed proposition specification: {}'.format(specification)
         assert 'feature_type=' in feature_type, 'Ill-formed proposition specification: {}'.format(specification)
