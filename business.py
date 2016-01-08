@@ -183,9 +183,9 @@ class Business(object):
         elif self.__class__ in (CityHall, FireStation, Hospital, PoliceStation, School, Cemetery):
             name = "{0} {1}".format(self.city.name, class_to_company_name_component[self.__class__])
         elif self.__class__ is Farm:
-            name = "{} farm".format(self.owner.person.name)
+            name = "{}'s farm".format(self.owner.person.name)
             if any(c for c in self.city.companies if c.name == name):
-                name = "{} farm".format(self.owner.person.full_name)
+                name = "{}'s farm".format(self.owner.person.full_name)
         elif self.__class__ is LawFirm:
             associates = [e for e in self.employees if e.__class__ is Lawyer]
             suffix = "{0} & {1}".format(
