@@ -96,12 +96,26 @@ class Conversation(Event):
         return None if not completed_turns else completed_turns[-1]
 
     @property
+    def last_speaker_turn(self):
+        """Return the last turn completed by the current speaker."""
+        all_completed_speaker_turns = [
+            turn for turn in self.turns if hasattr(turn, 'line_of_dialogue') and turn.speaker is self.speaker
+        ]
+        if all_completed_speaker_turns:
+            return all_completed_speaker_turns[-1]
+        else:
+            return None
+
+    @property
     def last_interlocutor_turn(self):
         """Return the last turn completed by the current interlocutor."""
         all_completed_interlocutor_turns = [
             turn for turn in self.turns if hasattr(turn, 'line_of_dialogue') and turn.speaker is self.interlocutor
         ]
-        return all_completed_interlocutor_turns[-1]
+        if all_completed_interlocutor_turns:
+            return all_completed_interlocutor_turns[-1]
+        else:
+            return None
 
     @property
     def goals_not_on_hold(self):
@@ -254,6 +268,14 @@ class Conversation(Event):
         latest_such_turn = max(earlier_turns_that_performed_that_move, key=lambda t: t.index)
         turns_completed_since_that_turn = self.completed_turns[-1].index - latest_such_turn.index
         return turns_completed_since_that_turn
+
+    def last_speaker_move(self, name):
+        """Return whether the interlocutor's last move was one with the given name."""
+        return self.speaker and self.last_speaker_turn.performed_move(name=name)
+
+    def last_interlocutor_move(self, name):
+        """Return whether the interlocutor's last move was one with the given name."""
+        return self.last_interlocutor_turn and self.last_interlocutor_turn.performed_move(name=name)
 
     def turns_taken(self, speaker):
         """Return the number of turns taken so far by the given speaker."""
