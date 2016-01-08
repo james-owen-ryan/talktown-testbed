@@ -255,6 +255,10 @@ class Conversation(Event):
         turns_completed_since_that_turn = self.completed_turns[-1].index - latest_such_turn.index
         return turns_completed_since_that_turn
 
+    def turns_taken(self, speaker):
+        """Return the number of turns taken so far by the given speaker."""
+        return len([turn for turn in self.turns if turn.speaker is speaker])
+
     def has_obligation(self, conversational_party, move_name):
         """Return whether the conversational party currently has an obligation to perform a move with the given name."""
         return any(o for o in self.obligations[conversational_party] if o.move_name == move_name)
