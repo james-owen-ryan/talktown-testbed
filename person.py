@@ -56,7 +56,9 @@ class Person(object):
             # Set attributes pertaining to age
             self.age = None  # Will get initialized by PersonExNihilo.__init__()
             self.adult = True if self.age >= 18 else False
-            self.ready_to_work = True if self.age >= self.game.config.age_people_start_working else False
+            self.ready_to_work = (
+                True if self.age >= self.game.config.age_people_start_working(year=self.game.year) else False
+            )
         # Set sex
         self.male, self.female = (True, False) if random.random() < 0.5 else (False, True)
         self.tag = ''  # Allows players to tag characters with arbitrary strings
