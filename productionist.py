@@ -649,7 +649,7 @@ class LineOfDialogue(object):
         for symbol in self.symbols:
             self.violations |= set(symbol.violations(conversation=conversation))
             self.propositions |= symbol.propositions
-            self.change_subject_to = symbol.change_subject_to
+            self.change_subject_to = symbol.change_subject_to if symbol.change_subject_to else self.change_subject_to
             self.moves |= symbol.moves
             self.speaker_obligations_pushed |= symbol.speaker_obligations_pushed
             self.interlocutor_obligations_pushed |= symbol.interlocutor_obligations_pushed
