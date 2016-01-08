@@ -413,7 +413,7 @@ class Turn(object):
             new_subject = eval(self.line_of_dialogue.change_subject_to)
             self.conversation.subject = new_subject
             if self.conversation.debug:
-                print '-- Changed subject to {}'.format('[hypothetical]' if not self.subject else self.subject.name)
+                print '-- Changed subject to {}'.format(self.conversation.subject.name)
 
     def _assert_propositions(self):
         """Assert propositions about the world that are expressed by the content of the generated line."""
