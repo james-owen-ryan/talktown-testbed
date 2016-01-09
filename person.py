@@ -2219,6 +2219,20 @@ class Person(object):
         else:
             return None
 
+    def people_i_believe_are_named(self, first_name=None, last_name=None, sex=None):
+        """Return a list of people who this person believes have features with the given values."""
+        matches = [p for p in self.mind.mental_models if p.subject.type == 'person']
+        if first_name:
+            matches = [p for p in matches if self.belief(p, 'first name') == first_name]
+        if last_name:
+            matches = [p for p in matches if self.belief(p, 'last name') == last_name]
+        if sex:
+            if sex == 'm':
+                matches = [p for p in matches if p.male]
+            elif sex == 'f':
+                matches = [p for p in matches if p.female]
+        return matches
+
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.
