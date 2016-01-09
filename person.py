@@ -2198,6 +2198,27 @@ class Person(object):
             max(0.0, self.salience_of_other_people.get(entity, 0.0) + change)
         )
 
+    def people_i_believe_work_at(self, company):
+        """Return a list of people, ordered by their salience, that this person believes works at the given company."""
+        if company not in self.mind.mental_models:
+            return []
+        else:
+            people_i_believe_work_at_this_company = [
+                mental_model.subject for mental_model in self.mind.mental_models[company].employees
+            ]
+            people_i_believe_work_at_this_company.sort(
+                key=lambda p: self.salience_of_other_people.get(p, 0.0), reverse=True
+            )
+            return people_i_believe_work_at_this_company
+
+    def most_salient_person_i_believe_works_at(self, company):
+        """Return the single most salient person that this person believes works at the given company."""
+        people_i_believe_work_at_this_company = self.people_i_believe_work_at(company=company)
+        if people_i_believe_work_at_this_company:
+            return people_i_believe_work_at_this_company[0]
+        else:
+            return None
+
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.
