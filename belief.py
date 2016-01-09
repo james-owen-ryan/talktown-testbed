@@ -326,6 +326,9 @@ class BusinessMentalModel(MentalModel):
         @param subject: The building to whom this belief pertains.
         """
         super(BusinessMentalModel, self).__init__(owner, subject)
+        self.name = self._init_business_facet(
+            feature_type="business name", observation_or_reflection=observation
+        )
         self.block = self._init_business_facet(
             feature_type="business block", observation_or_reflection=observation
         )
@@ -412,7 +415,11 @@ class BusinessMentalModel(MentalModel):
         """Confabulate a facet to a belief about a dwelling place."""
         config = self.owner.game.config
         confabulation = Confabulation(subject=self.subject, source=self.owner)
-        if feature_type == "business block":
+        if feature_type == "business name":
+            # TODO author confabulation procedure for this
+            confabulated_feature_str = "CONFABULATED BUSINESS NAME"
+            confabulated_object_itself = None
+        elif feature_type == "business block":
             random_block = random.choice(list(self.owner.city.blocks))
             confabulated_feature_str = str(random_block)
             confabulated_object_itself = None
@@ -422,7 +429,7 @@ class BusinessMentalModel(MentalModel):
                 house_number += int(random.random() * 500)
             house_number = min(house_number, config.largest_possible_house_number)
             random_street = random.choice(list(self.owner.city.streets))
-            confabulated_feature_str = "{0} {1}".format(house_number, random_street)
+            confabulated_feature_str = "{} {}".format(house_number, random_street)
             confabulated_object_itself = None
         belief_facet_object = Facet(
             value=confabulated_feature_str, owner=self.owner, subject=self.subject,
@@ -559,6 +566,7 @@ class BusinessMentalModel(MentalModel):
     def attribute_to_feature_type(attribute):
         """Return the belief type of an attribute."""
         attribute_to_belief_type = {
+            "name": "business name",
             "block": "business block",
             "address": "business address"
         }
@@ -566,7 +574,9 @@ class BusinessMentalModel(MentalModel):
 
     def get_facet_to_this_belief_of_type(self, feature_type):
         """Return the facet to this mental model of the given type."""
-        if feature_type == "business block":
+        if feature_type == "business name":
+            return self.name
+        elif feature_type == "business block":
             return self.block
         elif feature_type == "business address":
             return self.address
@@ -575,6 +585,7 @@ class BusinessMentalModel(MentalModel):
     def get_command_to_access_a_belief_facet(feature_type):
         """Return a command that will allow the belief facet for this feature type to be directly modified."""
         feature_type_to_command = {
+            "business name": "self.name",
             "business block": "self.block",
             "business address": "self.address",
         }
@@ -1438,7 +1449,7 @@ class PersonMentalModel(MentalModel):
         elif feature_type == "sunglasses":
             return self.face.distinctive_features.sunglasses
         # These are convenience wrappers for Bad News that allow the wizard
-        # to quickly compose 'do_you_know()' features; they also afford
+        # to quickly compose 'people_i_believe_are_named()' features; they also afford
         # queries regarding binned skin color and age
         elif feature_type == 'sideburns':
             if str(self.face.facial_hair.style) == 'sideburns':

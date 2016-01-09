@@ -1670,6 +1670,7 @@ class Config(object):
             "whereabouts XYZ":             0.80,  # This is handled a little differently due to whereabouts naming
             "last name":                   0.70,
             "business block":              0.70,
+            "business name":               0.70,
             "home block":                  0.70,
             "nose size":                   0.40,
             "middle name":                 0.30,
@@ -1707,7 +1708,9 @@ class Config(object):
             "declaration": 2,
             "forgetting": 0.001,
         }
-        self.feature_types_that_do_not_mutate = {'job title', 'status', 'approximate age', 'suffix', 'marital status'}
+        self.feature_types_that_do_not_mutate = {
+            'job title', 'status', 'approximate age', 'suffix', 'marital status', 'business name'
+        }
         self.decay_rate_of_belief_strength_per_day = 0.95  # Lose 5% of strength every day
         three_fourths_strength_of_firsthand_observation = (
             self.base_strength_of_evidence_types['observation'] /
@@ -1917,6 +1920,7 @@ class Config(object):
             "head size":                    0.20,
             "head shape":                   0.20,
             "business block":               0.25,
+            "business name":                0.25,
             "eye horizontal settedness":    0.25,
             "eye vertical settedness":      0.25,
             "eye size":                     0.25,
@@ -2539,6 +2543,17 @@ class Config(object):
                     'recipient': ['END CONVERSATION']
                 }
             },
+            'TEST': {
+                'preconditions': lambda conversation: True,
+                'obligations': {
+                    'initiator': [],
+                    'recipient': []
+                },
+                'goals': {
+                    'initiator': ['LEARN INTERLOCUTOR WORKPLACE'],
+                    'recipient': ['LEARN INTERLOCUTOR WORKPLACE']
+                }
+            },
         }
         # Definitions for conversational goals in terms of their steps and subgoals
         self.conversational_goals = {
@@ -2567,6 +2582,11 @@ class Config(object):
                 ('me', 'ask how are you', 1),
                 ('me', 'ask are you from here', 1),
                 ('them', 'answer are you from here', 1)
+            ],
+            'LEARN INTERLOCUTOR WORKPLACE': [
+                ('me', 'LEARN NAME OF STRANGER IN PUBLIC', 1),
+                ('me', 'ask where do you work', 1),
+                ('them', 'answer where do you work', 1)
             ],
         }
 
