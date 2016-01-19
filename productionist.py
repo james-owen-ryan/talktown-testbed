@@ -225,7 +225,8 @@ class Productionist(object):
                 print "Targeted symbol {} is a top-level symbol, so we can skip backward chaining".format(symbol)
             top_level_symbol_that_we_successfully_backward_chained_to = symbol
         else:
-            print "Now I will attempt to backward chain from the targeted symbol {}".format(symbol)
+            if self.debug:
+                print "Now I will attempt to backward chain from the targeted symbol {}".format(symbol)
             top_level_symbol_that_we_successfully_backward_chained_to = (
                 self._backward_chain_from_symbol(symbol=symbol, conversation=conversation)
             )
@@ -313,7 +314,8 @@ class Productionist(object):
             # been checked yet during backward chaining
             if not (symbol.violations(conversation=conversation) or
                     not symbol.preconditions_satisfied(conversation=conversation)):
-                print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
+                if self.debug:
+                    print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
         candidate_production_rules = symbol.backward_chaining_rules
         # Sort the candidate production rules probabilistically by utilizing their application rates
@@ -346,7 +348,8 @@ class Productionist(object):
         it will inherit from the symbols that are expanded along these chains).
         """
         self.symbols_expanded_to_produce_the_dialogue_template = {start_symbol}
-        print "ADDING START SYMBOL {} (55)".format(start_symbol)
+        if self.debug:
+            print "Retraversing now from top-level symbol {}".format(start_symbol)
         first_breadcrumb = next(rule for rule in start_symbol.production_rules if rule.viable)
         return self._target_production_rule(rule=first_breadcrumb, conversation=conversation, retracing_chains=True)
 
@@ -373,7 +376,8 @@ class Productionist(object):
                 if terminal_expansion_of_that_symbol:
                     if retracing_chains:
                         self.symbols_expanded_to_produce_the_dialogue_template.add(symbol)
-                        print "ADDED SYMBOL {} (99)".format(symbol)
+                        if self.debug:
+                            print "Traversed through symbol {}".format(symbol)
                     terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
                 else:
                     if self.debug:
