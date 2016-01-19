@@ -154,6 +154,22 @@ class Conversation(Event):
             self.proceed()
         self.replay()
 
+    def transpire_randomly(self):
+        """Carry out the entire conversation by randomly allocating turns and randomly selecting
+        dialogue moves to perform or topics to address.
+
+        This method is for an evaluation experiment conducted for an DiGRA-FDG 2016 paper submission.
+        """
+        number_of_turns = random.randrange(5, 16)
+        for _ in xrange(number_of_turns):
+            next_speaker = random.choice(self.participants)
+            Turn(
+                conversation=self, speaker=next_speaker,
+                targeted_obligation=None,
+                targeted_goal=None,
+                randomly_transpire=True
+            )
+
     def proceed(self):
         """Proceed with the conversation by advancing one turn."""
         if not self.over:
@@ -337,7 +353,7 @@ class Conversation(Event):
 class Turn(object):
     """An utterance delivered by one character to another; a unit of conversation."""
 
-    def __init__(self, conversation, speaker, targeted_obligation, targeted_goal):
+    def __init__(self, conversation, speaker, targeted_obligation, targeted_goal, randomly_transpire=False):
         """Initialize an Turn object."""
         self.conversation = conversation
         self.speaker = speaker
@@ -352,14 +368,31 @@ class Turn(object):
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
-        self.line_of_dialogue = self._decide_what_to_say()
+        if randomly_transpire:
+            self.line_of_dialogue = self._randomly_decide_what_to_say()
+        else:
+            self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
         self.eavesdropper = self._potentially_be_eavesdropped()
-        self._update_conversational_context()
+        if not randomly_transpire:
+            self._update_conversational_context()
 
     def __str__(self):
         """Return string representation."""
         return '{}: {}'.format(self.speaker.name, self.realization)
+
+    def _randomly_decide_what_to_say(self):
+        """Have the speaker *randomly* select a line of dialogue to deploy on this turn.
+
+        This method is for an evaluation experiment conducted for an DiGRA-FDG 2016 paper submission.
+        """
+        all_possible_dialogue_moves = self.conversation.productionist.move_satisficers.keys()
+        random.shuffle(all_possible_dialogue_moves)
+        for move_name in all_possible_dialogue_moves:
+            selected_line = self.conversation.target_move(move_name=move_name)
+            if selected_line:
+                return selected_line
+        print "I could not find a line here :("
 
     def _decide_what_to_say(self):
         """Have the speaker select a line of dialogue to deploy on this turn."""
@@ -567,7 +600,7 @@ class Move(object):
         self.interlocutor = conversation.interlocutor_to(speaker)
         self.name = name
         if conversation.debug:
-            print '-- Reified {}'.format(self)
+            print '-- Performed {}'.format(self)
 
     def __str__(self):
         """Return string representation."""
@@ -982,6 +1015,16 @@ class Topic(object):
     def __str__(self):
         """Return string representation."""
         return "TOPIC:{}".format(self.name)
+
+
+class Subject(object):
+    """A subject of conversation (either a person or place) that is represented as a collection of
+    features that conversants may use to access a mental model of that person or place.
+    """
+
+    def __init__(self):
+        """Initialize a Subject object."""
+
 
 
 class Frame(object):
