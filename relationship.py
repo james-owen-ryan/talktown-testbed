@@ -101,7 +101,8 @@ class Relationship(object):
         someone likes someone else is represented by the increment determined here, which is
         a function of their compatibility and one's extroversion and the other's agreeableness --
         following source [4], people higher in extroversion select more friends, while people high
-        in agreeableness get selected more often.
+        in agreeableness get selected more often. Following source [7], opposite-sex friendships are
+        less likely.
 
         Charge intensity will dynamically get diminished (it gets brought toward 0) as a function of
         the age difference between these two people, as well as a function of the difference in job
@@ -114,7 +115,7 @@ class Relationship(object):
             self.owner.personality.extroversion * config.owner_extroversion_boost_to_charge_multiplier +
             self.subject.personality.agreeableness * config.subject_agreeableness_boost_to_charge_multiplier
         )
-        # Reduce charge intensity for sex difference
+        # Reduce charge intensity for sex difference (source [7])
         if self.owner.male != self.subject.male:
             charge_increment *= config.charge_intensity_reduction_due_to_sex_difference
         return charge_increment
@@ -252,7 +253,8 @@ class Relationship(object):
     def update_spark_and_charge_increments_for_new_age_difference(self):
         """Set a new charge increment for this relationship that reflects a new age difference.
 
-        This gets called whenever a member of this relationship has a birthday.
+        Source [7] shows that age difference affects friend selection. This method gets called
+        whenever a member of this relationship has a birthday.
         """
         config = self.owner.game.config
         # Set new age-difference charge effect
@@ -271,7 +273,8 @@ class Relationship(object):
     def update_spark_and_charge_increments_for_job_level_difference(self):
         """Set a new charge increment for this relationship that reflects a new job-level difference.
 
-        This gets called whenever a member of this relationship gets a promotion.
+        Source [7] shows that differences in occupational status affects friend selection. This method
+        gets called whenever a member of this relationship gets a promotion.
 
         TODO once you implement people getting fired, make sure this gets called whenever that happens.
         """
