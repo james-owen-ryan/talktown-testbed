@@ -1,5 +1,6 @@
 import sys
 import json
+import itertools
 import random
 
 
@@ -482,6 +483,27 @@ class Productionist(object):
         except StopIteration:
             print "I could not find a symbol with that name."
 
+    def produce_lstm_training_data(self):
+        """Exhaustively produce all terminal derivations in the grammar for LSTM training data.
+
+        LSTM stands for long short-term memory, which is a variant of deep learning that
+        James and Adam Summerville are going to explore using as a way of mapping
+        arbitrary player inputs to symbolic traces in an Expressionist grammar, which
+        would allow us to attribute dialogue moves, etc., to the arbitrary player inputs.
+
+        The format we have settled on for LSTM training expresses traces for terminal derivations, e.g.,
+        greet{greeting word{<Hi>},< >,interlocutor first name{<[speaker.belief(interlocutor, 'first name')]>}}
+        """
+        path_to_write_out_to = '/Users/jamesryan/Desktop/dialogue_lstm_training_data_8Feb2016'
+        out_file = open(path_to_write_out_to, 'w')
+        top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.top_level]
+        for symbol in top_level_symbols:
+            print "Deriving LSTM training data for top-level symbol '{}'".format(symbol)
+            for derivation_trace in symbol.produce_lstm_training_data():
+                out_file.write('{}\n'.format(derivation_trace))
+            out_file.flush()
+        out_file.close()
+
 
 class NonterminalSymbol(object):
     """A symbol in a production system for in-game dialogue generation."""
@@ -515,6 +537,10 @@ class NonterminalSymbol(object):
         # efforts while we are firing production rules during backward- and forward-chaining,
         # which could happen if two rules have the same symbol in their rule bodies
         self.expansion = None
+        # This attribute will hold LSTM training data produced by this symbol so that we do
+        # not reduplicate efforts while we are generating a training set; see
+        # NonterminalSymbol.produce_lstm_training_data() for more information
+        self.lstm_training_data = []
 
     def __str__(self):
         """Return string representation."""
@@ -544,6 +570,8 @@ class NonterminalSymbol(object):
                     self.topics_pushed.add(tag)
                 elif tagset == "AddressTopic":
                     self.topics_addressed.add(tag)
+                elif tagset == "EffectConditions":
+                    print "IMPLEMENT EFFECTS!"
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
@@ -570,6 +598,25 @@ class NonterminalSymbol(object):
         ]
         return violations_incurred
 
+    def produce_lstm_training_data(self):
+        """Return all terminal derivations of this symbol in the format specified for LSTM training.
+
+        LSTM stands for long short-term memory, which is a variant of deep learning that
+        James and Adam Summerville are going to explore using as a way of mapping
+        arbitrary player inputs to symbolic traces in an Expressionist grammar, which
+        would allow us to attribute dialogue moves, etc., to the arbitrary player inputs.
+
+        The format we have settled on for LSTM training expresses traces for terminal derivations, e.g.,
+        greet{greeting word{`Hi~}^` ~^interlocutor first name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
+        for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
+        """
+        if not self.lstm_training_data:
+            all_terminal_derivations_in_lstm_training_data_format = []
+            for rule in self.production_rules:
+                all_terminal_derivations_in_lstm_training_data_format += rule.produce_lstm_training_data()
+            self.lstm_training_data = all_terminal_derivations_in_lstm_training_data_format
+        return self.lstm_training_data
+
 
 class ProductionRule(object):
     """A production rule in a production system for in-game dialogue generation."""
@@ -594,6 +641,38 @@ class ProductionRule(object):
     def __str__(self):
         """Return string representation."""
         return '{} --> {}'.format(self.head, self.body_specification_str)
+
+    def produce_lstm_training_data(self):
+        """Return all terminal derivations yielded by this rule in the format specified for LSTM training.
+
+        LSTM stands for long short-term memory, which is a variant of deep learning that
+        James and Adam Summerville are going to explore using as a way of mapping
+        arbitrary player inputs to symbolic traces in an Expressionist grammar, which
+        would allow us to attribute dialogue moves, etc., to the arbitrary player inputs.
+
+        The format we have settled on for LSTM training expresses traces for terminal derivations, e.g.,
+        greet{greeting word{`Hi~}^` ~^interlocutor first name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
+        for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
+        """
+        # Assemble the Cartesian product of all terminal derivations for all symbols in
+        # this rule body; because nonterminal symbols are represented as a raw unicode string, we
+        # can't call the same method for each symbol, so we just append the syntax for demarcating
+        # them in the LSTM training-data format that we have devised
+        cartesian_product_of_all_symbols_in_this_rule_body = itertools.product(*[
+            ['`{}~'.format(symbol)] if type(symbol) is unicode else symbol.produce_lstm_training_data()
+            for symbol in self.body
+        ])
+        # Now concatenate these and prepend them with syntax indicating which nonterminal symbol
+        # is the head of this rule; this will produce derivation traces in the format we want
+        # them in
+        all_terminal_derivations_in_lstm_training_data_format = []
+        for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
+            trace_in_the_lstm_format = "{head}{{{partial_trace}}}".format(
+                head=self.head.tag,
+                partial_trace='^'.join(cartesian_product)
+            )
+            all_terminal_derivations_in_lstm_training_data_format.append(trace_in_the_lstm_format)
+        return all_terminal_derivations_in_lstm_training_data_format
 
 
 class LineOfDialogue(object):
