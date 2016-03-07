@@ -2233,6 +2233,12 @@ class Person(object):
                 matches = [p for p in matches if p.female]
         return matches
 
+    def connection_to_place(self):
+        pass
+
+    def connection_to_person(self):
+        pass
+
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.

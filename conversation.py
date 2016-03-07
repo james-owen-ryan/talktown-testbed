@@ -152,7 +152,9 @@ class Conversation(Event):
         """Carry out the entire conversation."""
         while not self.over:
             self.proceed()
-        self.replay()
+        # self.replay()
+        for turn in self.turns:
+            print '\n{}\n'.format(turn)
 
     def transpire_randomly(self):
         """Carry out the entire conversation by randomly allocating turns and randomly selecting
@@ -169,6 +171,8 @@ class Conversation(Event):
                 targeted_goal=None,
                 randomly_transpire=True
             )
+        for turn in self.turns:
+            print '\n{}\n'.format(turn)
 
     def proceed(self):
         """Proceed with the conversation by advancing one turn."""
@@ -610,7 +614,7 @@ class Move(object):
         """Change the world according to the illocutionary force of this move."""
         # If someone storms off, or both parties say goodbye (and neither has any
         # outstanding obligations), end the conversation
-        if not self.conversation.obligations and self.name == 'storm off':
+        if self.name == 'storm off':
             self.conversation.over = True
         elif self.name == "say goodbye back" and not self.conversation.outstanding_obligations():
             self.conversation.over = True

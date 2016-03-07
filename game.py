@@ -1,5 +1,5 @@
 from config import Config
-from dialogue import DialogueBase
+from productionist import Productionist
 from person import *
 from business import *
 from city import *
@@ -11,8 +11,8 @@ class Game(object):
 
     def __init__(self):
         """Initialize a Game object."""
-        # Load the content authored for this game
-        self.dialogue_base = DialogueBase()
+        # Load the NLG module for this game instance
+        self.productionist = Productionist(game=self)
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0
@@ -105,6 +105,7 @@ class Game(object):
         # Implant knowledge into everyone who is living to simulate knowledge
         # phenomena that would have occurred during the lo-fi simulation but
         # wasn't enacted due to reasons of computing efficiency
+        print "Implanting knowledge..."
         for p in self.city.residents:
             if p.age > 3:
                 p.implant_knowledge()
@@ -188,7 +189,7 @@ class Game(object):
         return owners_knowledge_about_subject
 
     def get_people_a_person_knows_of(self, owner_id):
-        """Return the IDs for every person who a person knows about (has a mental model for)."""
+        """Return the IDs for every person who a person accurate_belief about (has a mental model for)."""
         owner = next(r for r in self.city.residents if r.id == owner_id)
         ids_of_these_people = set([])
         for person in owner.mind.mental_models:
@@ -208,8 +209,8 @@ class Game(object):
             # Potentially have a new business open or an existing business close
             self.potentially_establish_a_new_business()
             self.potentially_shut_down_businesses()
+            # Simulate births, even if this day will not actually be simulated
             for person in list(self.city.residents):
-                # Simulate births, even if this day will not actually be simulated
                 if person.pregnant:
                     if self.ordinal_date >= person.due_date:
                         if self.time_of_day == 'day':
@@ -217,6 +218,7 @@ class Game(object):
                                 person.give_birth()
                         else:
                             person.give_birth()
+            # Potentially simulate the timestep
             if random.random() < chance_of_a_timestep_being_simulated:
                 # Potentially build new businesses
                 for person in list(self.city.residents):
@@ -262,17 +264,14 @@ class Game(object):
                 # Have people go to the location they will be at this timestep
                 for person in list(self.city.residents):
                     person.routine.enact()
-                # Have people observe their surroundings, which will cause knowledge to
-                # build up, and have them socialize with other people also at that location --
-                # this will cause relationships to form/progress and knowledge to propagate
+                # Have people initiate social interactions with one another
                 for person in list(self.city.residents):
                     # Person may have married (during an earlier iteration of this loop) and
                     # then immediately departed because the new couple could not find home,
                     # so we still have to make sure they actually live in the city currently before
                     # having them socialize
                     if person in self.city.residents:
-                        if person.age > 3:
-                            # person.observe()
+                        if person.age > 3:  # Must be at least four years old to socialize
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
                 last_simulated_day = self.ordinal_date
 

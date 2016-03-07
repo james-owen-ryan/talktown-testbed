@@ -17,7 +17,7 @@ class Config(object):
         self.chance_of_a_coal_mine_at_time_of_town_founding = 0.2
         self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
-        self.date_gameplay_begins = (1859, 8, 19)
+        self.date_gameplay_begins = (1979, 8, 19)
         self.date_city_gets_founded = (1839, 8, 19)  # Date world gen begins
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
         # City generation (in a topological sense)
@@ -2550,8 +2550,8 @@ class Config(object):
                     'recipient': []
                 },
                 'goals': {
-                    'initiator': ['LEARN INTERLOCUTOR WORKPLACE'],
-                    'recipient': ['LEARN INTERLOCUTOR WORKPLACE']
+                    'initiator': ['LEARN WORKPLACE OF STRANGER IN PUBLIC'],
+                    'recipient': ['LEARN WORKPLACE OF STRANGER IN PUBLIC']
                 }
             },
         }
@@ -2583,7 +2583,7 @@ class Config(object):
                 ('me', 'ask are you from here', 1),
                 ('them', 'answer are you from here', 1)
             ],
-            'LEARN INTERLOCUTOR WORKPLACE': [
+            'LEARN WORKPLACE OF STRANGER IN PUBLIC': [
                 ('me', 'LEARN NAME OF STRANGER IN PUBLIC', 1),
                 ('me', 'ask where do you work', 1),
                 ('them', 'answer where do you work', 1)
