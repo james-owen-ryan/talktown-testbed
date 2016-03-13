@@ -225,7 +225,7 @@ class Observation(PieceOfEvidence):
 
 
 class Examination(PieceOfEvidence):
-    """An of an artifact that transmits knowledge about some entity."""
+    """An examination of an artifact that transmits knowledge about some entity."""
 
     def __init__(self, subject, source, artifact):
         """Initialize an Observation object."""
