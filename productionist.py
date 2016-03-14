@@ -10,9 +10,9 @@ PATH_TO_JSON_GRAMMAR_SPECIFICATION = '/Users/jamesryan/Desktop/Projects/Personal
 class Productionist(object):
     """A production system for in-game dialogue generation.
 
-    Objects of this class operates over a probabilistic context-free generative grammar exported by
+    Objects of this class operate over a probabilistic context-free generative grammar exported by
     Expressionist according to requests originating from a game system. As such, it can be thought of
-    as an interface between a game system and an Expressionist grammar.
+    as an interface between the game engine and an Expressionist grammar.
     """
 
     def __init__(self, game, debug=False):
@@ -874,6 +874,10 @@ class Condition(object):
 
     def evaluate(self, conversation):
         """Evaluate this condition given the state of the world at the beginning of a conversation turn."""
+        # If the current speaker is a human player, don't even worry about
+        # evaluating preconditions, i.e., let them say whatever
+        if conversation.speaker.player:
+            return True
         # Instantiate all the arguments we might need as local variables
         speaker = conversation.speaker
         interlocutor = conversation.interlocutor

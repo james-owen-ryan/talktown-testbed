@@ -203,6 +203,9 @@ class Person(object):
         self.all_belief_facets = set()  # Used to make batch calls to Facet.decay_strength()
         # Miscellaneous attributes pertaining to artifacts this person is wearing
         self.wedding_ring_on_finger = None
+        # Currently, whether a character is the player is only considered by Conversation
+        # objects (when deciding whether to elicit a dialogue move from the player)
+        self.player = False
 
     def __str__(self):
         """Return string representation."""

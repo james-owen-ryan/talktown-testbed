@@ -247,6 +247,22 @@ class Conversation(Event):
             )
         return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
 
+    def produce_batch_of_candidate_lines_that_perform_a_targeted_move(self, move_name):
+        """Return a batch of four candidate lines that perform a dialogue move targeted by
+        the player; the player may then select which of these lines to deploy.
+        """
+        candidate_lines = []
+        number_of_generation_attempts = 0
+        while len(candidate_lines) < 4 and number_of_generation_attempts < 99:
+            next_candidate_line = self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
+            if (
+                    next_candidate_line and
+                    not any(l for l in candidate_lines if l.raw_line == next_candidate_line.raw_line)
+            ):
+                candidate_lines.append(next_candidate_line)
+            number_of_generation_attempts += 1
+        return candidate_lines
+
     def target_topic(self, topics=None):
         """Request that Productionist generate a line of dialogue that may be used to address one of the
         given topics of conversation.
@@ -374,6 +390,8 @@ class Turn(object):
         self.realization = ''  # Dialogue template as it was filled in during this turn
         if randomly_transpire:
             self.line_of_dialogue = self._randomly_decide_what_to_say()
+        elif self.speaker.player:
+            self.line_of_dialogue = self._have_player_decide_what_to_say()
         else:
             self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
@@ -397,6 +415,57 @@ class Turn(object):
             if selected_line:
                 return selected_line
         print "I could not find a line here :("
+
+    def _have_player_decide_what_to_say(self):
+        """Let the player select which line of dialogue to deploy on this turn."""
+        # Ask player to select a dialogue move to target
+        player_selected_dialogue_move = self._have_player_select_a_dialogue_move_to_perform()
+        # Request that Productionist generate four candidate lines of dialogue that may
+        # be used to perform the player's selected dialogue move
+        candidate_lines_of_dialogue = (
+            self.conversation.produce_batch_of_candidate_lines_that_perform_a_targeted_move(
+                move_name=player_selected_dialogue_move
+            )
+        )
+        player_selected_line = self._have_player_select_a_specific_line_of_dialogue_to_deploy(
+            candidate_lines=candidate_lines_of_dialogue
+        )
+        return player_selected_line
+
+    def _have_player_select_a_dialogue_move_to_perform(self):
+        """Have the player select a dialogue move to perform."""
+        # Compile all dialogue moves for which content has been authored
+        all_available_dialogue_moves = list(self.conversation.productionist.move_satisficers.keys())
+        # Sort the moves names alphabetically for now
+        all_available_dialogue_moves.sort()
+        # Ask the player to select a move to perform
+        for move_index, move_name in enumerate(all_available_dialogue_moves):
+            print "{move_index}\t{move_name}".format(move_index=move_index, move_name=move_name)
+        player_selected_move_index = raw_input(
+            "\n\nWhich dialogue move would you like to perform?\n\n"
+        )
+        # Pull out the actual move name from the list of all available dialogue moves
+        player_selected_move_index = int(player_selected_move_index)  # Convert to int
+        player_selected_move_name = all_available_dialogue_moves[player_selected_move_index]
+        return player_selected_move_name
+
+    def _have_player_select_a_specific_line_of_dialogue_to_deploy(self, candidate_lines):
+        """Have the player select a specific line of dialogue -- from a batch of candidate lines
+        that perform the dialogue move that the player has selected -- to deploy."""
+        # Realize each of the candidate lines before displaying them to the player (i.e.,
+        # fill in the gaps in the line templates, e.g., 'interlocutor name')
+        realized_candidate_lines = [line.realize(conversation_turn=self) for line in candidate_lines]
+        # Display the candidate lines and ask the player to select one
+        print '\n'
+        for line_index, line in enumerate(realized_candidate_lines):
+            print "{line_index}\t{line}".format(line_index=line_index, line=line)
+        player_selected_line_index = raw_input(
+            "\n\nWhich line of dialogue would you like to say?\n\n"
+        )
+        # Using this index, pull out the actual line object the list of candidate lines
+        player_selected_line_index = int(player_selected_line_index)  # Convert to int
+        player_selected_line_object = candidate_lines[player_selected_line_index]
+        return player_selected_line_object
 
     def _decide_what_to_say(self):
         """Have the speaker select a line of dialogue to deploy on this turn."""
