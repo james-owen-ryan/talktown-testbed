@@ -388,7 +388,7 @@ class City(object):
         lots = {}
         Parcels = {}
         Numberings = {}
-        n_buildings_per_parcel = Config().n_buildings_per_parcel
+        n_buildings_per_parcel = Config().n_buildings_per_block
 
         corners = set()
         for parcel in parcels:

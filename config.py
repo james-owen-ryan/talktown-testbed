@@ -21,10 +21,11 @@ class Config(object):
         self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
         # City generation (in a topological sense)
-        self.loci = 3
-        self.samples = 32
-        self.size = 16
-        self.n_buildings_per_parcel = 2
+        self.quadtree_loci = 3
+        self.quadtree_samples = 32
+        self.quadtree_size = 16
+        self.quadtree_multiplier = 2
+        self.n_buildings_per_block = 2
         self.largest_possible_house_number = 799
         self.smallest_possible_house_number = 100
         self.chance_city_gets_named_for_founder = 0.3
