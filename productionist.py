@@ -254,10 +254,7 @@ class Productionist(object):
         # First check for whether this symbol's preconditions are satisfied and whether
         # the use of its expansion in a line of dialogue would cause a conversational
         # violation to be incurred
-        if (symbol.violations(conversation=conversation) or
-                not symbol.preconditions_satisfied(conversation=conversation)):
-            if self.debug:
-                print "Symbol {} is currently violated".format(symbol)
+        if symbol.currently_violated(conversation=conversation):
             return None
         candidate_production_rules = symbol.forward_chaining_rules
         # If one of these production rules is already known to be on a chain, we can just pick
@@ -313,8 +310,7 @@ class Productionist(object):
         if symbol.top_level:
             # Make sure this symbol doesn't violate any preconditions, since this hasn't
             # been checked yet during backward chaining
-            if not (symbol.violations(conversation=conversation) or
-                    not symbol.preconditions_satisfied(conversation=conversation)):
+            if not symbol.currently_violated(conversation=conversation):
                 if self.debug:
                     print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
@@ -619,6 +615,28 @@ class NonterminalSymbol(object):
                 ProductionRule(head=self, body_specification=body, application_rate=application_rate)
             )
         return production_rule_objects
+
+    def currently_violated(self, conversation):
+        """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
+        precondition or would incur a conversational violation if deployed at this time."""
+        if conversation.speaker.player:  # Let the player say anything currently, i.e., return False
+            return False
+        if (self.violations(conversation=conversation) or
+                not self.preconditions_satisfied(conversation=conversation)):
+            if conversation.productionist.debug:
+                # Express why the symbol is currently violated
+                print "Symbol {} is currently violated".format(self)
+                conversational_violations = self.violations(conversation=conversation)
+                for conversational_violation in conversational_violations:
+                    print '\t{}'.format(conversational_violation)
+                unsatisfied_preconditions = (
+                    p for p in self.preconditions if p.evaluate(conversation=conversation) is False
+                )
+                for unsatisfied_precondition in unsatisfied_preconditions:
+                    print '\t{}'.format(unsatisfied_precondition)
+            return True
+        # Symbol is not currently violated, so return False
+        return False
 
     def preconditions_satisfied(self, conversation):
         """Return whether this line's preconditions are satisfied given the state of the world."""
