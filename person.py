@@ -2296,14 +2296,10 @@ class PersonExNihilo(Person):
         # a family be retconned (mostly to ensure that at least some people in the present
         # day will have roots in the town going back to its early foundations when it
         # comprised a handful of farms)
-        if not spouse_already_generated:
-            chance_of_having_family = (
-                self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
-                    city_pop=game.city.population
-                )
-            )
-            if random.random() < chance_of_having_family or job_opportunity_impetus.__name__ == 'Farmer':
-                self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
+        self._init_potentially_retcon_family(
+            spouse_already_generated=spouse_already_generated,
+            job_opportunity_impetus=job_opportunity_impetus
+        )
 
     def _get_random_birthday(self):
         """Return a randomly chosen birthday.
@@ -2376,6 +2372,16 @@ class PersonExNihilo(Person):
     def _init_money(self):
         """Determine how much money this person has to start with."""
         return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
+
+    def _init_potentially_retcon_family(self, spouse_already_generated, job_opportunity_impetus):
+        if not spouse_already_generated:
+            chance_of_having_family = (
+                self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
+                    city_pop=self.game.city.population
+                )
+            )
+            if random.random() < chance_of_having_family or job_opportunity_impetus.__name__ == 'Farmer':
+                self._init_generate_family(job_opportunity_impetus=job_opportunity_impetus)
 
     def _init_generate_family(self, job_opportunity_impetus):
         """Generate and retcon a family that this person will take with them into the city."""
