@@ -18,11 +18,11 @@ class Game(object):
         self.current_person_id = 0
         self.current_place_id = 0
         self.config = Config()
-        self.year = self.config.date_city_gets_founded[0]
-        self.true_year = self.config.date_city_gets_founded[0]  # True year never gets changed during retconning
-        self.ordinal_date = datetime.date(*self.config.date_city_gets_founded).toordinal()  # Days since 01-01-0001
-        self.month = datetime.date(*self.config.date_city_gets_founded).month
-        self.day = datetime.date(*self.config.date_city_gets_founded).day
+        self.year = self.config.date_worldgen_begins[0]
+        self.true_year = self.config.date_worldgen_begins[0]  # True year never gets changed during retconning
+        self.ordinal_date = datetime.date(*self.config.date_worldgen_begins).toordinal()  # Days since 01-01-0001
+        self.month = datetime.date(*self.config.date_worldgen_begins).month
+        self.day = datetime.date(*self.config.date_worldgen_begins).day
         self.ordinal_date_that_gameplay_begins = (
             datetime.date(*self.config.date_gameplay_begins).toordinal()
         )
