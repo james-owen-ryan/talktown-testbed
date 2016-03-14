@@ -17,7 +17,7 @@ class Event(object):
     def __init__(self, game):
         """Initialize an Event object."""
         self.year = game.year
-        if self.year < game.city.founded:  # This event is being retconned; generate a random day
+        if self.year < game.config.year_worldgen_begins:  # This event is being retconned; generate a random day
             self.month, self.day, self.ordinal_date = game.get_random_day_of_year(year=self.year)
             self.date = game.get_date(ordinal_date=self.ordinal_date)
         else:
