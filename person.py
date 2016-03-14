@@ -2374,6 +2374,9 @@ class PersonExNihilo(Person):
         return self.game.config.amount_of_money_generated_people_from_outside_city_start_with
 
     def _init_potentially_retcon_family(self, spouse_already_generated, job_opportunity_impetus):
+        """Potentially generate and retcon a family that this person will have had prior
+        to entering into the simulation.
+        """
         if not spouse_already_generated:
             chance_of_having_family = (
                 self.game.config.function_to_determine_chance_person_ex_nihilo_starts_with_family(
