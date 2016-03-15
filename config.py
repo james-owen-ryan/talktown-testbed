@@ -19,7 +19,7 @@ class Config(object):
         # When to stop
         self.date_gameplay_begins = (1979, 8, 19)
         self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
-        self.year_worldgen_begins = self.date_gameplay_begins[0]
+        self.year_worldgen_begins = self.date_worldgen_begins[0]
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
         # City generation (in a topological sense)
         self.quadtree_loci = 3
