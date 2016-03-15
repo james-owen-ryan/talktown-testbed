@@ -450,8 +450,8 @@ class Business(object):
     @property
     def night_shift(self):
         """Return all employees who work the night shift here."""
-        day_shift = set([employee for employee in self.employees if employee.shift == "night"])
-        return day_shift
+        night_shift = set([employee for employee in self.employees if employee.shift == "night"])
+        return night_shift
 
     @property
     def sign(self):
