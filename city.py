@@ -271,9 +271,9 @@ class City(object):
         return tertiary_density
         
     def generate_lots(self, config):
-        loci = config.loci
-        samples = config.samples
-        size = config.size
+        loci = config.quadtree_loci
+        samples = config.quadtree_samples
+        size = config.quadtree_size
         lociLocations = []
         for ii in range(loci):
             lociLocations.append([gauss(size/2.0,size/6.0), gauss(size/2.0,size/6.0)])
@@ -388,7 +388,7 @@ class City(object):
         lots = {}
         Parcels = {}
         Numberings = {}
-        n_buildings_per_parcel = Config().n_buildings_per_block
+        n_buildings_per_parcel = Config().n_buildings_per_parcel
 
         corners = set()
         for parcel in parcels:
