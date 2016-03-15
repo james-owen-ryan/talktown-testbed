@@ -1099,7 +1099,6 @@ class Subject(object):
         """Initialize a Subject object."""
 
 
-
 class Frame(object):
     """A Minskian frame for a conversational context, e.g., a phone call."""
 
