@@ -2003,6 +2003,21 @@ class Person(object):
                     # have these two people exchange information with each other
                     if missing_timesteps_to_account_for == 1:
                         self._exchange_information(interlocutor=person)
+        # Also cheat to simulate socializing between people that live together,
+        # regardless of where they are truly located (otherwise have things like
+        # a kid who has never met his mother, because she works the night shift)
+        for person in list(self.home.residents-{self}):
+            if person not in self.relationships:
+                Acquaintance(owner=self, subject=person, preceded_by=None)
+            if not self.relationships[person].interacted_this_timestep:
+                # Make sure they didn't already interact this timestep
+                self.relationships[person].progress_relationship(
+                    missing_days_to_account_for=missing_timesteps_to_account_for
+                )
+                # If this is being called by the full-fidelity simulation,
+                # have these two people exchange information with each other
+                if missing_timesteps_to_account_for == 1:
+                    self._exchange_information(interlocutor=person)
 
     def _exchange_information(self, interlocutor):
         config = self.game.config
