@@ -50,6 +50,7 @@ class Business(object):
         # first architect before it can construct its own building
         self.employees = set()
         self.former_employees = set()
+        self.former_owners = []
         if self.__class__ in config.public_company_types:  # Hospital, police station, fire station, etc.
             self.owner = None
             self.founder = None
@@ -89,7 +90,6 @@ class Business(object):
         self.out_of_business = False  # Potentially gets changed by go_out_of_business()
         self.closure = None  # BusinessClosure object itself
         self.closed = None  # Year closed
-        self.former_owners = []
 
     def _init_set_and_get_owner_occupation(self, owner):
         """Set the owner of this new company's occupation to Owner."""
