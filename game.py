@@ -460,7 +460,6 @@ class Game(object):
                     for person in self.birthdays[(2, 29)]:
                         if person.present:
                             person.grow_older()
-
         else:
             self.date = self.get_date()
         # Lastly, set a new random number for this timestep
