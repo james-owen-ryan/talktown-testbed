@@ -616,6 +616,16 @@ class NonterminalSymbol(object):
             )
         return production_rule_objects
 
+    @property
+    def all_markup(self):
+        """Return all the annotations attributed to this symbol."""
+        all_markup = (
+            self.preconditions | self.conditional_violations | self.propositions |
+            {self.change_subject_to} | self.moves | self.speaker_obligations_pushed |
+            self.interlocutor_obligations_pushed | self.topics_pushed | self.topics_addressed
+        )
+        return list(all_markup)
+
     def currently_violated(self, conversation):
         """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
         precondition or would incur a conversational violation if deployed at this time."""
