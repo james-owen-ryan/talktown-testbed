@@ -34,7 +34,7 @@ class Game(object):
         # A game's event number allows the precise ordering of events that
         # happened on the same timestep -- every time an event happens, it requests an
         # event number from Game.assign_event_number(), which also increments the running counter
-        self.event_number = 0
+        self.event_number = -1
         # Prepare a listing of all people born on each day -- this is used to
         # age people on their birthdays; we start with (2, 29) initialized because
         # we need to perform a check every March 1 to ensure that all leap-year babies
