@@ -46,7 +46,6 @@ class Conversation(Event):
             "Conversation between {initiator_name} and {recipient_name} at {location_name} on {date}.".format(
                 initiator_name=self.initiator.name, recipient_name=self.recipient.name,
                 location_name=self.initiator.location.name, date=self.date
-
             )
         )
         return s
