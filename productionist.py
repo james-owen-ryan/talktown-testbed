@@ -4,9 +4,6 @@ import itertools
 import random
 
 
-PATH_TO_JSON_GRAMMAR_SPECIFICATION = '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown.json'
-
-
 class Productionist(object):
     """A production system for in-game dialogue generation.
 
@@ -19,7 +16,9 @@ class Productionist(object):
         """Initialize a Productionist object."""
         self.game = game
         self.debug = debug
-        self.nonterminal_symbols = self._init_parse_json_grammar_specification()
+        self.nonterminal_symbols = self._init_parse_json_grammar_specification(
+            path_to_json_grammar_specification=game.config.path_to_json_grammar_specification
+        )
         self._init_resolve_symbol_references_in_all_production_rule_bodies()
         self._init_attribute_backward_chaining_and_forward_chaining_rules_to_symbols()
         self.move_satisficers = self._init_structure_symbols_according_to_dialogue_moves_they_satisfice()
@@ -30,11 +29,11 @@ class Productionist(object):
         self.symbols_expanded_to_produce_the_dialogue_template = set()
 
     @staticmethod
-    def _init_parse_json_grammar_specification():
+    def _init_parse_json_grammar_specification(path_to_json_grammar_specification):
         """Parse a JSON grammar specification exported by Expressionist to instantiate symbols and rules."""
         # Parse the JSON specification to build a dictionary data structure
         symbol_objects = []
-        grammar_dictionary = json.loads(open(PATH_TO_JSON_GRAMMAR_SPECIFICATION).read())
+        grammar_dictionary = json.loads(open(path_to_json_grammar_specification).read())
         nonterminal_symbol_specifications = grammar_dictionary['nonterminals']
         for tag, nonterminal_symbol_specification in nonterminal_symbol_specifications.iteritems():
             top_level = nonterminal_symbol_specification['deep']
