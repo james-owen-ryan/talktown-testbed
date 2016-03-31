@@ -600,7 +600,7 @@ class NonterminalSymbol(object):
                 elif tagset == "AddressTopic":
                     self.topics_addressed.add(tag)
                 elif tagset == "EffectConditions":
-                    print "IMPLEMENT EFFECTS!"
+                    pass  # TODO
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
