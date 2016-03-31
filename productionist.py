@@ -573,7 +573,7 @@ class NonterminalSymbol(object):
 
     def __str__(self):
         """Return string representation."""
-        return '[[{}]]'.format(self.tag)
+        return '[[{tag}]]'.format(tag=self.tag)
 
     def _init_parse_markup(self, raw_markup):
         """Instantiate and attribute objects for the annotations attributed to this symbol."""
