@@ -11,13 +11,14 @@ class Game(object):
 
     def __init__(self):
         """Initialize a Game object."""
+        # Load config parameters
+        self.config = Config()
         # Load the NLG module for this game instance
         self.productionist = Productionist(game=self)
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0
         self.current_place_id = 0
-        self.config = Config()
         self.year = self.config.date_worldgen_begins[0]
         self.true_year = self.config.date_worldgen_begins[0]  # True year never gets changed during retconning
         self.ordinal_date = datetime.date(*self.config.date_worldgen_begins).toordinal()  # Days since 01-01-0001
