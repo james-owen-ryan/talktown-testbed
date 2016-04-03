@@ -14,6 +14,7 @@ class Game(object):
         # Load config parameters
         self.config = Config()
         # Load the NLG module for this game instance
+        self.config = Config()
         self.productionist = Productionist(game=self)
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person

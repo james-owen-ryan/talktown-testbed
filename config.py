@@ -2485,7 +2485,7 @@ class Config(object):
             ####################
 
         self.path_to_json_grammar_specification = (
-            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown.json'
+            './talktown.json'
         )
         # Frame definitions
         self.conversational_frames = {
