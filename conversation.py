@@ -12,6 +12,7 @@ class Conversation(Event):
         super(Conversation, self).__init__(game=initiator.game)
         self.game = initiator.game
         self.productionist = self.game.productionist  # NLG module
+        self.impressionist = self.game.impressionist  # NLU module
         self.productionist.debug = debug
         self.initiator = initiator
         self.recipient = recipient
@@ -152,24 +153,6 @@ class Conversation(Event):
         while not self.over:
             self.proceed()
         # self.replay()
-        for turn in self.turns:
-            print '\n{}\n'.format(turn)
-
-    def transpire_randomly(self):
-        """Carry out the entire conversation by randomly allocating turns and randomly selecting
-        dialogue moves to perform or topics to address.
-
-        This method is for an evaluation experiment conducted for an DiGRA-FDG 2016 paper submission.
-        """
-        number_of_turns = random.randrange(5, 16)
-        for _ in xrange(number_of_turns):
-            next_speaker = random.choice(self.participants)
-            Turn(
-                conversation=self, speaker=next_speaker,
-                targeted_obligation=None,
-                targeted_goal=None,
-                randomly_transpire=True
-            )
         for turn in self.turns:
             print '\n{}\n'.format(turn)
 
@@ -338,7 +321,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     d for d in self.declarations if d.subject == subject and d.source == source and
-                                                    d.recipient == recipient
+                    d.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -346,7 +329,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     s for s in self.statements if s.subject == subject and s.source == source and
-                                                  s.recipient == recipient
+                    s.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -354,7 +337,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     l for l in self.statements if l.subject == subject and l.source == source and
-                                                  l.recipient == recipient
+                    l.recipient == recipient
                 )
             except StopIteration:
                 evidence_object = None
@@ -362,7 +345,7 @@ class Conversation(Event):
             try:
                 evidence_object = next(
                     l for l in self.eavesdroppings if l.subject == subject and l.source == source and
-                                                      l.recipient == recipient and eavesdropper == eavesdropper
+                    l.recipient == recipient and eavesdropper == eavesdropper
                 )
             except StopIteration:
                 evidence_object = None
@@ -372,7 +355,7 @@ class Conversation(Event):
 class Turn(object):
     """An utterance delivered by one character to another; a unit of conversation."""
 
-    def __init__(self, conversation, speaker, targeted_obligation, targeted_goal, randomly_transpire=False):
+    def __init__(self, conversation, speaker, targeted_obligation, targeted_goal):
         """Initialize an Turn object."""
         self.conversation = conversation
         self.speaker = speaker
@@ -387,33 +370,17 @@ class Turn(object):
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
-        if randomly_transpire:
-            self.line_of_dialogue = self._randomly_decide_what_to_say()
-        elif self.speaker.player:
+        if self.speaker.player:
             self.line_of_dialogue = self._have_player_decide_what_to_say()
         else:
             self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
         self.eavesdropper = self._potentially_be_eavesdropped()
-        if not randomly_transpire:
-            self._update_conversational_context()
+        self._update_conversational_context()
 
     def __str__(self):
         """Return string representation."""
         return '{}: {}'.format(self.speaker.name, self.realization)
-
-    def _randomly_decide_what_to_say(self):
-        """Have the speaker *randomly* select a line of dialogue to deploy on this turn.
-
-        This method is for an evaluation experiment conducted for an DiGRA-FDG 2016 paper submission.
-        """
-        all_possible_dialogue_moves = self.conversation.productionist.move_satisficers.keys()
-        random.shuffle(all_possible_dialogue_moves)
-        for move_name in all_possible_dialogue_moves:
-            selected_line = self.conversation.target_move(move_name=move_name)
-            if selected_line:
-                return selected_line
-        print "I could not find a line here :("
 
     def _have_player_decide_what_to_say(self):
         """Let the player select which line of dialogue to deploy on this turn."""
