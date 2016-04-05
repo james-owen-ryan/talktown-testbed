@@ -630,12 +630,12 @@ class NonterminalSymbol(object):
         precondition or would incur a conversational violation if deployed at this time."""
         if conversation.speaker.player:  # Let the player say anything currently, i.e., return False
             return False
-        if (self.violations(conversation=conversation) or
+        if (self.conversational_violations(conversation=conversation) or
                 not self.preconditions_satisfied(conversation=conversation)):
             if conversation.productionist.debug:
                 # Express why the symbol is currently violated
                 print "Symbol {} is currently violated".format(self)
-                conversational_violations = self.violations(conversation=conversation)
+                conversational_violations = self.conversational_violations(conversation=conversation)
                 for conversational_violation in conversational_violations:
                     print '\t{}'.format(conversational_violation)
                 unsatisfied_preconditions = (
@@ -651,7 +651,7 @@ class NonterminalSymbol(object):
         """Return whether this line's preconditions are satisfied given the state of the world."""
         return all(precondition.evaluate(conversation=conversation) for precondition in self.preconditions)
 
-    def violations(self, conversation):
+    def conversational_violations(self, conversation):
         """Return a list of names of conversational violations that will be incurred if this line is deployed now."""
         violations_incurred = [
             potential_violation.name for potential_violation in self.conditional_violations if
@@ -785,7 +785,7 @@ class LineOfDialogue(object):
         self.symbols = symbols_expanded_to_produce_this_template
         self.template = self._init_prepare_template(raw_line=raw_line)
         # Prepare annotation attributes
-        self.violations = set()
+        self.conversational_violations = set()
         self.propositions = set()
         self.change_subject_to = ''  # Raw Python snippet that when executed will change the subject of conversation
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
@@ -831,7 +831,7 @@ class LineOfDialogue(object):
             "Line of dialogue {} is inheriting from symbols with contradicting 'change_subject_to' annotations."
         )
         for symbol in self.symbols:
-            self.violations |= set(symbol.violations(conversation=conversation))
+            self.conversational_violations |= set(symbol.conversational_violations(conversation=conversation))
             self.propositions |= symbol.propositions
             self.change_subject_to = symbol.change_subject_to if symbol.change_subject_to else self.change_subject_to
             self.moves |= symbol.moves

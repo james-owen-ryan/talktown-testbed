@@ -1,4 +1,5 @@
 import random
+import time
 from event import Event
 from evidence import Statement, Declaration, Lie, Eavesdropping
 from belief import PersonMentalModel, DwellingPlaceModel, BusinessMentalModel
@@ -151,6 +152,8 @@ class Conversation(Event):
     def transpire(self):
         """Carry out the entire conversation."""
         while not self.over:
+            if any(p for p in self.participants if p.player):
+                time.sleep(0.6)
             self.proceed()
         # self.replay()
         for turn in self.turns:
@@ -219,13 +222,28 @@ class Conversation(Event):
             print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
         return next_speaker, targeted_obligation, targeted_goal
 
+    def understand_player_utterance(self, player_utterance):
+        """Request that Impressionist process a player's free-text dialogue input.
+
+        This method will furnish an instantiated Impressionist.LineOfDialogue object, which will come
+        with all of the necessary semantic and pragmatic information already attributed.
+        """
+        if self.debug:
+            print "[A request has been made to Impressionist to process the player utterance '{}']".format(
+                player_utterance
+            )
+        return self.impressionist.understand_player_utterance(player_utterance=player_utterance, conversation=self)
+
     def target_move(self, move_name):
         """Request that Productionist generate a line of dialogue that may be used to perform a
         targeted dialogue move.
+
+        This method will furnish an instantiated Productionist.LineOfDialogue object, which will come
+        with all of the necessary semantic and pragmatic information already attributed.
         """
         if self.debug:
-            print "[{} is requesting that Productionist generate a line that will perform MOVE:{}]".format(
-                self.speaker.first_name, move_name
+            print "[A request has been made to Productionist to generate a line that will perform MOVE:{}]".format(
+                move_name
             )
         return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
 
@@ -370,7 +388,10 @@ class Turn(object):
         self.index = len(conversation.turns)
         self.conversation.turns.append(self)
         self.realization = ''  # Dialogue template as it was filled in during this turn
-        self.line_of_dialogue = self._decide_what_to_say()
+        if self.speaker.player:
+            self.line_of_dialogue = self._process_player_dialogue_input()
+        else:  # Speaker is an NPC
+            self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
         self.eavesdropper = self._potentially_be_eavesdropped()
         self._update_conversational_context()
@@ -378,6 +399,26 @@ class Turn(object):
     def __str__(self):
         """Return string representation."""
         return '{}: {}'.format(self.speaker.name, self.realization)
+
+    def _process_player_dialogue_input(self):
+        """Process the player's free-text dialogue input to instantiate a line of dialogue."""
+        # Ask the player to provide her next utterance
+        raw_player_utterance = self._solicit_player_utterance()
+        # Ask the conversation object associated with this turn to ask its Impressionist to
+        # process this line; this will furnish an Impressionist.LineOfDialogue object that has
+        # all the semantic and pragmatic information that we need, as well as a realize() method,
+        # which will simply print out the player's utterance
+        line_of_dialogue_object = self.conversation.understand_player_utterance(
+            player_utterance=raw_player_utterance
+        )
+        return line_of_dialogue_object
+
+    def _solicit_player_utterance(self):
+        """Solicit free-text input from the player."""
+        prompt = "\n{player_character_name}: ".format(player_character_name=self.speaker.name)
+        raw_player_utterance = raw_input(prompt)
+        print ''  # To match the style of how NPC lines of dialogue are displayed
+        return raw_player_utterance
 
     def _decide_what_to_say(self):
         """Have the speaker select a line of dialogue to deploy on this turn."""
@@ -420,7 +461,10 @@ class Turn(object):
     def _realize_line_of_dialogue(self):
         """Display the line of dialogue on screen."""
         self.realization = self.line_of_dialogue.realize(conversation_turn=self)
-        print '\n{}: {}\n'.format(self.speaker.name, self.realization)
+        # If the speaker is an NPC, print their line out; if it's a player, the line
+        # has already been made visible from the player typing it
+        if not self.speaker.player:
+            print '\n{name}: {line}\n'.format(name=self.speaker.name, line=self.realization)
 
     def _potentially_be_eavesdropped(self):
         """Potentially have the line of dialogue asserting this proposition be eavesdropped by a nearby character."""
@@ -538,10 +582,21 @@ class Turn(object):
     def _address_topics(self):
         """Address topics of conversation according to the mark-up of this line."""
         for topic_name in self.line_of_dialogue.topics_addressed:
-            topic_object = next(t for t in self.conversation.topics if t.name == topic_name)
-            self.topics_addressed.add(topic_object)
-            if self.conversation.debug:
-                print '-- Addressed "{}"'.format(topic_object)
+            try:
+                topic_object = next(t for t in self.conversation.topics if t.name == topic_name)
+                self.topics_addressed.add(topic_object)
+                if self.conversation.debug:
+                    print '-- Addressed "{}"'.format(topic_object)
+            except StopIteration:  # Topic has not been introduced yet
+                if self.speaker.player:  # If the speaker is a player character, let it slide
+                    pass
+                else:
+                    raise Exception(
+                        "{speaker} is attempting to address a topic ({topic}) that has not yet been introduced.".format(
+                            speaker=self.speaker.name,
+                            topic=topic_name
+                        )
+                    )
 
     def _fire_dialogue_moves(self):
         """Fire rules associated with the dialogue moves performed on this turn."""

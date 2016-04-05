@@ -1,5 +1,6 @@
 from config import Config
 from productionist import Productionist
+from impressionist import Impressionist
 from person import *
 from business import *
 from city import *
@@ -13,8 +14,9 @@ class Game(object):
         """Initialize a Game object."""
         # Load config parameters
         self.config = Config()
-        # Load the NLG module for this game instance
-        self.productionist = Productionist(game=self)
+        # Load NLG and NLU modules for this game instance
+        self.productionist = Productionist(game=self)  # NLG module
+        self.impressionist = Impressionist(game=self)  # NLU module
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0
