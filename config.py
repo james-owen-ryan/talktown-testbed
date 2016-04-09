@@ -1571,7 +1571,7 @@ class Config(object):
             "best friend": 1,  # Remember, this is a boost on top of the value for friend
             "worst enemy": 1,
             "significant other": 5,
-            "self": 10,
+            "self": float("inf"),
         }
         self.salience_job_level_boost = (
             lambda job_level: job_level * 0.35
