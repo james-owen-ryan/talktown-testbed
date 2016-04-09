@@ -672,6 +672,9 @@ class Person(object):
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
+        # Sex
+        if feature_type == "sex":
+            return 'm' if self.male else 'f'
         # Status
         if feature_type == "status":
             if self.present:
