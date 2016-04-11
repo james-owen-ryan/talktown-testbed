@@ -543,12 +543,14 @@ class NonterminalSymbol(object):
         self.preconditions = set()
         self.conditional_violations = set()
         self.propositions = set()
-        self.change_subject_to = ''  # Raw Python snippet that when executed will change the subject of conversation
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
         self.speaker_obligations_pushed = set()  # Line asserts speaker conversational obligations
         self.interlocutor_obligations_pushed = set()  # Line asserts interlocutor conversational obligations
         self.topics_pushed = set()  # Line introduces a new topic of conversation
         self.topics_addressed = set()  # Line addresses a topic of conversation
+        self.clear_subject_of_conversation = False  # Line clears subject of conversation to allow asserting a new one
+        self.force_speaker_subject_match_to_speaker_preoccupation = False  # Line forces a speaker subject match
+        self.context_updates = set()  # Line updates the conversational context, e.g., w.r.t. subject of conversation
         self._init_parse_markup(raw_markup=raw_markup)
         self.production_rules = self._init_reify_production_rules(production_rules_specification)
         # These attributes are used to perform live generation of a dialogue template from the
@@ -585,8 +587,6 @@ class NonterminalSymbol(object):
                     self.conditional_violations.add(ConditionalViolation(tag=tag))
                 elif tagset == "Propositions":
                     self.propositions.add(tag)
-                elif tagset == "ChangeSubjectTo":
-                    self.change_subject_to = tag
                 # Acts, goals, obligations, and topics are reified as objects during a conversation, but
                 # here are only represented as a tag
                 elif tagset == "Moves":
@@ -599,8 +599,17 @@ class NonterminalSymbol(object):
                     self.topics_pushed.add(tag)
                 elif tagset == "AddressTopic":
                     self.topics_addressed.add(tag)
+                elif tagset == "Context":
+                    if tag == "CLEAR SUBJECT":
+                        self.clear_subject_of_conversation = True
+                    if tag == "FORCE SPEAKER SUBJECT MATCH TO SPEAKER PREOCCUPATION":
+                        self.force_speaker_subject_match_to_speaker_preoccupation = True
+                    elif tag:
+                        self.context_updates.add(tag)
                 elif tagset == "EffectConditions":
                     pass  # TODO
+                elif tagset == "ChangeSubjectTo":
+                    pass  # TODO REMOVE THIS TAGSET
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
@@ -620,7 +629,7 @@ class NonterminalSymbol(object):
         """Return all the annotations attributed to this symbol."""
         all_markup = (
             self.preconditions | self.conditional_violations | self.propositions |
-            {self.change_subject_to} | self.moves | self.speaker_obligations_pushed |
+            self.context_updates | self.moves | self.speaker_obligations_pushed |
             self.interlocutor_obligations_pushed | self.topics_pushed | self.topics_addressed
         )
         return list(all_markup)
@@ -787,12 +796,14 @@ class LineOfDialogue(object):
         # Prepare annotation attributes
         self.conversational_violations = set()
         self.propositions = set()
-        self.change_subject_to = ''  # Raw Python snippet that when executed will change the subject of conversation
         self.moves = set()  # The dialogue moves constituted by the delivery of this line
         self.speaker_obligations_pushed = set()  # Line asserts speaker conversational obligations
         self.interlocutor_obligations_pushed = set()  # Line asserts interlocutor conversational obligations
         self.topics_pushed = set()  # Line introduces a new topic of conversation
         self.topics_addressed = set()  # Line addresses a topic of conversation
+        self.clear_subject_of_conversation = False  # Line clears subject of conversation to allow asserting a new one
+        self.force_speaker_subject_match_to_speaker_preoccupation = False  # Line forces a speaker subject match
+        self.context_updates = set()  # Line updates the conversational context, e.g., the subject of conversation
         self._init_inherit_markup(conversation=conversation)
 
     def __str__(self):
@@ -827,18 +838,19 @@ class LineOfDialogue(object):
 
     def _init_inherit_markup(self, conversation):
         """Inherit the mark-up of all the symbols that were expanded in the construction of this dialogue template."""
-        assert len({s.change_subject_to for s in self.symbols if s.change_subject_to}) < 2, (
-            "Line of dialogue {} is inheriting from symbols with contradicting 'change_subject_to' annotations."
-        )
         for symbol in self.symbols:
             self.conversational_violations |= set(symbol.conversational_violations(conversation=conversation))
             self.propositions |= symbol.propositions
-            self.change_subject_to = symbol.change_subject_to if symbol.change_subject_to else self.change_subject_to
             self.moves |= symbol.moves
             self.speaker_obligations_pushed |= symbol.speaker_obligations_pushed
             self.interlocutor_obligations_pushed |= symbol.interlocutor_obligations_pushed
             self.topics_pushed |= symbol.topics_pushed
             self.topics_addressed |= symbol.topics_addressed
+            self.clear_subject_of_conversation = symbol.clear_subject_of_conversation
+            self.force_speaker_subject_match_to_speaker_preoccupation = (
+                symbol.force_speaker_subject_match_to_speaker_preoccupation
+            )
+            self.context_updates |= symbol.context_updates
 
     def realize(self, conversation_turn):
         """Return a filled-in template according to the world state during the current conversation turn."""
@@ -875,8 +887,10 @@ class Gap(object):
     def realize(self, conversation_turn):
         """Fill in this gap according to the world state during a conversation turn."""
         # Prepare local variables that will allow us to fill in this gap
-        speaker, interlocutor, subject = (
-            conversation_turn.speaker, conversation_turn.interlocutor, conversation_turn.subject
+        conversation, speaker, interlocutor, subject = (
+            conversation_turn.conversation,
+            conversation_turn.speaker, conversation_turn.interlocutor,
+            conversation_turn.subject.matches[conversation_turn.speaker]
         )
         return str(eval(self.specification))
 
@@ -908,12 +922,12 @@ class Condition(object):
         # Instantiate all the arguments we might need as local variables
         speaker = conversation.speaker
         interlocutor = conversation.interlocutor
-        subject = conversation.subject
+        subject = conversation.subject.matches[conversation.speaker]
         # Prepare the list of arguments by evaluating to bind them to the needed local variables
-        filled_in_arguments = [eval(argument) for argument in self.arguments]
+        realized_arguments = [eval(argument) for argument in self.arguments]
         # Return a boolean indicating whether this precondition is satisfied
         try:
-            return self.test(*filled_in_arguments)
+            return self.test(*realized_arguments)
         except (ValueError, AttributeError):
             raise Exception('Cannot evaluate the precondition {}'.format(self.condition))
 

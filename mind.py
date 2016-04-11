@@ -12,6 +12,13 @@ class Mind(object):
         else:  # PersonExNihilo object
             self.memory = self._init_ex_nihilo_memory()
         self.mental_models = {}
+        # A mind's preoccupation is an entity that this person is currently preoccupied
+        # by, e.g., someone for whom this person is trying to fill in missing belief facets
+        self.preoccupation = None
+
+    def __str__(self):
+        """Return string representation."""
+        return "Mind of {}".format(self.person.name)
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
@@ -44,9 +51,26 @@ class Mind(object):
         feature_object = Feature(value=memory, inherited_from=None)
         return feature_object
 
-    def __str__(self):
-        """Return string representation."""
-        return "Mind of {}".format(self.person.name)
+    def closest_match(self, features, entity_type='person'):
+        """Match a set of features describing an entity against this person's mental models to return
+        a closest match.
+        """
+        # TODO check for partial matches, express multiple matches (if there are multiple)
+        assert features, "A person's mind.closest_match() method was called with no indexing features."
+        # Build a lambda function that will match mental models against the given features
+        matches_description = lambda mental_model: all(
+            str(mental_model.get_facet_to_this_belief_of_type(feature[0])) == feature[1]
+            for feature in features if feature
+        )
+        # Collect all matches
+        all_matches = [
+            p for p in self.mental_models if p.type == entity_type and matches_description(self.mental_models[p])
+        ]
+        if not all_matches:
+            return None
+        # Return the most salient match (meaning most salient to this person)
+        most_salient_match = max(all_matches, key=lambda match: self.person.salience_of_other_people.get(match, 0.0))
+        return most_salient_match
 
 
 class Feature(float):
