@@ -89,7 +89,7 @@ def game_start():
         print p.mind.mental_models[person_home_or_business]
 
 
-theproc = subprocess.Popen([sys.executable, "eric.py"], shell = True)
+theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
 thread.start_new_thread(game_start,())
 socketio.run(app)
 
