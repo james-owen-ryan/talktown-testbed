@@ -84,10 +84,10 @@ class Birth(Event):
             self._have_mother_potentially_quit_job()
         if self.doctor:  # There won't be a doctor if the birth happened outside the city
             self.hospital = doctor.company
-            self.nurses =  set([
+            self.nurse = {
                 position for position in self.hospital.employees if
                 position.__class__.__name__ == 'Nurse'
-            ])
+            }
             self.doctor.baby_deliveries.add(self)
             # self._remunerate()
         else:
