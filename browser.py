@@ -223,7 +223,7 @@ def browser_spawn():
             cefpython.MessageLoopWork()
 
     def PyPrint(message):
-        print("[cefhello] PyPrint: "+message)
+        print("[talktown] PyPrint: "+message)
 
     class JavascriptExternal:
         mainBrowser = None
@@ -248,19 +248,12 @@ def browser_spawn():
         # -------------------------------------------------------------------------
 
         def OnAddressChange(self, browser, frame, url):
-            print("[cefhello] DisplayHandler::OnAddressChange()")
+            print("[talktown] DisplayHandler::OnAddressChange()")
             print("    url = %s" % url)
 
         def OnTitleChange(self, browser, title):
-            print("[cefhello] DisplayHandler::OnTitleChange()")
+            print("[talktown] DisplayHandler::OnTitleChange()")
             print("    title = %s" % title)
-
-        def OnTooltip(self, browser, textOut):
-            # OnTooltip not yet implemented (both Linux and Windows),
-            # will be fixed in next CEF release, see Issue 783:
-            # https://code.google.com/p/chromiumembedded/issues/detail?id=783
-            print("[cefhello] DisplayHandler::OnTooltip()")
-            print("    text = %s" % textOut[0])
 
         statusMessageCount = 0
         def OnStatusMessage(self, browser, value):
@@ -271,11 +264,11 @@ def browser_spawn():
             if self.statusMessageCount > 3:
                 # Do not spam too much.
                 return
-            print("[cefhello] DisplayHandler::OnStatusMessage()")
+            print("[talktown] DisplayHandler::OnStatusMessage()")
             print("    value = %s" % value)
 
         def OnConsoleMessage(self, browser, message, source, line):
-            print("[cefhello] DisplayHandler::OnConsoleMessage()")
+            print("[talktown] DisplayHandler::OnConsoleMessage()")
             print("    message = %s" % message)
             print("    source = %s" % source)
             print("    line = %s" % line)
@@ -286,7 +279,7 @@ def browser_spawn():
         # -------------------------------------------------------------------------
 
         def OnBeforeBrowse(self, browser, frame, request, isRedirect):
-            print("[cefhello] RequestHandler::OnBeforeBrowse()")
+            print("[talktown] RequestHandler::OnBeforeBrowse()")
             print("    url = %s" % request.GetUrl()[:100])
             # Handle "magnet:" links.
             if request.GetUrl().startswith("magnet:"):
@@ -296,41 +289,14 @@ def browser_spawn():
             return False
 
         def OnBeforeResourceLoad(self, browser, frame, request):
-            print("[cefhello] RequestHandler::OnBeforeResourceLoad()")
+            print("[talktown] RequestHandler::OnBeforeResourceLoad()")
             print("    url = %s" % request.GetUrl()[:100])
             return False
 
         def OnResourceRedirect(self, browser, frame, oldUrl, newUrlOut):
-            print("[cefhello] RequestHandler::OnResourceRedirect()")
+            print("[talktown] RequestHandler::OnResourceRedirect()")
             print("    old url = %s" % oldUrl[:100])
             print("    new url = %s" % newUrlOut[0][:100])
-
-        def GetAuthCredentials(self, browser, frame, isProxy, host, port, realm,
-                scheme, callback):
-            # This callback is called on the IO thread, thus print messages
-            # may not be visible.
-            print("[cefhello] RequestHandler::GetAuthCredentials()")
-            print("    host = %s" % host)
-            print("    realm = %s" % realm)
-            callback.Continue(username="test", password="test")
-            return True
-
-        def OnQuotaRequest(self, browser, originUrl, newSize, callback):
-            print("[cefhello] RequestHandler::OnQuotaRequest()")
-            print("    origin url = %s" % originUrl)
-            print("    new size = %s" % newSize)
-            callback.Continue(True)
-            return True
-
-        def OnProtocolExecution(self, browser, url, allowExecutionOut):
-            # There's no default implementation for OnProtocolExecution on Linux,
-            # you have to make OS system call on your own. You probably also need
-            # to use LoadHandler::OnLoadError() when implementing this on Linux.
-            print("[cefhello] RequestHandler::OnProtocolExecution()")
-            print("    url = %s" % url)
-            if url.startswith("magnet:"):
-                print("[cefhello] Magnet link allowed!")
-                allowExecutionOut[0] = True
 
         def _OnBeforePluginLoad(self, browser, url, policyUrl, info):
             # This is a global callback set using SetGlobalClientCallback().
@@ -432,7 +398,7 @@ def browser_spawn():
         def OnBeforePopup(self, browser, frame, targetUrl, targetFrameName,
                 popupFeatures, windowInfo, client, browserSettings,
                 noJavascriptAccess):
-            print("[cefhello] LifespanHandler::OnBeforePopup()")
+            print("[talktown] LifespanHandler::OnBeforePopup()")
             print("    targetUrl = %s" % targetUrl)
 
             # Custom browser settings for popups:
@@ -464,19 +430,19 @@ def browser_spawn():
 
         def _OnAfterCreated(self, browser):
             # This is a global callback set using SetGlobalClientCallback().
-            print("[cefhello] LifespanHandler::_OnAfterCreated()")
+            print("[talktown] LifespanHandler::_OnAfterCreated()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def RunModal(self, browser):
-            print("[cefhello] LifespanHandler::RunModal()")
+            print("[talktown] LifespanHandler::RunModal()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def DoClose(self, browser):
-            print("[cefhello] LifespanHandler::DoClose()")
+            print("[talktown] LifespanHandler::DoClose()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def OnBeforeClose(self, browser):
-            print("[cefhello] LifespanHandler::OnBeforeClose")
+            print("[talktown] LifespanHandler::OnBeforeClose")
             print("    browserId=%s" % browser.GetIdentifier())
 
         # -------------------------------------------------------------------------
@@ -520,7 +486,7 @@ def browser_spawn():
 
         def OnInit(self):
             if not USE_EVT_IDLE:
-                print("[cefhello] Using TIMER to run CEF message loop")
+                print("[talktown] Using TIMER to run CEF message loop")
                 self.CreateTimer()
             self.mainFrame = MainFrame()
             self.SetTopWindow(self.mainFrame)

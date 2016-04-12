@@ -1,0 +1,23 @@
+
+[2016-04-12 10:07:22] Traceback (most recent call last):
+
+  File "browser.py", line 600, in <module>
+    browser_spawn()
+
+  File "browser.py", line 591, in browser_spawn
+    app = MyApp(False)
+
+  File "C:\Python27\lib\site-packages\wx-3.0-msw\wx\_core.py", line 8628, in __init__
+    self._BootstrapApp()
+
+  File "C:\Python27\lib\site-packages\wx-3.0-msw\wx\_core.py", line 8196, in _BootstrapApp
+    return _core_.PyApp__BootstrapApp(*args, **kwargs)
+
+  File "browser.py", line 476, in OnInit
+    self.mainFrame = MainFrame()
+
+  File "browser.py", line 156, in __init__
+    self.clientHandler._OnCertificateError)
+
+AttributeError: ClientHandler instance has no attribute '_OnCertificateError'
+
