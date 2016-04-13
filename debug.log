@@ -539,3 +539,706 @@
 [CEF Python] del g_pyBrowsers[1]
 [CEF Python] Shutdown()
 [0412/101126:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=61792 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] QuitMessageLoop()
+[0412/101707:ERROR_REPORT:message_loop.cc(324)] Check failed: false. Must be inside Run to call Quit
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyBrowsers[1]
+[0412/101707:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52440 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] QuitMessageLoop()
+[0412/101734:ERROR_REPORT:message_loop.cc(324)] Check failed: false. Must be inside Run to call Quit
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyBrowsers[1]
+[0412/101734:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=64084 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7576.1.1141110575\824107195" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[0412/101801:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/101801:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/101802:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52273 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="6660.1.24511497\1349946210" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[0412/101823:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/101823:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/101825:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=60162 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5648.1.1228486494\1036415837" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[0412/102319:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/102319:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/102327:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=64997 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9116.1.1633760314\1560910755" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[0412/102418:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/102418:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[0412/102430:INFO:CONSOLE(23)] "Want to open websocket", source: http://localhost:5000/ (23)
+[0412/102432:INFO:CONSOLE(29)] "WebSocket connection to 'ws://localhost:5000/' failed: Unexpected response code: 200", source: http://localhost:5000/ (29)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=63287 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5444.1.1663994798\774533488" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[0412/102545:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/102545:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/102551:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52701 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:8080/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5412.1.725813519\1517031961" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/103011:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57394 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:8080/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3688.1.104240074\1362322227" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/103025:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57554 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:8080/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="6348.1.1891851338\538642335" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] Shutdown()
+[0412/103100:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=54094 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1468.1.1455912627\771184953" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[0412/103204:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/103204:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/103208:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=61206 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9192.1.419929865\693152289" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[0412/121600:INFO:CONSOLE(14)] "The value "device-width;" for key "width" is invalid, and has been ignored.", source: http://localhost:5000/ (14)
+[0412/121600:INFO:CONSOLE(14)] "Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.", source: http://localhost:5000/ (14)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[0412/142546:WARNING:dns_config_service_win.cc(653)] Failed to read DnsConfig.
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0412/163736:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=64714 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="288.1.1620692018\986247314" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/170725:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=64317 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9676.1.783233509\1487829130" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/170824:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52833 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4436.1.2068045399\368094276" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[0412/170945:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/171001:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=60535 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="728.1.1200499087\971185869" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/171017:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=53703 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1228.1.472668728\636854953" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/173333:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=62117 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9812.1.1457832112\1432850598" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/173402:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57351 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7464.1.1986929989\1142459600" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[0412/173425:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=55378 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9580.1.589613613\542866216" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/173602:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56731 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 25% new size = 1000/750
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\Jill\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3888.1.324940653\707565924" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=120 zoom=1
+
+[0412/173639:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0412/173642:INFO:CONSOLE(2)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=b7c9dce1b5f643d4979b4145a6c89e7c' failed: One or more reserved bits are on: reserved1 = 1, reserved2 = 0, reserved3 = 0", source: http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js (2)
+[0412/173642:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=c573ee0660b247568ae6abac31ea733b' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0412/173644:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=246df5e0d2ac436cb3b4eae4ddf51f41' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0412/173645:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=557b28b507c1434c85bf0fe0e4789f40' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0412/173647:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=84448499bc1b4fc59c9b6722a9f752bf' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0412/173648:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()

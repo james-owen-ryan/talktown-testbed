@@ -42,11 +42,18 @@ def test_message(message):
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    emit('my response', {'data': 'Connected'})
+    emit('my response', {'data': 'Connected', 'count': 0})
+
+@socketio.on('disconnect request', namespace='/test')
+def disconnect_request():
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my response',
+         {'data': 'Disconnected!', 'count': session['receive_count']})
+    disconnect()
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
-    print('Client disconnected')
+    print('Client disconnected', request.sid)
 
 def game_start():
     game = Game()  # Objects of the class Game are Talk of the Town simulations

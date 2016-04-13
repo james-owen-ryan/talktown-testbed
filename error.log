@@ -21,3 +21,19 @@
 
 AttributeError: ClientHandler instance has no attribute '_OnCertificateError'
 
+
+[2016-04-12 10:17:07] Traceback (most recent call last):
+
+  File "browser.py", line 506, in OnTimer
+    cefpython.Work()
+
+AttributeError: 'module' object has no attribute 'Work'
+
+
+[2016-04-12 10:17:34] Traceback (most recent call last):
+
+  File "browser.py", line 506, in OnTimer
+    cefpython.Work()
+
+AttributeError: 'module' object has no attribute 'Work'
+

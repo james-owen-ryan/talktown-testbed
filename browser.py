@@ -298,6 +298,33 @@ def browser_spawn():
             print("    old url = %s" % oldUrl[:100])
             print("    new url = %s" % newUrlOut[0][:100])
 
+        def GetAuthCredentials(self, browser, frame, isProxy, host, port, realm,
+                scheme, callback):
+            # This callback is called on the IO thread, thus print messages
+            # may not be visible.
+            print("[cefhello] RequestHandler::GetAuthCredentials()")
+            print("    host = %s" % host)
+            print("    realm = %s" % realm)
+            callback.Continue(username="test", password="test")
+            return True
+
+        def OnQuotaRequest(self, browser, originUrl, newSize, callback):
+            print("[cefhello] RequestHandler::OnQuotaRequest()")
+            print("    origin url = %s" % originUrl)
+            print("    new size = %s" % newSize)
+            callback.Continue(True)
+            return True
+
+        def OnProtocolExecution(self, browser, url, allowExecutionOut):
+            # There's no default implementation for OnProtocolExecution on Linux,
+            # you have to make OS system call on your own. You probably also need
+            # to use LoadHandler::OnLoadError() when implementing this on Linux.
+            print("[cefhello] RequestHandler::OnProtocolExecution()")
+            print("    url = %s" % url)
+            if url.startswith("magnet:"):
+                print("[cefhello] Magnet link allowed!")
+                allowExecutionOut[0] = True
+
         def _OnBeforePluginLoad(self, browser, url, policyUrl, info):
             # This is a global callback set using SetGlobalClientCallback().
             # Plugins are loaded on demand, only when website requires it,
@@ -398,7 +425,7 @@ def browser_spawn():
         def OnBeforePopup(self, browser, frame, targetUrl, targetFrameName,
                 popupFeatures, windowInfo, client, browserSettings,
                 noJavascriptAccess):
-            print("[talktown] LifespanHandler::OnBeforePopup()")
+            print("[cefhello] LifespanHandler::OnBeforePopup()")
             print("    targetUrl = %s" % targetUrl)
 
             # Custom browser settings for popups:
@@ -430,19 +457,19 @@ def browser_spawn():
 
         def _OnAfterCreated(self, browser):
             # This is a global callback set using SetGlobalClientCallback().
-            print("[talktown] LifespanHandler::_OnAfterCreated()")
+            print("[cefhello] LifespanHandler::_OnAfterCreated()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def RunModal(self, browser):
-            print("[talktown] LifespanHandler::RunModal()")
+            print("[cefhello] LifespanHandler::RunModal()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def DoClose(self, browser):
-            print("[talktown] LifespanHandler::DoClose()")
+            print("[cefhello] LifespanHandler::DoClose()")
             print("    browserId=%s" % browser.GetIdentifier())
 
         def OnBeforeClose(self, browser):
-            print("[talktown] LifespanHandler::OnBeforeClose")
+            print("[cefhello] LifespanHandler::OnBeforeClose")
             print("    browserId=%s" % browser.GetIdentifier())
 
         # -------------------------------------------------------------------------
@@ -486,7 +513,7 @@ def browser_spawn():
 
         def OnInit(self):
             if not USE_EVT_IDLE:
-                print("[talktown] Using TIMER to run CEF message loop")
+                print("[cefhello] Using TIMER to run CEF message loop")
                 self.CreateTimer()
             self.mainFrame = MainFrame()
             self.SetTopWindow(self.mainFrame)
