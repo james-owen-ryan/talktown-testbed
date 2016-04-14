@@ -32,14 +32,25 @@ socketio = SocketIO(app)
 
 
 
-
 @app.route('/')
 def index():
     return render_template('myhtml.html')
 
+# server handling info requests
+@socketio.on('get info', namespace='/test')
+def send_info(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('return info',
+         {'data': message['data'], 'count': session['receive_count']})
+    print "Sending back the info about %s\n" % (message['data'])
+
 @socketio.on('my event', namespace='/test')
 def test_message(message):
-    emit('my response', {'data': message['data']})
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my response',
+         {'data': message['data'], 'count': session['receive_count']})
+    print "PYTHON: The user wants to post '%s'. I'm going to call a JS callback\n" % (message['data'])
+
 
 @socketio.on('disconnect request', namespace='/test')
 def disconnect_request():
@@ -48,13 +59,16 @@ def disconnect_request():
          {'data': 'Disconnected!', 'count': session['receive_count']})
     disconnect()
 
+
 @socketio.on('connect', namespace='/test')
 def test_connect():
     emit('my response', {'data': 'Connected', 'count': 0})
 
+
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print('Client disconnected', request.sid)
+
 
 def game_start():
     game = Game()  # Objects of the class Game are Talk of the Town simulations
@@ -97,10 +111,10 @@ def game_start():
         print p.mind.mental_models[person_home_or_business]
 
 
+
 theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
 thread.start_new_thread(game_start,())
 socketio.run(app)
-
 
 
     # TODO: stop process when exit app?
