@@ -26,6 +26,8 @@ import thread
 import eventlet
 eventlet.monkey_patch()
 
+# done = False
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
@@ -39,10 +41,18 @@ def index():
 # server handling info requests
 @socketio.on('get info', namespace='/test')
 def send_info(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
+    """while False:
+        pass
+    if (done == True):
+        session['receive_count'] = session.get('receive_count', 0) + 1
+        emit('return info',
+             {'data': game.random_person, 'count': session['receive_count']})
+        print "Sending back the info about %s\n" % (message['data'])
+    if (done == False):
+        print ("still false but should be true")"""
     emit('return info',
-         {'data': message['data'], 'count': session['receive_count']})
-    print "Sending back the info about %s\n" % (message['data'])
+         {'data': str(random_p), 'count': session['receive_count']})
+    print "PYTHON: random person %s" % random_p
 
 @socketio.on('my event', namespace='/test')
 def test_message(message):
@@ -71,6 +81,9 @@ def test_disconnect():
 
 
 def game_start():
+    global done
+    done = False
+    global game
     game = Game()  # Objects of the class Game are Talk of the Town simulations
     # send a message to be displayed on the page
     print "Simulating a town's history..."
@@ -96,6 +109,7 @@ def game_start():
     for c in game.city.former_companies:
         print c
     # Procure and print out a random character in the town
+    global p
     p = game.random_person
     print '\nRandom character: {random_character}\n'.format(
         random_character=p
@@ -110,11 +124,15 @@ def game_start():
     for person_home_or_business in p.mind.mental_models:
         print p.mind.mental_models[person_home_or_business]
 
-
+    done == True
+    global random_p
+    random_p = p
+    print "within game gen random p is %s" % random_p
 
 theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
-thread.start_new_thread(game_start,())
+#thread.start_new_thread(game_start,())
+#thread.start_new_thread(socketio.run(app),())
+game_start()
 socketio.run(app)
-
 
     # TODO: stop process when exit app?

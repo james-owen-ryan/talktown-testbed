@@ -22,7 +22,7 @@
 
 				//event handler for returned info from server
 				socket.on('return info', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': Returning info about: ' + msg.data).html());
+					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
 				});
 
 				

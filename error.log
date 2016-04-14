@@ -37,3 +37,196 @@ AttributeError: 'module' object has no attribute 'Work'
 
 AttributeError: 'module' object has no attribute 'Work'
 
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "load_handler_cef3.pyx", line 17, in cefpython_py27.LoadHandler_OnLoadingStateChange (cefpython.cpp:59626)
+
+  File "browser.py", line 381, in OnLoadingStateChange
+    print("[cefhello] LoadHandler::OnLoadingStateChange()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "load_handler_cef3.pyx", line 52, in cefpython_py27.LoadHandler_OnLoadEnd (cefpython.cpp:60218)
+
+  File "browser.py", line 390, in OnLoadEnd
+    print("[cefhello] LoadHandler::OnLoadEnd()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "request_handler_cef3.pyx", line 84, in cefpython_py27.RequestHandler_OnBeforeResourceLoad (cefpython.cpp:49209)
+
+  File "browser.py", line 292, in OnBeforeResourceLoad
+    print("[talktown] RequestHandler::OnBeforeResourceLoad()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:16] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 271, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:18] Traceback (most recent call last):
+
+  File "browser.py", line 538, in OnExit
+    print("[cefhello] MyApp.OnExit")
+
+IOError: [Errno 22] Invalid argument
+
+
+[2016-04-14 16:11:18] Traceback (most recent call last):
+
+  File "browser.py", line 642, in <module>
+    browser_spawn()
+
+  File "browser.py", line 640, in browser_spawn
+    cefpython.Shutdown()
+
+  File "cefpython.pyx", line 472, in cefpython_py27.Shutdown (cefpython.cpp:78239)
+
+  File "utils.pyx", line 43, in cefpython_py27.Debug (cefpython.cpp:5361)
+
+IOError: [Errno 22] Invalid argument
+
