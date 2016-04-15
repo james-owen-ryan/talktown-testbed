@@ -40,7 +40,7 @@ socketio = SocketIO(app)
 @app.route('/js/<path:path>')
 def send_js(path):
     #return send_from_directory('js', path)
-    return send_from_directory(app.static_folder, "client.js")
+    return send_from_directory(app.static_folder)
 
 @app.route('/')
 def index():
@@ -140,8 +140,8 @@ def game_start():
 
 theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
 thread.start_new_thread(game_start,())
-thread.start_new_thread(socketio.run(app),())
+#thread.start_new_thread(socketio.run(app),())
 #game_start()
-#socketio.run(app)
+socketio.run(app)
 
     # TODO: stop process when exit app?
