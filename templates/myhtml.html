@@ -4,10 +4,10 @@
 		<title>Flask-SocketIO Test</title>
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+		<script type="text/javascript" src= "js/client.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(document).ready(function(){
 				namespace = '/test'; // change to an empty string to use the global namespace
-
 				// the socket.io documentation recommends sending an explicit package upon connection
 				// this is specially important when using the global namespace
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -19,12 +19,10 @@
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
 					console.log("JAVASCRIPT: The message sent from the server that I will append is:" + msg.data);
 				});
-
 				//event handler for returned info from server
 				socket.on('return info', function(msg) {
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
 				});
-
 				
 				// event handler for new connections
 				socket.on('connect', function() {
@@ -51,9 +49,10 @@
 				console.log("Requesting info");
 				socket.emit('get info', {data: 'random person'});
 				console.log("Append received info");
+				
+				confirm();
 			});
 			
-
 		</script>
 	</head>
 	<body>
@@ -69,4 +68,3 @@
 		<h2>Receive:</h2>
 		<div id="log"></div>
 </html>
-

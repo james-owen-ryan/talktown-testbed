@@ -19,20 +19,28 @@ from game import Game
 
 from flask import Flask, render_template
 # noinspection PyUnresolvedReferences
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+
 import thread
 import eventlet
 eventlet.monkey_patch()
 
 # done = False
 
-app = Flask(__name__)
+#app = Flask(__name__)
+
+#app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='js')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
 
+@app.route('/js/<path:path>')
+def send_js(path):
+    #return send_from_directory('js', path)
+    return send_from_directory(app.static_folder, "client.js")
 
 @app.route('/')
 def index():
@@ -50,6 +58,7 @@ def send_info(message):
         print "Sending back the info about %s\n" % (message['data'])
     if (done == False):
         print ("still false but should be true")"""
+    session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
          {'data': str(random_p), 'count': session['receive_count']})
     print "PYTHON: random person %s" % random_p
@@ -130,9 +139,9 @@ def game_start():
     print "within game gen random p is %s" % random_p
 
 theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
-#thread.start_new_thread(game_start,())
-#thread.start_new_thread(socketio.run(app),())
-game_start()
-socketio.run(app)
+thread.start_new_thread(game_start,())
+thread.start_new_thread(socketio.run(app),())
+#game_start()
+#socketio.run(app)
 
     # TODO: stop process when exit app?
