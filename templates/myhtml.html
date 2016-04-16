@@ -11,6 +11,7 @@
 				// the socket.io documentation recommends sending an explicit package upon connection
 				// this is specially important when using the global namespace
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+				var ready = false;
 				
 				//***** Call back, server "resends" the message and this JS prints it*****//
 				// event handler for server sent data
@@ -22,6 +23,13 @@
 				//event handler for returned info from server
 				socket.on('return info', function(msg) {
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
+				});
+				
+				//event handler for returned info from server
+				socket.on('ready response', function(msg) {
+					if(msg.data == "True") 
+						ready = true;
+					console.log("ready status: " + msg.data);
 				});
 				
 				// event handler for new connections
@@ -43,13 +51,27 @@
 				});
 				
 	
-				console.log("There should be logs after this message\n");
-				socket.emit('my event', {data: "cat"});
-				console.log("I should have emitted a custom event\n");
-				console.log("Requesting info");
-				socket.emit('get info', {data: 'random person'});
-				console.log("Append received info");
+				function commands() {
+					console.log("Called commands()");
+					console.log("There should be logs after this message\n");
+					socket.emit('my event', {data: "cat"});
+					console.log("I should have emitted a custom event\n");
+					console.log("Requesting info");
+					socket.emit('get info', {data: 'random person'});
+					console.log("Append received info");
+				}
 				
+				function checkReady() {
+					socket.emit('ready');
+					if (!ready) {
+						window.setTimeout(checkReady, 1000);
+						console.log("Called checkReady(), !ready");
+					} else {
+						commands();
+					}
+				}
+				
+				checkReady();
 				confirm();
 			});
 			

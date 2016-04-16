@@ -27,7 +27,7 @@ import time
 import subprocess
 
 def browser_spawn():
-    time.sleep(2)
+#    time.sleep(2)
     # theproc = subprocess.Popen([sys.executable, "eric.py"], shell = True)
     # -----------------------------------------------------------------------------
     # Globals

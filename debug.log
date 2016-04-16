@@ -7356,3 +7356,2234 @@
 [0415/134908:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
 [CEF Python] App: Renderer: OnContextReleased()
 [CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=65394 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3452.1.1297584615\1311515282" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/231914:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/231914:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/231914:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/231914:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/231914:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/231914:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/231914:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/231914:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/231917:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57158 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="2656.1.1246216001\1986051374" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0415/232518:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57934 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="796.1.2040203722\1831433408" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/232556:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/232556:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/232556:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/232556:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/232556:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/232556:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232556:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/232556:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=40886d9a5bb94e6d80a996940e062f6a' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/232557:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232557:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/232559:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: f", source: http://localhost:5000/ (36)
+[0415/232559:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0415/232559:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:f", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/232602:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=55918 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3288.1.690332556\1961738677" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/232641:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/232641:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/232641:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/232641:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/232641:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/232641:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232641:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/232641:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0415/232641:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=4580773d6de84ee2ba7ebff997171ecc' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/232642:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232642:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/232642:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51704 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1620.1.2053269251\1933945308" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/232650:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/232650:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/232650:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/232650:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/232650:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/232650:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232650:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/232650:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0415/232650:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=92d2ea8444bc43a49044de117c24cc67' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/232651:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/232651:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/232655:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: f", source: http://localhost:5000/ (36)
+[0415/232655:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0415/232655:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:f", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/232702:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=64368 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7824.1.538211188\955540004" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56016 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7704.1.304326144\789425291" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/233148:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/233148:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/233148:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/233148:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/233148:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/233148:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233148:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233148:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=41fe1a8424824fb586f50a3724840028' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/233148:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/233148:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/233148:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/233148:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/233148:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/233148:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233148:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233148:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=3f68469fc3344033baaf0e1397d85797' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/233149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/233150:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/233151:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51728 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="464.1.816791133\1147277518" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+rFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/233213:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/233213:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/233213:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/233213:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/233213:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/233213:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233213:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233213:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=2c476c6b420c471c85602f26568c20e0' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/233214:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233214:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/233215:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=50518 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1852.1.898825860\92464728" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/233234:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/233234:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/233234:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/233234:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/233234:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/233234:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233234:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233234:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=87ed0f1b869647a885932550399f2c6e' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0415/233235:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233235:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/233237:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=49174 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="6952.1.1532232852\220744623" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/233544:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/233544:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/233544:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/233544:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/233544:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/233544:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/233544:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/233544:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/233548:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=49443 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4636.1.1840495397\1323564665" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/235152:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/235152:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/235152:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/235152:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/235152:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/235152:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/235152:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/235152:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/235154:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51348 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4372.1.717969445\1641861028" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0415/235736:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0415/235736:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0415/235736:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0415/235736:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0415/235736:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0415/235736:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0415/235736:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0415/235736:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0415/235743:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=59268 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4952.1.1418405129\745664820" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/000001:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/000001:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/000001:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/000001:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/000001:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/000001:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/000001:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/000001:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/000006:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: w", source: http://localhost:5000/ (36)
+[0416/000006:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/000006:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:w", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/000008:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=53598 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3028.1.451856939\2039328961" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/000137:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/000137:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/000137:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/000137:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/000137:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/000137:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/000137:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/000137:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/000138:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: ", source: http://localhost:5000/ (36)
+[0416/000138:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/000138:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:", source: http://localhost:5000/ (20)
+[0416/000139:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: d", source: http://localhost:5000/ (36)
+[0416/000139:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:d", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/000140:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56646 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5280.1.1384024815\226042070" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/002538:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/002538:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/002538:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/002538:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/002538:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/002538:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/002538:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/002538:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/002538:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=d275147865124f009f2c324c03d26240' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/002540:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/002540:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/002605:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51402 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4676.1.1515874700\1179840821" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0416/005700:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=62598 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5796.1.511495191\118941810" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/010257:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/010257:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/010257:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/010257:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/010257:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/010257:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/010257:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/010257:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=67cc5425b2d74d0bb910779dd0b2645f' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/010258:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/010258:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/010259:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=50969 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5880.1.241879925\2025637635" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0416/010359:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=61194 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5244.1.282696274\1568552448" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/010500:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/010500:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/010500:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/010500:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/010500:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/010500:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/010500:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/010500:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=fcee3a0645604249950e45260d87a659' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/010501:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/010501:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/010503:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52154 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5244.1.1762743058\1638696815" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextReleased
+[CEF Python] V8ContextHandler_OnContextReleased()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] App: Browser: OnProcessMessageReceived(): RemovePythonCallbacksForFrame
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=63622 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7712.1.2134331195\1255144472" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/011134:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/011134:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/011134:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/011134:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/011134:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/011134:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011134:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/011134:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/011134:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=8e687a2d7dd3468ab0ed2ca45075a526' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/011136:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011136:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/011137:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dfd", source: http://localhost:5000/ (36)
+[0416/011137:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/011137:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dfd", source: http://localhost:5000/ (20)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=60331 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7200.1.1124058893\1615602976" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/011853:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/011853:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/011853:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/011853:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/011853:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/011853:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011853:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/011853:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/011853:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=a54fcba572494da799e60e8fc4bf3f4f' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/011854:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011854:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/011856:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=54626 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3180.1.1195852060\1463248823" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/011916:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/011916:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/011916:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/011916:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/011916:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/011916:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011916:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=e0d900d3b55849c7be6d69e608e8a80a' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/011916:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/011916:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/011941:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsada", source: http://localhost:5000/ (36)
+[0416/011941:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/011941:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsada", source: http://localhost:5000/ (20)
+[0416/011941:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsada", source: http://localhost:5000/ (36)
+[0416/011941:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsada", source: http://localhost:5000/ (20)
+[0416/011942:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011942:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[0416/011942:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011942:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[0416/011942:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011942:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[0416/011942:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011942:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[0416/011943:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011943:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[0416/011943:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: dsadadsadsa", source: http://localhost:5000/ (36)
+[0416/011943:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:dsadadsadsa", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/011951:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51177 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7816.1.128123582\265652199" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/012148:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/012148:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/012148:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/012148:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/012148:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/012149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/012149:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/012149:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=18fbd181b22b42efa7274ce8fe4aa4aa' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/012150:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/012150:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/012158:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: ss", source: http://localhost:5000/ (36)
+[0416/012158:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/012158:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:ss", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/012159:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56156 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3792.1.838279861\766423376" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/012250:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/012250:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/012250:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/012250:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/012250:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/012250:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/012250:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/012250:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=174c51f782e048b78cb0eb98474baaa0' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/012251:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/012251:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/012252:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=50215 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="8156.1.1885728868\1230655864" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/012910:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/012910:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/012910:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/012910:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/012910:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/012910:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/012910:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/012910:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=aceb7763072a45738d5d42ee5e370a8b' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/012911:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=61546 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7380.1.257558989\490160704" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/013021:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/013021:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/013021:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/013021:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/013021:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/013021:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013021:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/013021:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=133f5ad7a670472abf2a9911ff67383f' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/013022:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013022:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/013121:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=58422 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4004.1.365703780\844463741" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/013135:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/013135:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/013135:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/013135:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/013135:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/013135:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013135:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/013135:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=6f5620148399449095d61638368c6479' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/013135:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013135:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/013138:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=59559 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5808.1.979005716\1213026008" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/013443:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/013443:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/013443:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/013443:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/013443:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/013443:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013443:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=c7f0f76822884e008dee6292b883db09' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/013444:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/013444:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/013507:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57086 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4812.1.918066848\1785834992" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/014020:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/014020:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/014020:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/014020:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/014020:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/014020:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/014020:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/014020:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/014020:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=8ef5d37229cc4f87acfeaa9406c45054' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/014022:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/014022:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/014044:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=63868 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1720.1.1454409137\271283525" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/014236:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/014236:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/014236:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/014236:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/014236:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/014236:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/014236:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/014236:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/014236:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=4b1f01363d224031a73800bd0bc109d8' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/014237:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/014237:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/015535:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51231 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7456.1.1159659524\1167978404" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/015642:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/015642:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/015642:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/015642:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/015642:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/015642:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/015642:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/015642:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/015642:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=f23a92c7cc3141b39fea84385f663bbb' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/015643:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/015643:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=54071 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3680.1.1517402281\744694827" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/020349:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/020349:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/020349:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/020349:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/020349:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/020349:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/020349:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/020349:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/020349:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=92438573a49341fa86434d87afa0011d' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/020350:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/020350:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/020531:INFO:CONSOLE(36)] "JAVASCRIPT: User wants to post this message: hi eric", source: http://localhost:5000/ (36)
+[0416/020531:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/020531:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:hi eric", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/021221:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=62811 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5268.1.1921301742\361541829" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/021305:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/021305:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/021305:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/021305:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/021305:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/021305:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021305:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/021305:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=5675559a08f5456295db2738e513f13b' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/021305:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021305:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/021308:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56365 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4512.1.60909327\2008328533" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/021356:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/021356:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/021356:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/021356:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/021356:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/021356:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021356:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/021356:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/021356:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=a6764f9a738f448c82d0926cc39fed86' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/021357:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021357:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/021404:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=50723 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="8092.1.1931901182\91870258" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/021802:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/021802:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/021802:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/021802:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/021802:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/021802:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021802:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/021802:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/021802:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=075249e4a3e14f42a441a5b0951fa34a' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/021803:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/021804:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=55387 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="3052.1.1358024016\141413015" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/022247:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/022247:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/022247:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/022247:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/022247:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/022247:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/022247:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/022247:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/022247:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=40576ea6009645989ce2dbbc3f3c2bff' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/022248:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/022248:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/022250:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57483 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5008.1.1505499298\82239772" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/022301:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/022301:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/022301:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/022301:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/022301:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/022301:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/022301:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/022301:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[0416/022301:INFO:CONSOLE(0)] "WebSocket connection to 'ws://localhost:5000/socket.io/?EIO=3&transport=websocket&sid=530b3dc82093438ca21d74bfb5865b7c' failed: WebSocket is closed before the connection is established.", source: http://localhost:5000/ (0)
+[0416/022303:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/022303:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57317 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="6548.1.737348523\1857896790" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/022546:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/022546:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/022546:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/022546:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/022546:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/022546:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/022546:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/022546:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=52151 --no-sandbox browser.py
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="5768.1.937023894\2065506310" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[0416/023308:INFO:CONSOLE(46)] "There should be logs after this message
+", source: http://localhost:5000/ (46)
+[0416/023308:INFO:CONSOLE(48)] "I should have emitted a custom event
+", source: http://localhost:5000/ (48)
+[0416/023308:INFO:CONSOLE(49)] "Requesting info", source: http://localhost:5000/ (49)
+[0416/023308:INFO:CONSOLE(51)] "Append received info", source: http://localhost:5000/ (51)
+[0416/023308:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/023308:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (20)
+[0416/023308:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (20)
+[0416/023308:INFO:CONSOLE(20)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (20)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/024312:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=56450 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1372.1.471393572\560728706" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/030638:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/030638:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/030638:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/030656:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=61066 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="4392.1.1438440171\606231254" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/030725:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/030725:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/030725:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/031031:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=51112 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="7228.1.1760137229\508949945" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/031101:INFO:CONSOLE(55)] "Uncaught SyntaxError: Unexpected identifier", source: http://localhost:5000/ (55)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=54788 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="8172.1.1679766634\1139763428" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/031141:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031141:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/031141:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/031141:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[0416/031142:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031143:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031144:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031145:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031146:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031147:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031148:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031149:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031150:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031151:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031152:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031153:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031154:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031155:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031156:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031157:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031158:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031159:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031200:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031201:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031202:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031203:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031204:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031205:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031206:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031207:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031208:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031209:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031210:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031211:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031212:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[0416/031213:INFO:CONSOLE(67)] "Called checkReady(), !ready", source: http://localhost:5000/ (67)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/031214:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=57302 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="1100.1.491882162\809092321" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] RemovePyBrowser: releasing shared request context
+[CEF Python] del g_pyBrowsers[1]
+[CEF Python] Shutdown()
+[0416/031418:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=60949 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="8084.1.1833357060\1238423161" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/031536:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031536:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/031536:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/031536:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[0416/031536:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031537:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031537:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031538:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031538:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031539:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031539:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031540:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031540:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031541:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031541:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031542:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031542:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031543:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031543:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031544:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031544:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031545:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031545:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031546:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031546:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031547:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031547:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031548:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031548:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031549:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031549:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031550:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031550:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031551:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031551:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031552:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031552:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031553:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031553:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031554:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031554:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031555:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031555:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031556:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031556:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031557:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031557:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031558:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031558:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[0416/031559:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/031559:INFO:CONSOLE(32)] "ready status: False", source: http://localhost:5000/ (32)
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=65045 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="9104.1.1584565175\1606740808" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/032323:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/032323:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/032323:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/032323:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[0416/032323:INFO:CONSOLE(32)] "ready status: True", source: http://localhost:5000/ (32)
+[0416/032323:INFO:CONSOLE(55)] "Called commands()", source: http://localhost:5000/ (55)
+[0416/032323:INFO:CONSOLE(56)] "There should be logs after this message
+", source: http://localhost:5000/ (56)
+[0416/032323:INFO:CONSOLE(58)] "I should have emitted a custom event
+", source: http://localhost:5000/ (58)
+[0416/032323:INFO:CONSOLE(59)] "Requesting info", source: http://localhost:5000/ (59)
+[0416/032323:INFO:CONSOLE(61)] "Append received info", source: http://localhost:5000/ (61)
+[0416/032323:INFO:CONSOLE(32)] "ready status: True", source: http://localhost:5000/ (32)
+[0416/032323:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (21)
+[0416/032356:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: h", source: http://localhost:5000/ (44)
+[0416/032356:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/032356:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:h", source: http://localhost:5000/ (21)
+[0416/032401:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032401:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032401:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032401:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032401:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032401:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032402:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032402:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032403:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032403:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032403:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032403:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032403:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032403:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032404:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032404:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032404:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032404:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:mess", source: http://localhost:5000/ (21)
+[0416/032436:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Disconnected!", source: http://localhost:5000/ (21)
+[0416/032439:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[0416/032439:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: mess", source: http://localhost:5000/ (44)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/032518:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()
+[CEF Python] Initialize() called
+[CEF Python] CefExecuteProcess(): exitCode = -1
+[CEF Python] CefInitialize()
+[CEF Python] App_OnBeforeCommandLineProcessing_BrowserProcess()
+[CEF Python] App: Command line string for the browser process: "C:\Python27\python.exe" --browser-subprocess-path="C:\Python27\lib\site-packages\cefpython3/subprocess" --lang=en-US --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --enable-release-dcheck --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --remote-debugging-port=63094 --no-sandbox browser.py
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] App: Browser: GetDpiAwareWindowSize: enlarged by 50% new size = 1200/900
+
+[CEF Python] CreateBrowserSync() called
+[CEF Python] navigateUrl: http://localhost:5000/
+[CEF Python] CefBrowser::CreateBrowserSync()
+[CEF Python] App: Browser: OnAfterCreated(): auto_zooming = system_dpi
+
+[CEF Python] GetPyBrowser(): creating new PyBrowser, browserId=1
+[CEF Python] BrowserProcessHandler_OnBeforeChildProcessLaunch()
+[CEF Python] CefBrowser::CreateBrowserSync() succeeded
+[CEF Python] SendProcessMessage(): message=DoJavascriptBindings, arguments size=1
+[CEF Python] App: Command line string for the renderer process: "C:\Python27\lib\site-packages\cefpython3/subprocess" --type=renderer --no-sandbox --lang=en-US --enable-release-dcheck --lang=en-US --locales-dir-path="C:\Python27\lib\site-packages\cefpython3/locales" --log-file="C:\Users\jy\Desktop\New folder\talktown\debug.log" --log-severity=info --resources-dir-path="C:\Python27\lib\site-packages\cefpython3" --channel="8416.1.322860783\1094400495" /prefetch:673131151
+[CEF Python] App: Renderer: OnProcessMessageReceived(): DoJavascriptBindings
+[CEF Python] App: Renderer: OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: OnProcessMessageReceived(): OnContextCreated
+[CEF Python] V8ContextHandler_OnContextCreated()
+[CEF Python] App: Renderer: DoJavascriptBindingsForFrame(): bindings are set
+[CEF Python] App: Browser: SetBrowserDpiSettings: DPI=144 zoom=2
+
+[0416/033405:INFO:CONSOLE(68)] "Called checkReady(), !ready", source: http://localhost:5000/ (68)
+[0416/033405:INFO:CONSOLE(2)] "client.js exists", source: http://localhost:5000/js/client.js (2)
+[0416/033405:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:Connected", source: http://localhost:5000/ (21)
+[0416/033405:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:I'm connected!", source: http://localhost:5000/ (21)
+[0416/033405:INFO:CONSOLE(32)] "ready status: True", source: http://localhost:5000/ (32)
+[0416/033406:INFO:CONSOLE(55)] "Called commands()", source: http://localhost:5000/ (55)
+[0416/033406:INFO:CONSOLE(56)] "There should be logs after this message
+", source: http://localhost:5000/ (56)
+[0416/033406:INFO:CONSOLE(58)] "I should have emitted a custom event
+", source: http://localhost:5000/ (58)
+[0416/033406:INFO:CONSOLE(59)] "Requesting info", source: http://localhost:5000/ (59)
+[0416/033406:INFO:CONSOLE(61)] "Append received info", source: http://localhost:5000/ (61)
+[0416/033406:INFO:CONSOLE(32)] "ready status: True", source: http://localhost:5000/ (32)
+[0416/033406:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:cat", source: http://localhost:5000/ (21)
+[0416/033412:INFO:CONSOLE(44)] "JAVASCRIPT: User wants to post this message: hjh", source: http://localhost:5000/ (44)
+[0416/033412:INFO:CONSOLE(0)] "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.", source:  (0)
+[0416/033412:INFO:CONSOLE(21)] "JAVASCRIPT: The message sent from the server that I will append is:hjh", source: http://localhost:5000/ (21)
+[CEF Python] Shutdown: releasing shared request context
+[CEF Python] Shutdown()
+[CEF Python] del g_pyFrames[1#1]
+[CEF Python] del g_pyBrowsers[1]
+[0416/033413:ERROR_REPORT:browser_main.cc(126)] Check failed: browser_contexts_.empty(). 
+[CEF Python] App: Renderer: OnContextReleased()
+[CEF Python] App: Renderer: OnBrowserDestroyed()

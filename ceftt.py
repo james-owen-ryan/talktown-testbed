@@ -32,6 +32,7 @@ eventlet.monkey_patch()
 #app = Flask(__name__)
 
 #app = Flask(__name__, static_folder='static')
+"""
 app = Flask(__name__, static_folder='js')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
@@ -49,15 +50,6 @@ def index():
 # server handling info requests
 @socketio.on('get info', namespace='/test')
 def send_info(message):
-    """while False:
-        pass
-    if (done == True):
-        session['receive_count'] = session.get('receive_count', 0) + 1
-        emit('return info',
-             {'data': game.random_person, 'count': session['receive_count']})
-        print "Sending back the info about %s\n" % (message['data'])
-    if (done == False):
-        print ("still false but should be true")"""
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
          {'data': str(random_p), 'count': session['receive_count']})
@@ -137,11 +129,10 @@ def game_start():
     global random_p
     random_p = p
     print "within game gen random p is %s" % random_p
-
-theproc = subprocess.Popen([sys.executable, "browser.py"], shell = True)
-thread.start_new_thread(game_start,())
-#thread.start_new_thread(socketio.run(app),())
-#game_start()
-socketio.run(app)
-
-    # TODO: stop process when exit app?
+"""
+serverProc = subprocess.Popen([sys.executable, "server.py"],stderr=subprocess.STDOUT)
+#thread.start_new_thread(game_start,())
+time.sleep(5)
+browserProc = subprocess.Popen([sys.executable, "browser.py"])
+browserProc.wait()
+serverProc.terminate()
