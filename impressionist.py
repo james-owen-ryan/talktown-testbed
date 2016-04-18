@@ -210,7 +210,7 @@ class LineOfDialogue(object):
             '{' not in symbol_ref and '}' not in symbol_ref and '^' not in symbol_ref
         }
         # Reformat the symbol references (which will be formatted like, e.g., 'greet|back|immediately')
-        # to closest_match the formatting they will have in the Impressionist object's 'nonterminal_symbols'
+        # to match the formatting they will have in the Impressionist object's 'nonterminal_symbols'
         # listing (e.g., 'greet back immediately')
         symbol_references = {' '.join(symbol_ref.split('|')) for symbol_ref in symbol_references}
         # Ask an Impressionist object for a list of the actual NonterminalSymbols corresponding to these
