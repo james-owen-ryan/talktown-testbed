@@ -966,7 +966,10 @@ class Person(object):
         """Return this person's *top* source for their knowledge pertaining entity's
         feature_type (or to the entity in general, if None is passed).
         """
-        return self.sources(entity=entity, feature_type=feature_type)[0]
+        try:
+            return self.sources(entity=entity, feature_type=feature_type)[0]
+        except IndexError:  # No sources for this information
+            return None
 
     def _common_familial_relation_to_me(self, person):
         """Return the immediate common familial relation to the given person, if any.

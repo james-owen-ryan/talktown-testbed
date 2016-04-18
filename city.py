@@ -79,6 +79,9 @@ class City(object):
             street.blocks.sort(key=lambda block: block.number)
         self.paths = {}
         self.generatePaths()
+        # Determine coordinates for each lot in the city, which are crucial when
+        # displaying the city
+        self._determine_lot_coordinates()
         # Determine the lot central to the highest density of lots in the city and
         # make this lot downtown
         self.downtown = None
@@ -138,7 +141,7 @@ class City(object):
                 "building": building_id,
                 "blocks": parcel_ids,
                 "house_numbers": lot.house_numbers,
-                "positionsInBlock": lot.positions_in_parcel,
+                "positionsInBlock": lot.positions_in_city_blocks,
                 "sidesOfStreet": lot.sides_of_street
             }
         return output_lots
@@ -174,7 +177,7 @@ class City(object):
                 "name": street.name,
                 "startingBlock": street.starting_parcel,
                 "endingBlock": street.ending_parcel,
-                "direction":street.direction
+                "direction": street.direction
             }
         return output
 
@@ -397,7 +400,7 @@ class City(object):
             size_of_parcel = int(parcel[2]/2)
             tract = None
             if (size_of_parcel > 1):
-                tract = Tract(self)
+                tract = Tract(self, size=size_of_parcel)
                 self.tracts.add(tract)
             for ii in range(0,size_of_parcel+1):
                 
@@ -485,13 +488,48 @@ class City(object):
             self.parcels.add(Parcels[parcel])
         self.mayor = None  # Currently being set to city founder by CityHall.__init__()
 
-    def temp_init_lots_and_tracts_for_testing(self):
-        for i in xrange(256):
-            meaningless_block = Parcel(city=self, x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=i)
-            Lot(block=meaningless_block, house_number=999)
-        for j in xrange(6):
-            meaningless_block = Parcel(city=self, x_coord=0, y_coord=0, ewstreet=None, nsstreet=None, number=j+256)
-            Tract(block=meaningless_block, house_number=999)
+    def _determine_lot_coordinates(self):
+        """Determine coordinates for each lot in this city.
+
+        Coordinates are of the form (number_of_east_west_street, number_of_north_south_street),
+        but with the coordinate corresponding to the street that the lot's address is *not* on
+        being set to either that street's number plus 0.25 or plus 0.75, depending on the lot's
+        position on the city block (which can be inferred from its address).
+        """
+        for lot in self.lots:
+            # Determine base x- and y-coordinates, which can be inferred from the
+            # number of the street that the lot's address is on and the lot's house
+            # number itself
+            if lot.street_address_is_on.direction in ('E', 'W'):
+                x_coordinate = int(lot.house_number/100.0)
+                y_coordinate = lot.street_address_is_on.number
+            else:
+                x_coordinate = lot.street_address_is_on.number
+                y_coordinate = int(lot.house_number/100.0)
+            # Figure out this lot's position in its city block
+            index_of_street_lot_address_is_on = lot.streets.index(lot.street_address_is_on)
+            position_in_city_block = lot.positions_in_city_blocks[index_of_street_lot_address_is_on]
+            # Convert this to an increase (on the axis matching the direction of the street
+            # that this lot's address is on) of either 0.25 or 0.75; we do this so that lots
+            # are spaced evenly
+            if lot.street_address_is_on.direction in ('E', 'W'):
+                x_coordinate = int(x_coordinate)+0.25 if position_in_city_block == 0 else int(x_coordinate)+0.75
+            elif lot.street_address_is_on.direction in ('N', 'S'):
+                y_coordinate = int(y_coordinate)+0.25 if position_in_city_block == 0 else int(y_coordinate)+0.75
+            # Figure out what side of the street this lot is on
+            index_of_street_lot_address_is_on = lot.streets.index(lot.street_address_is_on)
+            lot_side_of_street_on_the_street_its_address_is_on = lot.sides_of_street[index_of_street_lot_address_is_on]
+            # Update coordinates accordingly
+            if lot_side_of_street_on_the_street_its_address_is_on == 'N':
+                y_coordinate += 0.25
+            elif lot_side_of_street_on_the_street_its_address_is_on == 'S':
+                y_coordinate -= 0.25
+            elif lot_side_of_street_on_the_street_its_address_is_on == 'E':
+                x_coordinate += 0.25
+            elif lot_side_of_street_on_the_street_its_address_is_on == 'W':
+                x_coordinate -= 0.25
+            # Attribute these coordinates to the lot
+            lot.coordinates = (x_coordinate, y_coordinate)
 
     @property
     def pop(self):
@@ -721,8 +759,15 @@ class Lot(object):
         self.sides_of_street = []
         self.house_numbers = []  # In the event a business is erected here, it inherits this
         self.building = None
-        self.positions_in_parcel = []
-        self.neighboring_lots = set()  # Gets set by City call to set_neighboring_lots_for_citygen after all lots have been generated
+        # Positions in city blocks correspond to streets this lot is on and elements of this list
+        # will be either 0 or 1, indicating whether this is the leftmost/topmost lot on its side
+        # of the street of its city block or else rightmost/bottommost
+        self.positions_in_city_blocks = []
+        # This one gets set by City.set_neighboring_lots_for_citygen() after all lots have
+        # been generated
+        self.neighboring_lots = set()
+        # This gets set by City._determine_lot_coordinates()
+        self.coordinates = None
         # These get set by init_generate_address(), which gets called by City
         self.house_number = None
         self.address = None
@@ -762,7 +807,7 @@ class Lot(object):
         self.parcels.append(parcel)
         self.sides_of_street.append(side_of_street)
         self.house_numbers.append(number)
-        self.positions_in_parcel.append(position_in_parcel)
+        self.positions_in_city_blocks.append(position_in_parcel)
 
     def set_neighboring_lots_for_citygen(self):
         neighboring_lots = set()
@@ -797,6 +842,7 @@ class Tract(Lot):
     extensive land are established.
     """
 
-    def __init__(self, city):
+    def __init__(self, city, size):
         """Initialize a Lot object."""
+        self.size = size
         super(Tract, self).__init__(city)

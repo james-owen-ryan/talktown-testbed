@@ -2551,7 +2551,7 @@ class Config(object):
             'TEST': {
                 'preconditions': lambda conversation: True,
                 'obligations': {
-                    'initiator': [],
+                    'initiator': ['ask do you know someone'],
                     'recipient': []
                 },
                 'goals': {

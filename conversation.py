@@ -21,7 +21,8 @@ class Conversation(Event):
         self.phone_call = phone_call
         self.locations = (self.initiator.location, self.recipient.location)
         self.debug = debug
-        self.subject = None  # The subject of conversation at a given point
+        self.subject = Subject(conversation=self)  # The subject of conversation at a given point
+        self.discontinued_subjects = set()  # Discontinued subjects of conversation
         self.turns = []  # A record of the conversation as an ordered list of its turns
         self.over = False  # Whether the conversation is over (gets set by Move.fire())
         # Obligations and goals -- these get populated as frames are inherited from
@@ -41,6 +42,11 @@ class Conversation(Event):
         self.statements = set()
         self.lies = set()
         self.eavesdroppings = set()
+
+        # TEST BLOCK
+        initiator.mind.preoccupation = next(
+            p for p in initiator.mind.mental_models if p.type == 'person' and initiator.belief(p, 'first name')
+        )
 
     def __str__(self):
         """Return string representation."""
@@ -126,6 +132,11 @@ class Conversation(Event):
             self.recipient: {goal for goal in self.goals[self.recipient] if not goal.plan.on_hold}
         }
         return goals_not_on_hold
+
+    @property
+    def speaker_subject_match(self):
+        """Return the speaker's match for the subject of conversation, if any."""
+        return self.subject.matches[self.speaker]
 
     def interlocutor_to(self, speaker):
         """Return the interlocutor to the given speaker."""
@@ -394,7 +405,7 @@ class Turn(object):
             self.line_of_dialogue = self._decide_what_to_say()
         self._realize_line_of_dialogue()
         self.eavesdropper = self._potentially_be_eavesdropped()
-        self._update_conversational_context()
+        self._update_conversation_state()
 
     def __str__(self):
         """Return string representation."""
@@ -417,7 +428,7 @@ class Turn(object):
         """Solicit free-text input from the player."""
         prompt = "\n{player_character_name}: ".format(player_character_name=self.speaker.name)
         raw_player_utterance = raw_input(prompt)
-        print ''  # To match the style of how NPC lines of dialogue are displayed
+        print ''  # To closest_match the style of how NPC lines of dialogue are displayed
         return raw_player_utterance
 
     def _decide_what_to_say(self):
@@ -478,9 +489,9 @@ class Turn(object):
         else:
             return None
 
-    def _update_conversational_context(self):
+    def _update_conversation_state(self):
         """Update the conversation state and have the interlocutor consider any propositions."""
-        self._change_subject_of_conversation()
+        self._update_context()
         self._assert_propositions()
         self._reify_dialogue_moves()
         self._satisfy_goals()
@@ -490,14 +501,26 @@ class Turn(object):
         self._address_topics()
         self._fire_dialogue_moves()
 
-    def _change_subject_of_conversation(self):
-        """Potentially change the subject of conversation according to the mark-up of the generated line."""
-        speaker, interlocutor, subject = self.speaker, self.interlocutor, self.subject
-        if self.line_of_dialogue.change_subject_to:
-            new_subject = eval(self.line_of_dialogue.change_subject_to)
-            self.conversation.subject = new_subject
-            if self.conversation.debug:
-                print '-- Changed subject to {}'.format(self.conversation.subject.name)
+    def _update_context(self):
+        """Update the common-ground conversational context, which holds information about the subject of
+        conversation and other concerns.
+        """
+        self._update_subject_of_conversation()
+
+    def _update_subject_of_conversation(self):
+        """Update common-ground information surrounding the subject of conversation."""
+        line = self.line_of_dialogue
+        # Potentially discontinue the current subject of conversation
+        if line.clear_subject_of_conversation:
+            self.conversation.discontinued_subjects.add(self.conversation.subject)
+            self.conversation.subject = Subject(conversation=self.conversation)
+            self.subject = self.conversation.subject
+        # Push new features regarding the subject
+        subject_updates = [u[8:] for u in line.context_updates if u[:8] == 'subject:']
+        self.conversation.subject.update(
+            new_features=subject_updates,
+            force_match_to_speaker_preoccupation=line.force_speaker_subject_match_to_speaker_preoccupation
+        )
 
     def _assert_propositions(self):
         """Assert propositions about the world that are expressed by the content of the generated line."""
@@ -1062,8 +1085,49 @@ class Subject(object):
     features that conversants may use to access a mental model of that person or place.
     """
 
-    def __init__(self):
+    def __init__(self, conversation, entity_type='person'):
         """Initialize a Subject object."""
+        self.conversation = conversation
+        self.entity_type = entity_type
+        # A set of features of the form '[feature_type]:[feature_value]', e.g., 'hair_color=red'
+        self.features = set()
+        # The conversants' respective closest matches for the subject of conversation, given
+        # the features in context (may be None if there are no matches)
+        self.matches = {conversation.initiator: None, conversation.recipient: None}
+
+    def update(self, new_features, force_match_to_speaker_preoccupation):
+        """Update the subject of conversation, given a new set of features that have been pushed into context."""
+        # Parse the features into tuples of the form (feature_type, feature_value), where
+        # feature_type is correctly formatted (i.e., spaces instead of underscores)
+        if new_features:
+            parsed_features = set()
+            for feature in new_features:
+                feature_type, feature_value = feature.split('=')
+                # Replace underscores in feature_type with whitespace to make person.mind.closest_match() work
+                feature_type = feature_type.replace('_', ' ')
+                # Evaluate the feature_value reference, which may be something like
+                # "speaker.belief(speaker.mind.preoccupation, 'first name')"
+                feature_value = self._realize_feature_value(
+                    conversation=self.conversation, feature_value=feature_value
+                )
+                parsed_features.add((feature_type, feature_value))
+            self.features |= parsed_features
+            for conversant in self.matches:
+                self.matches[conversant] = conversant.mind.closest_match(
+                    features=self.features, entity_type=self.entity_type
+                )
+            if force_match_to_speaker_preoccupation:
+                self.matches[self.conversation.speaker] = self.conversation.speaker.mind.preoccupation
+
+    @staticmethod
+    def _realize_feature_value(conversation, feature_value):
+        """Evaluate the specification for a feature value to realize it."""
+        # Prepare local variables that will allow us to realize this value
+        speaker, interlocutor, subject = conversation.speaker, conversation.interlocutor, None
+        try:
+            return str(eval(feature_value))
+        except NameError:  # Feature value is already a string, e.g., the 'f' in 'sex=f'
+            return feature_value
 
 
 class Frame(object):
