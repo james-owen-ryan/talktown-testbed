@@ -844,4 +844,5 @@ class Tract(Lot):
 
     def __init__(self, city, size):
         """Initialize a Lot object."""
+        self.size = size
         super(Tract, self).__init__(city)
