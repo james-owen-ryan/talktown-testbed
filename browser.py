@@ -5,12 +5,7 @@ libcef_dll = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), # (__fi
         'libcef.dll')
 if os.path.exists(libcef_dll):
     # Import a local module
-    if (2,7) <= sys.version_info < (2,8):
-        import cefpython_py27 as cefpython
-    elif (3,4) <= sys.version_info < (3,4):
-        import cefpython_py34 as cefpython
-    else:
-        raise Exception("Unsupported python version: %s" % sys.version)
+    from cefpython3 import cefpython
 else:
     # Import an installed package
     from cefpython3 import cefpython

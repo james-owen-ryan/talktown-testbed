@@ -130,9 +130,17 @@ def game_start():
     random_p = p
     print "within game gen random p is %s" % random_p
 """
-serverProc = subprocess.Popen([sys.executable, "server.py"],stderr=subprocess.STDOUT)
-#thread.start_new_thread(game_start,())
-time.sleep(5)
-browserProc = subprocess.Popen([sys.executable, "browser.py"])
-browserProc.wait()
-serverProc.terminate()
+if hasattr(sys, "frozen"):
+  serverProc = subprocess.Popen(["server.exe"],stderr=subprocess.STDOUT)
+  #thread.start_new_thread(game_start,())
+  time.sleep(5)
+  browserProc = subprocess.Popen(["browser.exe"])
+  browserProc.wait()
+  serverProc.terminate()
+else:
+  serverProc = subprocess.Popen([sys.executable, "server.py"],stderr=subprocess.STDOUT)
+  #thread.start_new_thread(game_start,())
+  time.sleep(5)
+  browserProc = subprocess.Popen([sys.executable, "browser.py"])
+  browserProc.wait()
+  serverProc.terminate()
