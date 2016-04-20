@@ -480,14 +480,22 @@ class Productionist(object):
 
     def produce_lstm_training_data(self):
         """Produce all the files constituting LSTM training data."""
-        self.produce_all_derivation_traces_for_lstm_training_data(omit_derivation_snippets=True)
-        # Clear out data saved during the last process
+        # JOR: This block is being used to produce LSTM training data on 18 April 2016
+        self.produce_all_derivation_traces_for_lstm_training_data(
+            omit_derivation_snippets=True, player_queries_only=True
+        )
         for symbol in self.nonterminal_symbols:
             symbol.all_derivation_traces = []
-        self.produce_all_derivation_traces_for_lstm_training_data(omit_derivation_snippets=False)
         self.produce_all_terminal_derivations_for_lstm_training()
+        # JOR: This block was used to produce LSTM training data on 26 February 2016
+        # self.produce_all_derivation_traces_for_lstm_training_data(omit_derivation_snippets=True)
+        # # Clear out data saved during the last process
+        # for symbol in self.nonterminal_symbols:
+        #     symbol.all_derivation_traces = []
+        # self.produce_all_derivation_traces_for_lstm_training_data(omit_derivation_snippets=False)
+        # self.produce_all_terminal_derivations_for_lstm_training()
 
-    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets=False):
+    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets, player_queries_only):
         """Exhaustively produce all terminal derivations in the grammar for LSTM training data.
 
         LSTM stands for long short-term memory, which is a variant of deep learning that
@@ -498,35 +506,38 @@ class Productionist(object):
         The format we have settled on for LSTM training expresses traces for terminal derivations, e.g.,
         greet{greeting|word{<Hi>},< >,interlocutor|first|name{<[speaker.belief(interlocutor, 'first name')]>}}
         """
-        outfile_derivation_snippet = (
-            'TRACES-WITHOUT-DERIVATIONS' if omit_derivation_snippets else 'TRACES-WITH-DERIVATIONS'
-        )
-        path_to_write_out_to = '/Users/jamesryan/Desktop/dialogue_lstm_training_data_{}_26Feb2016'.format(
-            outfile_derivation_snippet
+        if not player_queries_only:
+            outfile_suffix = (
+                'TRACES-WITHOUT-DERIVATIONS' if omit_derivation_snippets else 'TRACES-WITH-DERIVATIONS'
+            )
+        else:
+            outfile_suffix = 'TRACES-WITH-PLAYER-QUERY-MARKUP'
+        path_to_write_out_to = '/Users/jamesryan/Desktop/question_answering_lstm_training_data_{}_18Apr2016'.format(
+            outfile_suffix
         )
         out_file = open(path_to_write_out_to, 'w')
-        top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.top_level]
+        # top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.top_level]
+        top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.tag == 'player appearance query']
         for symbol in top_level_symbols:
             print "Deriving LSTM training data ({}) for top-level symbol '{}'".format(
-                outfile_derivation_snippet, symbol
+                outfile_suffix, symbol
             )
-            for derivation_trace in symbol.produce_all_derivation_traces_for_lstm_training_data(
-                    omit_derivation_snippets=omit_derivation_snippets
-            ):
-                out_file.write('{}\n'.format(derivation_trace))
-            out_file.flush()
+            symbol.produce_all_derivation_traces_for_lstm_training_data(
+                omit_derivation_snippets=omit_derivation_snippets, out_file=out_file
+            )
         out_file.close()
 
     def produce_all_terminal_derivations_for_lstm_training(self):
         """Exhaustively produce all terminal derivations generable by this grammar as part of the LSTM training data."""
-        path_to_write_out_to = '/Users/jamesryan/Desktop/dialogue_lstm_training_data_ALL-DERIVATIONS_26Feb2016'
+        path_to_write_out_to = (
+            '/Users/jamesryan/Desktop/question_answering_lstm_training_data_ALL-DERIVATIONS_18Apr2016'
+        )
         out_file = open(path_to_write_out_to, 'w')
-        top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.top_level]
+        # top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.top_level]
+        top_level_symbols = [symbol for symbol in self.nonterminal_symbols if symbol.tag == 'player appearance query']
         for symbol in top_level_symbols:
             print "Deriving LSTM training data (ALL DERIVATIONS) for top-level symbol '{}'".format(symbol)
-            for derivation in symbol.produce_all_terminal_derivations_for_lstm_training():
-                out_file.write('{}\n'.format(derivation))
-            out_file.flush()
+            symbol.produce_all_terminal_derivations_for_lstm_training(out_file=out_file)
         out_file.close()
 
 
@@ -610,6 +621,8 @@ class NonterminalSymbol(object):
                     pass  # TODO
                 elif tagset == "ChangeSubjectTo":
                     pass  # TODO REMOVE THIS TAGSET
+                elif tagset == "UserStudyQueryArguments":
+                    pass  # This one is currently for LSTM training only
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
@@ -668,7 +681,7 @@ class NonterminalSymbol(object):
         ]
         return violations_incurred
 
-    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets=False):
+    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets=False, out_file=None):
         """Return all terminal derivations of this symbol in the format specified for LSTM training.
 
         LSTM stands for long short-term memory, which is a variant of deep learning that
@@ -680,25 +693,35 @@ class NonterminalSymbol(object):
         greet{greeting|word{`Hi~}^` ~^interlocutor|first|name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
         for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
         """
-        if not self.all_derivation_traces:
-            all_terminal_derivations_in_lstm_training_data_format = []
-            for rule in self.production_rules:
-                all_terminal_derivations_in_lstm_training_data_format += (
-                    rule.produce_all_derivation_traces_for_lstm_training_data(
-                        omit_derivation_snippets=omit_derivation_snippets
+        if not out_file:
+            if not self.all_derivation_traces:
+                all_terminal_derivations_in_lstm_training_data_format = []
+                for rule in self.production_rules:
+                    all_terminal_derivations_in_lstm_training_data_format += (
+                        rule.produce_all_derivation_traces_for_lstm_training_data(
+                            omit_derivation_snippets=omit_derivation_snippets, out_file=None
+                        )
                     )
-                )
-            self.all_derivation_traces = all_terminal_derivations_in_lstm_training_data_format
-        return self.all_derivation_traces
-
-    def produce_all_terminal_derivations_for_lstm_training(self):
-        """Exhaustively produce all terminal derivations of this symbol for use as part of the LSTM training data."""
-        if not self.all_terminal_derivations:
-            all_terminal_derivations = []
+                self.all_derivation_traces = all_terminal_derivations_in_lstm_training_data_format
+            return self.all_derivation_traces
+        else:
             for rule in self.production_rules:
-                all_terminal_derivations += rule.produce_all_terminal_derivations_for_lstm_training()
-            self.all_terminal_derivations = all_terminal_derivations
-        return self.all_terminal_derivations
+                rule.produce_all_derivation_traces_for_lstm_training_data(
+                    omit_derivation_snippets=omit_derivation_snippets, out_file=out_file
+                )
+
+    def produce_all_terminal_derivations_for_lstm_training(self, out_file):
+        """Exhaustively produce all terminal derivations of this symbol for use as part of the LSTM training data."""
+        if not out_file:
+            if not self.all_terminal_derivations:
+                all_terminal_derivations = []
+                for rule in self.production_rules:
+                    all_terminal_derivations += rule.produce_all_terminal_derivations_for_lstm_training(out_file=None)
+                self.all_terminal_derivations = all_terminal_derivations
+            return self.all_terminal_derivations
+        else:
+            for rule in self.production_rules:
+                rule.produce_all_terminal_derivations_for_lstm_training(out_file=out_file)
 
 
 class ProductionRule(object):
@@ -725,7 +748,7 @@ class ProductionRule(object):
         """Return string representation."""
         return '{} --> {}'.format(self.head, self.body_specification_str)
 
-    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets=False):
+    def produce_all_derivation_traces_for_lstm_training_data(self, omit_derivation_snippets=False, out_file=None):
         """Return all terminal derivations yielded by this rule in the format specified for LSTM training.
 
         LSTM stands for long short-term memory, which is a variant of deep learning that
@@ -737,6 +760,7 @@ class ProductionRule(object):
         greet{greeting|word{`Hi~}^` ~^interlocutor|first|name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
         for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
         """
+        print "working on {}".format(self)
         # Assemble the Cartesian product of all terminal derivations for all symbols in
         # this rule body; because nonterminal symbols are represented as a raw unicode string, we
         # can't call the same method for each symbol, so we just append the syntax for demarcating
@@ -759,16 +783,27 @@ class ProductionRule(object):
             ])
         # Now concatenate these and prepend them with syntax indicating which nonterminal symbol
         # is the head of this rule; this will produce derivation traces in the format we want them in
-        all_terminal_derivations_in_lstm_training_data_format = []
-        for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
-            trace_in_the_lstm_format = "{head}{{{partial_trace}}}".format(
-                head='|'.join(self.head.tag.split()),
-                partial_trace='^'.join(cartesian_product)
+        if not out_file:
+            print "currently working on this rule: {}".format(self)
+            return (
+                "{head}{{{partial_trace}}}".format(
+                    head='|'.join(self.head.tag.split()),
+                    partial_trace='^'.join(cartesian_product)
+                ) for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body
             )
-            all_terminal_derivations_in_lstm_training_data_format.append(trace_in_the_lstm_format)
-        return all_terminal_derivations_in_lstm_training_data_format
+        else:
+            for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
+                out_file.write(
+                    "{}\n".format(
+                        "{head}{{{partial_trace}}}".format(
+                            head='|'.join(self.head.tag.split()),
+                            partial_trace='^'.join(cartesian_product)
+                        )
+                    )
+                )
+                out_file.flush()
 
-    def produce_all_terminal_derivations_for_lstm_training(self):
+    def produce_all_terminal_derivations_for_lstm_training(self, out_file=None):
         """Exhaustively produce all terminal derivations yielded by this rule for use as LSTM training data."""
         # Assemble the Cartesian product of all terminal derivations for all symbols in
         # this rule body; because nonterminal symbols are represented as a raw unicode string, we
@@ -777,12 +812,17 @@ class ProductionRule(object):
             [symbol] if type(symbol) is unicode else symbol.produce_all_terminal_derivations_for_lstm_training()
             for symbol in self.body
         ])
-        # Now concatenate these to produce actual terminal derivations
-        all_terminal_derivations = []
+        # Now concatenate these to produce actual terminal derivations; if we aren't writing out
+        # these terminal derivations (signaled by whether something is passed for the 'out_file'
+        # argument), return a generator containing all of them
+        if not out_file:
+            return (
+                ''.join(cartesian_product) for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body
+            )
+        # Otherwise, let's write these out right now
         for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
-            terminal_derivation = ''.join(cartesian_product)
-            all_terminal_derivations.append(terminal_derivation)
-        return all_terminal_derivations
+            out_file.write('{}\n'.format(''.join(cartesian_product)))
+            out_file.flush()
 
 
 class LineOfDialogue(object):

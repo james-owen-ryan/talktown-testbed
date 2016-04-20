@@ -137,6 +137,8 @@ class NonterminalSymbol(object):
                     pass  # TODO
                 elif tagset == "ChangeSubjectTo":
                     pass  # TODO REMOVE THIS TAGSET
+                elif tagset == "UserStudyQueryArguments":
+                    pass  # This one is currently for LSTM training only
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
