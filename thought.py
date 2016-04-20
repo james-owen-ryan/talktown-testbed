@@ -71,8 +71,8 @@ class Thoughts(object):
 class ThoughtPrototype(object):
     """A prototype for a kind of thought.
 
-    Objects of this class represent the single prototype of a type of thought. They
-    prescribe the thought's tag, likelihood, preconditions, and effects.
+    Objects of this class represent the one and only prototype of a type of thought. They
+    prescribe the tags, likelihoods, preconditions, and effects of thoughts.
     """
 
     def __init__(self, tag, likelihood, preconditions, effects):
