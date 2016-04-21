@@ -13,6 +13,7 @@ from game import Game
 
 ready = False
 random_p = None
+city_name = None
 
 def game_start():
 #    global game
@@ -55,8 +56,13 @@ def game_start():
     for person_home_or_business in p.mind.mental_models:
         print p.mind.mental_models[person_home_or_business]
 
+
     global ready
     ready = True
     global random_p
     random_p = p
-    print "within game gen random p is %s" % random_p
+    global city_name
+    city_name = game.city.name
+
+
+    print "The city name is: %s" % game.city.name

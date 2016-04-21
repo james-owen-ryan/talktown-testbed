@@ -38,3 +38,17 @@ print "\n{random_character}'s mental models:\n".format(
 )
 for person_home_or_business in p.mind.mental_models:
     print p.mind.mental_models[person_home_or_business]
+
+
+
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+lot_np = np.array([lot.coordinates for lot in game.city.lots])
+
+plt.scatter(lot_np[:,0],lot_np[:,1])
+
+plt.show()
+

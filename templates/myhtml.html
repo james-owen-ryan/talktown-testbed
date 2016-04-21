@@ -5,62 +5,80 @@
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
 		<script type="text/javascript" src= "js/client.js"></script>
+		<script type="text/javascript" src= "js/2.js"></script>
 		<script type="text/javascript" charset="utf-8">
+		
+		/************************************************************************
+	
+				All handlers and callbacks must be in this file
+				No exposure to other files
+		
+		************************************************************************/
+		
 			$(document).ready(function(){
-				namespace = '/test'; // change to an empty string to use the global namespace
+				// change to an empty string to use the global namespace
+				namespace = '/gameplay'; 
 				// the socket.io documentation recommends sending an explicit package upon connection
 				// this is specially important when using the global namespace
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 				var ready = false;
 				
-				//***** Call back, server "resends" the message and this JS prints it*****//
+				// JS callback when server "resends" message originally from JS.//
 				// event handler for server sent data
-				// the data is displayed in the "Received" section of the page
 				socket.on('my response', function(msg) {
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-					console.log("JAVASCRIPT: The message sent from the server that I will append is:" + msg.data);
 				});
-				//event handler for returned info from server
+				
+				// event handler for returned game world info from server
 				socket.on('return info', function(msg) {
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
 				});
 				
-				//event handler for returned info from server
-				socket.on('ready response', function(msg) {
-					if(msg.data == "True") 
-						ready = true;
-					console.log("ready status: " + msg.data);
-				});
 				
 				// event handler for new connections
 				socket.on('connect', function() {
 					socket.emit('my event', {data: 'I\'m connected!'});
 				});
 				
-				// ***** This one "Posts" the messages, sends it to server***"
-				// handlers for the different forms in the page
+				// handler for posting a message
 				// these send data to the server in a variety of ways
 				$('form#emit').submit(function(event) {
 					console.log("JAVASCRIPT: User wants to post this message: " + $('#emit_data').val());
 					socket.emit('my event', {data: $('#emit_data').val()});
 					return false;
 				});
+				
+				// handler for disconnecting
 				$('form#disconnect').submit(function(event) {
 					socket.emit('disconnect request');
 					return false;
 				});
 				
-	
+				// checking that world has finashed generating. python server will return true if ready
+				socket.on('ready response', function(msg) {
+					if(msg.data == "True") 
+						ready = true;
+				});
+			
+				// some server client tests
 				function commands() {
 					console.log("Called commands()");
 					console.log("There should be logs after this message\n");
 					socket.emit('my event', {data: "cat"});
 					console.log("I should have emitted a custom event\n");
+					
+					socket.emit('my event', {data: returnBun()});
+					
 					console.log("Requesting info");
-					socket.emit('get info', {data: 'random person'});
+					socket.emit('send_random_person', {data: 'random person'});
+					console.log("Append received info");
+					
+					console.log("Requesting info");
+					socket.emit('send_city_name', {data: 'city name'});
 					console.log("Append received info");
 				}
 				
+				// keep checking that world is generated 
 				function checkReady() {
 					socket.emit('ready');
 					if (!ready) {
@@ -71,8 +89,8 @@
 					}
 				}
 				
+				// begin checking for readiness
 				checkReady();
-				confirm();
 			});
 			
 		</script>

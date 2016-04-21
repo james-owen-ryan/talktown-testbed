@@ -6,7 +6,6 @@ import glob
 def find_data_files(source,target,patterns):
   """Locates the specified data-files and returns the matches
   in a data_files compatible format.
-
   source is the root of the source data tree.
     Use '' or '.' for current directory.
   target is the root of the target data tree.
