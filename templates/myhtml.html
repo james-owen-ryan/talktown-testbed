@@ -34,6 +34,10 @@
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
 				});
 				
+				socket.on('return city', function(msg) {
+					$('#log').append('<br>' + $('<div/>').text('received the city' + msg.data).html());
+		
+				});
 				
 				// event handler for new connections
 				socket.on('connect', function() {
@@ -62,20 +66,23 @@
 			
 				// some server client tests
 				function commands() {
-					console.log("Called commands()");
+					/*console.log("Called commands()");
 					console.log("There should be logs after this message\n");
 					socket.emit('my event', {data: "cat"});
 					console.log("I should have emitted a custom event\n");
 					
 					socket.emit('my event', {data: returnBun()});
-					
+					*/
 					console.log("Requesting info");
-					socket.emit('send_random_person', {data: 'random person'});
+					socket.emit('get_random_person', {data: 'random person'});
 					console.log("Append received info");
 					
 					console.log("Requesting info");
-					socket.emit('send_city_name', {data: 'city name'});
+					socket.emit('get_city_name', {data: 'city name'});
 					console.log("Append received info");
+					
+					socket.emit('get_city', {data: 'city'});
+					
 				}
 				
 				// keep checking that world is generated 

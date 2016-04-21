@@ -14,6 +14,8 @@ from game import Game
 ready = False
 random_p = None
 city_name = None
+city = None
+lot = None
 
 def game_start():
 #    global game
@@ -63,6 +65,8 @@ def game_start():
     random_p = p
     global city_name
     city_name = game.city.name
-
-
+    global city
+    city = list(game.city.lots)[0]
+    global lot
+    lot = str(city.coordinates)
     print "The city name is: %s" % game.city.name

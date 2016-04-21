@@ -36,19 +36,23 @@ def index():
 # -------------------------------- #
 
 #TODO: return name of city OR person
-@socketio.on('send_random_person', namespace='/gameplay')
+@socketio.on('get_random_person', namespace='/gameplay')
 def send_random_person(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
         {'data': str(startgame.random_p), 'count': session['receive_count']})
-    print "PYTHON: random person %s" % startgame.random_p
 
-@socketio.on('send_city_name', namespace='/gameplay')
+@socketio.on('get_city_name', namespace='/gameplay')
 def send_city_name(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
         {'data': str(startgame.city_name), 'count': session['receive_count']})
-    print "PYTHON: random person %s" % startgame.city_name
+
+@socketio.on('get_city', namespace='/gameplay')
+def send_city(message):
+    print "sending back city"
+    emit('return city',
+         {'data': str(startgame.lot), 'count': session['receive_count']})
 
 @socketio.on('my event', namespace='/gameplay')
 def test_message(message):
