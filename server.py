@@ -48,6 +48,7 @@ def send_city_name(message):
     emit('return info',
         {'data': str(startgame.city_name), 'count': session['receive_count']})
 
+#todo: Pass json of lots, rename things for clarity
 @socketio.on('get_city', namespace='/gameplay')
 def send_city(message):
     print "sending back city"
