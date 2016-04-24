@@ -34,8 +34,8 @@
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
 				});
 				
-				socket.on('return city', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('received the city' + msg.data).html());
+				socket.on('return lot', function(msg) {
+					$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
 		
 				});
 				
@@ -80,9 +80,9 @@
 					console.log("Requesting info");
 					socket.emit('get_city_name', {data: 'city name'});
 					console.log("Append received info");
-					
-					socket.emit('get_city', {data: 'city'});
-					
+					for (var i = 0; i < 10; i ++){
+						socket.emit('get_lot', {data: '0'});
+					}
 				}
 				
 				// keep checking that world is generated 
