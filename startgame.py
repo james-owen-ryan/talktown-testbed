@@ -10,7 +10,7 @@ import inspect
 import struct
 import time
 from game import Game
-
+import json
 ready = False
 random_p = None
 city_name = None
@@ -70,3 +70,17 @@ def game_start():
     global lot
     lot = str(city_lots[0].coordinates)
     print "The city name is: %s" % game.city.name
+
+    #todo: put type attributes into list, json.dumps that list and pass it to js
+    #for i in list(lots)
+        #append i.building type to new list
+
+    lot_type_dict = {}
+
+    for lot in list(game.city.lots):
+        lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
+
+    global json_lot_type_dict
+    json_lot_type_dict = json.dumps(lot_type_dict)
+    print "city is "
+    print str(json_lot_type_dict)
