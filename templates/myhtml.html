@@ -35,7 +35,8 @@
 				});
 				
 				socket.on('return lot', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
+					//$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
+					parseLotsJson(msg.data);
 		
 				});
 				
@@ -73,16 +74,9 @@
 					
 					socket.emit('my event', {data: returnBun()});
 					*/
-					console.log("Requesting info");
 					socket.emit('get_random_person', {data: 'random person'});
-					console.log("Append received info");
-					
-					console.log("Requesting info");
 					socket.emit('get_city_name', {data: 'city name'});
-					console.log("Append received info");
-					for (var i = 0; i < 10; i ++){
-						socket.emit('get_lot', {data: '0'});
-					}
+					socket.emit('get_lot_json', {data: '0'});
 				}
 				
 				// keep checking that world is generated 

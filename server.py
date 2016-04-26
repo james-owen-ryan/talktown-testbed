@@ -47,10 +47,23 @@ def send_city_name(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
         {'data': str(startgame.city_name), 'count': session['receive_count']})
-
+"""
 #todo: Pass json of lots, rename things for clarity
 @socketio.on('get_lot', namespace='/gameplay')
 def send_lot(message):
+    index = int(message['data'])
+    emit('return lot',
+         {'data': str(startgame.city_lots[index].building.__class__.__name__), 'count': session['receive_count']})
+"""
+
+@socketio.on('get_lot_json', namespace='/gameplay')
+def send_lot_json(message):
+    emit('return lot',
+         {'data': startgame.json_lot_type_dict, 'count': session['receive_count']})
+
+
+@socketio.on('get_lot_types', namespace='/gameplay')
+def send_lot_types(message):
     index = int(message['data'])
     emit('return lot',
          {'data': str(startgame.city_lots[index].building.__class__.__name__), 'count': session['receive_count']})
