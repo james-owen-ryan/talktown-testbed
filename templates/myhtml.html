@@ -8,13 +8,17 @@
 		<script type="text/javascript" src= "js/phaser.js"></script>
 		<script type="text/javascript" charset="utf-8">
 
-		/************************************************************************
-	
-				All handlers and callbacks must be in this file
-				No exposure to other files
+/*
+		All handlers and callbacks must be in this file
+		No exposure to other files
+*/
 		
-		************************************************************************/
-	
+			/********************************************
+			*											*
+			*		rendering window sizing  			*
+			*											*
+			********************************************/		
+		
 			$(window).resize(function() { window.resizeGame(); } );
 			
 			function resizeGame() {
@@ -34,34 +38,13 @@
 			
 				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 
-
-				// change to an empty string to use the global namespace
 				namespace = '/gameplay'; 
-				// the socket.io documentation recommends sending an explicit package upon connection
-				// this is specially important when using the global namespace
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 				var ready = false;
 				
-				// JS callback when server "resends" message originally from JS.//
-				// event handler for server sent data
-				socket.on('my response', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-				});
-				
 				// event handler for returned game world info from server
-				socket.on('return info', function(msg) {
+				/*socket.on('return info', function(msg) {
 					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
-				});
-				
-				socket.on('return lot', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
-					parseLotsJson(msg.data);
-		
-				});
-				
-				// event handler for new connections
-				socket.on('connect', function() {
-					socket.emit('my event', {data: 'I\'m connected!'});
 				});
 				
 				// handler for posting a message
@@ -70,28 +53,49 @@
 					console.log("JAVASCRIPT: User wants to post this message: " + $('#emit_data').val());
 					socket.emit('my event', {data: $('#emit_data').val()});
 					return false;
+				}); */
+				
+				
+				/********************************************
+				*	recieve json dict of lots				*
+				********************************************/
+				socket.on('return lots', function(msg) {
+					parseLotsJson(msg.data);
+		
 				});
 				
-				// handler for disconnecting
-				$('form#disconnect').submit(function(event) {
-					socket.emit('disconnect request');
-					return false;
+				/********************************************
+				*	recieve json dict of streets				*
+				********************************************/
+				socket.on('return streets', function(msg) {
+					console.log("streets returned");
+		
 				});
 				
-				// checking that world has finashed generating. python server will return true if ready
+				/********************************************
+				*	python server will return			 	*
+				*	true if world finished generating		*
+				********************************************/
 				socket.on('ready response', function(msg) {
 					if(msg.data == "True") 
 						ready = true;
 				});
 			
-				// some server client tests
-				function commands() {
+
+				/********************************************
+				*	Get information about generated world	*
+				********************************************/
+				function requestWorldInfo() {
 					socket.emit('get_random_person', {data: 'random person'});
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_lot_json', {data: '0'});
+					socket.emit('get_street_json', {data: '0'});
 				}
 				
-				// keep checking that world is generated 
+				
+				/********************************************
+				*	keep checking that world is generated	*
+				********************************************/ 
 				function checkReady() {
 					socket.emit('ready');
 					if (!ready) {
@@ -99,11 +103,9 @@
 						console.log("Called checkReady(), !ready");
 					} else {
 						//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-						commands();
+						requestWorldInfo();
 					}
 				}
-				
-				// begin checking for readiness
 				checkReady();
 			});
 			

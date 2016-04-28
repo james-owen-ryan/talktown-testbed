@@ -82,5 +82,13 @@ def game_start():
 
     global json_lot_type_dict
     json_lot_type_dict = json.dumps(lot_type_dict)
-    print "city is "
-    print json_lot_type_dict
+
+
+    for lot in list(game.city.lots):
+        lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
+
+    street_type_dict = "streets"
+    global json_street_type_dict
+    json_street_type_dict = json.dumps(street_type_dict)
+
+

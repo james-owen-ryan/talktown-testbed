@@ -52,51 +52,17 @@ def send_city_name(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('return info',
         {'data': str(startgame.city_name), 'count': session['receive_count']})
-"""
-#todo: Pass json of lots, rename things for clarity
-@socketio.on('get_lot', namespace='/gameplay')
-def send_lot(message):
-    index = int(message['data'])
-    emit('return lot',
-         {'data': str(startgame.city_lots[index].building.__class__.__name__), 'count': session['receive_count']})
-"""
 
 @socketio.on('get_lot_json', namespace='/gameplay')
 def send_lot_json(message):
-    emit('return lot',
+    emit('return lots',
          {'data': startgame.json_lot_type_dict, 'count': session['receive_count']})
 
+@socketio.on('get_street_json', namespace='/gameplay')
+def send_street_json(message):
+    emit('return streets',
+         {'data': startgame.json_street_type_dict, 'count': session['receive_count']})
 
-@socketio.on('get_lot_types', namespace='/gameplay')
-def send_lot_types(message):
-    index = int(message['data'])
-    emit('return lot',
-         {'data': str(startgame.city_lots[index].building.__class__.__name__), 'count': session['receive_count']})
-
-@socketio.on('my event', namespace='/gameplay')
-def test_message(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my response',
-         {'data': message['data'], 'count': session['receive_count']})
-    print "PYTHON: The user wants to post '%s'. I'm going to call a JS callback\n" % (message['data'])
-
-
-@socketio.on('disconnect request', namespace='/gameplay')
-def disconnect_request():
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my response',
-         {'data': 'Disconnected!', 'count': session['receive_count']})
-    disconnect()
-
-
-@socketio.on('connect', namespace='/gameplay')
-def test_connect():
-    emit('my response', {'data': 'Connected', 'count': 0})
-
-
-@socketio.on('disconnect', namespace='/gameplay')
-def test_disconnect():
-    print('Client disconnected', request.sid)
 
 @socketio.on('ready', namespace='/gameplay')
 def ready():
