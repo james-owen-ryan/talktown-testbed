@@ -31,7 +31,7 @@
 			
 			var game; 
 			$(document).ready(function(){
-		
+			
 				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 
 
@@ -98,6 +98,7 @@
 						window.setTimeout(checkReady, 1000);
 						console.log("Called checkReady(), !ready");
 					} else {
+						//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 						commands();
 					}
 				}
