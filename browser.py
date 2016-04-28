@@ -120,7 +120,7 @@ def browser_spawn():
                 title = "wxPython CEF 3 example"
             wx.Frame.__init__(self, parent=None, id=wx.ID_ANY,
                     title=title)
-            size=(800,600)
+            size=(800,800)
 
             # This is an optional code to enable High DPI support.
             if "auto_zooming" in g_applicationSettings \

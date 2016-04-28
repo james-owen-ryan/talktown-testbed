@@ -27,6 +27,11 @@ socketio = SocketIO(app)
 def send_js(path):
     return send_from_directory(app.static_folder)
 
+# Serve up Sprites files
+@app.route('/Sprites/<path:path>')
+def send_sprites(path):
+    return send_from_directory(app.static_folder)
+
 @app.route('/')
 def index():
     return render_template('myhtml.html')

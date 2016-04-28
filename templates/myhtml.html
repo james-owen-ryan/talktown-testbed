@@ -5,17 +5,36 @@
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
 		<script type="text/javascript" src= "js/client.js"></script>
-		<script type="text/javascript" src= "js/2.js"></script>
+		<script type="text/javascript" src= "js/phaser.js"></script>
 		<script type="text/javascript" charset="utf-8">
-		
+
 		/************************************************************************
 	
 				All handlers and callbacks must be in this file
 				No exposure to other files
 		
 		************************************************************************/
-		
+	
+			$(window).resize(function() { window.resizeGame(); } );
+			
+			function resizeGame() {
+				var height = $(window).height();
+				var width = $(window).width();
+				game.width = window.innerWidth;
+				game.height = window.innerHeight;
+				game.stage.bounds.width = width;
+				game.stage.bounds.height = height;
+				if (game.renderType === Phaser.WEBGL){ 
+					game.renderer.resize(width, height);
+				}
+			}
+			
+			var game; 
 			$(document).ready(function(){
+		
+				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
+
+
 				// change to an empty string to use the global namespace
 				namespace = '/gameplay'; 
 				// the socket.io documentation recommends sending an explicit package upon connection
@@ -35,7 +54,7 @@
 				});
 				
 				socket.on('return lot', function(msg) {
-					//$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
+					$('#log').append('<br>' + $('<div/>').text('Type of lot: ' + msg.data).html());
 					parseLotsJson(msg.data);
 		
 				});
@@ -67,13 +86,6 @@
 			
 				// some server client tests
 				function commands() {
-					/*console.log("Called commands()");
-					console.log("There should be logs after this message\n");
-					socket.emit('my event', {data: "cat"});
-					console.log("I should have emitted a custom event\n");
-					
-					socket.emit('my event', {data: returnBun()});
-					*/
 					socket.emit('get_random_person', {data: 'random person'});
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_lot_json', {data: '0'});
@@ -96,16 +108,20 @@
 			
 		</script>
 	</head>
-	<body>
-		<h1>Flask-SocketIO Test</h1>
-		<h2>Send:</h2>
-		<form id="emit" method="POST" action='#'>
-			<input type="text" name="emit_data" id="emit_data" placeholder="Message">
-			<input type="submit" value="Send a message">
-		</form>
-		<form id="disconnect" method="POST" action="#">
-			<input type="submit" value="Disconnect">
-		</form>
-		<h2>Receive:</h2>
-		<div id="log"></div>
+	<body style = "padding:0px;margin:0px">
+		<div id = "talktown" style="offset:0;width:100%;height:100%;margin:0;padding:0"></div>
+		<!--<body>
+			<h1>Flask-SocketIO Test</h1>
+			<h2>Send:</h2>
+			<form id="emit" method="POST" action='#'>
+				<input type="text" name="emit_data" id="emit_data" placeholder="Message">
+				<input type="submit" value="Send a message">
+			</form>
+			<form id="disconnect" method="POST" action="#">
+				<input type="submit" value="Disconnect">
+			</form>
+			<h2>Receive:</h2>
+			<div id="log"></div>
+		-->
+	</body>
 </html>
