@@ -4,8 +4,8 @@
 		<title>Flask-SocketIO Test</title>
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
-		<script type="text/javascript" src= "js/client.js"></script>
-		<script type="text/javascript" src= "js/phaser.js"></script>
+		<script type="text/javascript" src= "/js/client.js"></script>
+		<script type="text/javascript" src= "/js/phaser.js"></script>
 		<script type="text/javascript" charset="utf-8">
 
 /*
@@ -34,9 +34,11 @@
 			}
 			
 			var game; 
+		
+			
 			$(document).ready(function(){
 			
-				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
+				//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 
 				namespace = '/gameplay'; 
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -86,11 +88,31 @@
 				*	Get information about generated world	*
 				********************************************/
 				function requestWorldInfo() {
+					console.log("requestWorldInfo");
 					socket.emit('get_random_person', {data: 'random person'});
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_lot_json', {data: '0'});
 					socket.emit('get_street_json', {data: '0'});
 				}
+				
+				function checkPreloadReady() {
+					if (!preloadReady) {
+							window.setTimeout(checkPreloadReady, 1000);
+							console.log("Called checkPreloadReady(), !ready");	
+					} else {
+							//call this only when preloading is done
+							console.log("preload is ready");
+							requestWorldInfo();
+					}
+				}
+				
+				
+				
+				function newGame() { 
+					game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
+					checkPreloadReady();
+				}
+				
 				
 				
 				/********************************************
@@ -102,8 +124,9 @@
 						window.setTimeout(checkReady, 1000);
 						console.log("Called checkReady(), !ready");
 					} else {
+						newGame();
 						//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-						requestWorldInfo();
+						//requestWorldInfo();
 					}
 				}
 				checkReady();

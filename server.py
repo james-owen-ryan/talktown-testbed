@@ -18,19 +18,14 @@ import thread
 import eventlet
 eventlet.monkey_patch()
 
-app = Flask(__name__, static_folder='js')
+app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-# Serve up JS files
-@app.route('/js/<path:path>')
+# Serve up JS + sprites
+@app.route('/<path:path>')
 def send_js(path):
-    return send_from_directory(app.static_folder)
-
-# Serve up Sprites files
-@app.route('/Sprites/<path:path>')
-def send_sprites(path):
-    return send_from_directory(app.static_folder)
+    return send_from_directory(app.static_folder, path)
 
 @app.route('/')
 def index():
