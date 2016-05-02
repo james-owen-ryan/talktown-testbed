@@ -545,5 +545,5 @@ class ProductionRule(object):
 
 if __name__ == "__main__":
     writer = TrainingDataWriter()
-    # writer.produce_lstm_training_data()
     # writer.write_out_pickled_symbol_and_token_serialization_dictionaries()
+    # writer.produce_lstm_training_data()
