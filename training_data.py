@@ -1,17 +1,27 @@
 import json
 import itertools
 import os
+import re
 import random
 import operator
+import time
+import pickle
 
 
 PATH_TO_JSON_GRAMMAR_SPECIFICATION = (
-    '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-player-input_hair-queries-probabilistic.json'
+    #'/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-player-input_hair-queries-probabilistic.json'
     #'/Users/jamesryan/Desktop/IVA2016/talktown-grammar-used-in-iva-study.json'
+    '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-aiide-study-2016.json'
 )
+CURRENT_DATE = time.strftime("%d%b%Y")  # In this format: 29Apr2016
 DIRECTORY_TO_WRITE_OUT_TO = os.getcwd()
-TRACES_OUT_FILENAME = 'PLAYER-INPUT_HAIR_TRACES_28Apr2016'
-DERIVATIONS_OUT_FILENAME = 'PLAYER-INPUT_HAIR_DERIVATIONS_28Apr2016'
+SYMBOLS_PICKLE_OUT_FILENAME = 'SYMBOLS-PICKLE_{current_date}'.format(current_date=CURRENT_DATE)
+ONLY_RUNTIME_VARIABLE_TOKENS_PICKLE_OUT_FILENAME = 'RUNTIME_VAR_TOKENS-PICKLE_{current_date}'.format(
+    current_date=CURRENT_DATE
+)
+ALL_TOKENS_PICKLE_OUT_FILENAME = 'ALL-TOKENS-PICKLE_{current_date}'.format(current_date=CURRENT_DATE)
+TRACES_OUT_FILENAME = 'PLAYER-INPUT_HAIR_TRACES_{current_date}'.format(current_date=CURRENT_DATE)
+DERIVATIONS_OUT_FILENAME = 'PLAYER-INPUT_HAIR_DERIVATIONS_{current_date}'.format(current_date=CURRENT_DATE)
 # TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['player appearance query']
 # To expand *all* top-level symbols to generate training data, use this line instead:
 TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = 'ALL'
@@ -102,6 +112,101 @@ class TrainingDataWriter(object):
             for rule in symbol.production_rules:
                 if len(rule.body) == 1 and type(rule.body[0]) is unicode:
                     rule.terminal = True
+
+    def write_out_pickled_symbol_and_token_serialization_dictionaries(self):
+        """Write out pickled dictionaries that map all the nonterminal symbols and words appearing in this grammar
+        to their serialization IDs."""
+        # Write out a pickled dictionary mapping all nonterminal symbols in this grammar to
+        # their serialization IDs
+        nonterminal_symbol_to_serialization_id = {
+            self.nonterminal_symbols[i].tag: i for i in xrange(len(self.nonterminal_symbols))
+        }
+        path_to_write_symbol_pickle_to = "{dir}/{filename}".format(
+            dir=DIRECTORY_TO_WRITE_OUT_TO, filename=SYMBOLS_PICKLE_OUT_FILENAME
+        )
+        symbol_pickle_out_file = open(path_to_write_symbol_pickle_to, 'wb')
+        pickle.dump(nonterminal_symbol_to_serialization_id, symbol_pickle_out_file)
+        symbol_pickle_out_file.close()
+        # Parse and tokenize all nonterminal symbols
+        all_terminal_symbols = self._collect_all_terminal_symbols()
+        runtime_variable_replacement_expressions, token_to_serialization_id = self._parse_and_tokenize_terminal_symbols(
+            terminal_symbols=all_terminal_symbols
+        )
+        # Write out a pickled dictionary mapping all runtime variables to their replacement
+        # expressions, e.g., 'PYTHON_EXPRESSION0'
+        path_to_write_runtime_variables_pickle_to = "{dir}/{filename}".format(
+            dir=DIRECTORY_TO_WRITE_OUT_TO, filename=ONLY_RUNTIME_VARIABLE_TOKENS_PICKLE_OUT_FILENAME
+        )
+        runtime_variables_pickle_out_file = open(path_to_write_runtime_variables_pickle_to, 'wb')
+        pickle.dump(runtime_variable_replacement_expressions, runtime_variables_pickle_out_file)
+        runtime_variables_pickle_out_file.close()
+        # Write out a pickled dictionary mapping all unique tokens (including replacement expressions
+        # for runtime variables) to their serialization IDs
+        path_to_write_all_tokens_pickle_to = "{dir}/{filename}".format(
+            dir=DIRECTORY_TO_WRITE_OUT_TO, filename=ALL_TOKENS_PICKLE_OUT_FILENAME
+        )
+        tokens_pickle_out_file = open(path_to_write_all_tokens_pickle_to, 'wb')
+        pickle.dump(token_to_serialization_id, tokens_pickle_out_file)
+        tokens_pickle_out_file.close()
+
+    def _collect_all_terminal_symbols(self):
+        """Return a set of all terminal symbols included in this grammar that are not fully composed of whitespace."""
+        terminal_symbols = set()
+        for nonterminal_symbol in self.nonterminal_symbols:
+            for rule in nonterminal_symbol.production_rules:
+                for symbol in rule.body:
+                    if type(symbol) is unicode and symbol.strip():  # I.e., symbol is terminal and not just whitespace
+                        terminal_symbols.add(symbol)
+        return terminal_symbols
+
+    @staticmethod
+    def _parse_and_tokenize_terminal_symbols(terminal_symbols):
+        """Return a set of all unique tokens appearing across all terminal symbols."""
+        # Prepare some variables that we'll need
+        characters_to_pad_with_whitespace = [',', '...', '!', '?', ':', '{', '}', '^']
+        period_regular_expression = re.compile('(\w)\.')  # Periods can occur in ellipses, so need special detection
+        runtime_variable_regular_expression = re.compile('(\[.*\])')
+        runtime_variable_replacement_expressions = {}  # Expressions that are template gaps, e.g., [speaker.first_name]
+        token_to_serialization_id = {}
+        # Tokenize the terminal symbols
+        for terminal_symbol in terminal_symbols:
+            # Strip off whitespace padding
+            preprocessed_terminal_symbol = terminal_symbol.strip()
+            # Detect runtime variables and replace them with generic tokens
+            runtime_variable_matches = runtime_variable_regular_expression.search(preprocessed_terminal_symbol)
+            while runtime_variable_matches:
+                if runtime_variable_matches.groups()[0] not in runtime_variable_replacement_expressions:
+                    replacement_expression = 'PYTHON_EXPRESSION{}'.format(len(runtime_variable_replacement_expressions))
+                    runtime_variable_replacement_expressions[runtime_variable_matches.groups()[0]] = (
+                        replacement_expression
+                    )
+                    token_to_serialization_id[replacement_expression] = len(token_to_serialization_id)
+                preprocessed_terminal_symbol = preprocessed_terminal_symbol.replace(
+                    runtime_variable_matches.groups()[0],
+                    runtime_variable_replacement_expressions[runtime_variable_matches.groups()[0]]
+                )
+                runtime_variable_matches = runtime_variable_regular_expression.match(preprocessed_terminal_symbol)
+            # Add whitespace padding around the appropriate characters
+            for character_to_pad in characters_to_pad_with_whitespace:
+                preprocessed_terminal_symbol = preprocessed_terminal_symbol.replace(
+                    character_to_pad, ' {} '.format(character_to_pad)
+                )
+            # Add whitespace padding around periods (this has to occur after the last step,
+            # because periods can occur inside of ellipses)
+            period_matches = period_regular_expression.search(preprocessed_terminal_symbol)
+            while period_matches:
+                character = period_matches.groups()[0]
+                preprocessed_terminal_symbol = preprocessed_terminal_symbol.replace(
+                    '{}.'.format(character), '{} .'.format(character)
+                )
+                period_matches = period_regular_expression.match(preprocessed_terminal_symbol)
+            # Tokenize the preprocessed terminal symbol
+            tokenized_terminal_symbol = preprocessed_terminal_symbol.split(' ')
+            for token in tokenized_terminal_symbol:
+                token = token.lower()
+                if token != '' and token not in token_to_serialization_id:
+                    token_to_serialization_id[token] = len(token_to_serialization_id)
+        return runtime_variable_replacement_expressions, token_to_serialization_id
 
     def produce_lstm_training_data(self):
         """Produce all the files that constitute our training data."""
@@ -440,4 +545,5 @@ class ProductionRule(object):
 
 if __name__ == "__main__":
     writer = TrainingDataWriter()
-    writer.produce_lstm_training_data()
+    # writer.produce_lstm_training_data()
+    # writer.write_out_pickled_symbol_and_token_serialization_dictionaries()
