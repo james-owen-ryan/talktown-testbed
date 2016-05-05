@@ -18,6 +18,8 @@ city_lots = None
 lot = None
 
 def game_start():
+# unblock server's loading page. temp fix
+    time.sleep(5)
 #    global game
     game = Game()  # Objects of the class Game are Talk of the Town simulations
     # send a message to be displayed on the page
@@ -71,21 +73,13 @@ def game_start():
     lot = str(city_lots[0].coordinates)
     print "The city name is: %s" % game.city.name
 
-    #todo: put type attributes into list, json.dumps that list and pass it to js
-    #for i in list(lots)
-        #append i.building type to new list
 
+    # json dictionary (coordinates, type of lot)
     lot_type_dict = {}
-
     for lot in list(game.city.lots):
         lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
-
     global json_lot_type_dict
     json_lot_type_dict = json.dumps(lot_type_dict)
-
-
-    for lot in list(game.city.lots):
-        lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
 
     street_type_dict = "streets"
     global json_street_type_dict

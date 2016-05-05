@@ -11,10 +11,11 @@ import struct
 import time
 from game import Game
 import startgame
-from flask import Flask, render_template, session, request, send_from_directory
+from flask import Flask, render_template, session, request, send_from_directory, abort, redirect, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 import thread
+from threading import Thread
 import eventlet
 eventlet.monkey_patch()
 
@@ -29,7 +30,13 @@ def send_js(path):
 
 @app.route('/')
 def index():
-    return render_template('myhtml.html')
+    #return render_template('game.html')
+    # V uncomment if redirecting V
+    return render_template('loading.html')
+
+@app.route('/game')
+def game():
+    return render_template('game.html')
 
 # -------------------------------- #
 #  query handlers                  #
@@ -63,6 +70,14 @@ def send_street_json(message):
 def ready():
     emit('ready response',
          {'data': str(startgame.ready), 'count': 000})
+
+@socketio.on('change view', namespace='/gameplay')
+def change_view():
+    print "2 two"
+    emit('redirect', {'url': url_for('game')})
+
+
+
 
 thread.start_new_thread(startgame.game_start,())
 socketio.run(app)

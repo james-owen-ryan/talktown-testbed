@@ -38,7 +38,7 @@
 			
 			$(document).ready(function(){
 			
-				//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
+				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 
 				namespace = '/gameplay'; 
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -82,6 +82,16 @@
 					if(msg.data == "True") 
 						ready = true;
 				});
+				
+				
+				
+				/********************************************
+				*	change the view when gen finished    	*
+				********************************************/
+				socket.on('redirect', function (data) {
+					window.location = data.url;
+				});
+				
 			
 
 				/********************************************
@@ -95,7 +105,12 @@
 					socket.emit('get_street_json', {data: '0'});
 				}
 				
-				function checkPreloadReady() {
+				
+				
+				
+		
+				
+				/*function checkPreloadReady() {
 					if (!preloadReady) {
 							window.setTimeout(checkPreloadReady, 1000);
 							console.log("Called checkPreloadReady(), !ready");	
@@ -110,27 +125,34 @@
 				
 				function newGame() { 
 					game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-					checkPreloadReady();
+					requestWorldInfo();
+					//checkPreloadReady();
 				}
-				
+				*/
 				
 				
 				/********************************************
 				*	keep checking that world is generated	*
 				********************************************/ 
-				function checkReady() {
+				// comment out checkready and uncomment requestworldinfo()
+				// if redirecting ^
+				
+				/*function checkReady() {
 					socket.emit('ready');
 					if (!ready) {
 						window.setTimeout(checkReady, 1000);
 						console.log("Called checkReady(), !ready");
 					} else {
-						newGame();
+						console.log("world is ready");
+						//newGame();
 						//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-						//requestWorldInfo();
+						requestWorldInfo();
 					}
 				}
 				checkReady();
-			});
+			});*/
+			
+			requestWorldInfo();
 			
 		</script>
 	</head>

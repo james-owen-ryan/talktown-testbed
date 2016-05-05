@@ -20,13 +20,13 @@ eventlet.monkey_patch()
 
 if hasattr(sys, "frozen"):
   serverProc = subprocess.Popen(["server.exe"],stderr=subprocess.STDOUT)
-  time.sleep(5)
+  time.sleep(1)
   browserProc = subprocess.Popen(["browser.exe"])
   browserProc.wait()
   serverProc.terminate()
 else:
   serverProc = subprocess.Popen([sys.executable, "server.py"],stderr=subprocess.STDOUT)
-  time.sleep(5)
+  time.sleep(1)
   browserProc = subprocess.Popen([sys.executable, "browser.py"])
   browserProc.wait()
   serverProc.terminate()
