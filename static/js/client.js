@@ -3,20 +3,20 @@
 *       parse and render lots               *
 *                                           *
 ********************************************/
-var i = 0;
-var coordinates;
-var xCoord;
-var yCoord;
 var preloadReady = false;
 
 function parseLotsJson(json){
+	var coordinates;
+	var xCoord;
+	var yCoord;
 	var dict = JSON.parse(json);
 	for(var key in dict) {
 		var value = dict[key];
 		console.log(key, value);
+		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
-		xCoord = 10-coordinates[0].substring(1, coordinates[0].length - 1);
-		yCoord = 10-coordinates[1].substring(0, coordinates[1].length - 2);
+		xCoord = coordinates[0];
+		yCoord = coordinates[1];
 		renderLots(xCoord, yCoord, value);
 	}
 }
@@ -36,6 +36,37 @@ function renderLots(x, y, value){
 						'business');
 	}
 }
+
+
+/********************************************
+*                                           *
+*       parse and render block              *
+*                                           *
+********************************************/
+
+
+function parseBlocksJson(json){
+	var coordinates;
+	var startX;
+	var startY;
+	var endX;
+	var endY;
+	var dict = JSON.parse(json);
+	for(var start in dict) {
+		var end = dict[start];
+		console.log("start is" + start + " end is " + end);
+		start = start.substring(1, start.length-1);
+		coordinates = start.split(', ');
+		startX = coordinates[0];
+		startY = coordinates[1];
+		end = end.substring(1, end.length-1);
+		coordinates = end.split(', ');
+		endX = coordinates[0];
+		endY = coordinates[1];
+	}
+
+}
+
 
 //render json lots function
 //render streets function

@@ -70,8 +70,7 @@
 				*	recieve json dict of blocks				*
 				********************************************/
 				socket.on('return blocks', function(msg) {
-					console.log("blocks returned");
-					console.log(msg.data);
+					parseBlocksJson(msg.data);
 		
 				});
 				

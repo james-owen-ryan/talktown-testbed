@@ -89,9 +89,9 @@ def game_start():
     block_type_dict = {}
     iter = 0
     for block in list(game.city.blocks):
-        iter = iter + 1
+        #iter = iter + 1
         block_type_dict[str(block.starting_coordinates)] = str(block.ending_coordinates)
-    print "total number of blocks: %s" % iter;
+    #print "total number of blocks: %s" % iter;
     global json_block_type_dict
     json_block_type_dict = json.dumps(block_type_dict)
 
