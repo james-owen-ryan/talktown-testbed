@@ -14,21 +14,26 @@ function parseLotsJson(json){
 	for(var key in dict) {
 		var value = dict[key];
 		console.log(key, value);
-		//possibly remove quotes at beg and end of coords
 		coordinates = key.split(', ');
-		xCoord = /*10-*/coordinates[0].substring(1, coordinates[0].length - 1);
-		yCoord = /*10-*/coordinates[1].substring(0, coordinates[1].length - 2);
+		xCoord = 10-coordinates[0].substring(1, coordinates[0].length - 1);
+		yCoord = 10-coordinates[1].substring(0, coordinates[1].length - 2);
 		renderLots(xCoord, yCoord, value);
 	}
 }
 
 function renderLots(x, y, value){
 	if (value == "House") { 
-		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2), y*(window.innerHeight/9)-((window.innerHeight/9)/2), 'house');
+		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
+									y*(window.innerHeight/9)-((window.innerHeight/9)/2),
+									'house');
 	} else if (value == "NoneType") {
-		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2), y*(window.innerHeight/9)-((window.innerHeight/9)/2), 'empty_lot');
+		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
+									y*(window.innerHeight/9)-((window.innerHeight/9)/2),
+									'empty_lot');
 	} else {
-		game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2), y*(window.innerHeight/9)-((window.innerHeight/9)/2), 'business');
+		game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
+						y*(window.innerHeight/9)-((window.innerHeight/9)/2),
+						'business');
 	}
 }
 

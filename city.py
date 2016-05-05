@@ -730,6 +730,13 @@ class Block(object):
         self.street.blocks.append(self)
         self.lots = []
         self.type = 'block'
+        # Helper attributes for rendering a town
+        if self.street.direction in ('N', 'S'):
+            self.starting_coordinates = (self.street.number, self.number/100)
+            self.ending_coordinates = (self.starting_coordinates[0], self.starting_coordinates[1]+1)
+        else:
+            self.starting_coordinates = (self.number/100, self.street.number)
+            self.ending_coordinates = (self.starting_coordinates[0]+1, self.starting_coordinates[1])
 
     def __str__(self):
         """Return string representation."""

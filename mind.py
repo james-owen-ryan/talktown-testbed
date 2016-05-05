@@ -1,4 +1,5 @@
 import random
+#from thought import Thoughts
 
 
 class Mind(object):
@@ -15,10 +16,11 @@ class Mind(object):
         # A mind's preoccupation is an entity that this person is currently preoccupied
         # by, e.g., someone for whom this person is trying to fill in missing belief facets
         self.preoccupation = None
+        self.thoughts = []
 
     def __str__(self):
         """Return string representation."""
-        return "Mind of {}".format(self.person.name)
+        return "Mind of {person}".format(person=self.person.name)
 
     def _init_memory(self):
         """Determine a person's base memory capability, given their parents'."""
@@ -71,6 +73,31 @@ class Mind(object):
         # Return the most salient match (meaning most salient to this person)
         most_salient_match = max(all_matches, key=lambda match: self.person.salience_of_other_people.get(match, 0.0))
         return most_salient_match
+
+    def wander(self):
+        """Let this mind wander."""
+        a_thought = Thoughts.a_thought(mind=self)
+        if a_thought:
+            self.think(a_thought)
+
+    def entertain(self, thought_prototype, evoked_by=None, provoked_by=None):
+        """Entertain a thought evoked or provoked by something or someone else.
+
+        @param thought_prototype: The pattern for this thought.
+        @param evoked_by: The thing or person that/who evoked this thought, if any.
+        @param provoked_by: The person who explicitly provoked this thought, if any.
+        """
+        rendered_thought = Thoughts.an_elicited_thought(
+            mind=self, thought_prototype=thought_prototype,
+            evoked_by=evoked_by, provoked_by=provoked_by
+        )
+        if rendered_thought:
+            self.think(rendered_thought)
+
+    def think(self, thought):
+        """Think a thought."""
+        self.thoughts.append(thought)
+        thought.execute()
 
 
 class Feature(float):

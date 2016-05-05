@@ -74,15 +74,24 @@ def game_start():
     print "The city name is: %s" % game.city.name
 
 
-    # json dictionary (coordinates, type of lot)
+    #****************************************************#
+    #  Lots json dictionary (coordinates, type of lot)   #
+    #****************************************************#
     lot_type_dict = {}
     for lot in list(game.city.lots):
         lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
     global json_lot_type_dict
     json_lot_type_dict = json.dumps(lot_type_dict)
 
-    street_type_dict = "streets"
-    global json_street_type_dict
-    json_street_type_dict = json.dumps(street_type_dict)
-
+    # ****************************************************#
+    #  Blocks json dictionary (start coords, end coords)  #
+    # ****************************************************#
+    block_type_dict = {}
+    iter = 0
+    for block in list(game.city.blocks):
+        iter = iter + 1
+        block_type_dict[str(block.starting_coordinates)] = str(block.ending_coordinates)
+    print "total number of blocks: %s" % iter;
+    global json_block_type_dict
+    json_block_type_dict = json.dumps(block_type_dict)
 

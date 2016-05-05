@@ -67,10 +67,11 @@
 				});
 				
 				/********************************************
-				*	recieve json dict of streets				*
+				*	recieve json dict of blocks				*
 				********************************************/
-				socket.on('return streets', function(msg) {
-					console.log("streets returned");
+				socket.on('return blocks', function(msg) {
+					console.log("blocks returned");
+					console.log(msg.data);
 		
 				});
 				
@@ -102,7 +103,7 @@
 					socket.emit('get_random_person', {data: 'random person'});
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_lot_json', {data: '0'});
-					socket.emit('get_street_json', {data: '0'});
+					socket.emit('get_block_json', {data: '0'});
 				}
 				
 				

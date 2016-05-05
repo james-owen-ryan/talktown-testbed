@@ -60,10 +60,10 @@ def send_lot_json(message):
     emit('return lots',
          {'data': startgame.json_lot_type_dict, 'count': session['receive_count']})
 
-@socketio.on('get_street_json', namespace='/gameplay')
-def send_street_json(message):
-    emit('return streets',
-         {'data': startgame.json_street_type_dict, 'count': session['receive_count']})
+@socketio.on('get_block_json', namespace='/gameplay')
+def send_block_json(message):
+    emit('return blocks',
+         {'data': startgame.json_block_type_dict, 'count': session['receive_count']})
 
 
 @socketio.on('ready', namespace='/gameplay')
@@ -73,7 +73,6 @@ def ready():
 
 @socketio.on('change view', namespace='/gameplay')
 def change_view():
-    print "2 two"
     emit('redirect', {'url': url_for('game')})
 
 
