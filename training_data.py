@@ -25,9 +25,9 @@ DERIVATIONS_OUT_FILENAME = 'PLAYER-INPUT_HAIR_DERIVATIONS_{current_date}'.format
 # TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['player appearance query']
 # To expand *all* top-level symbols to generate training data, use this line instead:
 TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = 'ALL'
-VERBOSE = 2  # Whether the process will display progress text (0=No, 1=Verbose, 2=Very Verbose)
-TERMINAL_RULE_SAMPLING_RATE = 0.001  # Rules that expand to terminal symbols (i.e., strings)
-SEMITERMINAL_RULE_SAMPLING_RATE = 0.001  # Rules who have a symbol who has a terminal rule
+TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS = 1000  # 1317888 produces roughly 1GB of training data (of traces)
+BASE_EXPLORATION_BOOST = 1
+EXPLORATION_BOOST_DECAY_RATE = 0.90
 RANDOM_SEED = 0
 
 
@@ -49,18 +49,14 @@ class TrainingDataWriter(object):
             self.top_level_symbols = [
                 symbol for symbol in self.nonterminal_symbols if symbol.tag in TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM
             ]
-        # This gets set by produce_and_write_out_traces() and then reset by
-        # produce_and_write_out_terminal_derivations()
+        # This gets set by produce_and_write_out_a_trace() and then reset by
+        # produce_and_write_out_a_derivation()
         self.out_file = None
         # Determine the total number of generable terminal derivations (summed across top-level
         # symbols only)
         self.total_generable_derivations = sum(
             s.total_number_of_generable_terminal_derivations() for s in self.top_level_symbols
         )
-        # Determine the total number of terminal derivations generable by the top-level symbols of
-        # our source grammar, which we can use to determine a sampling rate that will produce approximately
-        # the desired number of terminal derivations (as specified by a global variable set above)
-        self.sampling_rate = TERMINAL_RULE_SAMPLING_RATE
         # Set the random seed, which will ensure that the sampled derivation traces match up exactly
         # with the sampled derivations themselves
         random.seed(RANDOM_SEED)
@@ -220,6 +216,9 @@ class TrainingDataWriter(object):
 
     def produce_lstm_training_data(self):
         """Produce all the files that constitute our training data."""
+        print "Sampling {targeted_n} examples from a space out {generable_n} generable examples...".format(
+            targeted_n=TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS, generable_n=self.total_generable_derivations
+        )
         self.produce_and_write_out_traces()
         # Reset the random seed
         random.seed(RANDOM_SEED)
@@ -241,9 +240,14 @@ class TrainingDataWriter(object):
             dir=DIRECTORY_TO_WRITE_OUT_TO, filename=TRACES_OUT_FILENAME
         )
         self.out_file = open(path_to_write_out_to, 'w')
-        for symbol in self.top_level_symbols:
-            symbol.produce_and_write_out_traces(write_out=True)
+        one_percent_increment = TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS / 100
+        for i in xrange(TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS):
+            if i > 0 and i % one_percent_increment == 0:
+                print "\t{}% complete".format(i/one_percent_increment)
+            for symbol in self.top_level_symbols:
+                symbol.probabilistically_expand(write_out=True, produce_trace=True)
         self.out_file.close()
+        print "100% complete"
 
     def produce_and_write_out_terminal_derivations(self):
         """Produce and write out terminal derivations of our top-level symbols."""
@@ -251,88 +255,14 @@ class TrainingDataWriter(object):
             dir=DIRECTORY_TO_WRITE_OUT_TO, filename=DERIVATIONS_OUT_FILENAME
         )
         self.out_file = open(path_to_write_out_to, 'w')
-        for symbol in self.top_level_symbols:
-            symbol.produce_and_write_out_terminal_derivations(write_out=True)
+        one_percent_increment = TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS/100
+        for i in xrange(TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS):
+            if i > 0 and i % one_percent_increment == 0:
+                print "\t{}% complete".format(i/one_percent_increment)
+            for symbol in self.top_level_symbols:
+                symbol.probabilistically_expand(write_out=True, produce_trace=False)
         self.out_file.close()
-
-    def probabilistically_sort_production_rules(self, rules):
-        """Sort a collection of production rules probabilistically by utilizing their application rates.
-
-        Because the application rates of a group of rules are only relative to one another
-        if those rules have the same head (which is not a guarantee when backward chaining),
-        we need to probabilistically sort rules within rule-head groups first, and then we really
-        have no viable option except randomly shuffling the head groups (while retaining the
-        probabilistically determined orderings within each head group)
-        """
-        probabilistic_sort = []
-        # Assemble all the rule heads
-        rule_heads = list({rule.head for rule in rules})
-        # Randomly shuffle the rule heads (we have no way deciding how to order the
-        # rule-head groups, since the application rates of rules in different groups
-        # only mean anything relative to the other rules in that same group, not to
-        # rules in other groups)
-        random.shuffle(rule_heads)
-        # Probabilistically sort each head group
-        for head in rule_heads:
-            rules_sharing_this_head = [rule for rule in rules if rule.head is head]
-            probabilistic_sort_of_this_head_group = (
-                self._probabilistically_sort_a_rule_head_group(rules=rules_sharing_this_head)
-            )
-            probabilistic_sort += probabilistic_sort_of_this_head_group
-        return probabilistic_sort
-
-    def _probabilistically_sort_a_rule_head_group(self, rules):
-        """Probabilistically sort a collection of production rules that share the same rule head.
-
-        This method works by fitting a probability range to each of the given set of rules, rolling
-        a random number and selecting the rule whose range it falls within, and then repeating this
-        on the set of remaining rules, and so forth until every rule has been selecting.
-        """
-        probabilistic_sort = []
-        remaining_rules = list(rules)
-        while len(remaining_rules) > 1:
-            probability_ranges = (
-                self._fit_probability_distribution_to_rules_according_to_their_application_rates(rules=remaining_rules)
-            )
-            x = random.random()
-            probabilistically_selected_rule = next(
-                rule for rule in remaining_rules if probability_ranges[rule][0] <= x <= probability_ranges[rule][1]
-            )
-            probabilistic_sort.append(probabilistically_selected_rule)
-            remaining_rules.remove(probabilistically_selected_rule)
-        # Add the only rule that's left (no need to fit a probability distribution to
-        # this set containing just one rule)
-        last_one_to_be_selected = remaining_rules[0]
-        probabilistic_sort.append(last_one_to_be_selected)
-        return probabilistic_sort
-
-    @staticmethod
-    def _fit_probability_distribution_to_rules_according_to_their_application_rates(rules):
-        """Return a dictionary mapping each of the rules to a probability range."""
-        # Determine the individual probabilities of each production rule, given the
-        # rules' application rates
-        individual_probabilities = {}
-        sum_of_all_application_rates = float(sum(rule.application_rate for rule in rules))
-        for rule in rules:
-            probability = rule.application_rate / sum_of_all_application_rates
-            individual_probabilities[rule] = probability
-        # Use those individual probabilities to associate each production rule with a specific
-        # probability range, such that generating a random value between 0.0 and 1.0 will fall
-        # into one and only one production rule's probability range
-        probability_ranges = {}
-        current_bound = 0.0
-        for rule in rules:
-            probability = individual_probabilities[rule]
-            probability_range_for_this_rule = (current_bound, current_bound + probability)
-            probability_ranges[rule] = probability_range_for_this_rule
-            current_bound += probability
-        # Make sure the last bound indeed extends to 1.0 (necessary because of
-        # float rounding issues)
-        last_rule_to_have_a_range_attributed = rules[-1]
-        probability_ranges[last_rule_to_have_a_range_attributed] = (
-            probability_ranges[last_rule_to_have_a_range_attributed][0], 1.0
-        )
-        return probability_ranges
+        print "100% complete"
 
 
 class NonterminalSymbol(object):
@@ -348,6 +278,9 @@ class NonterminalSymbol(object):
         self.production_rules = self._init_reify_production_rules(production_rules_specification)
         # This will hold the total number of terminal derivations of this symbol
         self.total_generable_derivations = None
+        # Set exploration boost to the base value specified above as a global variable; we'll update
+        # this over time as this symbol is expanded
+        self.exploration_boost = BASE_EXPLORATION_BOOST
 
     def __str__(self):
         """Return string representation."""
@@ -375,90 +308,55 @@ class NonterminalSymbol(object):
             )
         return self.total_generable_derivations
 
-    def produce_and_write_out_traces(self, write_out=None):
-        """Return all terminal derivations of this symbol in the format specified for LSTM training.
-
-        LSTM stands for long short-term memory, which is a variant of deep learning that
-        James and Adam Summerville are going to explore using as a way of mapping
-        arbitrary player inputs to symbolic traces in an Expressionist grammar, which
-        would allow us to attribute dialogue moves, etc., to the arbitrary player inputs.
-
-        The format we have settled on for LSTM training expresses traces for terminal derivations, e.g.,
-        greet{greeting|word{`Hi~}^` ~^interlocutor|first|name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
-        for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
-        """
-        if VERBOSE > 0:
-            print "\tProducing traces for nonterminal symbol '{symbol}'".format(symbol=self)
-        # Probabilistically sample production rules
-        sampled_production_rules = self._probabilistically_sample_production_rules()
-        # If False is passed for the write_out argument, the derivation traces produced here
-        # pertain to a symbol that is not top-level, which means that the traces will not be written
-        # out (but rather will end up as substrings of the traces for actual terminal derivations,
-        # which *will* be written out)
-        if not write_out:
-            sampled_derivation_traces = []
-            for rule in sampled_production_rules:
-                sampled_derivation_traces += (
-                    rule.produce_and_write_out_traces(write_out=None)
-                )
-            return sampled_derivation_traces
-        else:
-            for rule in sampled_production_rules:
-                rule.produce_and_write_out_traces(write_out=write_out)
-
-    def produce_and_write_out_terminal_derivations(self, write_out=False):
-        """Exhaustively produce all terminal derivations of this symbol for use as part of the LSTM training data."""
-        if VERBOSE > 0:
-            print "\tProducing derivations for nonterminal symbol '{symbol}'".format(symbol=self)
-        # Probabilistically sample production rules
-        sampled_production_rules = self._probabilistically_sample_production_rules()
-        # If False passed for the 'write_out' argument, the derivations produced here
-        # pertain to a symbol that is not top-level, which means that the derivations will not be
-        # written out (but rather will end up as substrings of actual terminal derivations that
-        # *will* be written out)
-        if not write_out:
-            sampled_terminal_derivations = []
-            for rule in sampled_production_rules:
-                sampled_terminal_derivations += rule.produce_and_write_out_terminal_derivations(write_out=None)
-            return sampled_terminal_derivations
-        else:
-            for rule in sampled_production_rules:
-                rule.produce_and_write_out_terminal_derivations(write_out=write_out)
-
-    def _probabilistically_sample_production_rules(self):
+    def probabilistically_expand(self, write_out=False, produce_trace=False):
         """Probabilistically sample production rules by which this symbol may be expanded."""
-        # Probabilistically sample a subset of terminal production rules (rules that yield a single
-        # string, since these constitute our degree of freedom in sampling), and likewise with semiterminal
-        # rules, meaning rules who expand to a symbol that has terminal rules; first collect all
-        # rules that are not either terminal or semiterminal
-        sampled_production_rules = [
-            rule for rule in self.production_rules if not rule.terminal and not rule.semiterminal
-            ]
-        # Now, using the sampling rate specified at the top of this file, determine how many terminal
-        # production rules we'll sample right now
-        terminal_rules = [rule for rule in self.production_rules if rule.terminal]
-        number_of_terminal_rules_to_sample = int(round(TERMINAL_RULE_SAMPLING_RATE * len(terminal_rules)))
-        number_of_terminal_rules_to_sample = max(1, number_of_terminal_rules_to_sample)  # Sample at least one rule
-        # Probabilistically sort the production rules
-        probabilistically_sorted_production_rules = (
-            self.training_data_writer.probabilistically_sort_production_rules(rules=terminal_rules)
+        # Probabilistically select a production rule
+        probabilistically_selected_rule = self._probabilistically_select_a_production_rule(self.production_rules)
+        # Use the current exploration boost to update the application likelihoods for the
+        # production rules that were *not* selected
+        for rule in self.production_rules:
+            if rule is not probabilistically_selected_rule:
+                rule.application_likelihood += self.exploration_boost
+        # Decay the exploration boost
+        self.exploration_boost *= EXPLORATION_BOOST_DECAY_RATE
+        # Expand this symbol using the selected production rule
+        if produce_trace:
+            return probabilistically_selected_rule.produce_and_write_out_a_trace(write_out=write_out)
+        else:
+            return probabilistically_selected_rule.produce_and_write_out_a_derivation(write_out=write_out)
+
+    @staticmethod
+    def _probabilistically_select_a_production_rule(rules):
+        """Select a production rule probabilistically, given their application likelihoods."""
+        # Determine the individual probabilities of each production rule, given the rules'
+        # application likelihoods
+        individual_probabilities = {}
+        sum_of_all_application_rates = float(sum(rule.application_likelihood for rule in rules))
+        for rule in rules:
+            probability = rule.application_likelihood / sum_of_all_application_rates
+            individual_probabilities[rule] = probability
+        # Use those individual probabilities to associate each production rule with a specific
+        # probability range, such that generating a random value between 0.0 and 1.0 will fall
+        # into one and only one production rule's probability range
+        probability_ranges = {}
+        current_bound = 0.0
+        for rule in rules:
+            probability = individual_probabilities[rule]
+            probability_range_for_this_rule = (current_bound, current_bound + probability)
+            probability_ranges[rule] = probability_range_for_this_rule
+            current_bound += probability
+        # Make sure the last bound indeed extends to 1.0 (necessary because of
+        # float rounding issues)
+        last_rule_to_have_a_range_attributed = rules[-1]
+        probability_ranges[last_rule_to_have_a_range_attributed] = (
+            probability_ranges[last_rule_to_have_a_range_attributed][0], 1.0
         )
-        # Sample the first N rules in this probabilistically sorted list, where
-        # N = number_of_rules_to_sample
-        sampled_production_rules += probabilistically_sorted_production_rules[:number_of_terminal_rules_to_sample]
-        # Now, determine how many *semiterminal* production rules we'll sample right now (again using
-        # a sampling rate specified at the top of this file)
-        semiterminal_rules = [rule for rule in self.production_rules if rule.semiterminal]
-        number_of_semiterminal_rules_to_sample = int(round(SEMITERMINAL_RULE_SAMPLING_RATE * len(semiterminal_rules)))
-        number_of_semiterminal_rules_to_sample = max(1, number_of_semiterminal_rules_to_sample)
-        # Probabilistically sort the production rules
-        probabilistically_sorted_production_rules = (
-            self.training_data_writer.probabilistically_sort_production_rules(rules=semiterminal_rules)
+        # Now probabilistically select a rule
+        x = random.random()
+        probabilistically_selected_rule = next(
+            rule for rule in rules if probability_ranges[rule][0] <= x <= probability_ranges[rule][1]
         )
-        # Sample the first N rules in this probabilistically sorted list, where
-        # N = number_of_rules_to_sample
-        sampled_production_rules += probabilistically_sorted_production_rules[:number_of_semiterminal_rules_to_sample]
-        return sampled_production_rules
+        return probabilistically_selected_rule
 
 
 class ProductionRule(object):
@@ -486,6 +384,12 @@ class ProductionRule(object):
         # since there's no product() built-in function in Python that works like sum() does, we
         # have to use this ugly reduce thing
         self.total_generable_derivations = None
+        # Prepare an application likelihood, which is the likelihood that this production rule will
+        # be applied at any given decision point (in which it is a candidate) during the process;
+        # specifically, we start with the rule's application and then alter this according to the
+        # exploration boost and its associated decay rate (specified as global variables at the top
+        # of this file)
+        self.application_likelihood = application_rate
 
     def __str__(self):
         """Return string representation."""
@@ -501,8 +405,8 @@ class ProductionRule(object):
             )
         return self.total_generable_derivations
 
-    def produce_and_write_out_traces(self, write_out=False):
-        """Return all terminal derivations yielded by this rule in the format specified for LSTM training.
+    def produce_and_write_out_a_trace(self, write_out=False):
+        """Write out a derivation trace in the format specified for LSTM training.
 
         LSTM stands for long short-term memory, which is a variant of deep learning that
         James and Adam Summerville are going to explore using as a way of mapping
@@ -513,66 +417,45 @@ class ProductionRule(object):
         greet{greeting|word{`Hi~}^` ~^interlocutor|first|name{`[speaker.belief(interlocutor, 'first name')]~}^`.~}
         for the terminal derivation "Hi, [speaker.belief(interlocutor, 'first name')]."
         """
-        if VERBOSE == 2:
-            print "\tProducing traces for production rule {rule_name}".format(rule_name=self)
-        # Assemble the Cartesian product of all terminal derivations for all symbols in
-        # this rule body; because nonterminal symbols are represented as a raw unicode string, we
-        # can't call the same method for each symbol, so we just append the syntax for demarcating
-        # them in the LSTM training-data format that we have devised; if omit_derivation_snippets ==
-        # True, then we don't even include the terminal symbols
-        cartesian_product_of_all_symbols_in_this_rule_body = itertools.product(*[
-            symbol.produce_and_write_out_traces() for symbol in self.body if type(symbol) is not unicode
-        ])
-        if VERBOSE == 2:
-            print "\tDone producing traces for production rule {rule_name}".format(rule_name=self)
+        terminally_expanded_symbols_in_this_rule_body = []
+        for symbol in self.body:
+            if type(symbol) == unicode:  # Terminal symbol (no need to expand)
+                terminally_expanded_symbols_in_this_rule_body.append(symbol)
+            else:  # Nonterminal symbol that we must probabilistically expand
+                terminal_expansion_of_that_symbol = symbol.probabilistically_expand(produce_trace=True)
+                terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
+        # Return the expansion yielded by this rule, which is simply the concatenation of
+        # the expansions of the symbols in its body
+        expansion_yielded_by_this_rule = "{head}{{{partial_trace}}}".format(
+            head='|'.join(self.head.tag.split()),
+            partial_trace='^'.join(terminally_expanded_symbols_in_this_rule_body)
+        )
         # Now concatenate these and prepend them with syntax indicating which nonterminal symbol
         # is the head of this rule; this will produce derivation traces in the format we want them in
         if not write_out:
-            return (
-                "{head}{{{partial_trace}}}".format(
-                    head='|'.join(self.head.tag.split()),
-                    partial_trace='^'.join(cartesian_product)
-                ) for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body
-            )
+            return expansion_yielded_by_this_rule
         else:
-            if VERBOSE == 2:
-                print "\tWriting out traces for production rule {rule_name}".format(rule_name=self)
-            for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
-                self.training_data_writer.out_file.write(
-                    "{}\n".format(
-                        "{head}{{{partial_trace}}}".format(
-                            head='|'.join(self.head.tag.split()),
-                            partial_trace='^'.join(cartesian_product)
-                        )
-                    )
-                )
-                self.training_data_writer.out_file.flush()
+            self.training_data_writer.out_file.write("{}\n".format(expansion_yielded_by_this_rule))
+            self.training_data_writer.out_file.flush()
 
-    def produce_and_write_out_terminal_derivations(self, write_out=None):
+    def produce_and_write_out_a_derivation(self, write_out=False):
         """Exhaustively produce all terminal derivations yielded by this rule for use as LSTM training data."""
-        if VERBOSE == 2:
-            print "\tProducing derivations for production rule {rule_name}".format(rule_name=self)
-        # Assemble the Cartesian product of all terminal derivations for all symbols in
-        # this rule body; because nonterminal symbols are represented as a raw unicode string, we
-        # can't call the same method for each symbol
-        cartesian_product_of_all_symbols_in_this_rule_body = itertools.product(*[
-            [symbol] if type(symbol) is unicode else symbol.produce_and_write_out_terminal_derivations()
-            for symbol in self.body
-        ])
-        if VERBOSE == 2:
-            print "\tDone producing derivations for production rule {rule_name}".format(rule_name=self)
-        # Now concatenate these to produce actual terminal derivations; if we aren't writing out
-        # these terminal derivations (signaled by whether True is passed for the 'write_out'
-        # argument), return a generator containing all of them
+        terminally_expanded_symbols_in_this_rule_body = []
+        for symbol in self.body:
+            if type(symbol) == unicode:  # Terminal symbol (no need to expand)
+                terminally_expanded_symbols_in_this_rule_body.append(symbol)
+            else:  # Nonterminal symbol that we must probabilistically expand
+                terminal_expansion_of_that_symbol = symbol.probabilistically_expand(produce_trace=False)
+                terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
+        # Return the expansion yielded by this rule, which is simply the concatenation of
+        # the expansions of the symbols in its body
+        expansion_yielded_by_this_rule = ''.join(terminally_expanded_symbols_in_this_rule_body)
+        # Now concatenate these and prepend them with syntax indicating which nonterminal symbol
+        # is the head of this rule; this will produce derivation traces in the format we want them in
         if not write_out:
-            return (
-                ''.join(cartesian_product) for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body
-            )
-        # Otherwise, let's write these out right now
-        for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
-            if VERBOSE == 2:
-                print "\tWriting out derivations for production rule {rule_name}".format(rule_name=self)
-            self.training_data_writer.out_file.write('{}\n'.format(''.join(cartesian_product)))
+            return expansion_yielded_by_this_rule
+        else:
+            self.training_data_writer.out_file.write("{}\n".format(expansion_yielded_by_this_rule))
             self.training_data_writer.out_file.flush()
 
 
