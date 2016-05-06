@@ -26,7 +26,8 @@ DERIVATIONS_OUT_FILENAME = 'PLAYER-INPUT_HAIR_DERIVATIONS_{current_date}'.format
 # To expand *all* top-level symbols to generate training data, use this line instead:
 TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = 'ALL'
 VERBOSE = 2  # Whether the process will display progress text (0=No, 1=Verbose, 2=Very Verbose)
-SAMPLING_RATE = 0.13  # Tuned to produce ~1GB-sized trace output file (the actual rate is not really interpretable)
+TERMINAL_RULE_SAMPLING_RATE = 0.001  # Rules that expand to terminal symbols (i.e., strings)
+SEMITERMINAL_RULE_SAMPLING_RATE = 0.001  # Rules who have a symbol who has a terminal rule
 RANDOM_SEED = 0
 
 
@@ -39,7 +40,7 @@ class TrainingDataWriter(object):
             path_to_json_grammar_specification=PATH_TO_JSON_GRAMMAR_SPECIFICATION
         )
         self._init_resolve_symbol_references_in_all_production_rule_bodies()
-        self._init_determine_which_production_rules_are_terminal()
+        self._init_determine_which_production_rules_are_terminal_or_semiterminal()
         # Set top-level symbols, i.e., the symbols that will be expanded to produce
         # the training data (this is specified above as a global variable)
         if TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM == 'ALL':
@@ -59,7 +60,7 @@ class TrainingDataWriter(object):
         # Determine the total number of terminal derivations generable by the top-level symbols of
         # our source grammar, which we can use to determine a sampling rate that will produce approximately
         # the desired number of terminal derivations (as specified by a global variable set above)
-        self.sampling_rate = SAMPLING_RATE
+        self.sampling_rate = TERMINAL_RULE_SAMPLING_RATE
         # Set the random seed, which will ensure that the sampled derivation traces match up exactly
         # with the sampled derivations themselves
         random.seed(RANDOM_SEED)
@@ -103,15 +104,24 @@ class TrainingDataWriter(object):
                 rule_body_with_resolved_symbol_references.append(symbol_reference)
             production_rule.body = rule_body_with_resolved_symbol_references
 
-    def _init_determine_which_production_rules_are_terminal(self):
-        """Determine which production rules are terminal, e.g., yield a single string.
+    def _init_determine_which_production_rules_are_terminal_or_semiterminal(self):
+        """Determine which production rules are terminal (yield a single string) or semiterminal (expand
+        to a symbol that has terminal rules).
 
         These rules crucially allow for tractable sampling of very large Expressionist grammars.
         """
+        # Check for terminal rules
         for symbol in self.nonterminal_symbols:
             for rule in symbol.production_rules:
                 if len(rule.body) == 1 and type(rule.body[0]) is unicode:
                     rule.terminal = True
+        # Check for semiterminal rules
+        for symbol in self.nonterminal_symbols:
+            for rule in symbol.production_rules:
+                if any(s for s in rule.body if type(s) is not unicode and any(
+                            r for r in s.production_rules if r.terminal)
+                       ):
+                    rule.semiterminal = True
 
     def write_out_pickled_symbol_and_token_serialization_dictionaries(self):
         """Write out pickled dictionaries that map all the nonterminal symbols and words appearing in this grammar
@@ -379,21 +389,8 @@ class NonterminalSymbol(object):
         """
         if VERBOSE > 0:
             print "\tProducing traces for nonterminal symbol '{symbol}'".format(symbol=self)
-        # Probabilistically sample a subset of terminal production rules (rules that yield a single string, since
-        # these constitute our degree of freedom in sampling), and append this to all nonterminal
-        # production rules
-        sampled_production_rules = [rule for rule in self.production_rules if not rule.terminal]
-        # Using the sampling rate specified at the top of this file, determine how many terminal
-        # production rules we'll sample right now
-        number_of_rules_to_sample = int(round(SAMPLING_RATE*len(self.production_rules)))
-        number_of_rules_to_sample = max(1, number_of_rules_to_sample)  # Make sure at least one rule will be sampled
-        # Probabilistically sort the production rules
-        probabilistically_sorted_production_rules = (
-            self.training_data_writer.probabilistically_sort_production_rules(rules=self.production_rules)
-        )
-        # Sample the first N rules in this probabilistically sorted list, where
-        # N = number_of_rules_to_sample
-        sampled_production_rules += probabilistically_sorted_production_rules[:number_of_rules_to_sample]
+        # Probabilistically sample production rules
+        sampled_production_rules = self._probabilistically_sample_production_rules()
         # If False is passed for the write_out argument, the derivation traces produced here
         # pertain to a symbol that is not top-level, which means that the traces will not be written
         # out (but rather will end up as substrings of the traces for actual terminal derivations,
@@ -413,29 +410,55 @@ class NonterminalSymbol(object):
         """Exhaustively produce all terminal derivations of this symbol for use as part of the LSTM training data."""
         if VERBOSE > 0:
             print "\tProducing derivations for nonterminal symbol '{symbol}'".format(symbol=self)
-        # Sample a subset of terminal production rules (rules that yield a single string, since
-        # these constitute our degree of freedom in sampling), and append this to all nonterminal
-        # production rules
-        production_rules_to_sample = []
-        for rule in self.production_rules:
-            if not rule.terminal:
-                production_rules_to_sample.append(rule)
-            elif random.random() < self.training_data_writer.sampling_rate:
-                production_rules_to_sample.append(rule)
-        if not production_rules_to_sample:  # Make sure we're sampling at least one production rule
-            production_rules_to_sample.append(self.production_rules[0])
+        # Probabilistically sample production rules
+        sampled_production_rules = self._probabilistically_sample_production_rules()
         # If False passed for the 'write_out' argument, the derivations produced here
         # pertain to a symbol that is not top-level, which means that the derivations will not be
         # written out (but rather will end up as substrings of actual terminal derivations that
         # *will* be written out)
         if not write_out:
             sampled_terminal_derivations = []
-            for rule in production_rules_to_sample:
+            for rule in sampled_production_rules:
                 sampled_terminal_derivations += rule.produce_and_write_out_terminal_derivations(write_out=None)
             return sampled_terminal_derivations
         else:
-            for rule in production_rules_to_sample:
+            for rule in sampled_production_rules:
                 rule.produce_and_write_out_terminal_derivations(write_out=write_out)
+
+    def _probabilistically_sample_production_rules(self):
+        """Probabilistically sample production rules by which this symbol may be expanded."""
+        # Probabilistically sample a subset of terminal production rules (rules that yield a single
+        # string, since these constitute our degree of freedom in sampling), and likewise with semiterminal
+        # rules, meaning rules who expand to a symbol that has terminal rules; first collect all
+        # rules that are not either terminal or semiterminal
+        sampled_production_rules = [
+            rule for rule in self.production_rules if not rule.terminal and not rule.semiterminal
+            ]
+        # Now, using the sampling rate specified at the top of this file, determine how many terminal
+        # production rules we'll sample right now
+        terminal_rules = [rule for rule in self.production_rules if rule.terminal]
+        number_of_terminal_rules_to_sample = int(round(TERMINAL_RULE_SAMPLING_RATE * len(terminal_rules)))
+        number_of_terminal_rules_to_sample = max(1, number_of_terminal_rules_to_sample)  # Sample at least one rule
+        # Probabilistically sort the production rules
+        probabilistically_sorted_production_rules = (
+            self.training_data_writer.probabilistically_sort_production_rules(rules=terminal_rules)
+        )
+        # Sample the first N rules in this probabilistically sorted list, where
+        # N = number_of_rules_to_sample
+        sampled_production_rules += probabilistically_sorted_production_rules[:number_of_terminal_rules_to_sample]
+        # Now, determine how many *semiterminal* production rules we'll sample right now (again using
+        # a sampling rate specified at the top of this file)
+        semiterminal_rules = [rule for rule in self.production_rules if rule.semiterminal]
+        number_of_semiterminal_rules_to_sample = int(round(SEMITERMINAL_RULE_SAMPLING_RATE * len(semiterminal_rules)))
+        number_of_semiterminal_rules_to_sample = max(1, number_of_semiterminal_rules_to_sample)
+        # Probabilistically sort the production rules
+        probabilistically_sorted_production_rules = (
+            self.training_data_writer.probabilistically_sort_production_rules(rules=semiterminal_rules)
+        )
+        # Sample the first N rules in this probabilistically sorted list, where
+        # N = number_of_rules_to_sample
+        sampled_production_rules += probabilistically_sorted_production_rules[:number_of_semiterminal_rules_to_sample]
+        return sampled_production_rules
 
 
 class ProductionRule(object):
@@ -450,7 +473,9 @@ class ProductionRule(object):
         self.training_data_writer = training_data_writer
         self.head = head
         self.body = None  # Gets set by TrainingDataWriter._init_resolve_symbol_references_in_a_rule_body()
-        self.terminal = False  # Gets set by TrainingDataWriter._init_determine_which_production_rules_are_terminal()
+        # These get set by TrainingDataWriter._init_determine_which_production_rules_are_terminal_or_semiterminal()
+        self.terminal = False
+        self.semiterminal = False
         self.body_specification = body_specification
         self.body_specification_str = ''.join(body_specification)
         # Application rates are attributed to rules in the Expressionist interface and, here,
@@ -498,6 +523,8 @@ class ProductionRule(object):
         cartesian_product_of_all_symbols_in_this_rule_body = itertools.product(*[
             symbol.produce_and_write_out_traces() for symbol in self.body if type(symbol) is not unicode
         ])
+        if VERBOSE == 2:
+            print "\tDone producing traces for production rule {rule_name}".format(rule_name=self)
         # Now concatenate these and prepend them with syntax indicating which nonterminal symbol
         # is the head of this rule; this will produce derivation traces in the format we want them in
         if not write_out:
@@ -508,6 +535,8 @@ class ProductionRule(object):
                 ) for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body
             )
         else:
+            if VERBOSE == 2:
+                print "\tWriting out traces for production rule {rule_name}".format(rule_name=self)
             for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
                 self.training_data_writer.out_file.write(
                     "{}\n".format(
@@ -530,6 +559,8 @@ class ProductionRule(object):
             [symbol] if type(symbol) is unicode else symbol.produce_and_write_out_terminal_derivations()
             for symbol in self.body
         ])
+        if VERBOSE == 2:
+            print "\tDone producing derivations for production rule {rule_name}".format(rule_name=self)
         # Now concatenate these to produce actual terminal derivations; if we aren't writing out
         # these terminal derivations (signaled by whether True is passed for the 'write_out'
         # argument), return a generator containing all of them
@@ -539,6 +570,8 @@ class ProductionRule(object):
             )
         # Otherwise, let's write these out right now
         for cartesian_product in cartesian_product_of_all_symbols_in_this_rule_body:
+            if VERBOSE == 2:
+                print "\tWriting out derivations for production rule {rule_name}".format(rule_name=self)
             self.training_data_writer.out_file.write('{}\n'.format(''.join(cartesian_product)))
             self.training_data_writer.out_file.flush()
 
@@ -546,4 +579,4 @@ class ProductionRule(object):
 if __name__ == "__main__":
     writer = TrainingDataWriter()
     # writer.write_out_pickled_symbol_and_token_serialization_dictionaries()
-    # writer.produce_lstm_training_data()
+    writer.produce_lstm_training_data()
