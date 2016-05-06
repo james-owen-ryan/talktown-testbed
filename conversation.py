@@ -256,7 +256,7 @@ class Conversation(Event):
             print "[A request has been made to Productionist to generate a line that will perform MOVE:{}]".format(
                 move_name
             )
-        return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
+        return self.productionist.target_markup(markup=move_name, state=self)
 
     def produce_batch_of_candidate_lines_that_perform_a_targeted_move(self, move_name):
         """Return a batch of four candidate lines that perform a dialogue move targeted by
@@ -265,7 +265,7 @@ class Conversation(Event):
         candidate_lines = []
         number_of_generation_attempts = 0
         while len(candidate_lines) < 4 and number_of_generation_attempts < 99:
-            next_candidate_line = self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
+            next_candidate_line = self.productionist.target_markup(markup=move_name, state=self)
             if (
                     next_candidate_line and
                     not any(l for l in candidate_lines if l.raw_line == next_candidate_line.raw_line)
@@ -471,7 +471,7 @@ class Turn(object):
 
     def _realize_line_of_dialogue(self):
         """Display the line of dialogue on screen."""
-        self.realization = self.line_of_dialogue.realize(conversation_turn=self)
+        self.realization = self.line_of_dialogue.realize(state=self.conversation)
         # If the speaker is an NPC, print their line out; if it's a player, the line
         # has already been made visible from the player typing it
         if not self.speaker.player:
