@@ -907,7 +907,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
 
     def __init__(self, tag, top_level, raw_markup, production_rules_specification):
         """Initialize a DialogueNonterminalSymbol object."""
-        self.nonterminal_symbols = set()  # A set of (symbol, weight) tuples
+        self.symbols = set()  # A set of (symbol, weight) tuples
         self.effects = set()
         super(ThoughtNonterminalSymbol, self).__init__(tag, top_level, raw_markup, production_rules_specification)
 
@@ -921,7 +921,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
                     symbol, weight = tag.split()
                     weight = float(weight)
                     symbol_weight_tuple = (symbol, weight)
-                    self.nonterminal_symbols.add(symbol_weight_tuple)
+                    self.symbols.add(symbol_weight_tuple)
                 elif tagset == "effect":
                     self.effects.add(tag)
                 else:
@@ -930,7 +930,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
     @property
     def all_markup(self):
         """Return all the annotations attributed to this symbol."""
-        all_markup = self.preconditions | self.nonterminal_symbols | self.effects
+        all_markup = self.preconditions | self.symbols | self.effects
         return list(all_markup)
 
     def currently_violated(self, thinker):
