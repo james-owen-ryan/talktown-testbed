@@ -1942,7 +1942,7 @@ class Person(object):
             if person in self.relationships or self.known_relation_to_me(person):
                 salience_of_subject += 1.0
             implant_will_happen = False
-            if person in self.immediate_family or person in self.friends or person is self:
+            if person in self.immediate_family | self.friends | self.neighbors | self.coworkers | {self}:
                 implant_will_happen = True
             elif salience_of_subject > 0.0:
                 salience_of_subject = max(1.01, salience_of_subject)  # Needed to make the next line work
