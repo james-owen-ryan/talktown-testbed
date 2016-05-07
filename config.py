@@ -17,7 +17,7 @@ class Config(object):
         self.chance_of_a_coal_mine_at_time_of_town_founding = 0.2
         self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
-        self.date_gameplay_begins = (1979, 8, 19)
+        self.date_gameplay_begins = (1851, 8, 19)
         self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
         self.year_worldgen_begins = self.date_worldgen_begins[0]
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
@@ -2484,8 +2484,16 @@ class Config(object):
             ##  CONVERSATION  ##
             ####################
 
-        self.path_to_json_grammar_specification = (
-            './content/talktown.json'
+        self.path_to_dialogue_nlg_json_grammar_specification = (
+            # './content/talktown.json'
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlg.json'
+        )
+        self.path_to_dialogue_nlu_json_grammar_specification = (
+            # './content/talktown.json'
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlu.json'
+        )
+        self.path_to_thought_nlg_json_grammar_specification = (
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-thoughts.json'
         )
         # Frame definitions
         self.conversational_frames = {
