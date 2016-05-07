@@ -863,7 +863,7 @@ class ThoughtGenerator(Productionist):
 
     def target_association(self, thinker, weighted_symbol_set):
         """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
-        stimuli = set(weighted_symbol_set)
+        stimuli = set([symbol_and_weight[0] for symbol_and_weight in weighted_symbol_set])
         # Attempt to produce a raw derivation with the desired markup, i.e., one that has
         # a good matching between the symbols associated with it and the stimuli (i.e., the
         # weighted_symbol_set)
