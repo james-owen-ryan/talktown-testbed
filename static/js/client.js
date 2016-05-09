@@ -1,3 +1,5 @@
+//TODO: fix window arith
+
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -22,18 +24,21 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
+	var width = (x*(window.innerWidth/9))-(window.innerWidth/9/2);
+	var height = (y*(window.innerHeight/9))-(window.innerHeight/9/2);
+
 	if (value == "House") { 
-		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
-									y*(window.innerHeight/9)-((window.innerHeight/9)/2),
-									'house');
+		var sprite = game.add.sprite(width,
+									 height,
+									 'house');
 	} else if (value == "NoneType") {
-		var sprite = game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
-									y*(window.innerHeight/9)-((window.innerHeight/9)/2),
-									'empty_lot');
+		var sprite = game.add.sprite(width,
+									 height,
+									 'empty_lot');
 	} else {
-		game.add.sprite(x*(window.innerWidth/9)-((window.innerWidth/9)/2),
-						y*(window.innerHeight/9)-((window.innerHeight/9)/2),
-						'business');
+		var sprite = game.add.sprite(width,
+ 									 height,
+									 'business');
 	}
 }
 
@@ -51,6 +56,7 @@ function parseBlocksJson(json){
 	var startY;
 	var endX;
 	var endY;
+	var dir;
 	var dict = JSON.parse(json);
 	for(var start in dict) {
 		var end = dict[start];
@@ -63,13 +69,29 @@ function parseBlocksJson(json){
 		coordinates = end.split(', ');
 		endX = coordinates[0];
 		endY = coordinates[1];
+		if (startX == endX) { dir = "v"; }
+		else if (startY == endY) { dir = "h"; }
+		renderBlocks(startX, startY, endX, endY, dir);
 	}
 
 }
 
-
-//render json lots function
-//render streets function
+function renderBlocks(startX, startY, endX, endY, dir){
+	var width = (startX*(window.innerWidth/9))-(window.innerWidth/9/2);
+	var height = (startY*(window.innerHeight/9))-(window.innerHeight/9/2);
+	console.log("dir is "+dir);	
+	if (dir == "v") {
+		while (height <= (endY*(window.innerHeight/9))-(window.innerHeight/9/2)){
+			var sprite = game.add.sprite(width, height,'v');
+			height += 1;
+		}
+	} else if (dir == "h") {
+		while (width <= (endX*(window.innerHeight/9))-(window.innerHeight/9/2)){
+			var sprite = game.add.sprite(width, height, 'h');
+			width += 1;
+		}
+	}
+}
 
 
 
@@ -89,6 +111,10 @@ function preload() {
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
+	game.load.image('v', 'Sprites/v.png');
+	game.load.image('h', 'Sprites/h.png');
+
+
 	preloadReady = true;
 
 }
