@@ -199,7 +199,7 @@ class Productionist(object):
         # First check for whether this symbol's preconditions are satisfied and whether
         # the use of its expansion in a line of dialogue would cause a conversational
         # violation to be incurred
-        if symbol.currently_violated(conversation=state):
+        if symbol.currently_violated(state=state):
             return None
         candidate_production_rules = symbol.forward_chaining_rules
         # If one of these production rules is already known to be on a chain, we can just pick
@@ -257,7 +257,7 @@ class Productionist(object):
         if symbol.top_level:
             # Make sure this symbol doesn't violate any preconditions, since this hasn't
             # been checked yet during backward chaining
-            if not symbol.currently_violated(conversation=state):
+            if not symbol.currently_violated(state=state):
                 if self.debug:
                     print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
@@ -723,21 +723,21 @@ class DialogueNonterminalSymbol(NonterminalSymbol):
         )
         return list(all_markup)
 
-    def currently_violated(self, conversation):
+    def currently_violated(self, state):
         """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
         precondition or would incur a conversational violation if deployed at this time."""
-        if conversation.speaker.player:  # Let the player say anything currently, i.e., return False
+        if state.speaker.player:  # Let the player say anything currently, i.e., return False
             return False
-        if (self.conversational_violations(conversation=conversation) or
-                not self.preconditions_satisfied(conversation=conversation)):
-            if conversation.productionist.debug:
+        if (self.conversational_violations(conversation=state) or
+                not self.preconditions_satisfied(conversation=state)):
+            if state.productionist.debug:
                 # Express why the symbol is currently violated
                 print "Symbol {} is currently violated".format(self)
-                conversational_violations = self.conversational_violations(conversation=conversation)
+                conversational_violations = self.conversational_violations(conversation=state)
                 for conversational_violation in conversational_violations:
                     print '\t{}'.format(conversational_violation)
                 unsatisfied_preconditions = (
-                    p for p in self.preconditions if p.evaluate(state=conversation) is False
+                    p for p in self.preconditions if p.evaluate(state=state) is False
                 )
                 for unsatisfied_precondition in unsatisfied_preconditions:
                     print '\t{}'.format(unsatisfied_precondition)
@@ -859,16 +859,20 @@ class ThoughtGenerator(Productionist):
 
     def __init__(self, game):
         """Initialize a ThoughtGenerator object."""
+        self.stimuli = set()  # Set as needed by target_association()
         super(ThoughtGenerator, self).__init__(game)
 
     def target_association(self, thinker, weighted_symbol_set):
         """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
-        stimuli = set([symbol_and_weight[0] for symbol_and_weight in weighted_symbol_set])
+        self.stimuli = weighted_symbol_set
+        markup_lambda_expression = (
+            lambda symbol: {pair[0] for pair in symbol.symbols} & {pair[0] for pair in self.stimuli}
+        )
         # Attempt to produce a raw derivation with the desired markup, i.e., one that has
         # a good matching between the symbols associated with it and the stimuli (i.e., the
         # weighted_symbol_set)
         raw_derivation_built_by_targeting_this_symbol = self.target_markup(
-            markup_lambda_expression=lambda symbol: set(symbol.symbols) & stimuli,
+            markup_lambda_expression=markup_lambda_expression,
             symbol_sort_evaluation_function=self.evaluate_nonterminal_symbol,
             state=thinker,
             rule_evaluation_metric=self.evaluate_production_rule
@@ -883,22 +887,21 @@ class ThoughtGenerator(Productionist):
         self._reset_temporary_attributes()
         return thought_object
 
-    @staticmethod
-    def evaluate_nonterminal_symbol(nonterminal_symbol, stimuli):
+    def evaluate_nonterminal_symbol(self, nonterminal_symbol):
         """Score a nonterminal symbol for the strength of its association with a set of stimuli."""
         score = 0
-        for stimulus, stimulus_weight in stimuli:
+        for stimulus, stimulus_weight in self.stimuli:
             for symbol, symbol_weight in nonterminal_symbol.symbols:
                 if stimulus == symbol:
                     score += stimulus_weight * symbol_weight
         return score
 
-    def evaluate_production_rule(self, rule, stimuli):
+    def evaluate_production_rule(self, rule):
         """Score a production rule for the strength of its association with a set of stimuli."""
         # Start off with the rule's application rate
         score = rule.application_rate
         # Boost the score for the associational strength of the symbols in its body
-        score += sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s, stimuli) for s in rule.body)
+        score += sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
         return score
 
 
@@ -933,10 +936,10 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
         all_markup = self.preconditions | self.symbols | self.effects
         return list(all_markup)
 
-    def currently_violated(self, thinker):
+    def currently_violated(self, state):
         """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
         precondition or would incur a conversational violation if deployed at this time."""
-        return self.preconditions_satisfied(thinker=thinker)
+        return not self.preconditions_satisfied(thinker=state)
 
     def preconditions_satisfied(self, thinker):
         """Return whether this line's preconditions are satisfied given the state of the world."""
@@ -956,10 +959,11 @@ class Thought(object):
         self.symbols = set()  # A set of (symbol, weight) tuples
         self.effects = set()
         self._init_inherit_markup()
+        # Realize the thought and deliver to the
 
     def __str__(self):
         """Return string representation."""
-        return "A thought ({raw_template}), produced in the mind of {owner}".format(
+        return 'A thought ("{raw_template}"), produced in the mind of {owner}'.format(
             raw_template=self.raw_template,
             owner=self.thinker.name,
             # date=self.thinker.game.date[0].lower() + self.thinker.game.date[1:]
@@ -997,9 +1001,9 @@ class Thought(object):
             self.symbols |= set(symbol.symbols)
             self.effects |= symbol.effects
 
-    def realize(self, thinker):
+    def realize(self):
         """Return a filled-in template according to the world state during the current conversation turn."""
-        return ''.join(element.realize(thinker=thinker) for element in self.template)
+        return ''.join(element.realize(state=self.thinker) for element in self.template)
 
     def execute(self):
         """Register the effects of this thought on its thinker."""
