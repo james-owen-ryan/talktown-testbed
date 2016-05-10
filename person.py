@@ -669,6 +669,18 @@ class Person(object):
             prominent_features=self.basic_appearance_description,
             deceased=' (deceased)' if self.dead else ''
         )
+    
+    @property
+    def boss(self):
+        """Return this person's boss, if they have one, else None."""
+        if not self.occupation:
+            return None
+        elif self.occupation.company.owner and self.occupation.company.owner is self:
+            return None
+        elif self.occupation.company.owner:
+            return self.occupation.company.owner.person
+        else:
+            return None
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
@@ -2262,6 +2274,22 @@ class Person(object):
 
     def connection_to_person(self):
         pass
+
+    def likes(self, person):
+        """Return whether this person likes the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge > config.charge_threshold_for_liking_someone
+
+    def dislikes(self, person):
+        """Return whether this person dislikes the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge < config.charge_threshold_for_disliking_someone
 
 
 class PersonExNihilo(Person):
