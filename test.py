@@ -38,3 +38,4 @@ print "\n{random_character}'s mental models:\n".format(
 )
 for person_home_or_business in p.mind.mental_models:
     print p.mind.mental_models[person_home_or_business]
+g = game
