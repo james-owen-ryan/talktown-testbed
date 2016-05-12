@@ -636,6 +636,8 @@ class DialogueGenerator(Productionist):
             symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_terminal_derivation,
             conversation=conversation
         )
+        # Reset any temporary attributes that we utilized during this generation procedure
+        self._reset_temporary_attributes()
         return line_of_dialogue_object
 
     def target_topics_of_conversation(self, conversation, topic_names):
@@ -827,7 +829,7 @@ class LineOfDialogue(object):
 
     def realize(self, conversation):
         """Return a filled-in template according to the world state during the current conversation turn."""
-        return ''.join(element.realize(thinker=conversation) for element in self.template)
+        return ''.join(element.realize(state=conversation) for element in self.template)
 
 
 class ConditionalViolation(Condition):
