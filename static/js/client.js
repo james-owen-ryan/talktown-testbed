@@ -24,8 +24,8 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
-	var width = (x*(window.innerWidth/9))-(window.innerWidth/9/2);
-	var height = (y*(window.innerHeight/9))-(window.innerHeight/9/2);
+	var width = ((x-0.625)*(window.innerWidth/8))-(window.innerWidth/8/2);
+	var height = ((y-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2);
 
 	if (value == "House") { 
 		var sprite = game.add.sprite(width,
@@ -78,19 +78,19 @@ function parseBlocksJson(json){
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
-	var width = (startX*(window.innerWidth/9))-(window.innerWidth/9/2);
-	var height = (startY*(window.innerHeight/9))-(window.innerHeight/9/2);
+	var width = ((startX-0.625)*(window.innerWidth/8))-(window.innerWidth/8/2);
+	var height = ((startY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2);
 	console.log("dir is "+dir);	
 	if (dir == "v") {
-		while (height <= (endY*(window.innerHeight/9))-(window.innerHeight/9/2)){
+		while (height <= ((endY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2)){
 			var sprite = game.add.sprite(width, height,'v');
-			sprite.scale.setTo((window.innerWidth/33)/sprite.width,1);
+			sprite.scale.setTo((window.innerWidth/45)/sprite.width,1);
 			height += 1;
 		}
 	} else if (dir == "h") {
-		while (width <= (endX*(window.innerHeight/9))-(window.innerHeight/9/2)){
+		while (width <= ((endX-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2)){
 			var sprite = game.add.sprite(width, height, 'h');
-			sprite.scale.setTo(1,(window.innerHeight/33)/sprite.height);
+			sprite.scale.setTo(1,(window.innerHeight/45)/sprite.height);
 			width += 1;
 		}
 	}
