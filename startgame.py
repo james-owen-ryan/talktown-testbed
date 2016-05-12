@@ -82,7 +82,7 @@ def game_start():
         lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
     global json_lot_type_dict
     json_lot_type_dict = json.dumps(lot_type_dict)
-
+    print "lot coordinates %s"%json_lot_type_dict
     # ****************************************************#
     #  Blocks json dictionary (start coords, end coords)  #
     # ****************************************************#

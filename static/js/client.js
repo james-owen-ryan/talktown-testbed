@@ -40,6 +40,7 @@ function renderLots(x, y, value){
  									 height,
 									 'business');
 	}
+	sprite.scale.setTo((window.innerWidth/33)/sprite.width,(window.innerHeight/33)/sprite.height);
 }
 
 
@@ -83,14 +84,17 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	if (dir == "v") {
 		while (height <= (endY*(window.innerHeight/9))-(window.innerHeight/9/2)){
 			var sprite = game.add.sprite(width, height,'v');
+			sprite.scale.setTo((window.innerWidth/33)/sprite.width,1);
 			height += 1;
 		}
 	} else if (dir == "h") {
 		while (width <= (endX*(window.innerHeight/9))-(window.innerHeight/9/2)){
 			var sprite = game.add.sprite(width, height, 'h');
+			sprite.scale.setTo(1,(window.innerHeight/33)/sprite.height);
 			width += 1;
 		}
 	}
+
 }
 
 
