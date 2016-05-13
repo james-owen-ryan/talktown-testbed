@@ -126,7 +126,7 @@ class Productionist(object):
         satisficing_symbols = [s for s in self.nonterminal_symbols if markup_lambda_expression(s)]
         # Sort this list according to the given symbol_sort_lambda_expression (for
         # dialogue, this will be simply produce a random sort)
-        satisficing_symbols.sort(key=lambda ss: symbol_sort_evaluation_function(ss))
+        satisficing_symbols.sort(key=lambda ss: symbol_sort_evaluation_function(ss), reverse=True)
         # Iteratively attempt to successfully build a line of dialogue by backward-chaining
         # and forward-chaining from this symbol
         for symbol in satisficing_symbols:
@@ -864,9 +864,9 @@ class ThoughtGenerator(Productionist):
         self.stimuli = set()  # Set as needed by target_association()
         super(ThoughtGenerator, self).__init__(game)
 
-    def target_association(self, thinker, weighted_symbol_set):
+    def target_association(self, thinker, stimuli):
         """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
-        self.stimuli = weighted_symbol_set
+        self.stimuli = stimuli
         markup_lambda_expression = (
             lambda symbol: {pair[0] for pair in symbol.symbols} & {pair[0] for pair in self.stimuli}
         )
@@ -891,11 +891,18 @@ class ThoughtGenerator(Productionist):
 
     def evaluate_nonterminal_symbol(self, nonterminal_symbol):
         """Score a nonterminal symbol for the strength of its association with a set of stimuli."""
+        config = self.game.config
         score = 0
-        for stimulus, stimulus_weight in self.stimuli:
-            for symbol, symbol_weight in nonterminal_symbol.symbols:
-                if stimulus == symbol:
-                    score += stimulus_weight * symbol_weight
+        for stimulus_signal, stimulus_signal_weight in self.stimuli:
+            for symbol_signal, symbol_signal_weight in nonterminal_symbol.symbols:
+                # Reward for matching signals (commensurately to the absolute value of the
+                # difference between their weights)
+                if stimulus_signal == symbol_signal:
+                    score -= abs(stimulus_signal_weight-symbol_signal_weight)
+                # Penalize for all stimulus signals that are not associated with the
+                # nonterminal symbol
+                if not any(s for s in nonterminal_symbol.symbols if stimulus_signal == s[0]):
+                    score -= config.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol
         return score
 
     def evaluate_production_rule(self, rule):
@@ -958,7 +965,7 @@ class Thought(object):
         self.nonterminal_symbols = symbols_expanded_to_produce_this_template
         self.template = self._init_prepare_template(raw_line=raw_template)
         # Prepare annotation attributes
-        self.symbols = set()  # A set of (symbol, weight) tuples
+        self.signals = set()  # A set of (signal, weight) tuples
         self.effects = set()
         self._init_inherit_markup()
         # Realize the thought and deliver to the
@@ -1000,7 +1007,7 @@ class Thought(object):
     def _init_inherit_markup(self):
         """Inherit the mark-up of all the symbols that were expanded in the construction of this dialogue template."""
         for symbol in self.nonterminal_symbols:
-            self.symbols |= set(symbol.symbols)
+            self.signals |= set(symbol.symbols)
             self.effects |= symbol.effects
 
     def realize(self):
@@ -1009,5 +1016,11 @@ class Thought(object):
 
     def execute(self):
         """Register the effects of this thought on its thinker."""
+        # Update signal saliences in the thinker's mind (this makes signals associated
+        # with this thought more salient to the thinker merely by virtue of the thinker
+        # having thunk this thought)
+        for signal, weight in self.signals:
+            self.thinker.mind.signal_saliences[signal] += weight
+        # Execute the literal effects associated with this thought
         for effect in self.effects:
             effect(thinker=self.thinker)()
