@@ -2608,26 +2608,7 @@ class Config(object):
                 ##  THOUGHTS   ##
                 #################
 
-        # JOR this block is currently ripped straight out of National Pastime, but it's
-        # a good starting point
-        self.thought_prototype_specifications = sorted([
-            # Each prototype is specified as a tuple (tag, likelihood, preconditions, effects)
-            (
-                "retiring from baseball", 0.0,  # TODO TUNE THIS LIKELIHOOD
-                # Preconditions
-                (
-                    lambda person: person.player and person.player.career.team,
-                ),
-                # Effects
-                (
-                    lambda person: person.player.career.consider_retirement,
-                )
-            ),
-            # Sort these by likelihood, so that the most frequent thought prototypes are considered
-            # first; this just makes sense, but it will also serve computational efficiency, because
-            # we'll be rolling far less random numbers when we iterate in this order
-        ], key=lambda prototype: prototype[1], reverse=True
-        )
+        self.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol = -1
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
