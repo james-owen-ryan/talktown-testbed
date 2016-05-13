@@ -80,18 +80,30 @@ function parseBlocksJson(json){
 function renderBlocks(startX, startY, endX, endY, dir){
 	var width = ((startX-0.625)*(window.innerWidth/8))-(window.innerWidth/8/2);
 	var height = ((startY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2);
+	var cont;
 	console.log("dir is "+dir);	
 	if (dir == "v") {
-		while (height <= ((endY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2)){
-			var sprite = game.add.sprite(width, height,'v');
-			sprite.scale.setTo((window.innerWidth/45)/sprite.width,1);
+		cont = true;
+		while (cont){
+			var sprite = game.add.sprite(width, height, 'block');
+			var scaleW = (window.innerWidth/33)/sprite.width;			
+			sprite.scale.setTo(scaleW,1);
 			height += 1;
+			if (height > ((endY-scaleW)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
+				cont = false;
+			}
+			
 		}
 	} else if (dir == "h") {
-		while (width <= ((endX-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2)){
-			var sprite = game.add.sprite(width, height, 'h');
-			sprite.scale.setTo(1,(window.innerHeight/45)/sprite.height);
+		cont = true;
+		while (cont){
+			var sprite = game.add.sprite(width, height, 'block');
+			var scaleH = (window.innerHeight/33)/sprite.height;
+			sprite.scale.setTo(1,scaleH);
 			width += 1;
+			if (width > ((endX-scaleH)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
+				cont = false;
+			}
 		}
 	}
 
@@ -117,6 +129,7 @@ function preload() {
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('v', 'Sprites/v.png');
 	game.load.image('h', 'Sprites/h.png');
+	game.load.image('block', 'Sprites/block.png');
 
 
 	preloadReady = true;
