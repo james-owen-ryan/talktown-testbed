@@ -17,6 +17,8 @@ class Mind(object):
         # by, e.g., someone for whom this person is trying to fill in missing belief facets
         self.preoccupation = None
         self.thoughts = []
+        self.signal_saliences = {}
+        self.salient_action_selector = None
 
     def __str__(self):
         """Return string representation."""
@@ -74,30 +76,43 @@ class Mind(object):
         most_salient_match = max(all_matches, key=lambda match: self.person.salience_of_other_people.get(match, 0.0))
         return most_salient_match
 
+    def associate(self, artifact):
+        """Associate the signals emitting from an artifact with salient notions in this mind to
+        produce a set of stimuli.
+
+        @param artifact: The artifact that this person has encountered.
+        """
+        stimuli = {}
+        # Start with the artifact signals
+        for signal, weight in artifact.signals:
+            stimuli[signal] += weight
+        # Update for this person's evolved signal saliences
+        for signal, weight in self.signal_saliences:
+            stimuli[signal] += weight
+        # Update for this person's action selectors' signal saliences
+        for signal, weight in self.salient_action_selector.signals:
+            stimuli[signal] += weight
+        return stimuli
+
+    def elicit_thought(self, stimuli):
+        """Elicit a thought from a set of stimuli"""
+        # Request a thought from Productionist by association with the stimuli
+        elicited_thought = (
+            self.person.game.thought_productionist.target_association(thinker=self.person, stimuli=stimuli)
+        )
+        return elicited_thought
+
     # def wander(self):
     #     """Let this mind wander."""
     #     a_thought = Thoughts.a_thought(mind=self)
     #     if a_thought:
     #         self.think(a_thought)
-    #
-    # def entertain(self, thought_prototype, evoked_by=None, provoked_by=None):
-    #     """Entertain a thought evoked or provoked by something or someone else.
-    #
-    #     @param thought_prototype: The pattern for this thought.
-    #     @param evoked_by: The thing or person that/who evoked this thought, if any.
-    #     @param provoked_by: The person who explicitly provoked this thought, if any.
-    #     """
-    #     rendered_thought = Thoughts.an_elicited_thought(
-    #         mind=self, thought_prototype=thought_prototype,
-    #         evoked_by=evoked_by, provoked_by=provoked_by
-    #     )
-    #     if rendered_thought:
-    #         self.think(rendered_thought)
-    #
-    # def think(self, thought):
-    #     """Think a thought."""
-    #     self.thoughts.append(thought)
-    #     thought.execute()
+
+    def think(self, thought):
+        """Think a thought."""
+        self.thoughts.append(thought)
+        thought.realize()
+        thought.execute()
 
 
 class Feature(float):
