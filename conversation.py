@@ -230,7 +230,8 @@ class Conversation(Event):
                 next_speaker = max(self.participants, key=lambda p: p.personality.extroversion)
             else:
                 next_speaker = min(self.participants, key=lambda p: p.personality.extroversion)
-            print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
+            if self.debug:
+                print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
         return next_speaker, targeted_obligation, targeted_goal
 
     def understand_player_utterance(self, player_utterance):
