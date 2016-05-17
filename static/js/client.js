@@ -40,6 +40,7 @@ function renderLots(x, y, value){
  									 height,
 									 'business');
 	}
+
 	sprite.scale.setTo((window.innerWidth/33)/sprite.width,(window.innerHeight/33)/sprite.height);
 }
 
@@ -78,32 +79,25 @@ function parseBlocksJson(json){
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
-	var width = ((startX-0.625)*(window.innerWidth/8))-(window.innerWidth/8/2);
-	var height = ((startY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2);
+	var x = ((startX-0.625)*(window.innerWidth/8))-(window.innerWidth/8/2);
+	var y = ((startY-0.625)*(window.innerHeight/8))-(window.innerHeight/8/2);
 	var cont;
 	console.log("dir is "+dir);	
-	if (dir == "v") {
-		cont = true;
-		while (cont){
-			var sprite = game.add.sprite(width, height, 'block');
-			var scaleH = (window.innerHeight/33)/sprite.height;
-			var scaleW = (window.innerWidth/33)/sprite.width;			
-			sprite.scale.setTo(scaleW,scaleH);
-			height += 1;
-			if (height > ((endY-scaleW)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
+	cont = true;
+	while (cont){
+		var sprite = game.add.sprite(x, y, 'block');
+		var scaleX = (window.innerWidth/33)/sprite.width;	
+		var scaleY = (window.innerHeight/33)/sprite.height;
+		sprite.scale.setTo(scaleX,scaleY);
+	
+		if (dir == "v") {
+			y += 1;
+			if (y > ((endY-scaleX)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
 				cont = false;
 			}
-			
-		}
-	} else if (dir == "h") {
-		cont = true;
-		while (cont){
-			var sprite = game.add.sprite(width, height, 'block');
-			var scaleH = (window.innerHeight/33)/sprite.height;
-			var scaleW = (window.innerWidth/33)/sprite.width;	
-			sprite.scale.setTo(scaleW,scaleH);
-			width += 1;
-			if (width > ((endX-scaleH)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
+		} else if (dir == "h") {
+			x += 1;
+			if (x > ((endX-scaleY)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
 				cont = false;
 			}
 		}
@@ -122,15 +116,9 @@ function renderBlocks(startX, startY, endX, endY, dir){
 
 function preload() {
 	
-	//game.load.baseURL = 'http://examples.phaser.io/assets/';
-	//game.load.crossOrigin = 'anonymous';
-	//game.load.image('empty_lot', 'sprites/phaser-dude.png');
-
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
-	game.load.image('v', 'Sprites/v.png');
-	game.load.image('h', 'Sprites/h.png');
 	game.load.image('block', 'Sprites/block.png');
 
 
