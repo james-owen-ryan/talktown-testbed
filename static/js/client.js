@@ -86,8 +86,9 @@ function renderBlocks(startX, startY, endX, endY, dir){
 		cont = true;
 		while (cont){
 			var sprite = game.add.sprite(width, height, 'block');
+			var scaleH = (window.innerHeight/33)/sprite.height;
 			var scaleW = (window.innerWidth/33)/sprite.width;			
-			sprite.scale.setTo(scaleW,1);
+			sprite.scale.setTo(scaleW,scaleH);
 			height += 1;
 			if (height > ((endY-scaleW)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
 				cont = false;
@@ -99,7 +100,8 @@ function renderBlocks(startX, startY, endX, endY, dir){
 		while (cont){
 			var sprite = game.add.sprite(width, height, 'block');
 			var scaleH = (window.innerHeight/33)/sprite.height;
-			sprite.scale.setTo(1,scaleH);
+			var scaleW = (window.innerWidth/33)/sprite.width;	
+			sprite.scale.setTo(scaleW,scaleH);
 			width += 1;
 			if (width > ((endX-scaleH)*(window.innerHeight/8))-(window.innerHeight/8/2)) {
 				cont = false;
