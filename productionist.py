@@ -124,6 +124,9 @@ class Productionist(object):
         # Collect all satisficing symbols, i.e., ones have the desired markup and
         # thus satisfy the  given markup_lambda_expression
         satisficing_symbols = [s for s in self.nonterminal_symbols if markup_lambda_expression(s)]
+        # Randomly shuffle these symbols, which will mean that ties in the sort we are about
+        # to do will be ordered differently across different generation instances
+        random.shuffle(satisficing_symbols)
         # Sort this list according to the given symbol_sort_lambda_expression (for
         # dialogue, this will be simply produce a random sort)
         satisficing_symbols.sort(key=lambda ss: symbol_sort_evaluation_function(ss), reverse=True)
@@ -861,14 +864,25 @@ class ThoughtGenerator(Productionist):
 
     def __init__(self, game):
         """Initialize a ThoughtGenerator object."""
-        self.stimuli = set()  # Set as needed by target_association()
+        self.stimuli = {}  # Set as needed by target_association()
         super(ThoughtGenerator, self).__init__(game)
 
     def target_association(self, thinker, stimuli):
         """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
+        if self.debug:
+            print "Attempting to elicit thought given the stimuli: {stimuli}...".format(
+                stimuli=', '.join("{signal} ({strength})".format(
+                    signal=signal, strength=strength) for signal, strength in stimuli.iteritems()
+                )
+            )
+        print "Attempting to elicit thought given the stimuli: {stimuli}".format(
+            stimuli=', '.join("{signal} ({strength})".format(
+                signal=signal, strength=strength) for signal, strength in stimuli.iteritems()
+                              )
+        )
         self.stimuli = stimuli
         markup_lambda_expression = (
-            lambda symbol: {pair[0] for pair in symbol.symbols} & {pair[0] for pair in self.stimuli}
+            lambda symbol: {pair[0] for pair in symbol.signals} & {pair[0] for pair in self.stimuli.iteritems()}
         )
         # Attempt to produce a raw derivation with the desired markup, i.e., one that has
         # a good matching between the symbols associated with it and the stimuli (i.e., the
@@ -893,15 +907,15 @@ class ThoughtGenerator(Productionist):
         """Score a nonterminal symbol for the strength of its association with a set of stimuli."""
         config = self.game.config
         score = 0
-        for stimulus_signal, stimulus_signal_weight in self.stimuli:
-            for symbol_signal, symbol_signal_weight in nonterminal_symbol.symbols:
+        for stimulus_signal, stimulus_signal_weight in self.stimuli.iteritems():
+            for symbol_signal, symbol_signal_weight in nonterminal_symbol.signals:
                 # Reward for matching signals (commensurately to the absolute value of the
                 # difference between their weights)
                 if stimulus_signal == symbol_signal:
                     score -= abs(stimulus_signal_weight-symbol_signal_weight)
                 # Penalize for all stimulus signals that are not associated with the
                 # nonterminal symbol (but not vice versa)
-                if not any(s for s in nonterminal_symbol.symbols if stimulus_signal == s[0]):
+                if not any(s for s in nonterminal_symbol.signals if stimulus_signal == s[0]):
                     score -= config.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol
         return score
 
@@ -1008,8 +1022,7 @@ class Thought(object):
         config = self.thinker.game.config
         for symbol in self.nonterminal_symbols:
             self.effects |= symbol.effects
-            for signal_and_strength in symbol.signals:
-                signal, strength = signal_and_strength.split()
+            for signal, strength in symbol.signals:
                 signal = self.evaluate_runtime_signal(signal=signal)
                 if signal not in self.signals:
                     self.signals[signal] = 0
@@ -1032,11 +1045,10 @@ class Thought(object):
 
     def execute(self):
         """Register the effects of this thought on its thinker."""
-        # Update signal saliences in the thinker's mind (this makes signals associated
-        # with this thought more salient to the thinker merely by virtue of the thinker
+        # Update voltages of the signal receptors in the thinker's mind (this makes signals
+        # associated with this thought more salient to the thinker merely by virtue of the thinker
         # having thunk this thought)
-        for signal, weight in self.signals.iteritems():
-            self.thinker.mind.signal_saliences[signal] += weight
+        self.thinker.mind.update_receptor_voltages_and_synapse_weights(voltage_updates=self.signals)
         # Execute the literal effects associated with this thought
         for effect in self.effects:
             effect(thinker=self.thinker)()

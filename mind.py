@@ -18,6 +18,7 @@ class Mind(object):
         self.thoughts = []
         self.salient_action_selector = None
         self.receptors = {}  # Dictionary mapping signal names to corresponding signal receptors
+        self.synapses = {}
 
     def __str__(self):
         """Return string representation."""
@@ -92,12 +93,12 @@ class Mind(object):
         for signal, _ in artifact.signals:
             if signal in self.receptors:
                 stimuli[signal] += self.receptors[signal].voltage
-            # Generate an action potential, which will propagate activity across this
-            # receptors synapses to potentially bring in more stimuli
-            for activated_signal, activated_signal_voltage in self.receptors[signal].activate():
-                if activated_signal not in stimuli:
-                    stimuli[activated_signal] = 0
-                stimuli[activated_signal] += activated_signal_voltage
+                # Generate an action potential, which will propagate activity across this
+                # receptors synapses to potentially bring in more stimuli
+                for activated_signal, activated_signal_voltage in self.receptors[signal].activate():
+                    if activated_signal not in stimuli:
+                        stimuli[activated_signal] = 0
+                    stimuli[activated_signal] += activated_signal_voltage
         return stimuli
 
     def elicit_thought(self, stimuli):
@@ -122,18 +123,24 @@ class Mind(object):
 
     def update_receptor_voltages_and_synapse_weights(self, voltage_updates):
         """Update the voltages of this person's signal receptors."""
-        for signal, voltage_update in voltage_updates:
-            # Update voltages
+        # Add receptors for all the new signals that have elicited a thought in
+        # this mind for the first time
+        for signal in voltage_updates:
             if signal not in self.receptors:
                 self.receptors[signal] = Receptor(mind=self, signal=signal)
-            self.receptors[signal] += voltage_update
+        # Now, update receptor voltages and instantiate new synapses (or strengthen
+        # existing ones)
+        for signal, voltage_update in voltage_updates.iteritems():
+            # Update voltages
+            self.receptors[signal].voltage += voltage_update
             # Instantiate/strengthen synapses (i.e., increase their weights) for all pairs of signals
-            for other_signal, _ in voltage_updates:
+            for other_signal in voltage_updates:
                 if other_signal != signal:
                     # If no such synapse yet exists, instantiate one
-                    if other_signal not in self.receptors[signal].synapses:
-                        Synapse((signal, other_signal))
-                    self.receptors[signal].synapses[other_signal].strengthen()
+                    if tuple(sorted([signal, other_signal])) not in self.synapses:
+                        receptors = (self.receptors[signal], self.receptors[other_signal])
+                        Synapse(receptors=receptors)
+                    self.receptors[signal].synapses[self.receptors[other_signal]].strengthen()
 
 
 class Feature(float):
@@ -182,10 +189,20 @@ class Receptor(object):
 
     def __init__(self, mind, signal):
         """Initialize a Receptor object."""
+
+        print "A RECEPTOR FOR '{}' SIGNALS HAS FORMED IN THE MIND OF {}".format(signal, mind.person.name)
+
         self.mind = mind
         self.signal = signal  # ID of the signal (e.g., 'job' or a character object's ID in memory)
         self.voltage = 0
         self.synapses = {}
+
+    def __str__(self):
+        """Return string representation."""
+        return "A receptor for '{signal_name}' signals in the mind of {owner}".format(
+            signal_name=self.signal,
+            owner=self.mind.person.name
+        )
 
     def activate(self):
         """Activate this signal receptor to generate an action potential that will propagate across its synapses.
@@ -194,11 +211,12 @@ class Receptor(object):
         with the associated synapse weights.
         """
         activations = set()
-        for synapse in self.synapses:
+        for synapse in self.synapses.values():
             other_receptor = synapse.other_receptor(receptor=self)
             activated_signal = other_receptor.signal
             activated_signal_weight = synapse.config.action_potential_signal_weight_multiplier * synapse.weight
             activations.add((activated_signal, activated_signal_weight))
+        return activations
 
 
 class Synapse(object):
@@ -206,6 +224,11 @@ class Synapse(object):
 
     def __init__(self, receptors):
         """Initialize a Synapse object."""
+
+        print "A SYNAPSE FOR '{}' and '{}' SIGNALS HAS FORMED IN THE MIND OF {}".format(
+            receptors[0].signal, receptors[1].signal, receptors[0].mind.person.name
+        )
+
         # We'll need to make a lot of calls to config -- amortize this by setting it
         # as an attribute on this class
         self.config = list(receptors)[0].mind.person.game.config
@@ -215,6 +238,17 @@ class Synapse(object):
         receptor, other_receptor = receptors
         receptor.synapses[other_receptor] = self
         other_receptor.synapses[receptor] = self
+        # Update the .synapses attribute of the mind
+        mind_synapses_key = tuple(sorted([receptors[0].signal, receptors[1].signal]))
+        self.receptors[0].mind.synapses[mind_synapses_key] = self
+
+    def __str__(self):
+        """Return string representation."""
+        return "A synapse between receptors for '{receptor1}' and '{receptor2}' signals in the mind of {owner}".format(
+            receptor1=self.receptors[0].signal,
+            receptor2=self.receptors[1].signal,
+            owner=self.receptors[0].mind.person.name
+        )
 
     def other_receptor(self, receptor):
         """Return the receptor incident on this synpase that is not the given receptor."""
