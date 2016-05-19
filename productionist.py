@@ -900,7 +900,7 @@ class ThoughtGenerator(Productionist):
                 if stimulus_signal == symbol_signal:
                     score -= abs(stimulus_signal_weight-symbol_signal_weight)
                 # Penalize for all stimulus signals that are not associated with the
-                # nonterminal symbol
+                # nonterminal symbol (but not vice versa)
                 if not any(s for s in nonterminal_symbol.symbols if stimulus_signal == s[0]):
                     score -= config.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol
         return score
@@ -919,7 +919,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
 
     def __init__(self, tag, top_level, raw_markup, production_rules_specification):
         """Initialize a DialogueNonterminalSymbol object."""
-        self.symbols = set()  # A set of (symbol, weight) tuples
+        self.signals = []  # A list of (signal, weight) tuples
         self.effects = set()
         super(ThoughtNonterminalSymbol, self).__init__(tag, top_level, raw_markup, production_rules_specification)
 
@@ -929,11 +929,11 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
             for tag in raw_markup[tagset]:
                 if tagset == "precondition":
                     self.preconditions.add(Precondition(tag=tag))
-                elif tagset == "symbol":
+                elif tagset == "signal":
                     symbol, weight = tag.split()
                     weight = float(weight)
                     symbol_weight_tuple = (symbol, weight)
-                    self.symbols.add(symbol_weight_tuple)
+                    self.signals.append(symbol_weight_tuple)
                 elif tagset == "effect":
                     self.effects.add(tag)
                 else:
@@ -942,7 +942,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
     @property
     def all_markup(self):
         """Return all the annotations attributed to this symbol."""
-        all_markup = self.preconditions | self.symbols | self.effects
+        all_markup = self.preconditions | self.signals | self.effects
         return list(all_markup)
 
     def currently_violated(self, state):
@@ -965,10 +965,9 @@ class Thought(object):
         self.nonterminal_symbols = symbols_expanded_to_produce_this_template
         self.template = self._init_prepare_template(raw_line=raw_template)
         # Prepare annotation attributes
-        self.signals = set()  # A set of (signal, weight) tuples
+        self.signals = {}  # A dictionary mapping signal names to their strengths
         self.effects = set()
         self._init_inherit_markup()
-        # Realize the thought and deliver to the
 
     def __str__(self):
         """Return string representation."""
@@ -1006,9 +1005,26 @@ class Thought(object):
 
     def _init_inherit_markup(self):
         """Inherit the mark-up of all the symbols that were expanded in the construction of this dialogue template."""
+        config = self.thinker.game.config
         for symbol in self.nonterminal_symbols:
-            self.signals |= set(symbol.symbols)
             self.effects |= symbol.effects
+            for signal_and_strength in symbol.signals:
+                signal, strength = signal_and_strength.split()
+                signal = self.evaluate_runtime_signal(signal=signal)
+                if signal not in self.signals:
+                    self.signals[signal] = 0
+                self.signals[signal] += config.strength_increase_to_thought_signal_for_nonterminal_signal_annotation
+            # JOR 05-17-16: THIS WAS THE ORIGINAL FINAL LINE FOR ACTUALLY TOTALLING UP THE SIGNAL SCORES
+            # BY TALLYING THE ANNOTATIONS FOR EACH NONTERMINAL SYMBOL EXPANDED TO PRODUCE THIS THOUGHT
+            #     self.signals[signal] += strength
+
+    def evaluate_runtime_signal(self, signal):
+        """Evaluate a runtime signal, e.g., '[id(thinker.boss)]'."""
+        thinker = self.thinker  # Needed to evaluate the signal, if it's truly a runtime signal
+        try:
+            return str(eval(signal))
+        except NameError:  # It's not a runtime variable, but just a regular string, so return that
+            return signal
 
     def realize(self):
         """Return a filled-in template according to the world state during the current conversation turn."""
@@ -1019,7 +1035,7 @@ class Thought(object):
         # Update signal saliences in the thinker's mind (this makes signals associated
         # with this thought more salient to the thinker merely by virtue of the thinker
         # having thunk this thought)
-        for signal, weight in self.signals:
+        for signal, weight in self.signals.iteritems():
             self.thinker.mind.signal_saliences[signal] += weight
         # Execute the literal effects associated with this thought
         for effect in self.effects:

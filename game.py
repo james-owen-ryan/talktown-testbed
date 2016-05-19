@@ -3,7 +3,6 @@ from productionist import DialogueGenerator, ThoughtGenerator
 from impressionist import Impressionist
 from person import *
 from business import *
-# from thought import Thoughts, ThoughtPrototype
 from city import *
 import datetime
 
@@ -19,11 +18,6 @@ class Game(object):
         self.dialogue_productionist = DialogueGenerator(game=self)  # NLG module
         self.thought_productionist = ThoughtGenerator(game=self)  # NLG module
         self.impressionist = Impressionist(game=self)  # NLU module
-        # # Prepare Thoughts class
-        # Thoughts.thought_prototypes = [
-        #     ThoughtPrototype(tag=spec[0], likelihood=spec[1], preconditions=spec[2], effects=spec[3])
-        #     for spec in self.config.thought_prototype_specifications
-        # ]
         # This gets incremented each time a new person is born/generated,
         # which affords a persistent ID for each person
         self.current_person_id = 0

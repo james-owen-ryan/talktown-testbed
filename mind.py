@@ -1,5 +1,4 @@
 import random
-# from thought import Thoughts
 
 
 class Mind(object):
@@ -17,8 +16,8 @@ class Mind(object):
         # by, e.g., someone for whom this person is trying to fill in missing belief facets
         self.preoccupation = None
         self.thoughts = []
-        self.signal_saliences = {}
         self.salient_action_selector = None
+        self.receptors = {}  # Dictionary mapping signal names to corresponding signal receptors
 
     def __str__(self):
         """Return string representation."""
@@ -78,20 +77,27 @@ class Mind(object):
 
     def associate(self, artifact):
         """Associate the signals emitting from an artifact with salient notions in this mind to
-        produce a set of stimuli.
+        produce a set of stimuli, which may elicit a thought.
 
         @param artifact: The artifact that this person has encountered.
         """
         stimuli = {}
         # Start with the artifact signals
-        for signal, weight in artifact.signals:
-            stimuli[signal] += weight
-        # Update for this person's evolved signal saliences
-        for signal, weight in self.signal_saliences:
-            stimuli[signal] += weight
-        # Update for this person's action selectors' signal saliences
-        for signal, weight in self.salient_action_selector.signals:
-            stimuli[signal] += weight
+        for signal, strength in artifact.signals:
+            if signal not in stimuli:
+                stimuli[signal] = 0
+            stimuli[signal] += strength
+        # Boost the signals according to any corresponding signal receptors that
+        # this person may have
+        for signal, _ in artifact.signals:
+            if signal in self.receptors:
+                stimuli[signal] += self.receptors[signal].voltage
+            # Generate an action potential, which will propagate activity across this
+            # receptors synapses to potentially bring in more stimuli
+            for activated_signal, activated_signal_voltage in self.receptors[signal].activate():
+                if activated_signal not in stimuli:
+                    stimuli[activated_signal] = 0
+                stimuli[activated_signal] += activated_signal_voltage
         return stimuli
 
     def elicit_thought(self, stimuli):
@@ -114,6 +120,21 @@ class Mind(object):
         thought.realize()
         thought.execute()
 
+    def update_receptor_voltages_and_synapse_weights(self, voltage_updates):
+        """Update the voltages of this person's signal receptors."""
+        for signal, voltage_update in voltage_updates:
+            # Update voltages
+            if signal not in self.receptors:
+                self.receptors[signal] = Receptor(mind=self, signal=signal)
+            self.receptors[signal] += voltage_update
+            # Instantiate/strengthen synapses (i.e., increase their weights) for all pairs of signals
+            for other_signal, _ in voltage_updates:
+                if other_signal != signal:
+                    # If no such synapse yet exists, instantiate one
+                    if other_signal not in self.receptors[signal].synapses:
+                        Synapse((signal, other_signal))
+                    self.receptors[signal].synapses[other_signal].strengthen()
+
 
 class Feature(float):
     """A feature representing a person's memory capability and metadata about that."""
@@ -132,3 +153,74 @@ class Feature(float):
     def __new__(cls, value, inherited_from):
         """Do float stuff."""
         return float.__new__(cls, value)
+
+
+class Receptor(object):
+    """A signal receptor in the mind of a person.
+
+    Signal receptors correspond to individual environmental signals (e.g.,
+    'work' or 'birth' or a particular person or bar in the world) and have
+    a voltage. Higher receptor voltages make their associated signals more
+    salient to an individual, which makes the person more likely to have
+    thoughts that are elicited by the signal.
+
+    Receptors connect to one another via synapses, which are pathways that
+    connect receptors and facilitate activity propagation across them. When
+    a person has a thought that is associated with multiple signals, synapses
+    connecting the corresponding receptors are constructed pairwise. The more
+    often signal receptors are activated simultaneously (by a thought associated
+    with both signals being thunk), the stronger the weight of the synapse
+    becomes.
+
+    When a signal in the world activates its receptor in the mind of a person,
+    an action potential will be generated in that receptor, which will propagate
+    across its synapses to in turn activate connected receptors. This makes
+    signals become associated in the mind of characters to the degree that
+    they have co-occurred in their cumulative subjective experience of the
+    world. (This is a loose operationalization of long-term potentiation.)
+    """
+
+    def __init__(self, mind, signal):
+        """Initialize a Receptor object."""
+        self.mind = mind
+        self.signal = signal  # ID of the signal (e.g., 'job' or a character object's ID in memory)
+        self.voltage = 0
+        self.synapses = {}
+
+    def activate(self):
+        """Activate this signal receptor to generate an action potential that will propagate across its synapses.
+
+        Specifically, this method returns a set of receptors activated by the action potential, along
+        with the associated synapse weights.
+        """
+        activations = set()
+        for synapse in self.synapses:
+            other_receptor = synapse.other_receptor(receptor=self)
+            activated_signal = other_receptor.signal
+            activated_signal_weight = synapse.config.action_potential_signal_weight_multiplier * synapse.weight
+            activations.add((activated_signal, activated_signal_weight))
+
+
+class Synapse(object):
+    """A synapse in the mind of a person that connects two signal receptors and has a weight."""
+
+    def __init__(self, receptors):
+        """Initialize a Synapse object."""
+        # We'll need to make a lot of calls to config -- amortize this by setting it
+        # as an attribute on this class
+        self.config = list(receptors)[0].mind.person.game.config
+        self.receptors = receptors
+        self.weight = self.config.signal_receptor_synapse_starting_weight
+        # Update the .synapses attribute of the receptors
+        receptor, other_receptor = receptors
+        receptor.synapses[other_receptor] = self
+        other_receptor.synapses[receptor] = self
+
+    def other_receptor(self, receptor):
+        """Return the receptor incident on this synpase that is not the given receptor."""
+        return self.receptors[0] if self.receptors[0] is not receptor else self.receptors[1]
+
+    def strengthen(self):
+        """Strengthen this synapse."""
+        self.weight += self.config.signal_receptor_synapse_weight_increase_increment
+
