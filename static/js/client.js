@@ -41,15 +41,11 @@ function renderLots(x, y, value){
  									 height,
 									 'business');
 	}
-	//var scaleX = (window.innerWidth/33)/sprite.width;	
-	//var scaleY = (window.innerHeight/33)/sprite.height;
 
-///*
 	var scaleX = (window.innerWidth/23)/sprite.width;	
 	var scaleY = (window.innerHeight/23)/sprite.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
-
 	if (posX.valueOf() == "25") {
 		sprite.anchor.x = 0.0;
 	} else if (posX.valueOf() == "75") {
@@ -61,7 +57,6 @@ function renderLots(x, y, value){
 	} else if (posY.valueOf() == "75") {
 		sprite.anchor.y = 0.3;
 	}
-	/**/
 	sprite.scale.setTo(scaleX,scaleY);
 
 }
