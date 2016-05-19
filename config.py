@@ -1414,14 +1414,14 @@ class Config(object):
             ],
             "eye color": [
                 ((0.0, 0.3), 'black'),
-                ((0.3, 0.5), 'brown'),
-                ((0.5, 0.65), 'blue'),
-                ((0.65, 0.8), 'green'),
-                ((0.8, 0.88), 'yellow'),
-                ((0.88, 0.96), 'gray'),
-                ((0.96, 0.98), 'red'),
-                ((0.98, 0.99), 'purple'),
-                ((0.99, 1.0), 'white'),
+                ((0.3, 0.6), 'brown'),
+                ((0.6, 0.8), 'blue'),
+                ((0.8, 0.95), 'green'),
+                ((0.95, 1.0), 'yellow'),
+                ((999, 999), 'gray'),
+                ((999, 999), 'red'),
+                ((999, 999), 'purple'),
+                ((999, 999), 'white'),
             ],
             "eye horizontal settedness": [
                 ((0.0, 0.3), 'narrow'),
@@ -2465,6 +2465,9 @@ class Config(object):
         # (whichever is appropriate, of course) object will get instantiated
         self.charge_threshold_friendship = 15.0
         self.charge_threshold_enmity = -15.0
+        # Thresholds for liking or disliking people
+        self.charge_threshold_for_liking_someone = 20
+        self.charge_threshold_for_disliking_someone = -3
 
             #################
             ##  ARTIFACTS  ##
@@ -2484,8 +2487,14 @@ class Config(object):
             ##  CONVERSATION  ##
             ####################
 
-        self.path_to_json_grammar_specification = (
-            './content/talktown.json'
+        self.path_to_dialogue_nlg_json_grammar_specification = (
+            './content/talktown-dialogue-nlg.json'
+        )
+        self.path_to_dialogue_nlu_json_grammar_specification = (
+            './content/talktown-dialogue-nlu.json'
+        )
+        self.path_to_thought_nlg_json_grammar_specification = (
+            './content/talktown-thoughts.json'
         )
         # Frame definitions
         self.conversational_frames = {
@@ -2599,26 +2608,7 @@ class Config(object):
                 ##  THOUGHTS   ##
                 #################
 
-        # JOR this block is currently ripped straight out of National Pastime, but it's
-        # a good starting point
-        self.thought_prototype_specifications = sorted([
-            # Each prototype is specified as a tuple (tag, likelihood, preconditions, effects)
-            (
-                "retiring from baseball", 0.0,  # TODO TUNE THIS LIKELIHOOD
-                # Preconditions
-                (
-                    lambda person: person.player and person.player.career.team,
-                ),
-                # Effects
-                (
-                    lambda person: person.player.career.consider_retirement,
-                )
-            ),
-            # Sort these by likelihood, so that the most frequent thought prototypes are considered
-            # first; this just makes sense, but it will also serve computational efficiency, because
-            # we'll be rolling far less random numbers when we iterate in this order
-        ], key=lambda prototype: prototype[1], reverse=True
-        )
+        self.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol = -1
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):

@@ -1,35 +1,39 @@
-import sys
 import json
-import itertools
 import random
 
 
 class Productionist(object):
-    """A production system for in-game dialogue generation.
+    """A production system for in-game natural language generation from an Expressionist grammar.
 
     Objects of this class operate over a probabilistic context-free generative grammar exported by
     Expressionist according to requests originating from a game system. As such, it can be thought of
     as an interface between the game engine and an Expressionist grammar.
+
+    Subclasses inherit the base functionality of this class, but instantiate their own nuances
+    pertaining to the specific generation tasks that they carry out (e.g., dialogue generation
+    vs. thought generation). Most often, these concerns will bear out in the specific mark-up
+    including in the Expressionist grammars that they operate over.
     """
 
     def __init__(self, game, debug=False):
         """Initialize a Productionist object."""
         self.game = game
         self.debug = debug
+        if self.__class__ is DialogueGenerator:
+            path_to_json_grammar_specification = game.config.path_to_dialogue_nlg_json_grammar_specification
+        else:
+            path_to_json_grammar_specification = game.config.path_to_thought_nlg_json_grammar_specification
         self.nonterminal_symbols = self._init_parse_json_grammar_specification(
-            path_to_json_grammar_specification=game.config.path_to_json_grammar_specification
+            path_to_json_grammar_specification=path_to_json_grammar_specification
         )
         self._init_resolve_symbol_references_in_all_production_rule_bodies()
         self._init_attribute_backward_chaining_and_forward_chaining_rules_to_symbols()
-        self.move_satisficers = self._init_structure_symbols_according_to_dialogue_moves_they_satisfice()
-        self.topic_satisficers = self._init_structure_symbols_according_to_topics_they_satisfice()
         # This method is used to collect all the nonterminal symbols that were expanded
-        # in the production of a complete dialogue template, which a LineOfDialogue object
-        # will need in order to inherit all the mark-up of these symbols
-        self.symbols_expanded_to_produce_the_dialogue_template = set()
+        # in the production of a terminal derivation, which reified LineOfDialogue and
+        # Thought objects will need in order to inherit all the mark-up of these symbols
+        self.symbols_expanded_to_produce_the_terminal_derivation = set()
 
-    @staticmethod
-    def _init_parse_json_grammar_specification(path_to_json_grammar_specification):
+    def _init_parse_json_grammar_specification(self, path_to_json_grammar_specification):
         """Parse a JSON grammar specification exported by Expressionist to instantiate symbols and rules."""
         # Parse the JSON specification to build a dictionary data structure
         symbol_objects = []
@@ -39,7 +43,10 @@ class Productionist(object):
             top_level = nonterminal_symbol_specification['deep']
             production_rules_specification = nonterminal_symbol_specification['rules']
             raw_markup = nonterminal_symbol_specification['markup']
-            symbol_object = NonterminalSymbol(
+            nonterminal_symbol_class_to_use = (
+                DialogueNonterminalSymbol if self.__class__ is DialogueGenerator else ThoughtNonterminalSymbol
+            )
+            symbol_object = nonterminal_symbol_class_to_use(
                 tag=tag, top_level=top_level, raw_markup=raw_markup,
                 production_rules_specification=production_rules_specification
             )
@@ -85,39 +92,10 @@ class Productionist(object):
         for rule in all_production_rules_in_the_grammar:
             rule.head.forward_chaining_rules.append(rule)
             for symbol in rule.body:
-                if type(symbol) is NonterminalSymbol:
+                if isinstance(symbol, NonterminalSymbol):
                     symbol.backward_chaining_rules.append(rule)
 
-    def _init_structure_symbols_according_to_dialogue_moves_they_satisfice(self):
-        """Return a dictionary mapping dialogue-move names to the symbols that satisfice them.
-
-        By 'satisficing' a dialogue move, I mean that if a symbol were to be expanded in the
-        construction of a line of dialogue, that line of dialogue could then be used to perform
-        that dialogue move upon being deployed in a conversation. I use the language of satisficing
-        because the act of dialogue construction here is a search task that targets either a dialogue
-        move or a topic to address, and especially because we are not employing any notion of which
-        symbols best perform which dialogue moves (i.e., a symbol simply performs or does not perform
-        a move).
-        """
-        move_satisficers = {}
-        for symbol in self.nonterminal_symbols:
-            for move_name in symbol.moves:
-                if move_name not in move_satisficers:
-                    move_satisficers[move_name] = set()
-                move_satisficers[move_name].add(symbol)
-        return move_satisficers
-
-    def _init_structure_symbols_according_to_topics_they_satisfice(self):
-        """Return a dictionary mapping topic names to the symbols that satisfice them."""
-        topic_satisficers = {}
-        for symbol in self.nonterminal_symbols:
-            for topic_name in symbol.topics_addressed:
-                if topic_name not in topic_satisficers:
-                    topic_satisficers[topic_name] = set()
-                topic_satisficers[topic_name].add(symbol)
-        return topic_satisficers
-
-    def target_dialogue_move(self, move_name, conversation):
+    def target_markup(self, markup_lambda_expression, symbol_sort_evaluation_function, state, rule_evaluation_metric):
         """Attempt to construct a line of dialogue that would perform the given dialogue move.
 
         This act of dialogue construction is rendered as a search task over the tree specified
@@ -130,73 +108,40 @@ class Productionist(object):
         but generally it will constrain this search procedure such that no symbol with
         unsatisfied preconditions (given the state of the conversation/world, which we have
         access to via the Conversation object's attributes) may be expanded at any point.
+
+        @param markup_lambda_expression: A lambda expression whose sole argument is a nonterminal symbol and
+                                         that returns True if the nonterminal symbol has the desired markup.
+        @param symbol_sort_evaluation_function: A lambda expression that can be used for the 'key' keyword argument
+                                              in the call to sort a list of viable nonterminal symbols (i.e., ones
+                                              that have the desired markup). This allows us to iterate over viable
+                                              symbols in order of appeal.
+        @param state: An object representing the state that symbol preconditions should be checked against in
+                      order to potentially expand the given symbol.
+        @param rule_evaluation_metric: A lambda expression that determines the probability of application associated
+                                        with each of a symbol's production rules; this allows us to probabilistically
+                                        target production rules when we're doing forward- and backward-chaining
         """
-        # Collect all symbols that satisfice this move (see above or ctrl+f for more explanation)
-        satisficing_symbols = list(self.move_satisficers[move_name])
-        # Randomly shuffle this list (to promote conversational variability)
-        random.shuffle(satisficing_symbols)
+        # Collect all satisficing symbols, i.e., ones have the desired markup and
+        # thus satisfy the  given markup_lambda_expression
+        satisficing_symbols = [s for s in self.nonterminal_symbols if markup_lambda_expression(s)]
+        # Sort this list according to the given symbol_sort_lambda_expression (for
+        # dialogue, this will be simply produce a random sort)
+        satisficing_symbols.sort(key=lambda ss: symbol_sort_evaluation_function(ss), reverse=True)
         # Iteratively attempt to successfully build a line of dialogue by backward-chaining
         # and forward-chaining from this symbol
         for symbol in satisficing_symbols:
-            raw_dialogue_template_built_by_targeting_this_symbol = self._target_symbol(
-                symbol=symbol, conversation=conversation
+            raw_derivation_built_by_targeting_this_symbol = self._target_symbol(
+                symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric
             )
-            if raw_dialogue_template_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
-                # Reify the template as a LineOfDialogue object and return that
-                line_of_dialogue_object = LineOfDialogue(
-                    raw_line=raw_dialogue_template_built_by_targeting_this_symbol,
-                    symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_dialogue_template,
-                    conversation=conversation
-                )
-                self._reset_temporary_attributes()
-                return line_of_dialogue_object
+            if raw_derivation_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
+                return raw_derivation_built_by_targeting_this_symbol
             self._reset_temporary_attributes()
         if self.debug:
-            print "Productionist could not generate a line of dialogue that performs the move {}".format(move_name)
-
-    def target_topics_of_conversation(self, topic_names, conversation):
-        """Attempt to construct a line of dialogue that would address the given topic.
-
-        This act of dialogue construction is rendered as a search task over the tree specified
-        by a grammar authored in Expressionist. Specifically, we target individual symbols that
-        are annotated as addressing the desired topic of conversation, attempting to successfully
-        terminally backward-chain (i.e., follow production rules *backward* until we reach a
-        top-level symbol) and successfully terminally forward-chain (i.e., follow production
-        rules *forward* until we reach an expansion containing no nonterminal symbols). The
-        notion of success here is articulated by the Conversation object that calls this method,
-        but generally it will constrain this search procedure such that no symbol with
-        unsatisfied preconditions (given the state of the conversation/world, which we have
-        access to via the Conversation object's attributes) may be expanded at any point.
-        """
-        # Collect all symbols that satisfice this move (see above or ctrl+f for more explanation)
-        satisficing_symbols = set()
-        for topic_name in topic_names:
-            satisficing_symbols |= self.topic_satisficers[topic_name]
-        satisficing_symbols = list(satisficing_symbols)
-        # Randomly shuffle this list (to promote conversational variability)
-        random.shuffle(satisficing_symbols)
-        # Iteratively attempt to successfully build a line of dialogue by backward-chaining
-        # and forward-chaining from this symbol
-        for symbol in satisficing_symbols:
-            raw_dialogue_template_built_by_targeting_this_symbol = self._target_symbol(
-                symbol=symbol, conversation=conversation
-            )
-            if raw_dialogue_template_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
-                # Reify the template as a LineOfDialogue object and return that
-                line_of_dialogue_object = LineOfDialogue(
-                    raw_line=raw_dialogue_template_built_by_targeting_this_symbol,
-                    symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_dialogue_template,
-                    conversation=conversation
-                )
-                self._reset_temporary_attributes()
-                return line_of_dialogue_object
-            self._reset_temporary_attributes()
-        if self.debug:
-            print "Productionist could not generate a line of dialogue that addresses the topics {}".format(
-                ' ,'.join(topic_name for topic_name in topic_names)
+            print "Productionist could not generate a derivation satisfying the expression {}".format(
+                markup_lambda_expression
             )
 
-    def _target_symbol(self, symbol, conversation):
+    def _target_symbol(self, symbol, state, rule_evaluation_metric):
         """Attempt to successfully terminally backward-chain and forward-chain from this symbol.
 
         If successful, this method will return a LineOfDialogue object, which is a templated
@@ -207,7 +152,8 @@ class Productionist(object):
             print "Targeting symbol {}...".format(symbol)
         # Attempt forward chaining first
         partial_raw_template_built_by_forward_chaining = self._forward_chain_from_symbol(
-            symbol=symbol, conversation=conversation, symbol_is_the_targeted_symbol=True
+            symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric,
+            symbol_is_the_targeted_symbol=True
         )
         if not partial_raw_template_built_by_forward_chaining:
             if self.debug:
@@ -227,18 +173,18 @@ class Productionist(object):
         else:
             if self.debug:
                 print "Now I will attempt to backward chain from the targeted symbol {}".format(symbol)
-            top_level_symbol_that_we_successfully_backward_chained_to = (
-                self._backward_chain_from_symbol(symbol=symbol, conversation=conversation)
+            top_level_symbol_that_we_successfully_backward_chained_to = self._backward_chain_from_symbol(
+                symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric
             )
             if not top_level_symbol_that_we_successfully_backward_chained_to:
                 return None
         complete_raw_template = self._retrace_backward_and_forward_chains_to_generate_a_complete_template(
             start_symbol=top_level_symbol_that_we_successfully_backward_chained_to,
-            conversation=conversation
+            state=state, rule_evaluation_metric=rule_evaluation_metric
         )
         return complete_raw_template
 
-    def _forward_chain_from_symbol(self, symbol, conversation, retracing_chains=False,
+    def _forward_chain_from_symbol(self, symbol, state, rule_evaluation_metric, retracing_chains=False,
                                    symbol_is_the_targeted_symbol=False):
         """Attempt to successfully terminally forward-chain from the given symbol, i.e.,
         attempt to terminally expand a symbol.
@@ -253,7 +199,7 @@ class Productionist(object):
         # First check for whether this symbol's preconditions are satisfied and whether
         # the use of its expansion in a line of dialogue would cause a conversational
         # violation to be incurred
-        if symbol.currently_violated(conversation=conversation):
+        if symbol.currently_violated(state=state):
             return None
         candidate_production_rules = symbol.forward_chaining_rules
         # If one of these production rules is already known to be on a chain, we can just pick
@@ -261,19 +207,21 @@ class Productionist(object):
         try:
             rule_on_our_chain = next(r for r in candidate_production_rules if r.viable)
             return self._target_production_rule(
-                rule=rule_on_our_chain, conversation=conversation, retracing_chains=retracing_chains
+                rule=rule_on_our_chain, state=state, rule_evaluation_metric=rule_evaluation_metric,
+                retracing_chains=retracing_chains
             )
         except StopIteration:
             pass
         # Sort the candidate production rules probabilistically by utilizing their application rates
-        candidate_production_rules = self._probabilistically_sort_production_rules(rules=candidate_production_rules)
+        candidate_production_rules = self._probabilistically_sort_production_rules(
+            rules=candidate_production_rules, rule_evaluation_metric=rule_evaluation_metric
+        )
         # Iterate over these rules, attempting to utilize them successfully; return
         # a template snippet if a rule may be utilized successfully
         for production_rule in candidate_production_rules:
-            terminal_expansion_yielded_by_firing_that_production_rule = (
-                self._target_production_rule(
-                    rule=production_rule, conversation=conversation, retracing_chains=retracing_chains
-                )
+            terminal_expansion_yielded_by_firing_that_production_rule = self._target_production_rule(
+                rule=production_rule, state=state, rule_evaluation_metric=rule_evaluation_metric,
+                retracing_chains=retracing_chains
             )
             if terminal_expansion_yielded_by_firing_that_production_rule:
                 # Save this successful terminal expansion of this symbol, in case we
@@ -296,7 +244,7 @@ class Productionist(object):
             print "Failed to forward chain from symbol {}".format(symbol)
         return None
 
-    def _backward_chain_from_symbol(self, symbol, conversation):
+    def _backward_chain_from_symbol(self, symbol, state, rule_evaluation_metric):
         """Attempt to successfully terminally backward-chain from the given symbol.
 
         If successful, this method will return a string constituting a partial dialogue
@@ -309,16 +257,20 @@ class Productionist(object):
         if symbol.top_level:
             # Make sure this symbol doesn't violate any preconditions, since this hasn't
             # been checked yet during backward chaining
-            if not symbol.currently_violated(conversation=conversation):
+            if not symbol.currently_violated(state=state):
                 if self.debug:
                     print "Reached top-level symbol {}, so backward chaining is done".format(symbol)
                 return symbol
         candidate_production_rules = symbol.backward_chaining_rules
         # Sort the candidate production rules probabilistically by utilizing their application rates
-        candidate_production_rules = self._probabilistically_sort_production_rules(rules=candidate_production_rules)
+        candidate_production_rules = self._probabilistically_sort_production_rules(
+            rules=candidate_production_rules, rule_evaluation_metric=rule_evaluation_metric
+        )
         for production_rule in candidate_production_rules:
             this_production_rule_successfully_fired = (
-                self._target_production_rule(rule=production_rule, conversation=conversation)
+                self._target_production_rule(
+                    rule=production_rule, state=state, rule_evaluation_metric=rule_evaluation_metric
+                )
             )
             if this_production_rule_successfully_fired:
                 production_rule.viable = True
@@ -326,7 +278,9 @@ class Productionist(object):
                 # is successful (by 'reconstruct our path', I mean fire all the production rules
                 # along our successful backward chain until we've generated a complete dialogue template)
                 top_level_symbol_we_successfully_chained_back_to = (
-                    self._backward_chain_from_symbol(production_rule.head, conversation=conversation)
+                    self._backward_chain_from_symbol(
+                        production_rule.head, state=state, rule_evaluation_metric=rule_evaluation_metric
+                    )
                 )
                 if top_level_symbol_we_successfully_chained_back_to:
                     if self.debug:
@@ -336,20 +290,23 @@ class Productionist(object):
             print "Failed to backward chain from symbol {}".format(symbol)
         return None
 
-    def _retrace_backward_and_forward_chains_to_generate_a_complete_template(self, start_symbol, conversation):
+    def _retrace_backward_and_forward_chains_to_generate_a_complete_template(self, start_symbol, state,
+                                                                             rule_evaluation_metric):
         """Retrace successfully terminal backward and forward chains to generate a complete dialogue template.
 
         In this method, we traverse the production-rule chains that we have already successfully
         discovered to generate a complete line of dialogue (and to accumulate all the mark-up that
         it will inherit from the symbols that are expanded along these chains).
         """
-        self.symbols_expanded_to_produce_the_dialogue_template = {start_symbol}
+        self.symbols_expanded_to_produce_the_terminal_derivation = {start_symbol}
         if self.debug:
             print "Retraversing now from top-level symbol {}".format(start_symbol)
         first_breadcrumb = next(rule for rule in start_symbol.production_rules if rule.viable)
-        return self._target_production_rule(rule=first_breadcrumb, conversation=conversation, retracing_chains=True)
+        return self._target_production_rule(
+            rule=first_breadcrumb, state=state, retracing_chains=True, rule_evaluation_metric=rule_evaluation_metric
+        )
 
-    def _target_production_rule(self, rule, conversation, retracing_chains=False):
+    def _target_production_rule(self, rule, state, rule_evaluation_metric, retracing_chains=False):
         """Attempt to terminally expand this rule's head."""
         if self.debug:
             if rule.viable:
@@ -364,14 +321,13 @@ class Productionist(object):
                 # Nonterminal symbol that we already successfully expanded earlier
                 return symbol.expansion
             else:  # Nonterminal symbol that we have not yet successfully expanded
-                terminal_expansion_of_that_symbol = (
-                    self._forward_chain_from_symbol(
-                        symbol=symbol, conversation=conversation, retracing_chains=retracing_chains
-                    )
+                terminal_expansion_of_that_symbol = self._forward_chain_from_symbol(
+                    symbol=symbol, state=state, retracing_chains=retracing_chains,
+                    rule_evaluation_metric=rule_evaluation_metric
                 )
                 if terminal_expansion_of_that_symbol:
                     if retracing_chains:
-                        self.symbols_expanded_to_produce_the_dialogue_template.add(symbol)
+                        self.symbols_expanded_to_produce_the_terminal_derivation.add(symbol)
                         if self.debug:
                             print "Traversed through symbol {}".format(symbol)
                     terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
@@ -384,7 +340,7 @@ class Productionist(object):
         expansion_yielded_by_this_rule = ''.join(terminally_expanded_symbols_in_this_rule_body)
         return expansion_yielded_by_this_rule
 
-    def _probabilistically_sort_production_rules(self, rules):
+    def _probabilistically_sort_production_rules(self, rules, rule_evaluation_metric):
         """Sort a collection of production rules probabilistically by utilizing their application rates.
 
         Because the application rates of a group of rules are only relative to one another
@@ -404,13 +360,13 @@ class Productionist(object):
         # Probabilistically sort each head group
         for head in rule_heads:
             rules_sharing_this_head = [rule for rule in rules if rule.head is head]
-            probabilistic_sort_of_this_head_group = (
-                self._probabilistically_sort_a_rule_head_group(rules=rules_sharing_this_head)
+            probabilistic_sort_of_this_head_group = self._probabilistically_sort_a_rule_head_group(
+                rules=rules_sharing_this_head, rule_evaluation_metric=rule_evaluation_metric
             )
             probabilistic_sort += probabilistic_sort_of_this_head_group
         return probabilistic_sort
 
-    def _probabilistically_sort_a_rule_head_group(self, rules):
+    def _probabilistically_sort_a_rule_head_group(self, rules, rule_evaluation_metric):
         """Probabilistically sort a collection of production rules that share the same rule head.
 
         This method works by fitting a probability range to each of the given set of rules, rolling
@@ -420,8 +376,8 @@ class Productionist(object):
         probabilistic_sort = []
         remaining_rules = list(rules)
         while len(remaining_rules) > 1:
-            probability_ranges = (
-                self._fit_probability_distribution_to_rules_according_to_their_application_rates(rules=remaining_rules)
+            probability_ranges = self._fit_probability_distribution_to_rules_according_to_an_evaluation_metric(
+                rules=remaining_rules, rule_evaluation_metric=rule_evaluation_metric
             )
             x = random.random()
             probabilistically_selected_rule = next(
@@ -436,14 +392,17 @@ class Productionist(object):
         return probabilistic_sort
 
     @staticmethod
-    def _fit_probability_distribution_to_rules_according_to_their_application_rates(rules):
-        """Return a dictionary mapping each of the rules to a probability range."""
-        # Determine the individual probabilities of each production rule, given the
-        # rules' application rates
+    def _fit_probability_distribution_to_rules_according_to_an_evaluation_metric(rules, rule_evaluation_metric):
+        """Return a dictionary mapping each of the rules to a probability range.
+
+        @param rules: The rules that this method will fit a probability distribution to.
+        """
+        # Determine the individual probabilities of each production rule, given our
+        # rule evaluation metric
         individual_probabilities = {}
-        sum_of_all_application_rates = float(sum(rule.application_rate for rule in rules))
+        sum_of_all_scores = float(sum(rule_evaluation_metric(rule) for rule in rules))
         for rule in rules:
-            probability = rule.application_rate/sum_of_all_application_rates
+            probability = rule_evaluation_metric(rule)/sum_of_all_scores
             individual_probabilities[rule] = probability
         # Use those individual probabilities to associate each production rule with a specific
         # probability range, such that generating a random value between 0.0 and 1.0 will fall
@@ -469,7 +428,7 @@ class Productionist(object):
             symbol.expansion = None
             for rule in symbol.production_rules:
                 rule.viable = False
-        self.symbols_expanded_to_produce_the_dialogue_template = set()
+        self.symbols_expanded_to_produce_the_terminal_derivation = set()
 
     def find_symbol(self, symbol_name):
         """Return a symbol with the given name."""
@@ -488,20 +447,10 @@ class NonterminalSymbol(object):
         # If a terminal expansion of this symbol constitutes a complete line of dialogue, then
         # this is a top-level symbol
         self.top_level = top_level
+        # Reify production rules for expanding this symbol
+        self.production_rules = self._init_reify_production_rules(production_rules_specification)
         # Prepare annotation sets that will be populated (as appropriate) by _init_parse_markup()
         self.preconditions = set()
-        self.conditional_violations = set()
-        self.propositions = set()
-        self.moves = set()  # The dialogue moves constituted by the delivery of this line
-        self.speaker_obligations_pushed = set()  # Line asserts speaker conversational obligations
-        self.interlocutor_obligations_pushed = set()  # Line asserts interlocutor conversational obligations
-        self.topics_pushed = set()  # Line introduces a new topic of conversation
-        self.topics_addressed = set()  # Line addresses a topic of conversation
-        self.clear_subject_of_conversation = False  # Line clears subject of conversation to allow asserting a new one
-        self.force_speaker_subject_match_to_speaker_preoccupation = False  # Line forces a speaker subject match
-        self.context_updates = set()  # Line updates the conversational context, e.g., w.r.t. subject of conversation
-        self._init_parse_markup(raw_markup=raw_markup)
-        self.production_rules = self._init_reify_production_rules(production_rules_specification)
         # These attributes are used to perform live generation of a dialogue template from the
         # grammar specification, which is done using backward-chaining and forward-chaining
         # to check for precondition violations and other preclusions; they get set by
@@ -513,10 +462,220 @@ class NonterminalSymbol(object):
         # efforts while we are firing production rules during backward- and forward-chaining,
         # which could happen if two rules have the same symbol in their rule bodies
         self.expansion = None
+        # Parse markup
+        self._init_parse_markup(raw_markup=raw_markup)
 
     def __str__(self):
         """Return string representation."""
         return '[[{tag}]]'.format(tag=self.tag)
+
+    def _init_reify_production_rules(self, production_rules_specification):
+        """Instantiate ProductionRule objects for the rules specified in production_rules_specification."""
+        production_rule_objects = []
+        for rule_specification in production_rules_specification:
+            body = rule_specification['expansion']
+            application_rate = rule_specification['app_rate']
+            production_rule_objects.append(
+                ProductionRule(head=self, body_specification=body, application_rate=application_rate)
+            )
+        return production_rule_objects
+
+    def _init_parse_markup(self, raw_markup):
+        """This method gets overwritten by subclasses to this class."""
+        pass
+
+
+class ProductionRule(object):
+    """A production rule in a production system for in-game dialogue generation."""
+
+    def __init__(self, head, body_specification, application_rate):
+        """Initialize a ProductionRule object.
+
+        'head' is a nonterminal symbol constituting the left-hand side of this rule, while
+        'body' is a sequence of symbols that this rule may be used to expand the head into.
+        """
+        self.head = head
+        self.body = None  # Gets set by Productionist._init_resolve_symbol_references_in_a_rule_body()
+        self.body_specification = body_specification
+        self.body_specification_str = ''.join(body_specification)
+        self.application_rate = application_rate
+        # This attribute will mark whether this production rule successfully fired during the
+        # backward-chaining routine of a generation procedure; we keep track of this because
+        # after we have successfully terminally backward-chained and forward-chained, we need
+        # to remember the rules on those chains in order to construct the final dialogue template
+        self.viable = False
+
+    def __str__(self):
+        """Return string representation."""
+        return '{} --> {}'.format(self.head, self.body_specification_str)
+
+
+class Condition(object):
+    """A condition super class that is inherited from by Precondition and ViolationCondition."""
+
+    def __init__(self, condition):
+        """Initialize a Condition object."""
+        self.condition = condition
+        self.test = eval(condition)  # The condition is literally a lambda function
+        self.arguments = self._init_parse_condition_for_its_arguments(condition=condition)
+
+    @staticmethod
+    def _init_parse_condition_for_its_arguments(condition):
+        """Parse this condition's specification (a lambda function) to gather the arguments that it requires."""
+        index_of_end_of_arguments = condition.index(':')
+        arguments = condition[:index_of_end_of_arguments]
+        arguments = arguments[len('lambda '):]  # Excise 'lambda ' prefix
+        arguments = arguments.split(', ')
+        return arguments
+
+    def evaluate(self, state):
+        """Evaluate this condition given the state of the world at the beginning of a conversation turn."""
+        # Use duck typing to check for whether this state capsule is a Conversation
+        # object (in the case of dialogue generation) or a Person object (in the case
+        # of thought generation)
+        if state.__class__.__name__ is 'Conversation':
+            # If the current speaker is a human player, don't even worry about
+            # evaluating preconditions, i.e., let them say whatever
+            if state.speaker.player:
+                return True
+            # Instantiate all the arguments we might need as local variables
+            conversation = state
+            speaker = state.speaker
+            interlocutor = state.interlocutor
+            subject = state.subject.matches[state.speaker]
+        elif state.__class__.__name__ in ('Person', 'PersonExNihilo'):
+            thinker = state
+        # Prepare the list of arguments by evaluating to bind them to the needed local variables
+        realized_arguments = [eval(argument) for argument in self.arguments]
+        # Return a boolean indicating whether this precondition is satisfied
+        try:
+            return self.test(*realized_arguments)
+        except (ValueError, AttributeError):
+            raise Exception('Cannot evaluate the precondition {}'.format(self.condition))
+
+
+class Precondition(Condition):
+    """A precondition for expanding a symbol to generate a line of dialogue."""
+
+    def __init__(self, tag):
+        """Initialize a Precondition object."""
+        super(Precondition, self).__init__(condition=tag)
+
+    def __str__(self):
+        """Return a string specifying the lambda function itself."""
+        return self.condition
+
+
+class StaticElement(object):
+    """A static element in a templated terminal derivation."""
+
+    def __init__(self, text):
+        """Initialize a StaticElement object."""
+        self.text = text
+
+    def __str__(self):
+        """Return the text of this static element."""
+        return self.text
+
+    def realize(self, state):
+        """Realize a StaticElement object simply by returning its text."""
+        return self.text
+
+
+class Gap(object):
+    """A gap in a templated terminal derivation."""
+
+    def __init__(self, specification):
+        """Initialize a Gap object."""
+        self.specification = specification
+
+    def __str__(self):
+        """Return the specification for filling in this gap."""
+        return self.specification
+
+    def realize(self, state):
+        """Fill in this gap according to the world state during a conversation turn."""
+        # Use duck typing to check for whether this state capsule is a ConversationTurn
+        # object (in the case of dialogue generation) or a Person object (in the case
+        # of thought generation); then prepare local variables that will allow us to
+        # fill in this gap
+        if state.__class__.__name__ is 'Conversation':
+            conversation, speaker, interlocutor, subject = (
+                state,
+                state.speaker, state.interlocutor,
+                state.subject.matches[state.speaker]
+            )
+        elif state.__class__.__name__ in ('Person', 'PersonExNihilo'):
+            thinker = state
+        return str(eval(self.specification))
+
+
+class DialogueGenerator(Productionist):
+    """A subclass to Productionist that handles dialogue-specific concerns.
+
+    For instance, this class affords the targeting of a generated line performing a
+    specific dialogue move or addressing a specific topic of conversation.
+    """
+
+    def __init__(self, game):
+        """Initialize a DialogueGenerator object."""
+        super(DialogueGenerator, self).__init__(game)
+
+    def target_dialogue_move(self, conversation, move_name):
+        """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
+        # Attempt to produce a raw derivation with the desired markup, i.e., that
+        # it performs the given dialogue move
+        raw_derivation_built_by_targeting_this_symbol = self.target_markup(
+            markup_lambda_expression=lambda symbol: move_name in symbol.moves,
+            symbol_sort_evaluation_function=lambda symbol: random.random(),
+            state=conversation, rule_evaluation_metric=lambda rule: rule.application_rate
+        )
+        # Reify the template as a LineOfDialogue object and return that
+        line_of_dialogue_object = LineOfDialogue(
+            raw_template=raw_derivation_built_by_targeting_this_symbol,
+            symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_terminal_derivation,
+            conversation=conversation
+        )
+        # Reset any temporary attributes that we utilized during this generation procedure
+        self._reset_temporary_attributes()
+        return line_of_dialogue_object
+
+    def target_topics_of_conversation(self, conversation, topic_names):
+        """Attempt to generate a line of dialogue that addresses a topic with the given name."""
+        # Attempt to produce a raw derivation with the desired markup, i.e., that
+        # it performs the given dialogue move
+        raw_derivation_built_by_targeting_this_symbol = self.target_markup(
+            markup_lambda_expression=lambda symbol: topic_names & symbol.topics_addressed,
+            symbol_sort_evaluation_function=lambda symbol: random.random(),
+            state=conversation, rule_evaluation_metric=lambda rule: rule.application_rate
+        )
+        # Reify the template as a LineOfDialogue object and return that
+        line_of_dialogue_object = LineOfDialogue(
+            raw_template=raw_derivation_built_by_targeting_this_symbol,
+            symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_terminal_derivation,
+            conversation=conversation
+        )
+        # Reset any temporary attributes that we utilized during this generation procedure
+        self._reset_temporary_attributes()
+        return line_of_dialogue_object
+
+
+class DialogueNonterminalSymbol(NonterminalSymbol):
+    """A subclass of NonterminalSymbol that pertains specifically to dialogue concerns."""
+
+    def __init__(self, tag, top_level, raw_markup, production_rules_specification):
+        """Initialize a DialogueNonterminalSymbol object."""
+        self.conditional_violations = set()
+        self.propositions = set()
+        self.moves = set()  # The dialogue moves constituted by the delivery of this line
+        self.speaker_obligations_pushed = set()  # Line asserts speaker conversational obligations
+        self.interlocutor_obligations_pushed = set()  # Line asserts interlocutor conversational obligations
+        self.topics_pushed = set()  # Line introduces a new topic of conversation
+        self.topics_addressed = set()  # Line addresses a topic of conversation
+        self.clear_subject_of_conversation = False  # Line clears subject of conversation to allow asserting a new one
+        self.force_speaker_subject_match_to_speaker_preoccupation = False  # Line forces a speaker subject match
+        self.context_updates = set()  # Line updates the conversational context, e.g., w.r.t. subject of conversation
+        super(DialogueNonterminalSymbol, self).__init__(tag, top_level, raw_markup, production_rules_specification)
 
     def _init_parse_markup(self, raw_markup):
         """Instantiate and attribute objects for the annotations attributed to this symbol."""
@@ -556,17 +715,6 @@ class NonterminalSymbol(object):
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
-    def _init_reify_production_rules(self, production_rules_specification):
-        """Instantiate ProductionRule objects for the rules specified in production_rules_specification."""
-        production_rule_objects = []
-        for rule_specification in production_rules_specification:
-            body = rule_specification['expansion']
-            application_rate = rule_specification['app_rate']
-            production_rule_objects.append(
-                ProductionRule(head=self, body_specification=body, application_rate=application_rate)
-            )
-        return production_rule_objects
-
     @property
     def all_markup(self):
         """Return all the annotations attributed to this symbol."""
@@ -577,21 +725,21 @@ class NonterminalSymbol(object):
         )
         return list(all_markup)
 
-    def currently_violated(self, conversation):
+    def currently_violated(self, state):
         """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
         precondition or would incur a conversational violation if deployed at this time."""
-        if conversation.speaker.player:  # Let the player say anything currently, i.e., return False
+        if state.speaker.player:  # Let the player say anything currently, i.e., return False
             return False
-        if (self.conversational_violations(conversation=conversation) or
-                not self.preconditions_satisfied(conversation=conversation)):
-            if conversation.productionist.debug:
+        if (self.conversational_violations(conversation=state) or
+                not self.preconditions_satisfied(conversation=state)):
+            if state.productionist.debug:
                 # Express why the symbol is currently violated
                 print "Symbol {} is currently violated".format(self)
-                conversational_violations = self.conversational_violations(conversation=conversation)
+                conversational_violations = self.conversational_violations(conversation=state)
                 for conversational_violation in conversational_violations:
                     print '\t{}'.format(conversational_violation)
                 unsatisfied_preconditions = (
-                    p for p in self.preconditions if p.evaluate(conversation=conversation) is False
+                    p for p in self.preconditions if p.evaluate(state=state) is False
                 )
                 for unsatisfied_precondition in unsatisfied_preconditions:
                     print '\t{}'.format(unsatisfied_precondition)
@@ -601,50 +749,25 @@ class NonterminalSymbol(object):
 
     def preconditions_satisfied(self, conversation):
         """Return whether this line's preconditions are satisfied given the state of the world."""
-        return all(precondition.evaluate(conversation=conversation) for precondition in self.preconditions)
+        return all(precondition.evaluate(state=conversation) for precondition in self.preconditions)
 
     def conversational_violations(self, conversation):
         """Return a list of names of conversational violations that will be incurred if this line is deployed now."""
         violations_incurred = [
             potential_violation.name for potential_violation in self.conditional_violations if
-            potential_violation.evaluate(conversation=conversation)
-        ]
+            potential_violation.evaluate(state=conversation)
+            ]
         return violations_incurred
-
-
-class ProductionRule(object):
-    """A production rule in a production system for in-game dialogue generation."""
-
-    def __init__(self, head, body_specification, application_rate):
-        """Initialize a ProductionRule object.
-
-        'head' is a nonterminal symbol constituting the left-hand side of this rule, while
-        'body' is a sequence of symbols that this rule may be used to expand the head into.
-        """
-        self.head = head
-        self.body = None  # Gets set by Productionist._init_resolve_symbol_references_in_a_rule_body()
-        self.body_specification = body_specification
-        self.body_specification_str = ''.join(body_specification)
-        self.application_rate = application_rate
-        # This attribute will mark whether this production rule successfully fired during the
-        # backward-chaining routine of a generation procedure; we keep track of this because
-        # after we have successfully terminally backward-chained and forward-chained, we need
-        # to remember the rules on those chains in order to construct the final dialogue template
-        self.viable = False
-
-    def __str__(self):
-        """Return string representation."""
-        return '{} --> {}'.format(self.head, self.body_specification_str)
 
 
 class LineOfDialogue(object):
     """A line of dialogue that may be used during a conversation."""
 
-    def __init__(self, raw_line, symbols_expanded_to_produce_this_template, conversation):
+    def __init__(self, raw_template, symbols_expanded_to_produce_this_template, conversation):
         """Initialize a LineOfDialogue object."""
-        self.raw_line = raw_line
-        self.symbols = symbols_expanded_to_produce_this_template
-        self.template = self._init_prepare_template(raw_line=raw_line)
+        self.raw_template = raw_template
+        self.nonterminal_symbols = symbols_expanded_to_produce_this_template
+        self.template = self._init_prepare_template(raw_line=raw_template)
         # Prepare annotation attributes
         self.conversational_violations = set()
         self.propositions = set()
@@ -660,7 +783,7 @@ class LineOfDialogue(object):
 
     def __str__(self):
         """Return the raw template characterizing this line of dialogue."""
-        return self.raw_line
+        return self.raw_template
 
     @staticmethod
     def _init_prepare_template(raw_line):
@@ -690,7 +813,7 @@ class LineOfDialogue(object):
 
     def _init_inherit_markup(self, conversation):
         """Inherit the mark-up of all the symbols that were expanded in the construction of this dialogue template."""
-        for symbol in self.symbols:
+        for symbol in self.nonterminal_symbols:
             self.conversational_violations |= set(symbol.conversational_violations(conversation=conversation))
             self.propositions |= symbol.propositions
             self.moves |= symbol.moves
@@ -704,96 +827,9 @@ class LineOfDialogue(object):
             )
             self.context_updates |= symbol.context_updates
 
-    def realize(self, conversation_turn):
+    def realize(self, conversation):
         """Return a filled-in template according to the world state during the current conversation turn."""
-        return ''.join(element.realize(conversation_turn=conversation_turn) for element in self.template)
-
-
-class StaticElement(object):
-    """A static element in a templated line of dialogue."""
-
-    def __init__(self, text):
-        """Initialize a StaticElement object."""
-        self.text = text
-
-    def __str__(self):
-        """Return the text of this static element."""
-        return self.text
-
-    def realize(self, conversation_turn):
-        """Realize a StaticElement object simply by returning its text."""
-        return self.text
-
-
-class Gap(object):
-    """A gap in a templated line of dialogue."""
-
-    def __init__(self, specification):
-        """Initialize a Gap object."""
-        self.specification = specification
-
-    def __str__(self):
-        """Return the specification for filling in this gap."""
-        return self.specification
-
-    def realize(self, conversation_turn):
-        """Fill in this gap according to the world state during a conversation turn."""
-        # Prepare local variables that will allow us to fill in this gap
-        conversation, speaker, interlocutor, subject = (
-            conversation_turn.conversation,
-            conversation_turn.speaker, conversation_turn.interlocutor,
-            conversation_turn.subject.matches[conversation_turn.speaker]
-        )
-        return str(eval(self.specification))
-
-
-class Condition(object):
-    """A condition super class that is inherited from by Precondition and ViolationCondition."""
-
-    def __init__(self, condition):
-        """Initialize a Condition object."""
-        self.condition = condition
-        self.test = eval(condition)  # The condition is literally a lambda function
-        self.arguments = self._init_parse_condition_for_its_arguments(condition=condition)
-
-    @staticmethod
-    def _init_parse_condition_for_its_arguments(condition):
-        """Parse this condition's specification (a lambda function) to gather the arguments that it requires."""
-        index_of_end_of_arguments = condition.index(':')
-        arguments = condition[:index_of_end_of_arguments]
-        arguments = arguments[len('lambda '):]  # Excise 'lambda ' prefix
-        arguments = arguments.split(', ')
-        return arguments
-
-    def evaluate(self, conversation):
-        """Evaluate this condition given the state of the world at the beginning of a conversation turn."""
-        # If the current speaker is a human player, don't even worry about
-        # evaluating preconditions, i.e., let them say whatever
-        if conversation.speaker.player:
-            return True
-        # Instantiate all the arguments we might need as local variables
-        speaker = conversation.speaker
-        interlocutor = conversation.interlocutor
-        subject = conversation.subject.matches[conversation.speaker]
-        # Prepare the list of arguments by evaluating to bind them to the needed local variables
-        realized_arguments = [eval(argument) for argument in self.arguments]
-        # Return a boolean indicating whether this precondition is satisfied
-        try:
-            return self.test(*realized_arguments)
-        except (ValueError, AttributeError):
-            raise Exception('Cannot evaluate the precondition {}'.format(self.condition))
-
-
-class Precondition(Condition):
-    """A precondition for expanding a symbol to generate a line of dialogue."""
-
-    def __init__(self, tag):
-        """Initialize a Precondition object."""
-        super(Precondition, self).__init__(condition=tag)
-
-    def __str__(self):
-        """Return a string specifying the lambda function itself."""
-        return self.condition
+        return ''.join(element.realize(state=conversation) for element in self.template)
 
 
 class ConditionalViolation(Condition):
@@ -809,3 +845,198 @@ class ConditionalViolation(Condition):
     def __str__(self):
         """Return string representation."""
         return '{} <-- {}'.format(self.name, self.condition)
+
+
+        ###################
+        # THOUGHT CLASSES #
+        ###################
+
+
+class ThoughtGenerator(Productionist):
+    """A subclass to Productionist that handles thought-specific concerns.
+
+    For instance, this class affords the targeting of a generated thought that is elicited
+    by a set of symbol stimuli encountered by a character going about the world.
+    """
+
+    def __init__(self, game):
+        """Initialize a ThoughtGenerator object."""
+        self.stimuli = set()  # Set as needed by target_association()
+        super(ThoughtGenerator, self).__init__(game)
+
+    def target_association(self, thinker, stimuli):
+        """Attempt to generate a line of dialogue that performs a dialogue move with the given name."""
+        self.stimuli = stimuli
+        markup_lambda_expression = (
+            lambda symbol: {pair[0] for pair in symbol.symbols} & {pair[0] for pair in self.stimuli}
+        )
+        # Attempt to produce a raw derivation with the desired markup, i.e., one that has
+        # a good matching between the symbols associated with it and the stimuli (i.e., the
+        # weighted_symbol_set)
+        raw_derivation_built_by_targeting_this_symbol = self.target_markup(
+            markup_lambda_expression=markup_lambda_expression,
+            symbol_sort_evaluation_function=self.evaluate_nonterminal_symbol,
+            state=thinker,
+            rule_evaluation_metric=self.evaluate_production_rule
+        )
+        # Reify the template as a Thought object and return that
+        thought_object = Thought(
+            raw_template=raw_derivation_built_by_targeting_this_symbol,
+            symbols_expanded_to_produce_this_template=self.symbols_expanded_to_produce_the_terminal_derivation,
+            thinker=thinker
+        )
+        # Reset any temporary attributes that we utilized during this generation procedure
+        self._reset_temporary_attributes()
+        return thought_object
+
+    def evaluate_nonterminal_symbol(self, nonterminal_symbol):
+        """Score a nonterminal symbol for the strength of its association with a set of stimuli."""
+        config = self.game.config
+        score = 0
+        for stimulus_signal, stimulus_signal_weight in self.stimuli:
+            for symbol_signal, symbol_signal_weight in nonterminal_symbol.symbols:
+                # Reward for matching signals (commensurately to the absolute value of the
+                # difference between their weights)
+                if stimulus_signal == symbol_signal:
+                    score -= abs(stimulus_signal_weight-symbol_signal_weight)
+                # Penalize for all stimulus signals that are not associated with the
+                # nonterminal symbol (but not vice versa)
+                if not any(s for s in nonterminal_symbol.symbols if stimulus_signal == s[0]):
+                    score -= config.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol
+        return score
+
+    def evaluate_production_rule(self, rule):
+        """Score a production rule for the strength of its association with a set of stimuli."""
+        # Start off with the rule's application rate
+        score = rule.application_rate
+        # Boost the score for the associational strength of the symbols in its body
+        score += sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
+        return score
+
+
+class ThoughtNonterminalSymbol(NonterminalSymbol):
+    """A subclass of NonterminalSymbol that pertains specifically to thought concerns."""
+
+    def __init__(self, tag, top_level, raw_markup, production_rules_specification):
+        """Initialize a DialogueNonterminalSymbol object."""
+        self.signals = []  # A list of (signal, weight) tuples
+        self.effects = set()
+        super(ThoughtNonterminalSymbol, self).__init__(tag, top_level, raw_markup, production_rules_specification)
+
+    def _init_parse_markup(self, raw_markup):
+        """Instantiate and attribute objects for the annotations attributed to this symbol."""
+        for tagset in raw_markup:
+            for tag in raw_markup[tagset]:
+                if tagset == "precondition":
+                    self.preconditions.add(Precondition(tag=tag))
+                elif tagset == "signal":
+                    symbol, weight = tag.split()
+                    weight = float(weight)
+                    symbol_weight_tuple = (symbol, weight)
+                    self.signals.append(symbol_weight_tuple)
+                elif tagset == "effect":
+                    self.effects.add(tag)
+                else:
+                    raise Exception('Unknown tagset encountered: {}'.format(tagset))
+
+    @property
+    def all_markup(self):
+        """Return all the annotations attributed to this symbol."""
+        all_markup = self.preconditions | self.signals | self.effects
+        return list(all_markup)
+
+    def currently_violated(self, state):
+        """Return whether this symbol is currently violated, i.e., whether it has an unsatisfied
+        precondition or would incur a conversational violation if deployed at this time."""
+        return not self.preconditions_satisfied(thinker=state)
+
+    def preconditions_satisfied(self, thinker):
+        """Return whether this line's preconditions are satisfied given the state of the world."""
+        return all(precondition.evaluate(state=thinker) for precondition in self.preconditions)
+
+
+class Thought(object):
+    """A thought that may enter the mind of a character."""
+
+    def __init__(self, raw_template, symbols_expanded_to_produce_this_template, thinker):
+        """Initialize a Thought object."""
+        self.thinker = thinker
+        self.raw_template = raw_template
+        self.nonterminal_symbols = symbols_expanded_to_produce_this_template
+        self.template = self._init_prepare_template(raw_line=raw_template)
+        # Prepare annotation attributes
+        self.signals = {}  # A dictionary mapping signal names to their strengths
+        self.effects = set()
+        self._init_inherit_markup()
+
+    def __str__(self):
+        """Return string representation."""
+        return 'A thought ("{raw_template}"), produced in the mind of {owner}'.format(
+            raw_template=self.raw_template,
+            owner=self.thinker.name,
+            # date=self.thinker.game.date[0].lower() + self.thinker.game.date[1:]
+        )
+
+    @staticmethod
+    def _init_prepare_template(raw_line):
+        """Prepare a templated line of dialogue from a raw specification for one.
+
+        The template returned by this method will specifically be an ordered list
+        of StaticElement and Gap objects, the latter of which will be filled in
+        according to
+        """
+        template = []  # An ordered list of StaticElements and Gaps
+        while '[' in raw_line:
+            index_of_opening_bracket = raw_line.index('[')
+            # Process next static element
+            next_static_element = raw_line[:index_of_opening_bracket]
+            if next_static_element:
+                template.append(StaticElement(text=next_static_element))
+            # Process next gap
+            index_of_closing_bracket = raw_line.index(']')
+            next_gap = raw_line[index_of_opening_bracket+1:index_of_closing_bracket]
+            template.append(Gap(specification=next_gap))
+            # Excise the processed elements
+            raw_line = raw_line[index_of_closing_bracket+1:]
+        # Process the trailing static element, if any
+        if raw_line:
+            template.append(StaticElement(text=raw_line))
+        return template
+
+    def _init_inherit_markup(self):
+        """Inherit the mark-up of all the symbols that were expanded in the construction of this dialogue template."""
+        config = self.thinker.game.config
+        for symbol in self.nonterminal_symbols:
+            self.effects |= symbol.effects
+            for signal_and_strength in symbol.signals:
+                signal, strength = signal_and_strength.split()
+                signal = self.evaluate_runtime_signal(signal=signal)
+                if signal not in self.signals:
+                    self.signals[signal] = 0
+                self.signals[signal] += config.strength_increase_to_thought_signal_for_nonterminal_signal_annotation
+            # JOR 05-17-16: THIS WAS THE ORIGINAL FINAL LINE FOR ACTUALLY TOTALLING UP THE SIGNAL SCORES
+            # BY TALLYING THE ANNOTATIONS FOR EACH NONTERMINAL SYMBOL EXPANDED TO PRODUCE THIS THOUGHT
+            #     self.signals[signal] += strength
+
+    def evaluate_runtime_signal(self, signal):
+        """Evaluate a runtime signal, e.g., '[id(thinker.boss)]'."""
+        thinker = self.thinker  # Needed to evaluate the signal, if it's truly a runtime signal
+        try:
+            return str(eval(signal))
+        except NameError:  # It's not a runtime variable, but just a regular string, so return that
+            return signal
+
+    def realize(self):
+        """Return a filled-in template according to the world state during the current conversation turn."""
+        return ''.join(element.realize(state=self.thinker) for element in self.template)
+
+    def execute(self):
+        """Register the effects of this thought on its thinker."""
+        # Update signal saliences in the thinker's mind (this makes signals associated
+        # with this thought more salient to the thinker merely by virtue of the thinker
+        # having thunk this thought)
+        for signal, weight in self.signals.iteritems():
+            self.thinker.mind.signal_saliences[signal] += weight
+        # Execute the literal effects associated with this thought
+        for effect in self.effects:
+            effect(thinker=self.thinker)()

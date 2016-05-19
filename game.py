@@ -1,5 +1,5 @@
 from config import Config
-from productionist import Productionist
+from productionist import DialogueGenerator, ThoughtGenerator
 from impressionist import Impressionist
 from person import *
 from business import *
@@ -16,7 +16,8 @@ class Game(object):
         # Load config parameters
         self.config = Config()
         # Load NLG and NLU modules for this game instance
-        self.productionist = Productionist(game=self)  # NLG module
+        self.dialogue_productionist = DialogueGenerator(game=self)  # NLG module
+        self.thought_productionist = ThoughtGenerator(game=self)  # NLG module
         self.impressionist = Impressionist(game=self)  # NLU module
         # Prepare Thoughts class
         """Thoughts.thought_prototypes = [

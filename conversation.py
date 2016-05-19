@@ -12,7 +12,7 @@ class Conversation(Event):
         """Initialize a Conversation object."""
         super(Conversation, self).__init__(game=initiator.game)
         self.game = initiator.game
-        self.productionist = self.game.productionist  # NLG module
+        self.productionist = self.game.dialogue_productionist  # NLG module
         self.impressionist = self.game.impressionist  # NLU module
         self.productionist.debug = debug
         self.initiator = initiator
@@ -230,7 +230,8 @@ class Conversation(Event):
                 next_speaker = max(self.participants, key=lambda p: p.personality.extroversion)
             else:
                 next_speaker = min(self.participants, key=lambda p: p.personality.extroversion)
-            print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
+            if self.debug:
+                print '[No obligations or goals, so probabilistically allocated turn to {}]'.format(next_speaker.name)
         return next_speaker, targeted_obligation, targeted_goal
 
     def understand_player_utterance(self, player_utterance):
@@ -256,23 +257,7 @@ class Conversation(Event):
             print "[A request has been made to Productionist to generate a line that will perform MOVE:{}]".format(
                 move_name
             )
-        return self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
-
-    def produce_batch_of_candidate_lines_that_perform_a_targeted_move(self, move_name):
-        """Return a batch of four candidate lines that perform a dialogue move targeted by
-        the player; the player may then select which of these lines to deploy.
-        """
-        candidate_lines = []
-        number_of_generation_attempts = 0
-        while len(candidate_lines) < 4 and number_of_generation_attempts < 99:
-            next_candidate_line = self.productionist.target_dialogue_move(move_name=move_name, conversation=self)
-            if (
-                    next_candidate_line and
-                    not any(l for l in candidate_lines if l.raw_line == next_candidate_line.raw_line)
-            ):
-                candidate_lines.append(next_candidate_line)
-            number_of_generation_attempts += 1
-        return candidate_lines
+        return self.productionist.target_dialogue_move(conversation=self, move_name=move_name)
 
     def target_topic(self, topics=None):
         """Request that Productionist generate a line of dialogue that may be used to address one of the
@@ -287,8 +272,8 @@ class Conversation(Event):
                 self.speaker.first_name
             )
         topics = self.topics if not topics else topics
-        topic_names = [topic.name for topic in topics]
-        return self.productionist.target_topics_of_conversation(topic_names=topic_names, conversation=self)
+        topic_names = {topic.name for topic in topics}
+        return self.productionist.target_topics_of_conversation(conversation=self, topic_names=topic_names)
 
     def count_move_occurrences(self, acceptable_speakers, name):
         """Count the number of times the acceptable speakers have performed a dialogue move with the given name."""
@@ -471,7 +456,7 @@ class Turn(object):
 
     def _realize_line_of_dialogue(self):
         """Display the line of dialogue on screen."""
-        self.realization = self.line_of_dialogue.realize(conversation_turn=self)
+        self.realization = self.line_of_dialogue.realize(conversation=self.conversation)
         # If the speaker is an NPC, print their line out; if it's a player, the line
         # has already been made visible from the player typing it
         if not self.speaker.player:

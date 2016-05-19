@@ -669,6 +669,18 @@ class Person(object):
             prominent_features=self.basic_appearance_description,
             deceased=' (deceased)' if self.dead else ''
         )
+    
+    @property
+    def boss(self):
+        """Return this person's boss, if they have one, else None."""
+        if not self.occupation:
+            return None
+        elif self.occupation.company.owner and self.occupation.company.owner is self:
+            return None
+        elif self.occupation.company.owner:
+            return self.occupation.company.owner.person
+        else:
+            return None
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
@@ -1942,7 +1954,7 @@ class Person(object):
             if person in self.relationships or self.known_relation_to_me(person):
                 salience_of_subject += 1.0
             implant_will_happen = False
-            if person in self.immediate_family or person in self.friends or person is self:
+            if person in self.immediate_family | self.friends | self.neighbors | self.coworkers | {self}:
                 implant_will_happen = True
             elif salience_of_subject > 0.0:
                 salience_of_subject = max(1.01, salience_of_subject)  # Needed to make the next line work
@@ -2262,6 +2274,22 @@ class Person(object):
 
     def connection_to_person(self):
         pass
+
+    def likes(self, person):
+        """Return whether this person likes the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge > config.charge_threshold_for_liking_someone
+
+    def dislikes(self, person):
+        """Return whether this person dislikes the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge < config.charge_threshold_for_disliking_someone
 
 
 class PersonExNihilo(Person):

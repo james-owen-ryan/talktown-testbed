@@ -743,6 +743,10 @@ class Block(object):
         return "{} block of {}".format(self.number, str(self.street))
 
     @property
+    def direction(self):
+        return 'n-s' if self.street.direction.lower() in ('n', 's') else 'e-w'
+
+    @property
     def buildings(self):
         """Return all the buildings on this block."""
         return [lot.building for lot in self.lots if lot.building]

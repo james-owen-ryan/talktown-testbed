@@ -10,7 +10,7 @@ class Impressionist(object):
         self.game = game
         self.debug = debug
         self.nonterminal_symbols = self._init_parse_json_grammar_specification(
-            path_to_json_grammar_specification=game.config.path_to_json_grammar_specification
+            path_to_json_grammar_specification=game.config.path_to_dialogue_nlu_json_grammar_specification
         )
 
     @staticmethod
@@ -156,7 +156,7 @@ class NonterminalSymbol(object):
         """Return a list of names of conversational violations that will be incurred if this line is deployed now."""
         violations_incurred = [
             potential_violation.name for potential_violation in self.conditional_violations if
-            potential_violation.evaluate(conversation=conversation)
+            potential_violation.evaluate(state=conversation)
         ]
         return violations_incurred
 
