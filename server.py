@@ -63,7 +63,7 @@ def send_lot_json(message):
 @socketio.on('get_block_json', namespace='/gameplay')
 def send_block_json(message):
     emit('return blocks',
-         {'data': startgame.json_block_type_dict, 'count': session['receive_count']})
+         {'data': startgame.json_block_coordinates_list, 'count': session['receive_count']})
 
 
 @socketio.on('ready', namespace='/gameplay')

@@ -59,7 +59,7 @@
 				
 				
 				/********************************************
-				*	recieve json dict of lots				*
+				*	receive json dict of lots				*
 				********************************************/
 				socket.on('return lots', function(msg) {
 					parseLotsJson(msg.data);
@@ -67,7 +67,7 @@
 				});
 				
 				/********************************************
-				*	recieve json dict of blocks				*
+				*	receive json list of blocks				*
 				********************************************/
 				socket.on('return blocks', function(msg) {
 					parseBlocksJson(msg.data);

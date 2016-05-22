@@ -333,3 +333,13 @@ IOError: [Errno 22] Invalid argument
 
 IOError: [Errno 22] Invalid argument
 
+
+[2016-05-19 14:07:59] Traceback (most recent call last):
+
+  File "display_handler_cef3.pyx", line 100, in cefpython_py27.DisplayHandler_OnConsoleMessage (cefpython.cpp:43586)
+
+  File "browser.py", line 266, in OnConsoleMessage
+    print("[talktown] DisplayHandler::OnConsoleMessage()")
+
+IOError: [Errno 22] Invalid argument
+

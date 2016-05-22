@@ -18,11 +18,10 @@ city_lots = None
 lot = None
 
 def game_start():
-# unblock server's loading page. temp fix
+    # unblock server's loading page. temp fix
     time.sleep(5)
-#    global game
+    # global game
     game = Game()  # Objects of the class Game are Talk of the Town simulations
-    # send a message to be displayed on the page
     print "Simulating a town's history..."
     # Simulate until the summer of 1979, when gameplay takes place
     try:
@@ -60,11 +59,8 @@ def game_start():
     for person_home_or_business in p.mind.mental_models:
         print p.mind.mental_models[person_home_or_business]
 
-
     global ready
     ready = True
-    global random_p
-    random_p = p
     global city_name
     city_name = game.city.name
     global city_lots
@@ -88,10 +84,25 @@ def game_start():
     # ****************************************************#
     block_type_dict = {}
     iter = 0
+    """
     for block in list(game.city.blocks):
-        #iter = iter + 1
+        if str(block.starting_coordinates) in block_type_dict:
+            print "key exists"
         block_type_dict[str(block.starting_coordinates)] = str(block.ending_coordinates)
     #print "total number of blocks: %s" % iter;
     global json_block_type_dict
     json_block_type_dict = json.dumps(block_type_dict)
+    """
 
+    block_coordinates_list = []
+
+    for block in list(game.city.blocks):
+        start = str(block.starting_coordinates)
+        end = str(block.ending_coordinates)
+        start_end_tuple = (start,end)
+        #print "start end tuple is %s" % str(start_end_tuple)
+        block_coordinates_list.append(str(start_end_tuple))
+
+    global json_block_coordinates_list
+    json_block_coordinates_list = json.dumps(block_coordinates_list)
+    print "this is fine"

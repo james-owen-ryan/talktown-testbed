@@ -929,7 +929,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
             for tag in raw_markup[tagset]:
                 if tagset == "precondition":
                     self.preconditions.add(Precondition(tag=tag))
-                elif tagset == "signal":
+                elif tagset == "symbol":
                     symbol, weight = tag.split()
                     weight = float(weight)
                     symbol_weight_tuple = (symbol, weight)
