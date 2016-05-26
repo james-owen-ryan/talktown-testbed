@@ -24,8 +24,8 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
-	var width = ((x-0.625)*(game.world.width/8))-(game.world.height/16);
-	var height = ((y-0.625)*(game.world.height/8))-(game.world.height/16);
+	var width = ((x-0.625)*(1000/8))-(1000/16);
+	var height = ((y-0.625)*(1000/8))-(1000/16);
 	var posX = x.toString().substring(2, x.length);
 	var posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
@@ -42,8 +42,8 @@ function renderLots(x, y, value){
 									 'business');
 	}
 
-	var scaleX = (game.world.width/23)/sprite.width;	
-	var scaleY = (game.world.height/23)/sprite.height;
+	var scaleX = (1000/23)/sprite.width;	
+	var scaleY = (1000/23)/sprite.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
 	if (posX.valueOf() == "25") {
@@ -104,8 +104,8 @@ function parseBlocksJson(json){
 
 function renderBlocks(startX, startY, endX, endY, dir){
 	console.log("start x is" + startX);
-	var x = ((startX-0.625)*(window.innerWidth/8))-(window.innerWidth/16);
-	var y = ((startY-0.625)*(window.innerHeight/8))-(window.innerHeight/16);
+	var x = ((startX+0.625)*(window.innerWidth/8))-(window.innerWidth/16);
+	var y = ((startY+0.625)*(window.innerHeight/8))-(window.innerHeight/16);
 	var cont, sprite, scaleX, scaleY;
 	cont = true;
 	while (cont){
@@ -158,8 +158,8 @@ function create() {
 
     game.stage.backgroundColor = '#2d2d2d';
 
-    //  Make our game world 2000x2000 pixels in size (the default is to match the game size)
-    game.world.setBounds(0, 0, 2000, 2000);
+    //  Make our game world 1000x1000 pixels in size (the default is to match the game size)
+    game.world.setBounds(0, 0, 1000, 1000);
 
     /*for (var i = 0; i < 150; i++)
     {
