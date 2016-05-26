@@ -24,8 +24,8 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
-	var width = ((x-0.625)*(window.innerWidth/8))-(window.innerWidth/16);
-	var height = ((y-0.625)*(window.innerHeight/8))-(window.innerHeight/16);
+	var width = ((x-0.625)*(game.world.width/8))-(game.world.height/16);
+	var height = ((y-0.625)*(game.world.height/8))-(game.world.height/16);
 	var posX = x.toString().substring(2, x.length);
 	var posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
@@ -42,8 +42,8 @@ function renderLots(x, y, value){
 									 'business');
 	}
 
-	var scaleX = (window.innerWidth/23)/sprite.width;	
-	var scaleY = (window.innerHeight/23)/sprite.height;
+	var scaleX = (game.world.width/23)/sprite.width;	
+	var scaleY = (game.world.height/23)/sprite.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
 	if (posX.valueOf() == "25") {
@@ -97,7 +97,7 @@ function parseBlocksJson(json){
 
 		if (startX == endX) { dir = "v"; }
 		else if (startY == endY) { dir = "h"; }
-		renderBlocks(startX, startY, endX, endY, dir);
+		//renderBlocks(startX, startY, endX, endY, dir);
 	}
 
 }
@@ -138,21 +138,126 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
+	game.load.baseURL = 'http://examples.phaser.io/assets/';
+    game.load.crossOrigin = 'anonymous';
+    game.load.image('player', 'sprites/phaser-dude.png');
 	
+	game.load.baseURL = '';
+
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('block', 'Sprites/block.png');
+//	game.load.image('player','assets/sprites/phaser-dude.png');
+	game.load.image('mushroom', 'http://examples.phaser.io/assets/assets/sprites/mushroom2.png');
+}
 
+var cursors;
+
+function create() {
+
+    game.stage.backgroundColor = '#2d2d2d';
+
+    //  Make our game world 2000x2000 pixels in size (the default is to match the game size)
+    game.world.setBounds(0, 0, 2000, 2000);
+
+    /*for (var i = 0; i < 150; i++)
+    {
+        game.add.sprite(game.world.randomX, game.world.randomY, 'mushroom');
+    }*/
+
+    //cursors = game.input.keyboard.createCursorKeys();
+	
+	game.physics.startSystem(Phaser.Physics.P2JS);
+
+    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+
+    game.physics.p2.enable(player);
+
+    cursors = game.input.keyboard.createCursorKeys();
+
+    game.camera.follow(player);
+
+
+}
+
+function update() {
+
+    player.body.setZeroVelocity();
+
+    if (cursors.up.isDown)
+    {
+        player.body.moveUp(300)
+    }
+    else if (cursors.down.isDown)
+    {
+        player.body.moveDown(300);
+    }
+
+    if (cursors.left.isDown)
+    {
+        player.body.velocity.x = -300;
+    }
+    else if (cursors.right.isDown)
+    {
+        player.body.moveRight(300);
+    }
+
+}
+
+function render() {
+
+    game.debug.cameraInfo(game.camera, 32, 32);
+    game.debug.spriteCoords(player, 32, 500);
+}
+/*
 
 	preloadReady = true;
 
 }
+var player;
 function create() {
+	game.world.setBounds(0, 0, 400, 400);
+
+    game.physics.startSystem(Phaser.Physics.P2JS);
+
+    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+
+    game.physics.p2.enable(player);
+
+    cursors = game.input.keyboard.createCursorKeys();
+
+    game.camera.follow(player);
+
 }
 
 function update() {
+
+    player.body.setZeroVelocity();
+
+    if (cursors.up.isDown)
+    {
+        player.body.moveUp(300)
+    }
+    else if (cursors.down.isDown)
+    {
+        player.body.moveDown(300);
+    }
+
+    if (cursors.left.isDown)
+    {
+        player.body.velocity.x = -300;
+    }
+    else if (cursors.right.isDown)
+    {
+        player.body.moveRight(300);
+    }
+
 }
 
 function render() {
-}
+
+    game.debug.cameraInfo(game.camera, 32, 32);
+    game.debug.spriteCoords(player, 32, 500);
+
+}*/
