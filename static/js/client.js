@@ -1,5 +1,5 @@
 //TODO: fix window arith
-
+var gameSize = 1000;
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -24,8 +24,8 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
-	var width = ((x-0.625)*(1000/8))-(1000/16);
-	var height = ((y-0.625)*(1000/8))-(1000/16);
+	var width = ((x-0.625)*(gameSize/8))-(gameSize/16);
+	var height = ((y-0.625)*(gameSize/8))-(gameSize/16);
 	var posX = x.toString().substring(2, x.length);
 	var posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
@@ -42,8 +42,8 @@ function renderLots(x, y, value){
 									 'business');
 	}
 
-	var scaleX = (1000/23)/sprite.width;	
-	var scaleY = (1000/23)/sprite.height;
+	var scaleX = (gameSize/23)/sprite.width;	
+	var scaleY = (gameSize/23)/sprite.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
 	if (posX.valueOf() == "25") {
@@ -97,31 +97,32 @@ function parseBlocksJson(json){
 
 		if (startX == endX) { dir = "v"; }
 		else if (startY == endY) { dir = "h"; }
-		//renderBlocks(startX, startY, endX, endY, dir);
+		renderBlocks(startX, startY, endX, endY, dir);
 	}
 
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
+	console.log("render blocks");
 	console.log("start x is" + startX);
-	var x = ((startX+0.625)*(window.innerWidth/8))-(window.innerWidth/16);
-	var y = ((startY+0.625)*(window.innerHeight/8))-(window.innerHeight/16);
+	var x = ((startX+0.625)*(gameSize/8))-(gameSize/16);
+	var y = ((startY+0.625)*(gameSize/8))-(gameSize/16);
 	var cont, sprite, scaleX, scaleY;
 	cont = true;
 	while (cont){
 		sprite = game.add.sprite(x, y, 'block');
-		scaleX = (window.innerWidth/33)/sprite.width;	
-		scaleY = (window.innerHeight/33)/sprite.height;
+		scaleX = (gameSize/33)/sprite.width;	
+		scaleY = (gameSize/33)/sprite.height;
 		sprite.scale.setTo(scaleX,scaleY);
 	
 		if (dir == "v") {
 			y += 1;
-			if (y > ((endY-scaleX)*(window.innerHeight/8))-(window.innerHeight/16)) {
+			if (y > ((endY-scaleX)*(gameSize/8))-(gameSize/16)) {
 				cont = false;
 			}
 		} else if (dir == "h") {
 			x += 1;
-			if (x > ((endX-scaleY)*(window.innerHeight/8))-(window.innerHeight/16)) {
+			if (x > ((endX-scaleY)*(gameSize/8))-(gameSize/16)) {
 				cont = false;
 			}
 		}
@@ -138,36 +139,23 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
-	game.load.baseURL = 'http://examples.phaser.io/assets/';
-    game.load.crossOrigin = 'anonymous';
-    game.load.image('player', 'sprites/phaser-dude.png');
-	
-	game.load.baseURL = '';
-
+	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('block', 'Sprites/block.png');
-//	game.load.image('player','assets/sprites/phaser-dude.png');
-	game.load.image('mushroom', 'http://examples.phaser.io/assets/assets/sprites/mushroom2.png');
 }
 
 var cursors;
-
+var player;
 function create() {
 
-    game.stage.backgroundColor = '#2d2d2d';
+    //game.stage.backgroundColor = '#2d2d2d';
 
-    //  Make our game world 1000x1000 pixels in size (the default is to match the game size)
-    game.world.setBounds(0, 0, 1000, 1000);
+    //  Make our game world gameSizexgameSize pixels in size (the default is to match the game size)
+    game.world.setBounds(0, 0, gameSize, gameSize);
 
-    /*for (var i = 0; i < 150; i++)
-    {
-        game.add.sprite(game.world.randomX, game.world.randomY, 'mushroom');
-    }*/
 
-    //cursors = game.input.keyboard.createCursorKeys();
-	
 	game.physics.startSystem(Phaser.Physics.P2JS);
 
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
@@ -187,20 +175,24 @@ function update() {
 
     if (cursors.up.isDown)
     {
-        player.body.moveUp(300)
+		player.body.velocity.y = -300;
+        //player.body.moveUp(300)
     }
     else if (cursors.down.isDown)
     {
-        player.body.moveDown(300);
+		player.body.velocity.y = 300;
+        //player.body.moveDown(300);
     }
 
     if (cursors.left.isDown)
     {
+		//player.body.moveLeft(300);
         player.body.velocity.x = -300;
     }
     else if (cursors.right.isDown)
     {
-        player.body.moveRight(300);
+		player.body.velocity.x = 300;
+        //player.body.moveRight(300);
     }
 
 }
