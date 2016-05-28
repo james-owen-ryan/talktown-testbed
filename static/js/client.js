@@ -105,8 +105,8 @@ function parseBlocksJson(json){
 function renderBlocks(startX, startY, endX, endY, dir){
 	console.log("render blocks");
 	console.log("start x is" + startX);
-	var x = ((startX+0.625)*(gameSize/8))-(gameSize/16);
-	var y = ((startY+0.625)*(gameSize/8))-(gameSize/16);
+	var x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
+	var y = ((startY-0.625)*(gameSize/8))-(gameSize/16);
 	var cont, sprite, scaleX, scaleY;
 	cont = true;
 	while (cont){
@@ -139,15 +139,16 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
-	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('block', 'Sprites/block.png');
+	game.load.image('player', 'Sprites/player.png');
 }
 
 var cursors;
 var player;
+
 function create() {
 
     //game.stage.backgroundColor = '#2d2d2d';
