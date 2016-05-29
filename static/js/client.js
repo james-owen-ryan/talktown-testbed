@@ -139,18 +139,20 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
+	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('block', 'Sprites/block.png');
-	game.load.image('player', 'Sprites/player.png');
 }
 
 var cursors;
 var player;
 
 function create() {
-
+    //  Create a Group that will sit above the background image
+    group1 = game.add.group();
+	
     //game.stage.backgroundColor = '#2d2d2d';
 
     //  Make our game world gameSizexgameSize pixels in size (the default is to match the game size)
@@ -160,7 +162,7 @@ function create() {
 	game.physics.startSystem(Phaser.Physics.P2JS);
 
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-
+	group1.add(player);
     game.physics.p2.enable(player);
 
     cursors = game.input.keyboard.createCursorKeys();
@@ -171,27 +173,31 @@ function create() {
 }
 
 function update() {
-
+	game.world.bringToTop(group1);
     player.body.setZeroVelocity();
 
     if (cursors.up.isDown)
     {
+		player.body.velocity.y = 0;
 		player.body.velocity.y = -300;
         //player.body.moveUp(300)
     }
     else if (cursors.down.isDown)
     {
+		player.body.velocity.x = 0;
 		player.body.velocity.y = 300;
         //player.body.moveDown(300);
     }
 
     if (cursors.left.isDown)
     {
+		player.body.velocity.y = 0;
 		//player.body.moveLeft(300);
         player.body.velocity.x = -300;
     }
     else if (cursors.right.isDown)
     {
+		player.body.velocity.y = 0;
 		player.body.velocity.x = 300;
         //player.body.moveRight(300);
     }
