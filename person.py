@@ -2296,6 +2296,14 @@ class Person(object):
         else:
             return self.relationships[person].charge < config.charge_threshold_for_disliking_someone
 
+    def hates(self, person):
+        """Return whether this person hates the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge < config.charge_threshold_for_hating_someone
+
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.
