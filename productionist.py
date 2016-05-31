@@ -644,7 +644,12 @@ class DialogueGenerator(Productionist):
         return line_of_dialogue_object
 
     def target_topics_of_conversation(self, conversation, topic_names):
-        """Attempt to generate a line of dialogue that addresses a topic with the given name."""
+        """Attempt to generate a line of dialogue that addresses a topic with the given name.
+
+        @param conversation: The conversation in which the requested generated line will be delivered.
+        @param topic_names: A set of names of topics of conversation, at least one which the requested
+                            generated line should address.
+        """
         # Attempt to produce a raw derivation with the desired markup, i.e., that
         # it performs the given dialogue move
         raw_derivation_built_by_targeting_this_symbol = self.target_markup(
@@ -864,7 +869,10 @@ class ThoughtGenerator(Productionist):
 
     def __init__(self, game):
         """Initialize a ThoughtGenerator object."""
-        self.stimuli = {}  # Set as needed by target_association()
+        # These are set as needed by target_association() to hold temporary information
+        self.thinker = None
+        self.stimuli = {}
+        self.nonrepeatable_symbols = set()
         super(ThoughtGenerator, self).__init__(game)
 
     def target_association(self, thinker, stimuli):
@@ -875,12 +883,9 @@ class ThoughtGenerator(Productionist):
                     signal=signal, strength=strength) for signal, strength in stimuli.iteritems()
                 )
             )
-        print "Attempting to elicit thought given the stimuli: {stimuli}".format(
-            stimuli=', '.join("{signal} ({strength})".format(
-                signal=signal, strength=strength) for signal, strength in stimuli.iteritems()
-                              )
-        )
+        self.thinker = thinker
         self.stimuli = stimuli
+        self.nonrepeatable_symbols = self._collect_nonrepeatable_symbols()
         markup_lambda_expression = (
             lambda symbol: {pair[0] for pair in symbol.signals} & {pair[0] for pair in self.stimuli.iteritems()}
         )
@@ -903,28 +908,41 @@ class ThoughtGenerator(Productionist):
         self._reset_temporary_attributes()
         return thought_object
 
+    def _collect_nonrepeatable_symbols(self):
+        """Collect all nonterminal symbols that cannot be expanded during this generation instance (because
+        that would produce awkward repetition.
+        """
+        nonrepeatable_symbols_recently_expanded_by_thinker = set()
+        for recent_thought in self.thinker.mind.recent_thoughts:
+            for symbol in recent_thought.nonterminal_symbols:
+                if symbol.nonrepeatable:
+                    nonrepeatable_symbols_recently_expanded_by_thinker.add(symbol)
+        return nonrepeatable_symbols_recently_expanded_by_thinker
+
     def evaluate_nonterminal_symbol(self, nonterminal_symbol):
         """Score a nonterminal symbol for the strength of its association with a set of stimuli."""
         config = self.game.config
         score = 0
         for stimulus_signal, stimulus_signal_weight in self.stimuli.iteritems():
-            for symbol_signal, symbol_signal_weight in nonterminal_symbol.signals:
-                # Reward for matching signals (commensurately to the absolute value of the
-                # difference between their weights)
+            for symbol_signal, _ in nonterminal_symbol.signals:  # _ stands for symbol_signal_weight (now ignored)
+                # Reward for matching signals (commensurately to the weight for that
+                # signal that is packaged up in the stimuli)
                 if stimulus_signal == symbol_signal:
-                    score -= abs(stimulus_signal_weight-symbol_signal_weight)
+                    score += stimulus_signal_weight
                 # Penalize for all stimulus signals that are not associated with the
                 # nonterminal symbol (but not vice versa)
                 if not any(s for s in nonterminal_symbol.signals if stimulus_signal == s[0]):
-                    score -= config.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol
+                    score -= stimulus_signal_weight
+                # Penalize for symbol having already been expanded by this person to
+                # produce a recent thought
+                if nonterminal_symbol in self.nonrepeatable_symbols:
+                    score -= config.penalty_for_expanding_nonrepeatable_symbol_in_thought
         return score
 
     def evaluate_production_rule(self, rule):
         """Score a production rule for the strength of its association with a set of stimuli."""
-        # Start off with the rule's application rate
-        score = rule.application_rate
-        # Boost the score for the associational strength of the symbols in its body
-        score += sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
+        # Determine the score according to the associational strength of the symbols in its body
+        score = sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
         return score
 
 
