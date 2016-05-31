@@ -29,35 +29,37 @@ function renderLots(x, y, value){
 	var posX = x.toString().substring(2, x.length);
 	var posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
-		var sprite = game.add.sprite(width,
+		var building = game.add.sprite(width,
 									 height,
 									 'house');
 	} else if (value == "NoneType") {
-		var sprite = game.add.sprite(width,
+		var building = game.add.sprite(width,
 									 height,
 									 'empty_lot');
 	} else {
-		var sprite = game.add.sprite(width,
+		var building = game.add.sprite(width,
  									 height,
 									 'business');
 	}
-
-	var scaleX = (gameSize/23)/sprite.width;	
-	var scaleY = (gameSize/23)/sprite.height;
+	buildingGroup.add(building);
+	
+	
+	var scaleX = (gameSize/23)/building.width;	
+	var scaleY = (gameSize/23)/building.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
 	if (posX.valueOf() == "25") {
-		sprite.anchor.x = 0.0;
+		building.anchor.x = 0.0;
 	} else if (posX.valueOf() == "75") {
-		sprite.anchor.x = 0.3;
+		building.anchor.x = 0.3;
 	}
 	//set y anchor
 	if (posY.valueOf() == "25") {
-		sprite.anchor.y = 0.0;
+		building.anchor.y = 0.0;
 	} else if (posY.valueOf() == "75") {
-		sprite.anchor.y = 0.3;
+		building.anchor.y = 0.3;
 	}
-	sprite.scale.setTo(scaleX,scaleY);
+	building.scale.setTo(scaleX,scaleY);
 
 }
 
@@ -107,13 +109,13 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	console.log("start x is" + startX);
 	var x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
 	var y = ((startY-0.625)*(gameSize/8))-(gameSize/16);
-	var cont, sprite, scaleX, scaleY;
+	var cont, block, scaleX, scaleY;
 	cont = true;
 	while (cont){
-		sprite = game.add.sprite(x, y, 'block');
-		scaleX = (gameSize/33)/sprite.width;	
-		scaleY = (gameSize/33)/sprite.height;
-		sprite.scale.setTo(scaleX,scaleY);
+		block = game.add.sprite(x, y, 'block');
+		scaleX = (gameSize/33)/block.width;	
+		scaleY = (gameSize/33)/block.height;
+		block.scale.setTo(scaleX,scaleY);
 	
 		if (dir == "v") {
 			y += 1;
@@ -150,8 +152,12 @@ var cursors;
 var player;
 
 function create() {
-    //  Create a Group that will sit above the background image
-    group1 = game.add.group();
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+	
+    buildingGroup = game.add.group();
+	//  Create a Group that will sit above the background image
+    playerGroup = game.add.group();
+	
 	
     //game.stage.backgroundColor = '#2d2d2d';
 
@@ -162,7 +168,11 @@ function create() {
 	game.physics.startSystem(Phaser.Physics.P2JS);
 
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-	group1.add(player);
+	
+	
+	
+	//Determines render order
+	playerGroup.add(player);
     game.physics.p2.enable(player);
 
     cursors = game.input.keyboard.createCursorKeys();
@@ -173,7 +183,7 @@ function create() {
 }
 
 function update() {
-	game.world.bringToTop(group1);
+	game.world.bringToTop(playerGroup);
     player.body.setZeroVelocity();
 
     if (cursors.up.isDown)
