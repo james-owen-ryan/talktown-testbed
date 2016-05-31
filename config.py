@@ -2488,13 +2488,16 @@ class Config(object):
             ####################
 
         self.path_to_dialogue_nlg_json_grammar_specification = (
-            './content/talktown-dialogue-nlg.json'
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlg.json'
+            # './content/talktown-dialogue-nlg.json'
         )
         self.path_to_dialogue_nlu_json_grammar_specification = (
-            './content/talktown-dialogue-nlu.json'
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlu.json'
+            # './content/talktown-dialogue-nlu.json'
         )
         self.path_to_thought_nlg_json_grammar_specification = (
-            './content/talktown-thoughts.json'
+            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-thoughts.json'
+            # './content/talktown-thoughts.json'
         )
         # Frame definitions
         self.conversational_frames = {
@@ -2623,7 +2626,6 @@ class Config(object):
                 ##  THOUGHTS   ##
                 #################
 
-        self.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol = -1
         self.signal_receptor_synapse_starting_weight = 1
         self.signal_receptor_synapse_weight_increase_increment = 1
         self.action_potential_signal_weight_multiplier = 0.1  # Multiplies against the synapse weight
