@@ -55,6 +55,12 @@ class Mind(object):
         feature_object = Feature(value=memory, inherited_from=None)
         return feature_object
 
+    @property
+    def recent_thoughts(self):
+        """Return the N most recent thoughts by this person, where N is specified in config.py."""
+        number_of_recent_thoughts = self.person.game.config.number_of_recent_thoughts
+        return self.thoughts[:number_of_recent_thoughts]
+
     def closest_match(self, features, entity_type='person'):
         """Match a set of features describing an entity against this person's mental models to return
         a closest match.
