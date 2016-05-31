@@ -675,7 +675,7 @@ class Person(object):
         """Return this person's boss, if they have one, else None."""
         if not self.occupation:
             return None
-        elif self.occupation.company.owner and self.occupation.company.owner is self:
+        elif self.occupation.company.owner and self.occupation.company.owner.person is self:
             return None
         elif self.occupation.company.owner:
             return self.occupation.company.owner.person
