@@ -953,6 +953,7 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
         """Initialize a DialogueNonterminalSymbol object."""
         self.signals = []  # A list of (signal, weight) tuples
         self.effects = set()
+        self.nonrepeatable = False  # Whether a penalty should be incurred for repeatedly expanding this symbol
         super(ThoughtNonterminalSymbol, self).__init__(tag, top_level, raw_markup, production_rules_specification)
 
     def _init_parse_markup(self, raw_markup):
@@ -968,6 +969,8 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
                     self.signals.append(symbol_weight_tuple)
                 elif tagset == "effect":
                     self.effects.add(tag)
+                elif tagset == "nonrepeatable":
+                    self.nonrepeatable = eval(tag)
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
 
