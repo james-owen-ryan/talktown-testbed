@@ -189,9 +189,6 @@ class Receptor(object):
 
     def __init__(self, mind, signal):
         """Initialize a Receptor object."""
-
-        print "A RECEPTOR FOR '{}' SIGNALS HAS FORMED IN THE MIND OF {}".format(signal, mind.person.name)
-
         self.mind = mind
         self.signal = signal  # ID of the signal (e.g., 'job' or a character object's ID in memory)
         self.voltage = 0
@@ -224,11 +221,6 @@ class Synapse(object):
 
     def __init__(self, receptors):
         """Initialize a Synapse object."""
-
-        print "A SYNAPSE FOR '{}' and '{}' SIGNALS HAS FORMED IN THE MIND OF {}".format(
-            receptors[0].signal, receptors[1].signal, receptors[0].mind.person.name
-        )
-
         # We'll need to make a lot of calls to config -- amortize this by setting it
         # as an attribute on this class
         self.config = list(receptors)[0].mind.person.game.config
