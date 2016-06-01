@@ -2627,7 +2627,7 @@ class Config(object):
                 #################
 
         self.number_of_recent_thoughts = 9  # Number of thoughts kept track of by Person.Mind.recent_thoughts
-        self.penalty_for_expanding_nonrepeatable_symbol_in_thought = -10
+        self.penalty_multiplier_for_expanding_nonrepeatable_symbol_in_thought = 0.01
         self.signal_receptor_synapse_starting_weight = 1
         self.signal_receptor_synapse_weight_increase_increment = 1
         self.action_potential_signal_weight_multiplier = 0.1  # Multiplies against the synapse weight
