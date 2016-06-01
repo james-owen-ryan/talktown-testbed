@@ -941,9 +941,10 @@ class ThoughtGenerator(Productionist):
         """Score a production rule for the strength of its association with a set of stimuli."""
         # Determine the score according to the associational strength of the symbols in its body
         score = sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
-        # If that scored 0, then give the rule a minimum positive score (to make fitting a probability
-        # distribution across rules work, i.e., to avoid ZeroDivisionError)
-        score = max(score, self.game.config.minimum_evaluation_score_for_thought_production_rule)
+        # Increment the score according to the rule's application rate (multiplied by the
+        # corresponding score multiplier specified in config)
+        application_rate_multiplier = self.game.config.application_rate_multiplier_scoring_boost
+        score += rule.application_rate * application_rate_multiplier
         return score
 
 
