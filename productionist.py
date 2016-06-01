@@ -352,9 +352,6 @@ class Productionist(object):
         have no viable option except randomly shuffling the head groups (while retaining the
         probabilistically determined orderings within each head group)
         """
-        # Filter out all production rules who receive an evaluation score of 0, which means
-        # they cannot be expanded currently
-        rules = [r for r in rules if rule_evaluation_metric(r)]
         # Now produce a probabilistic sorting of all remaining rules
         probabilistic_sort = []
         # Assemble all the rule heads
@@ -944,6 +941,9 @@ class ThoughtGenerator(Productionist):
         """Score a production rule for the strength of its association with a set of stimuli."""
         # Determine the score according to the associational strength of the symbols in its body
         score = sum(0 if type(s) is unicode else self.evaluate_nonterminal_symbol(s) for s in rule.body)
+        # If that scored 0, then give the rule a minimum positive score (to make fitting a probability
+        # distribution across rules work, i.e., to avoid ZeroDivisionError)
+        score = max(score, self.game.config.minimum_evaluation_score_for_thought_production_rule)
         return score
 
 

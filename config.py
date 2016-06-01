@@ -2632,6 +2632,7 @@ class Config(object):
         self.signal_receptor_synapse_weight_increase_increment = 1
         self.action_potential_signal_weight_multiplier = 0.1  # Multiplies against the synapse weight
         self.strength_increase_to_thought_signal_for_nonterminal_signal_annotation = 1
+        self.minimum_evaluation_score_for_thought_production_rule = 0.000001
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
