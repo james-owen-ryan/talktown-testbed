@@ -352,6 +352,10 @@ class Productionist(object):
         have no viable option except randomly shuffling the head groups (while retaining the
         probabilistically determined orderings within each head group)
         """
+        # Filter out all production rules who receive an evaluation score of 0, which means
+        # they cannot be expanded currently
+        rules = [r for r in rules if rule_evaluation_metric(r)]
+        # Now produce a probabilistic sorting of all remaining rules
         probabilistic_sort = []
         # Assemble all the rule heads
         rule_heads = list({rule.head for rule in rules})
@@ -376,6 +380,7 @@ class Productionist(object):
         a random number and selecting the rule whose range it falls within, and then repeating this
         on the set of remaining rules, and so forth until every rule has been selecting.
         """
+        # Now, probabilistically sort all rules that are currently executable
         probabilistic_sort = []
         remaining_rules = list(rules)
         while len(remaining_rules) > 1:
@@ -929,14 +934,10 @@ class ThoughtGenerator(Productionist):
                 # signal that is packaged up in the stimuli)
                 if stimulus_signal == symbol_signal:
                     score += stimulus_signal_weight
-                # Penalize for all stimulus signals that are not associated with the
-                # nonterminal symbol (but not vice versa)
-                if not any(s for s in nonterminal_symbol.signals if stimulus_signal == s[0]):
-                    score -= stimulus_signal_weight
                 # Penalize for symbol having already been expanded by this person to
                 # produce a recent thought
                 if nonterminal_symbol in self.nonrepeatable_symbols:
-                    score -= config.penalty_for_expanding_nonrepeatable_symbol_in_thought
+                    score *= config.penalty_for_expanding_nonrepeatable_symbol_in_thought
         return score
 
     def evaluate_production_rule(self, rule):
@@ -960,14 +961,14 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
         """Instantiate and attribute objects for the annotations attributed to this symbol."""
         for tagset in raw_markup:
             for tag in raw_markup[tagset]:
-                if tagset == "precondition":
+                if tagset == "Preconditions":
                     self.preconditions.add(Precondition(tag=tag))
-                elif tagset == "signal":
+                elif tagset == "Signals":
                     symbol, weight = tag.split()
                     weight = float(weight)
                     symbol_weight_tuple = (symbol, weight)
                     self.signals.append(symbol_weight_tuple)
-                elif tagset == "effect":
+                elif tagset == "Effects":
                     self.effects.add(tag)
                 elif tagset == "nonrepeatable":
                     self.nonrepeatable = eval(tag)
