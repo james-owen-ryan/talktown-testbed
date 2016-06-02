@@ -2468,6 +2468,7 @@ class Config(object):
         # Thresholds for liking or disliking people
         self.charge_threshold_for_liking_someone = 20
         self.charge_threshold_for_disliking_someone = -3
+        self.charge_threshold_for_hating_someone = -200
 
             #################
             ##  ARTIFACTS  ##

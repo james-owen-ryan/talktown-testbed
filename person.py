@@ -597,6 +597,11 @@ class Person(object):
         return self.moves[0].year
 
     @property
+    def years_i_lived_here(self):
+        """Return the number of years this person has lived in this city"""
+        return self.game.year - self.year_i_moved_here
+
+    @property
     def age_and_gender_description(self):
         """Return a string broadly capturing this person's age."""
         if self.age < 1:
@@ -2290,6 +2295,14 @@ class Person(object):
             return False
         else:
             return self.relationships[person].charge < config.charge_threshold_for_disliking_someone
+
+    def hates(self, person):
+        """Return whether this person hates the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge < config.charge_threshold_for_hating_someone
 
 
 class PersonExNihilo(Person):
