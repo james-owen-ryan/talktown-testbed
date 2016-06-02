@@ -687,6 +687,10 @@ class Person(object):
         else:
             return None
 
+    @property
+    def first_home(self):
+        return self.moves[0].new_home
+
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         # Sex
