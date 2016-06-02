@@ -1,4 +1,7 @@
 //TODO: fix window arith
+//FIX GAME SIZE
+//THEN FIX COLLISION
+// <|:-)
 var gameSize = 1000;
 /********************************************
 *                                           *
@@ -8,12 +11,10 @@ var gameSize = 1000;
 var preloadReady = false;
 
 function parseLotsJson(json){
-	var coordinates;
-	var xCoord;
-	var yCoord;
-	var dict = JSON.parse(json);
+	var coordinates, xCoord, yCoord, dict, value;
+	dict = JSON.parse(json);
 	for(var key in dict) {
-		var value = dict[key];
+		value = dict[key];
 		console.log(key, value);
 		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
@@ -24,28 +25,27 @@ function parseLotsJson(json){
 }
 
 function renderLots(x, y, value){
-	var width = ((x-0.625)*(gameSize/8))-(gameSize/16);
-	var height = ((y-0.625)*(gameSize/8))-(gameSize/16);
-	var posX = x.toString().substring(2, x.length);
-	var posY = y.toString().substring(2, y.length);
+	var width, height, posX, posY, building, scaleX, scaleY;
+	width = ((x-0.625)*(gameSize/8))-(gameSize/16);
+	height = ((y-0.625)*(gameSize/8))-(gameSize/16);
+	posX = x.toString().substring(2, x.length);
+	posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
-		var building = game.add.sprite(width,
-									 height,
-									 'house');
+		building = game.add.sprite(width, height, 'house');
 	} else if (value == "NoneType") {
-		var building = game.add.sprite(width,
-									 height,
-									 'empty_lot');
+		building = game.add.sprite(width, height, 'empty_lot');
 	} else {
-		var building = game.add.sprite(width,
- 									 height,
-									 'business');
+		building = game.add.sprite(width, height, 'business');
 	}
-	buildingGroup.add(building);
+
+	game.physics.p2.enable(building);
+	building.body.setRectangleFromSprite(building);
+
+	building.body.static = true;
+	building.body.immovable = true;
 	
-	
-	var scaleX = (gameSize/23)/building.width;	
-	var scaleY = (gameSize/23)/building.height;
+	scaleX = (gameSize/23)/building.width;	
+	scaleY = (gameSize/23)/building.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
 	if (posX.valueOf() == "25") {
@@ -72,17 +72,10 @@ function renderLots(x, y, value){
 
 
 function parseBlocksJson(json){
-	var coordinates;
-	var startX;
-	var startY;
-	var endX;
-	var endY;
-	var dir;
-	var list = JSON.parse(json);
-
-	
-	var listLength = list.length;
-	for (var i = 0; i < listLength; i++) {
+	var coordinates, startX, startY, endX, endY, dir, list, length;
+	list = JSON.parse(json);
+	length = list.length;
+	for (var i = 0; i < length; i++) {
 		coordinates = list[i].split(', ');
 
 		startX = coordinates[0];
@@ -107,9 +100,9 @@ function parseBlocksJson(json){
 function renderBlocks(startX, startY, endX, endY, dir){
 	console.log("render blocks");
 	console.log("start x is" + startX);
-	var x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
-	var y = ((startY-0.625)*(gameSize/8))-(gameSize/16);
-	var cont, block, scaleX, scaleY;
+	var x, y, cont, block, scaleX, scaleY;
+	x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
+	y = ((startY-0.625)*(gameSize/8))-(gameSize/16);
 	cont = true;
 	while (cont){
 		block = game.add.sprite(x, y, 'block');
@@ -152,121 +145,72 @@ var cursors;
 var player;
 
 function create() {
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-	
-    buildingGroup = game.add.group();
-	//  Create a Group that will sit above the background image
-    playerGroup = game.add.group();
-	
-	
-    //game.stage.backgroundColor = '#2d2d2d';
-
-    //  Make our game world gameSizexgameSize pixels in size (the default is to match the game size)
+    //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
-
-
+	
+	//Start physics system that enables player movement and colliders
 	game.physics.startSystem(Phaser.Physics.P2JS);
+	
+    //Create a Group that will sit above the background image
+    playerGroup = game.add.group();	
 
+	//Add our player sprite to the world and allow it to move/collide
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+	game.physics.p2.enable(player);
+	player.body.setRectangle(5,5);
 	
-	
-	
-	//Determines render order
+	//Determines render order (player on top of blocks)
 	playerGroup.add(player);
-    game.physics.p2.enable(player);
 
+	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();
 
+	//Camera
     game.camera.follow(player);
 
+    //game.stage.backgroundColor = '#2d2d2d';
 
 }
-
+//Determine movement speed
+var speed = 300;
 function update() {
+	//Render player on top
 	game.world.bringToTop(playerGroup);
+	
+	//Set velocity and rotation to zero
     player.body.setZeroVelocity();
+	player.body.setZeroRotation();
 
+	//Check keyboard input and move accordingly
     if (cursors.up.isDown)
     {
 		player.body.velocity.y = 0;
-		player.body.velocity.y = -300;
-        //player.body.moveUp(300)
+		player.body.velocity.y = -speed;
+        //player.body.moveUp(speed)
     }
     else if (cursors.down.isDown)
     {
 		player.body.velocity.x = 0;
-		player.body.velocity.y = 300;
-        //player.body.moveDown(300);
+		player.body.velocity.y = speed;
+        //player.body.moveDown(speed);
     }
 
     if (cursors.left.isDown)
     {
 		player.body.velocity.y = 0;
-		//player.body.moveLeft(300);
-        player.body.velocity.x = -300;
+		//player.body.moveLeft(speed);
+        player.body.velocity.x = -speed;
     }
     else if (cursors.right.isDown)
     {
 		player.body.velocity.y = 0;
-		player.body.velocity.x = 300;
-        //player.body.moveRight(300);
+		player.body.velocity.x = speed;
+        //player.body.moveRight(speed);
     }
 
 }
 
 function render() {
-
     game.debug.cameraInfo(game.camera, 32, 32);
     game.debug.spriteCoords(player, 32, 500);
 }
-/*
-
-	preloadReady = true;
-
-}
-var player;
-function create() {
-	game.world.setBounds(0, 0, 400, 400);
-
-    game.physics.startSystem(Phaser.Physics.P2JS);
-
-    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-
-    game.physics.p2.enable(player);
-
-    cursors = game.input.keyboard.createCursorKeys();
-
-    game.camera.follow(player);
-
-}
-
-function update() {
-
-    player.body.setZeroVelocity();
-
-    if (cursors.up.isDown)
-    {
-        player.body.moveUp(300)
-    }
-    else if (cursors.down.isDown)
-    {
-        player.body.moveDown(300);
-    }
-
-    if (cursors.left.isDown)
-    {
-        player.body.velocity.x = -300;
-    }
-    else if (cursors.right.isDown)
-    {
-        player.body.moveRight(300);
-    }
-
-}
-
-function render() {
-
-    game.debug.cameraInfo(game.camera, 32, 32);
-    game.debug.spriteCoords(player, 32, 500);
-
-}*/
