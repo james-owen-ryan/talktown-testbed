@@ -202,9 +202,10 @@ class Receptor(object):
 
     def __str__(self):
         """Return string representation."""
-        return "A receptor for '{signal_name}' signals in the mind of {owner}".format(
+        return "A receptor for '{signal_name}' signals in the mind of {owner} (voltage: {voltage})".format(
             signal_name=self.signal,
-            owner=self.mind.person.name
+            owner=self.mind.person.name,
+            voltage=self.voltage
         )
 
     def activate(self):
@@ -242,10 +243,14 @@ class Synapse(object):
 
     def __str__(self):
         """Return string representation."""
-        return "A synapse between receptors for '{receptor1}' and '{receptor2}' signals in the mind of {owner}".format(
-            receptor1=self.receptors[0].signal,
-            receptor2=self.receptors[1].signal,
-            owner=self.receptors[0].mind.person.name
+        return (
+            "A synapse between receptors for '{receptor1}' and '{receptor2}' signals in the mind "
+            "of {owner} (weight: {weight})".format(
+                receptor1=self.receptors[0].signal,
+                receptor2=self.receptors[1].signal,
+                owner=self.receptors[0].mind.person.name,
+                weight=self.weight
+            )
         )
 
     def other_receptor(self, receptor):
