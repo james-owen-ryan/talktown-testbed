@@ -934,7 +934,7 @@ class ThoughtGenerator(Productionist):
                 # Penalize for symbol having already been expanded by this person to
                 # produce a recent thought
                 if nonterminal_symbol in self.nonrepeatable_symbols:
-                    score *= config.penalty_for_expanding_nonrepeatable_symbol_in_thought
+                    score *= config.penalty_multiplier_for_expanding_nonrepeatable_symbol_in_thought
         return score
 
     def evaluate_production_rule(self, rule):
