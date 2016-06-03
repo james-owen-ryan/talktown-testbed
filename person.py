@@ -691,6 +691,11 @@ class Person(object):
     def first_home(self):
         return self.moves[0].new_home
 
+    @property
+    def requited_love_interest(self):
+        """Return whether this person is their love interest's love interest."""
+        return self.love_interest and self.love_interest.love_interest and self.love_interest.love_interest is self
+
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         # Sex
