@@ -696,6 +696,11 @@ class Person(object):
         """Return whether this person is their love interest's love interest."""
         return self.love_interest and self.love_interest.love_interest and self.love_interest.love_interest is self
 
+    @property
+    def unrequited_love_interest(self):
+        """Return whether this person is not their love interest's love interest."""
+        return self.love_interest and self.love_interest.love_interest is not self
+
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
         # Sex
