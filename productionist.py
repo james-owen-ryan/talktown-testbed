@@ -134,7 +134,7 @@ class Productionist(object):
         # and forward-chaining from this symbol
         for symbol in satisficing_symbols:
             raw_derivation_built_by_targeting_this_symbol = self._target_symbol(
-                symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric
+                symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric, n_tabs=0
             )
             if raw_derivation_built_by_targeting_this_symbol:  # Will be None if targeting was unsuccessful
                 return raw_derivation_built_by_targeting_this_symbol
@@ -143,8 +143,13 @@ class Productionist(object):
             print "Productionist could not generate a derivation satisfying the expression {}".format(
                 markup_lambda_expression
             )
+            print "Here's all the satisficing symbols it attempted to begin from, along with their preconditions:"
+            for symbol in satisficing_symbols:
+                print "\t{}".format(symbol)
+                for precondition in symbol.preconditions:
+                    print "\t\t{}".format(precondition)
 
-    def _target_symbol(self, symbol, state, rule_evaluation_metric):
+    def _target_symbol(self, symbol, state, rule_evaluation_metric, n_tabs):
         """Attempt to successfully terminally backward-chain and forward-chain from this symbol.
 
         If successful, this method will return a LineOfDialogue object, which is a templated
@@ -152,18 +157,18 @@ class Productionist(object):
         method fails at any point, it will immediately return None.
         """
         if self.debug:
-            print "Targeting symbol {}...".format(symbol)
+            print "{}Targeting symbol {}...".format('  '*n_tabs, symbol)
         # Attempt forward chaining first
         partial_raw_template_built_by_forward_chaining = self._forward_chain_from_symbol(
-            symbol=symbol, state=state, rule_evaluation_metric=rule_evaluation_metric,
+            symbol=symbol, state=state, n_tabs=n_tabs, rule_evaluation_metric=rule_evaluation_metric,
             symbol_is_the_targeted_symbol=True
         )
         if not partial_raw_template_built_by_forward_chaining:
             if self.debug:
-                print "Could not successfully forward chain from the targeted symbol {}".format(symbol)
+                print "Could not successfully forward chain from the targeted symbol {}\n*".format(symbol)
             return None
         if self.debug:
-            print "Successfully forward chained from targeted symbol {} all the way to terminal expansion {}".format(
+            print "Successfully forward chained from targeted symbol {} all the way to terminal expansion '{}'".format(
                 symbol, symbol.expansion
             )
         # Forward chaining was successful, so now attempt backward chaining, unless the
@@ -187,7 +192,7 @@ class Productionist(object):
         )
         return complete_raw_template
 
-    def _forward_chain_from_symbol(self, symbol, state, rule_evaluation_metric, retracing_chains=False,
+    def _forward_chain_from_symbol(self, symbol, state, n_tabs, rule_evaluation_metric, retracing_chains=False,
                                    symbol_is_the_targeted_symbol=False):
         """Attempt to successfully terminally forward-chain from the given symbol, i.e.,
         attempt to terminally expand a symbol.
@@ -198,7 +203,7 @@ class Productionist(object):
         symbol. If this method fails at any point, it will immediately return None.
         """
         if self.debug:
-            print "Attempting to forward chain from symbol {}...".format(symbol)
+            print "{}Attempting to forward chain from symbol {}...".format('  '*n_tabs, symbol)
         # First check for whether this symbol's preconditions are satisfied and whether
         # the use of its expansion in a line of dialogue would cause a conversational
         # violation to be incurred
@@ -211,7 +216,7 @@ class Productionist(object):
             rule_on_our_chain = next(r for r in candidate_production_rules if r.viable)
             return self._target_production_rule(
                 rule=rule_on_our_chain, state=state, rule_evaluation_metric=rule_evaluation_metric,
-                retracing_chains=retracing_chains
+                n_tabs=n_tabs+1, retracing_chains=retracing_chains
             )
         except StopIteration:
             pass
@@ -224,7 +229,7 @@ class Productionist(object):
         for production_rule in candidate_production_rules:
             terminal_expansion_yielded_by_firing_that_production_rule = self._target_production_rule(
                 rule=production_rule, state=state, rule_evaluation_metric=rule_evaluation_metric,
-                retracing_chains=retracing_chains
+                n_tabs=n_tabs+1, retracing_chains=retracing_chains
             )
             if terminal_expansion_yielded_by_firing_that_production_rule:
                 # Save this successful terminal expansion of this symbol, in case we
@@ -272,7 +277,8 @@ class Productionist(object):
         for production_rule in candidate_production_rules:
             this_production_rule_successfully_fired = (
                 self._target_production_rule(
-                    rule=production_rule, state=state, rule_evaluation_metric=rule_evaluation_metric
+                    rule=production_rule, state=state, rule_evaluation_metric=rule_evaluation_metric,
+                    n_tabs=0
                 )
             )
             if this_production_rule_successfully_fired:
@@ -306,16 +312,17 @@ class Productionist(object):
             print "Retraversing now from top-level symbol {}".format(start_symbol)
         first_breadcrumb = next(rule for rule in start_symbol.production_rules if rule.viable)
         return self._target_production_rule(
-            rule=first_breadcrumb, state=state, retracing_chains=True, rule_evaluation_metric=rule_evaluation_metric
+            rule=first_breadcrumb, state=state, retracing_chains=True, rule_evaluation_metric=rule_evaluation_metric,
+            n_tabs=0
         )
 
-    def _target_production_rule(self, rule, state, rule_evaluation_metric, retracing_chains=False):
+    def _target_production_rule(self, rule, state, rule_evaluation_metric, n_tabs, retracing_chains=False):
         """Attempt to terminally expand this rule's head."""
         if self.debug:
             if rule.viable:
-                print "Retracing our chains via rule {}".format(rule)
+                print "{}Retracing our chains via rule {}".format('  '*n_tabs, rule)
             else:
-                print "Targeting production rule {}...".format(rule)
+                print "{}Targeting production rule {}...".format('  '*n_tabs, rule)
         terminally_expanded_symbols_in_this_rule_body = []
         for symbol in rule.body:
             if type(symbol) == unicode:  # Terminal symbol (no need to expand)
@@ -326,17 +333,17 @@ class Productionist(object):
             else:  # Nonterminal symbol that we have not yet successfully expanded
                 terminal_expansion_of_that_symbol = self._forward_chain_from_symbol(
                     symbol=symbol, state=state, retracing_chains=retracing_chains,
-                    rule_evaluation_metric=rule_evaluation_metric
+                    rule_evaluation_metric=rule_evaluation_metric, n_tabs=n_tabs+1
                 )
                 if terminal_expansion_of_that_symbol:
                     if retracing_chains:
                         self.symbols_expanded_to_produce_the_terminal_derivation.add(symbol)
                         if self.debug:
-                            print "Traversed through symbol {}".format(symbol)
+                            print "{}Traversed through symbol {}".format('  '*n_tabs, symbol)
                     terminally_expanded_symbols_in_this_rule_body.append(terminal_expansion_of_that_symbol)
                 else:
                     if self.debug:
-                        print "Abandoning production rule {}".format(rule)
+                        print "{}Abandoning production rule {}".format('  '*n_tabs, rule)
                     return None
         # You successfully expanded all the symbols in this rule body
         rule.viable = True
@@ -965,7 +972,9 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
                 if tagset == "Preconditions":
                     self.preconditions.add(Precondition(tag=tag))
                 elif tagset == "Signals":
-                    symbol, weight = tag.split()
+                    symbol_and_weight = tag.split()
+                    symbol = ' '.join(symbol_and_weight[:-1])
+                    weight = symbol_and_weight[-1]
                     weight = float(weight)
                     symbol_weight_tuple = (symbol, weight)
                     self.signals.append(symbol_weight_tuple)
@@ -975,6 +984,10 @@ class ThoughtNonterminalSymbol(NonterminalSymbol):
                     self.nonrepeatable = eval(tag)
                 else:
                     raise Exception('Unknown tagset encountered: {}'.format(tagset))
+        # KLUDGE 06-02-2016: IF COLON IS IN A SYMBOL'S NAME (E.G., 'do depart : i hate this town'),
+        # INFER IT BEING NONREPEATABLE
+        if ':' in self.tag:
+            self.nonrepeatable = True
 
     @property
     def all_markup(self):
@@ -1059,12 +1072,49 @@ class Thought(object):
         thinker = self.thinker  # Needed to evaluate the signal, if it's truly a runtime signal
         try:
             return str(eval(signal))
-        except NameError:  # It's not a runtime variable, but just a regular string, so return that
+        except (NameError, SyntaxError):  # It's not a runtime variable, but just a regular string, so return that
             return signal
 
     def realize(self):
         """Return a filled-in template according to the world state during the current conversation turn."""
-        return ''.join(element.realize(state=self.thinker) for element in self.template)
+        raw_realization = ''.join(element.realize(state=self.thinker) for element in self.template)
+        return self._postprocess_raw_realization(raw_realization=str(raw_realization))
+
+    @staticmethod
+    def _postprocess_raw_realization(raw_realization):
+        """Postprocess a raw thought realization to clean up punctuation and capitalization."""
+        # postprocessed_realization = ''
+        # sentence_delimiting_punctuation = {'.', '?', '!'}
+        # clause_delimiting_punctuation = {',', ';'}
+        # to_make_uppercase = set()
+        # to_make_lowercase = set()
+        # for i, character in enumerate(raw_realization):
+        #     if i == 0 or i in to_make_uppercase:
+        #         postprocessed_realization += character.upper()
+        #     elif i in to_make_lowercase:
+        #         postprocessed_realization += character.lower()
+        #     else:
+        #         postprocessed_realization += character
+        #     if character in sentence_delimiting_punctuation:
+        #         part_of_ellipsis = (
+        #             raw_realization[i] == '.' and
+        #             (i != 0 and raw_realization[i-1] == '.' or
+        #                 (i < len(raw_realization)-1 and raw_realization[i+1] == '.')
+        #             )
+        #         )
+        #         # Make sure there's whitespace trailing after this punctuation mark
+        #         if len(raw_realization) > i+1 and raw_realization[i+1] != ' ' and not part_of_ellipsis:
+        #             postprocessed_realization += ' '
+        #         # Make sure the next character after the trailing whitespace is capitalized
+        #         to_make_uppercase.add(i+2)
+        #     elif character in clause_delimiting_punctuation:
+        #         # Make sure there's whitespace trailing after this punctuation mark
+        #         if len(raw_realization) > i+1 and raw_realization[i+1] != ' ':
+        #             postprocessed_realization += ' '
+        #         # Make sure the next character after the trailing whitespace is *not* capitalized
+        #         to_make_lowercase.add(i+2)
+        # return postprocessed_realization
+        return raw_realization
 
     def execute(self):
         """Register the effects of this thought on its thinker."""
