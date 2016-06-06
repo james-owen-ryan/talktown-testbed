@@ -2489,16 +2489,13 @@ class Config(object):
             ####################
 
         self.path_to_dialogue_nlg_json_grammar_specification = (
-            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlg.json'
-            # './content/talktown-dialogue-nlg.json'
+            './content/talktown-dialogue-nlg.json'
         )
         self.path_to_dialogue_nlu_json_grammar_specification = (
-            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-dialogue-nlu.json'
-            # './content/talktown-dialogue-nlu.json'
+            './content/talktown-dialogue-nlu.json'
         )
         self.path_to_thought_nlg_json_grammar_specification = (
-            '/Users/jamesryan/Desktop/Projects/Personal/anytown/content/talktown-thoughts.json'
-            # './content/talktown-thoughts.json'
+            './content/talktown-thoughts.json'
         )
         # Frame definitions
         self.conversational_frames = {
@@ -2634,6 +2631,8 @@ class Config(object):
         self.action_potential_signal_weight_multiplier = 0.1  # Multiplies against the synapse weight
         self.strength_increase_to_thought_signal_for_nonterminal_signal_annotation = 1
         self.application_rate_multiplier_scoring_boost = 0.000001
+        # Juke Joint parameters that have to live here
+        self.summative_thought_receptor_voltage_threshold = 21
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
