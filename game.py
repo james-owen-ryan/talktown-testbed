@@ -1,3 +1,4 @@
+import sys
 from config import Config
 from productionist import DialogueGenerator, ThoughtGenerator
 from impressionist import Impressionist
@@ -109,7 +110,7 @@ class Game(object):
         # Implant knowledge into everyone who is living to simulate knowledge
         # phenomena that would have occurred during the lo-fi simulation but
         # wasn't enacted due to reasons of computing efficiency
-        print "Implanting knowledge..."
+        print "\nImplanting knowledge..."
         for p in self.city.residents:
             if p.age > 3:
                 p.implant_knowledge()
@@ -278,6 +279,14 @@ class Game(object):
                         if person.age > 3:  # Must be at least four years old to socialize
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
                 last_simulated_day = self.ordinal_date
+            # Write out samples from the event stream to stdout
+            try:
+                recent_event = random.choice(self.events[-10:])
+                recent_event_str = str(recent_event)[:94]
+                sys.stdout.write('\r' + recent_event_str.ljust(94))
+                sys.stdout.flush()
+            except (NameError, IndexError):  # This won't work for the first iteration of the loop
+                pass
 
     def potentially_establish_a_new_business(self):
         """Potentially have a new business get constructed in town."""
@@ -448,7 +457,7 @@ class Game(object):
                 # Happy New Year
                 self.true_year = new_date_tuple.year
                 self.year = new_date_tuple.year
-                print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
+                # print self.year, len(self.city.vacant_lots), len(self.city.vacant_homes), self.city.pop
             self.month = new_date_tuple.month
             self.day = new_date_tuple.day
             self.date = self.get_date()
