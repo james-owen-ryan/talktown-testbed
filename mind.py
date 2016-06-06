@@ -61,6 +61,13 @@ class Mind(object):
         number_of_recent_thoughts = self.person.game.config.number_of_recent_thoughts
         return self.thoughts[:number_of_recent_thoughts]
 
+    def last_thought_had_signal(self, signal_name):
+        """Return this person's last thought."""
+        if self.thoughts:
+            return signal_name in self.thoughts[-1].signals
+        else:
+            return False
+
     def closest_match(self, features, entity_type='person'):
         """Match a set of features describing an entity against this person's mental models to return
         a closest match.
@@ -222,6 +229,14 @@ class Receptor(object):
             activations.add((activated_signal, activated_signal_weight))
         return activations
 
+    def most_associated_signals(self, n=3, excluding=None):
+        """Return the signals associated with n heaviest synapses connected to this receptor."""
+        excluding = excluding if excluding else []
+        synapses_sorted_by_weight = sorted(
+            {s for s in self.synapses if s.signal not in excluding}, key=lambda s: self.synapses[s].weight
+        )
+        return [s.signal for s in synapses_sorted_by_weight][:n]
+
 
 class Synapse(object):
     """A synapse in the mind of a person that connects two signal receptors and has a weight."""
@@ -260,4 +275,3 @@ class Synapse(object):
     def strengthen(self):
         """Strengthen this synapse."""
         self.weight += self.config.signal_receptor_synapse_weight_increase_increment
-
