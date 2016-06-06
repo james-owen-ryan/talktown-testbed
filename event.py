@@ -812,7 +812,7 @@ class Hiring(Event):
     def __str__(self):
         """Return string representation."""
         return "Hiring of {} as {} at {} in {}".format(
-            self.subject.name, self.occupation.__class__.__name__, self.occupation.company.name, self.year
+            self.subject.name, self.occupation.__class__.__name__, self.company.name, self.year
         )
 
 
