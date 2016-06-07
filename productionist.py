@@ -1124,4 +1124,17 @@ class Thought(object):
         self.thinker.mind.update_receptor_voltages_and_synapse_weights(voltage_updates=self.signals)
         # Execute the literal effects associated with this thought
         for effect in self.effects:
+            effect = eval(effect)
             effect(thinker=self.thinker)()
+
+
+class ProductionistLite(Productionist):
+    """A subclass to Productionist that is meant for lightweight generating of arbitrary text with few constraints."""
+
+    def __init__(self, game):
+        """Initialize a DialogueGenerator object."""
+        super(ProductionistLite, self).__init__(game)
+
+    def target_description_type(self):
+        """Attempt to generate a textual description of the given type."""
+        pass
