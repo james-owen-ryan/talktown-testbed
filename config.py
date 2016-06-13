@@ -17,7 +17,7 @@ class Config(object):
         self.chance_of_a_coal_mine_at_time_of_town_founding = 0.2
         self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
-        self.date_gameplay_begins = (1979, 8, 19)
+        self.date_gameplay_begins = (1987, 10, 18)
         self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
         self.year_worldgen_begins = self.date_worldgen_begins[0]
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
@@ -2356,8 +2356,8 @@ class Config(object):
                 ),
                 'goatee': (
                     ((0.0, 0.4), 'soul patch'),
-                    ((0.4, 0.8), 'sideburns'),
-                    ((0.8, 0.9), 'mustache'),
+                    ((0.4, 0.8), 'mustache'),
+                    ((0.8, 0.9), 'sideburns'),
                     ((0.9, 0.98), 'none'),
                     ((0.98, 1.0), 'full beard'),
                 ),
@@ -2632,7 +2632,7 @@ class Config(object):
         self.strength_increase_to_thought_signal_for_nonterminal_signal_annotation = 1
         self.application_rate_multiplier_scoring_boost = 0.000001
         # Juke Joint parameters that have to live here
-        self.summative_thought_receptor_voltage_threshold = 21
+        self.summative_thought_receptor_voltage_threshold = 17
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
