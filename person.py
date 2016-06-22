@@ -39,7 +39,7 @@ class Person(object):
             self.parents = {self.mother, self.father}
             # Set date of birth
             self.birth_year = birth.year
-            self.birthday = (birth.month, birth.day)  # This gets added to Game.birthdays by Birth.__init__(0
+            self.birthday = (birth.month, birth.day)  # This gets added to Game.birthdays by Birth.__init__()
             # Set attributes pertaining to age
             self.age = 0
             self.adult = False
