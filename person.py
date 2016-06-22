@@ -54,11 +54,9 @@ class Person(object):
             self.birth_year = None  # Gets set by PersonExNihilo.__init__()
             self.birthday = (None, None)  # Gets set by PersonExNihilo.get_random_day_of_year()
             # Set attributes pertaining to age
-            self.age = None  # Will get initialized by PersonExNihilo.__init__()
-            self.adult = True if self.age >= 18 else False
-            self.ready_to_work = (
-                True if self.age >= self.game.config.age_people_start_working(year=self.game.year) else False
-            )
+            self.age = None  # These will get initialized by PersonExNihilo.__init__()
+            self.adult = False
+            self.ready_to_work = False
         # Set sex
         self.male, self.female = (True, False) if random.random() < 0.5 else (False, True)
         self.tag = ''  # Allows players to tag characters with arbitrary strings
@@ -2347,8 +2345,10 @@ class PersonExNihilo(Person):
         self.birth_year = self._init_birth_year(job_level=job_level)
         # Set age given birth year that was attributed
         self.age = self.game.true_year - self.birth_year
-        if self.age >= 18:
-            self.adult = True
+        self.adult = True if self.age >= 18 else False
+        self.ready_to_work = (
+            True if self.age >= self.game.config.age_people_start_working(year=self.game.true_year) else False
+        )
         # Determine a random birthday and add it to the game's listing of all characters' birthdays
         self.birthday = self._get_random_birthday()
         try:
