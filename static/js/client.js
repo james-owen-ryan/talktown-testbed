@@ -2,7 +2,7 @@
 //FIX GAME SIZE
 //THEN FIX COLLISION
 // <|:-)
-var gameSize = 1000;
+var gameSize = 1200;
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -15,19 +15,21 @@ function parseLotsJson(json){
 	dict = JSON.parse(json);
 	for(var key in dict) {
 		value = dict[key];
-		console.log(key, value);
+		//console.log(key, value);
 		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
 		xCoord = coordinates[0];
 		yCoord = coordinates[1];
-		renderLots(xCoord, yCoord, value);
+		//renderLots(xCoord, yCoord, value);
 	}
 }
 
 function renderLots(x, y, value){
 	var width, height, posX, posY, building, scaleX, scaleY;
-	width = ((x-0.625)*(gameSize/8))-(gameSize/16);
+	//width = ((x-0.625)*(gameSize/8))-(gameSize/16);
+	width = ((x)*(gameSize/8))-(gameSize/16);
 	height = ((y-0.625)*(gameSize/8))-(gameSize/16);
+	console.log("x: " + width + " y: " + height);
 	posX = x.toString().substring(2, x.length);
 	posY = y.toString().substring(2, y.length);
 	if (value == "House") { 
@@ -37,12 +39,6 @@ function renderLots(x, y, value){
 	} else {
 		building = game.add.sprite(width, height, 'business');
 	}
-
-	game.physics.p2.enable(building);
-	building.body.setRectangleFromSprite(building);
-
-	building.body.static = true;
-	building.body.immovable = true;
 	
 	scaleX = (gameSize/23)/building.width;	
 	scaleY = (gameSize/23)/building.height;
@@ -61,6 +57,14 @@ function renderLots(x, y, value){
 	}
 	building.scale.setTo(scaleX,scaleY);
 
+	//collisions
+	/*	game.physics.p2.enable(building);
+	building.body.setRectangleFromSprite(building);
+
+	building.body.static = true;
+	building.body.immovable = true;
+*/
+	
 }
 
 
@@ -101,27 +105,36 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	console.log("render blocks");
 	console.log("start x is" + startX);
 	var x, y, cont, block, scaleX, scaleY;
-	x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
-	y = ((startY-0.625)*(gameSize/8))-(gameSize/16);
+	//x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
+	//block number * unit size	
+// gamesize/9 - (gamesize/9-width of block)	
+//the reason the unit is 1/9 of gamesize and not 1/8 is ecause the last block will be cut off otherwise.
+//instead, we are left with extra space
+	x = ((startX-1)*(gameSize/9));//-(gameSize/16);
+	y = ((startY-1)*(gameSize/9));//-(gameSize/16);
 	cont = true;
 	while (cont){
 		block = game.add.sprite(x, y, 'block');
-		scaleX = (gameSize/33)/block.width;	
-		scaleY = (gameSize/33)/block.height;
-		block.scale.setTo(scaleX,scaleY);
 	
+	
+	//FIX ENDINGS NOW, TO SHOW THE LEFT OVER SPACE
 		if (dir == "v") {
 			y += 1;
-			if (y > ((endY-scaleX)*(gameSize/8))-(gameSize/16)) {
+			if (y > ((endY-1)*(gameSize/9))) {//-(gameSize/16)) {
 				cont = false;
 			}
 		} else if (dir == "h") {
 			x += 1;
-			if (x > ((endX-scaleY)*(gameSize/8))-(gameSize/16)) {
+			if (x > ((endX-1)*(gameSize/9))) {//-(gameSize/16)) {
 				cont = false;
 			}
 		}
+	scaleX = (gameSize/33)/block.width;	
+	scaleY = (gameSize/33)/block.height;
+	block.scale.setTo(scaleX,scaleY);
+
 	}
+	
 }
 
 
