@@ -31,13 +31,10 @@ function renderLots(xCoord, yCoord, value){
 	
 	//subtract 1 to normalize the coordinates
 	x = xCoord - 1;
-	y = yCoord - 1;
+	y = yCoord - 1;	
 	x = (x*(gameSize/9)) + center;
 	y = (y*(gameSize/9)) + center;
 
-
-	tmpX = xCoord.toString().substring(2, xCoord.length);
-	tmpY = yCoord.toString().substring(2, yCoord.length);
 	if (value == "House") { 
 		building = game.add.sprite(x, y, 'house');
 	} else if (value == "NoneType") {
@@ -46,21 +43,26 @@ function renderLots(xCoord, yCoord, value){
 		building = game.add.sprite(x, y, 'business');
 	}
 	
-	scaleX = (gameSize/26)/building.width;	
-	scaleY = (gameSize/26)/building.height;
-	//depending on x and y, assign pivot and scale larger
-	//set x anchor
+	// logic for clustering lots
+	tmpX = xCoord.toString().substring(2, xCoord.length);
+	tmpY = yCoord.toString().substring(2, yCoord.length);
+	
 	if (tmpX.valueOf() == "25") {
 		building.anchor.x = -0.1;
 	} else if (tmpX.valueOf() == "75") {
 		building.anchor.x = 0.3;
 	}
-	//set y anchor
+
 	if (tmpY.valueOf() == "25") {
 		building.anchor.y = -0.1;
 	} else if (tmpY.valueOf() == "75") {
 		building.anchor.y = 0.3;
 	}
+	
+	// scale all the buildings smaller than roads
+	scaleX = (gameSize/26)/building.width;	
+	scaleY = (gameSize/26)/building.height;
+
 	building.scale.setTo(scaleX,scaleY);
 
 	//collisions
@@ -130,14 +132,15 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	
 	cont = true;
 	while (cont){
-		block = game.add.sprite(x, y, 'block');
 	
 		if (dir == "v") {
+			block = game.add.sprite(x, y, 'verBlock');
 			y += 1;
 			if (y > (endingBlockY*(gameSize/9))+center) {
 				cont = false;
 			}
 		} else if (dir == "h") {
+			block = game.add.sprite(x, y, 'horBlock');
 			x += 1;
 			if (x > (endingBlockX*(gameSize/9))+center) {
 				cont = false;
@@ -168,7 +171,8 @@ function preload() {
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('business', 'Sprites/business.png');
-	game.load.image('block', 'Sprites/block.png');
+	game.load.image('verBlock', 'Sprites/verBlock.png');
+	game.load.image('horBlock', 'Sprites/horBlock.png');
 }
 
 var cursors;
