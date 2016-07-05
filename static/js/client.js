@@ -179,21 +179,22 @@ var cursors;
 var player;
 
 function create() {
+	//Grass
 	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
 	
     //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
 	
 	//Start physics system that enables player movement and colliders
-	game.physics.startSystem(Phaser.Physics.P2JS);
+	game.physics.startSystem(Phaser.Physics.ARCADE);
 	
     //Create a Group that will sit above the background image
     playerGroup = game.add.group();	
 
 	//Add our player sprite to the world and allow it to move/collide
     player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-	game.physics.p2.enable(player);
-	player.body.setRectangle(5,5);
+	game.physics.arcade.enable(player);
+	//player.body.setRectangle(5,5);
 	
 	//Determines render order (player on top of blocks)
 	playerGroup.add(player);
@@ -213,14 +214,13 @@ function update() {
 	//Render player on top
 	game.world.bringToTop(playerGroup);
 	
-	//Set velocity and rotation to zero
-    player.body.setZeroVelocity();
-	player.body.setZeroRotation();
+    player.body.velocity.x = 0;
+    player.body.velocity.y = 0;
 
 	//Check keyboard input and move accordingly
     if (cursors.up.isDown)
     {
-		player.body.velocity.y = 0;
+		player.body.velocity.x = 0;
 		player.body.velocity.y = -speed;
         //player.body.moveUp(speed)
     }
@@ -243,6 +243,7 @@ function update() {
 		player.body.velocity.x = speed;
         //player.body.moveRight(speed);
     }
+		
 
 }
 
