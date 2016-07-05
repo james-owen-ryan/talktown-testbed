@@ -2,7 +2,9 @@
 //FIX GAME SIZE
 //THEN FIX COLLISION
 // <|:-)
-var gameSize = 1200;
+var gameSize = 1000;
+//magic number to center the town
+var center = gameSize/26;
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -20,46 +22,50 @@ function parseLotsJson(json){
 		coordinates = key.split(', ');
 		xCoord = coordinates[0];
 		yCoord = coordinates[1];
-		//renderLots(xCoord, yCoord, value);
+		renderLots(xCoord, yCoord, value);
 	}
 }
 
-function renderLots(x, y, value){
-	var width, height, posX, posY, building, scaleX, scaleY;
-	//width = ((x-0.625)*(gameSize/8))-(gameSize/16);
-	width = ((x)*(gameSize/8))-(gameSize/16);
-	height = ((y-0.625)*(gameSize/8))-(gameSize/16);
-	console.log("x: " + width + " y: " + height);
-	posX = x.toString().substring(2, x.length);
-	posY = y.toString().substring(2, y.length);
+function renderLots(xCoord, yCoord, value){
+	var x, y, tmpX, tmpY, building, scaleX, scaleY;
+	
+	//subtract 1 to normalize the coordinates
+	x = xCoord - 1;
+	y = yCoord - 1;
+	x = (x*(gameSize/9)) + center;
+	y = (y*(gameSize/9)) + center;
+
+
+	tmpX = xCoord.toString().substring(2, xCoord.length);
+	tmpY = yCoord.toString().substring(2, yCoord.length);
 	if (value == "House") { 
-		building = game.add.sprite(width, height, 'house');
+		building = game.add.sprite(x, y, 'house');
 	} else if (value == "NoneType") {
-		building = game.add.sprite(width, height, 'empty_lot');
+		building = game.add.sprite(x, y, 'empty_lot');
 	} else {
-		building = game.add.sprite(width, height, 'business');
+		building = game.add.sprite(x, y, 'business');
 	}
 	
-	scaleX = (gameSize/23)/building.width;	
-	scaleY = (gameSize/23)/building.height;
+	scaleX = (gameSize/26)/building.width;	
+	scaleY = (gameSize/26)/building.height;
 	//depending on x and y, assign pivot and scale larger
 	//set x anchor
-	if (posX.valueOf() == "25") {
-		building.anchor.x = 0.0;
-	} else if (posX.valueOf() == "75") {
+	if (tmpX.valueOf() == "25") {
+		building.anchor.x = -0.1;
+	} else if (tmpX.valueOf() == "75") {
 		building.anchor.x = 0.3;
 	}
 	//set y anchor
-	if (posY.valueOf() == "25") {
-		building.anchor.y = 0.0;
-	} else if (posY.valueOf() == "75") {
+	if (tmpY.valueOf() == "25") {
+		building.anchor.y = -0.1;
+	} else if (tmpY.valueOf() == "75") {
 		building.anchor.y = 0.3;
 	}
 	building.scale.setTo(scaleX,scaleY);
 
 	//collisions
 	/*	game.physics.p2.enable(building);
-	building.body.setRectangleFromSprite(building);
+	building.body.setR ectangleFromSprite(building);
 
 	building.body.static = true;
 	building.body.immovable = true;
@@ -102,30 +108,38 @@ function parseBlocksJson(json){
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
-	console.log("render blocks");
-	console.log("start x is" + startX);
+	//console.log("render blocks");
+	//console.log("start x is" + startX);
 	var x, y, cont, block, scaleX, scaleY;
-	//x = ((startX-0.625)*(gameSize/8))-(gameSize/16);
-	//block number * unit size	
-// gamesize/9 - (gamesize/9-width of block)	
-//the reason the unit is 1/9 of gamesize and not 1/8 is ecause the last block will be cut off otherwise.
-//instead, we are left with extra space
-	x = ((startX-1)*(gameSize/9));//-(gameSize/16);
-	y = ((startY-1)*(gameSize/9));//-(gameSize/16);
+		
+	// block number * unit size + center
+	// the reason the unit is 1/9 of gamesize and not 1/8
+	// is because the last block will be cut off otherwise.
+	//instead, we are left with extra space that we deal with 
+	// using "center"
+	
+	startingBlockX = startX - 1;
+	startingBlockY = startY - 1;
+	endingBlockX = endX - 1;
+	endingBlockY = endY - 1;
+
+	console.log("startingblockx is" + startingBlockX);
+	
+	x = (startingBlockX*(gameSize/9))+center;
+	y = (startingBlockY*(gameSize/9))+center;
+	
 	cont = true;
 	while (cont){
 		block = game.add.sprite(x, y, 'block');
 	
-	
-	//FIX ENDINGS NOW, TO SHOW THE LEFT OVER SPACE
 		if (dir == "v") {
 			y += 1;
-			if (y > ((endY-1)*(gameSize/9))) {//-(gameSize/16)) {
+			if (y > (endingBlockY*(gameSize/9))+center) {
 				cont = false;
 			}
 		} else if (dir == "h") {
 			x += 1;
-			if (x > ((endX-1)*(gameSize/9))) {//-(gameSize/16)) {
+			if (x > (endingBlockX*(gameSize/9))+center) {
 				cont = false;
 			}
 		}
@@ -147,6 +161,9 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
+	
+	game.load.image("background", "Sprites/grass.png");
+	
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
@@ -158,6 +175,8 @@ var cursors;
 var player;
 
 function create() {
+	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
+	
     //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
 	
