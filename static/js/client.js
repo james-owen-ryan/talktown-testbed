@@ -1,6 +1,9 @@
 var gameSize = 1000;
 //magic number to center the town
 var center = gameSize/26;
+//Determine movement speed
+var speed = 310 ;
+
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -23,6 +26,7 @@ function parseLotsJson(json){
 }
 
 var building;
+
 function renderLots(xCoord, yCoord, value){
 	var x, y, tmpX, tmpY, scaleX, scaleY;
 	
@@ -62,13 +66,17 @@ function renderLots(xCoord, yCoord, value){
 
 	building.scale.setTo(scaleX,scaleY);
 
+	buildingGroup.add(building);
+	
 	//collisions
 	addBuildingPhysics();
 	
 }
 
 function addBuildingPhysics(){
-	game.physics.enable(building, Phaser.Physics.ARCADE);
+	
+	
+game.physics.enable(building, Phaser.Physics.ARCADE);
 	building.body.setSize(building.width, building.height);
     building.body.immovable = true;
 	
@@ -175,6 +183,8 @@ var cursors;
 var player;
 
 function create() {
+	buildingGroup = game.add.physicsGroup();
+	
 	//Grass
 	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
 	//game.stage.backgroundColor = '#2d2d2d';
@@ -210,14 +220,20 @@ function addPlayerPhysics(){
 
 }
 
-//Determine movement speed
-var speed = 300;
-
 function update() {
+	if (game.physics.arcade.collide
+			(player, buildingGroup, collisionHandler, processHandler, this)){
+
+			console.log('boom');
+	}
+	
 	
 	//Render player on top
+	game.world.bringToTop(buildingGroup);
 	game.world.bringToTop(playerGroup);
+
 	
+	//Stop movement
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
 
@@ -248,8 +264,17 @@ function update() {
         //player.body.moveRight(speed);
     }
 		
-
 }
+
+
+function processHandler (player, veg) {
+}
+
+function collisionHandler (player, veg) {
+}
+
+
+
 
 function render() {
     game.debug.cameraInfo(game.camera, 32, 32);
