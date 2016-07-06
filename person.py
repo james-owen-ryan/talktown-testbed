@@ -39,7 +39,7 @@ class Person(object):
             self.parents = {self.mother, self.father}
             # Set date of birth
             self.birth_year = birth.year
-            self.birthday = (birth.month, birth.day)  # This gets added to Game.birthdays by Birth.__init__(0
+            self.birthday = (birth.month, birth.day)  # This gets added to Game.birthdays by Birth.__init__()
             # Set attributes pertaining to age
             self.age = 0
             self.adult = False
@@ -54,11 +54,9 @@ class Person(object):
             self.birth_year = None  # Gets set by PersonExNihilo.__init__()
             self.birthday = (None, None)  # Gets set by PersonExNihilo.get_random_day_of_year()
             # Set attributes pertaining to age
-            self.age = None  # Will get initialized by PersonExNihilo.__init__()
-            self.adult = True if self.age >= 18 else False
-            self.ready_to_work = (
-                True if self.age >= self.game.config.age_people_start_working(year=self.game.year) else False
-            )
+            self.age = None  # These will get initialized by PersonExNihilo.__init__()
+            self.adult = False
+            self.ready_to_work = False
         # Set sex
         self.male, self.female = (True, False) if random.random() < 0.5 else (False, True)
         self.tag = ''  # Allows players to tag characters with arbitrary strings
@@ -597,6 +595,11 @@ class Person(object):
         return self.moves[0].year
 
     @property
+    def years_i_lived_here(self):
+        """Return the number of years this person has lived in this city"""
+        return self.game.year - self.year_i_moved_here
+
+    @property
     def age_and_gender_description(self):
         """Return a string broadly capturing this person's age."""
         if self.age < 1:
@@ -675,12 +678,26 @@ class Person(object):
         """Return this person's boss, if they have one, else None."""
         if not self.occupation:
             return None
-        elif self.occupation.company.owner and self.occupation.company.owner is self:
+        elif self.occupation.company.owner and self.occupation.company.owner.person is self:
             return None
         elif self.occupation.company.owner:
             return self.occupation.company.owner.person
         else:
             return None
+
+    @property
+    def first_home(self):
+        return self.moves[0].new_home
+
+    @property
+    def requited_love_interest(self):
+        """Return whether this person is their love interest's love interest."""
+        return self.love_interest and self.love_interest.love_interest and self.love_interest.love_interest is self
+
+    @property
+    def unrequited_love_interest(self):
+        """Return whether this person is not their love interest's love interest."""
+        return self.love_interest and self.love_interest.love_interest is not self
 
     def get_feature(self, feature_type):
         """Return this person's feature of the given type."""
@@ -2291,6 +2308,14 @@ class Person(object):
         else:
             return self.relationships[person].charge < config.charge_threshold_for_disliking_someone
 
+    def hates(self, person):
+        """Return whether this person hates the given person."""
+        config = self.game.config
+        if person not in self.relationships:
+            return False
+        else:
+            return self.relationships[person].charge < config.charge_threshold_for_hating_someone
+
 
 class PersonExNihilo(Person):
     """A person who is generated from nothing, i.e., who has no parents.
@@ -2320,8 +2345,10 @@ class PersonExNihilo(Person):
         self.birth_year = self._init_birth_year(job_level=job_level)
         # Set age given birth year that was attributed
         self.age = self.game.true_year - self.birth_year
-        if self.age >= 18:
-            self.adult = True
+        self.adult = True if self.age >= 18 else False
+        self.ready_to_work = (
+            True if self.age >= self.game.config.age_people_start_working(year=self.game.true_year) else False
+        )
         # Determine a random birthday and add it to the game's listing of all characters' birthdays
         self.birthday = self._get_random_birthday()
         try:

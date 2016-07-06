@@ -2356,8 +2356,8 @@ class Config(object):
                 ),
                 'goatee': (
                     ((0.0, 0.4), 'soul patch'),
-                    ((0.4, 0.8), 'sideburns'),
-                    ((0.8, 0.9), 'mustache'),
+                    ((0.4, 0.8), 'mustache'),
+                    ((0.8, 0.9), 'sideburns'),
                     ((0.9, 0.98), 'none'),
                     ((0.98, 1.0), 'full beard'),
                 ),
@@ -2468,6 +2468,7 @@ class Config(object):
         # Thresholds for liking or disliking people
         self.charge_threshold_for_liking_someone = 20
         self.charge_threshold_for_disliking_someone = -3
+        self.charge_threshold_for_hating_someone = -200
 
             #################
             ##  ARTIFACTS  ##
@@ -2557,17 +2558,32 @@ class Config(object):
                     'recipient': ['END CONVERSATION']
                 }
             },
-            'TEST': {
-                'preconditions': lambda conversation: True,
+            'INITIATOR CURIOUS ABOUT RECIPIENT WORKPLACE': {
+                'preconditions': lambda conversation: (
+                    not conversation.initiator.belief(conversation.recipient, 'workplace') and
+                    not conversation.recipient.routine.working
+                ),
                 'obligations': {
-                    'initiator': ['ask do you know someone'],
+                    'initiator': [],
                     'recipient': []
                 },
                 'goals': {
                     'initiator': ['LEARN WORKPLACE OF STRANGER IN PUBLIC'],
-                    'recipient': ['LEARN WORKPLACE OF STRANGER IN PUBLIC']
+                    'recipient': []
                 }
             },
+            # 'TEST': {
+            #     'preconditions': lambda conversation: True,
+            #     'obligations': {
+            #         'initiator': [],
+            #         #'initiator': ['ask do you know someone'],
+            #         'recipient': []
+            #     },
+            #     'goals': {
+            #         'initiator': [],
+            #         'recipient': []
+            #     }
+            # },
         }
         # Definitions for conversational goals in terms of their steps and subgoals
         self.conversational_goals = {
@@ -2608,7 +2624,15 @@ class Config(object):
                 ##  THOUGHTS   ##
                 #################
 
-        self.penalty_for_thought_stimulus_not_being_associated_with_nonterminal_symbol = -1
+        self.number_of_recent_thoughts = 9  # Number of thoughts kept track of by Person.Mind.recent_thoughts
+        self.penalty_multiplier_for_expanding_nonrepeatable_symbol_in_thought = 0.01
+        self.signal_receptor_synapse_starting_weight = 1
+        self.signal_receptor_synapse_weight_increase_increment = 1
+        self.action_potential_signal_weight_multiplier = 0.1  # Multiplies against the synapse weight
+        self.strength_increase_to_thought_signal_for_nonterminal_signal_annotation = 1
+        self.application_rate_multiplier_scoring_boost = 0.000001
+        # Juke Joint parameters that have to live here
+        self.summative_thought_receptor_voltage_threshold = 17
 
     @staticmethod
     def fit_probability_distribution(relative_frequencies_dictionary):
