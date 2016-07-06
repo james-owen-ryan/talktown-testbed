@@ -44,19 +44,6 @@
 				var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 				var ready = false;
 				
-				// event handler for returned game world info from server
-				/*socket.on('return info', function(msg) {
-					$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': JS received some info about: ' + msg.data).html());
-				});
-				
-				// handler for posting a message
-				// these send data to the server in a variety of ways
-				$('form#emit').submit(function(event) {
-					console.log("JAVASCRIPT: User wants to post this message: " + $('#emit_data').val());
-					socket.emit('my event', {data: $('#emit_data').val()});
-					return false;
-				}); */
-				
 				
 				/********************************************
 				*	receive json dict of lots				*
@@ -108,68 +95,14 @@
 				
 				requestWorldInfo();
 				
-		
-				
-				/*function checkPreloadReady() {
-					if (!preloadReady) {
-							window.setTimeout(checkPreloadReady, 1000);
-							console.log("Called checkPreloadReady(), !ready");	
-					} else {
-							//call this only when preloading is done
-							console.log("preload is ready");
-							requestWorldInfo();
-					}
-				}
-				
-				
-				
-				function newGame() { 
-					game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-					requestWorldInfo();
-					//checkPreloadReady();
-				}
-				*/
-				
-				
-				/********************************************
-				*	keep checking that world is generated	*
-				********************************************/ 
-				// comment out checkready and uncomment requestworldinfo()
-				// if redirecting ^
-				
-				/*function checkReady() {
-					socket.emit('ready');
-					if (!ready) {
-						window.setTimeout(checkReady, 1000);
-						console.log("Called checkReady(), !ready");
-					} else {
-						console.log("world is ready");
-						//newGame();
-						//game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
-						requestWorldInfo();
-					}
-				}
-				checkReady();*/
+	
 			});
 			
-			//requestWorldInfo();
+
 			
 		</script>
 	</head>
 	<body style = "padding:0px;margin:0px">
 		<div id = "talktown" style="offset:0;width:100%;height:100%;margin:0;padding:0"></div>
-		<!--<body>
-			<h1>Flask-SocketIO Test</h1>
-			<h2>Send:</h2>
-			<form id="emit" method="POST" action='#'>
-				<input type="text" name="emit_data" id="emit_data" placeholder="Message">
-				<input type="submit" value="Send a message">
-			</form>
-			<form id="disconnect" method="POST" action="#">
-				<input type="submit" value="Disconnect">
-			</form>
-			<h2>Receive:</h2>
-			<div id="log"></div>
-		-->
 	</body>
 </html>

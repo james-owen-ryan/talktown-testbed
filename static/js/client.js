@@ -1,22 +1,23 @@
 var gameSize = 1000;
-//magic number to center the town
+//number to center the town
 var center = gameSize/26;
 //Determine movement speed
 var speed = 310 ;
+var cursors;
+var player;
+var building;
 
 /********************************************
 *                                           *
 *       parse and render lots               *
 *                                           *
 ********************************************/
-var preloadReady = false;
-
 function parseLotsJson(json){
 	var coordinates, xCoord, yCoord, dict, value;
 	dict = JSON.parse(json);
+	// parse coordinates given by sim
 	for(var key in dict) {
 		value = dict[key];
-		//console.log(key, value);
 		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
 		xCoord = coordinates[0];
@@ -24,8 +25,6 @@ function parseLotsJson(json){
 		renderLots(xCoord, yCoord, value);
 	}
 }
-
-var building;
 
 function renderLots(xCoord, yCoord, value){
 	var x, y, tmpX, tmpY, scaleX, scaleY;
@@ -47,7 +46,7 @@ function renderLots(xCoord, yCoord, value){
 	// logic for clustering lots
 	tmpX = xCoord.toString().substring(2, xCoord.length);
 	tmpY = yCoord.toString().substring(2, yCoord.length);
-	
+
 	if (tmpX.valueOf() == "25") {
 		building.anchor.x = -0.1;
 	} else if (tmpX.valueOf() == "75") {
@@ -63,9 +62,9 @@ function renderLots(xCoord, yCoord, value){
 	// scale all the buildings smaller than roads
 	scaleX = (gameSize/26)/building.width;	
 	scaleY = (gameSize/26)/building.height;
-
 	building.scale.setTo(scaleX,scaleY);
-
+	
+	// add this building to collection of buildings
 	buildingGroup.add(building);
 	
 	//collisions
@@ -74,12 +73,8 @@ function renderLots(xCoord, yCoord, value){
 }
 
 function addBuildingPhysics(){
-	
-	
-game.physics.enable(building, Phaser.Physics.ARCADE);
-	building.body.setSize(building.width, building.height);
+	game.physics.enable(building, Phaser.Physics.ARCADE);
     building.body.immovable = true;
-	
 }
 
 
@@ -88,12 +83,11 @@ game.physics.enable(building, Phaser.Physics.ARCADE);
 *       parse and render block              *
 *                                           *
 ********************************************/
-
-
 function parseBlocksJson(json){
 	var coordinates, startX, startY, endX, endY, dir, list, length;
 	list = JSON.parse(json);
 	length = list.length;
+	// parse coordinates given by sim
 	for (var i = 0; i < length; i++) {
 		coordinates = list[i].split(', ');
 
@@ -117,22 +111,18 @@ function parseBlocksJson(json){
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
-	//console.log("render blocks");
-	//console.log("start x is" + startX);
 	var x, y, cont, block, scaleX, scaleY;
 		
 	// block number * unit size + center
 	// the reason the unit is 1/9 of gamesize and not 1/8
 	// is because the last block will be cut off otherwise.
-	//instead, we are left with extra space that we deal with 
+	// instead, we are left with extra space that we deal with 
 	// using "center"
 	
 	startingBlockX = startX - 1;
 	startingBlockY = startY - 1;
 	endingBlockX = endX - 1;
 	endingBlockY = endY - 1;
-
-	console.log("startingblockx is" + startingBlockX);
 	
 	x = (startingBlockX*(gameSize/9))+center;
 	y = (startingBlockY*(gameSize/9))+center;
@@ -153,12 +143,12 @@ function renderBlocks(startX, startY, endX, endY, dir){
 				cont = false;
 			}
 		}
+	// scale blocks smaller than buildings
 	scaleX = (gameSize/33)/block.width;	
 	scaleY = (gameSize/33)/block.height;
 	block.scale.setTo(scaleX,scaleY);
 
-	}
-	
+	}	
 }
 
 /********************************************
@@ -169,7 +159,6 @@ function renderBlocks(startX, startY, endX, endY, dir){
 ********************************************/
 
 function preload() {
-	
 	game.load.image("background", "Sprites/grass.png");
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
@@ -179,31 +168,29 @@ function preload() {
 	game.load.image('horBlock', 'Sprites/horBlock.png');
 }
 
-var cursors;
-var player;
 
 function create() {
+	//Make a group for all the buildings
 	buildingGroup = game.add.physicsGroup();
-	
-	//Grass
-	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
-	//game.stage.backgroundColor = '#2d2d2d';
 
     //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
 
-    //Create a Group that will sit above the background image
-    playerGroup = game.add.group();	
+	//Grass
+	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
 	
+	//Keyboard input
+    cursors = game.input.keyboard.createCursorKeys();
+	
+	//Create a group for player that will sit above the background image
+    playerGroup = game.add.group();	
+
 	//Start physics system that enables player movement and colliders
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 	addPlayerPhysics();
-	
-	//Determines render order (player on top of blocks)
-	playerGroup.add(player);
 
-	//Keyboard input
-    cursors = game.input.keyboard.createCursorKeys();
+	//Add player to its own group
+	playerGroup.add(player);
 
 	//Camera
     game.camera.follow(player);
@@ -221,17 +208,12 @@ function addPlayerPhysics(){
 }
 
 function update() {
-	if (game.physics.arcade.collide
-			(player, buildingGroup, collisionHandler, processHandler, this)){
-
-			console.log('boom');
-	}
 	
+	checkHitBuilding();
 	
 	//Render player on top
 	game.world.bringToTop(buildingGroup);
 	game.world.bringToTop(playerGroup);
-
 	
 	//Stop movement
     player.body.velocity.x = 0;
@@ -266,14 +248,13 @@ function update() {
 		
 }
 
+function checkHitBuilding(){
+	if (game.physics.arcade.collide
+			(player, buildingGroup)){
 
-function processHandler (player, veg) {
+			console.log('boom');
+	}
 }
-
-function collisionHandler (player, veg) {
-}
-
-
 
 
 function render() {
