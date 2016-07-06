@@ -1,7 +1,3 @@
-//TODO: fix window arith
-//FIX GAME SIZE
-//THEN FIX COLLISION
-// <|:-)
 var gameSize = 1000;
 //magic number to center the town
 var center = gameSize/26;
@@ -26,8 +22,9 @@ function parseLotsJson(json){
 	}
 }
 
+var building;
 function renderLots(xCoord, yCoord, value){
-	var x, y, tmpX, tmpY, building, scaleX, scaleY;
+	var x, y, tmpX, tmpY, scaleX, scaleY;
 	
 	//subtract 1 to normalize the coordinates
 	x = xCoord - 1;
@@ -66,12 +63,14 @@ function renderLots(xCoord, yCoord, value){
 	building.scale.setTo(scaleX,scaleY);
 
 	//collisions
-	/*	game.physics.p2.enable(building);
-	building.body.setR ectangleFromSprite(building);
+	addBuildingPhysics();
+	
+}
 
-	building.body.static = true;
-	building.body.immovable = true;
-*/
+function addBuildingPhysics(){
+	game.physics.enable(building, Phaser.Physics.ARCADE);
+	building.body.setSize(building.width, building.height);
+    building.body.immovable = true;
 	
 }
 
@@ -154,8 +153,6 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	
 }
 
-
-
 /********************************************
 *                                           *
 *       load house, empty ,and business     *
@@ -166,7 +163,6 @@ function renderBlocks(startX, startY, endX, endY, dir){
 function preload() {
 	
 	game.load.image("background", "Sprites/grass.png");
-	
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
@@ -181,20 +177,17 @@ var player;
 function create() {
 	//Grass
 	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
-	
+	//game.stage.backgroundColor = '#2d2d2d';
+
     //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
+
+    //Create a Group that will sit above the background image
+    playerGroup = game.add.group();	
 	
 	//Start physics system that enables player movement and colliders
 	game.physics.startSystem(Phaser.Physics.ARCADE);
-	
-    //Create a Group that will sit above the background image
-    playerGroup = game.add.group();	
-
-	//Add our player sprite to the world and allow it to move/collide
-    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
-	game.physics.arcade.enable(player);
-	//player.body.setRectangle(5,5);
+	addPlayerPhysics();
 	
 	//Determines render order (player on top of blocks)
 	playerGroup.add(player);
@@ -205,12 +198,23 @@ function create() {
 	//Camera
     game.camera.follow(player);
 
-    //game.stage.backgroundColor = '#2d2d2d';
 
 }
+
+function addPlayerPhysics(){
+	//Add our player sprite to the world and allow it to move/collide
+    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+	game.physics.arcade.enable(player);
+	player.body.collideWorldBounds = true;
+//	player.body.setSize(player.width*2, player.height*2);
+
+}
+
 //Determine movement speed
 var speed = 300;
+
 function update() {
+	
 	//Render player on top
 	game.world.bringToTop(playerGroup);
 	
