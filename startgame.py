@@ -71,16 +71,23 @@ def game_start():
 
 
     #****************************************************#
-    #  Lots json dictionary (coordinates, type of lot)   #
+    #  Lots json dict                                    #
     #****************************************************#
+    # change this to be a dictionary of coordinate keys and tuple value
+    # coords = (name,building, string(lot))
     lot_type_dict = {}
+
     for lot in list(game.city.lots):
-        lot_type_dict[str(lot.coordinates)] = lot.building.__class__.__name__
+        building_type = lot.building.__class__.__name__
+        first_description = str(lot.building)
+        second_description = str(lot)
+        lot_tuple = (building_type, first_description, second_description)
+        lot_type_dict[str(lot.coordinates)] = lot_tuple
     global json_lot_type_dict
     json_lot_type_dict = json.dumps(lot_type_dict)
 
     # ****************************************************#
-    #  Blocks json dictionary (start coords, end coords)  #
+    #  Blocks json list (start coords, end coords)        #
     # ****************************************************#
     block_coordinates_list = []
 

@@ -1,4 +1,4 @@
-var gameSize = 1000;
+var gameSize = 1200;
 //number to center the town
 var center = gameSize/26;
 //Determine movement speed
@@ -6,23 +6,25 @@ var speed = 310 ;
 var cursors;
 var player;
 var building;
-
+var lots_dict;
+var blocks_list;
 /********************************************
 *                                           *
 *       parse and render lots               *
 *                                           *
 ********************************************/
 function parseLotsJson(json){
-	var coordinates, xCoord, yCoord, dict, value;
-	dict = JSON.parse(json);
+	var coordinates, xCoord, yCoord, value, type;
+	lots_dict = JSON.parse(json);
 	// parse coordinates given by sim
-	for(var key in dict) {
-		value = dict[key];
+	for(var key in lots_dict) {
+		value = lots_dict[key] // value is treated as an array ?? perhaps json dicts keep intact
+		type = value[0];
 		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
 		xCoord = coordinates[0];
 		yCoord = coordinates[1];
-		renderLots(xCoord, yCoord, value);
+		renderLots(xCoord, yCoord, type);
 	}
 }
 
@@ -84,12 +86,12 @@ function addBuildingPhysics(){
 *                                           *
 ********************************************/
 function parseBlocksJson(json){
-	var coordinates, startX, startY, endX, endY, dir, list, length;
-	list = JSON.parse(json);
-	length = list.length;
+	var coordinates, startX, startY, endX, endY, dir, length;
+	blocks_list = JSON.parse(json);
+	length = blocks_list.length;
 	// parse coordinates given by sim
 	for (var i = 0; i < length; i++) {
-		coordinates = list[i].split(', ');
+		coordinates = blocks_list[i].split(', ');
 
 		startX = coordinates[0];
 		startX = startX.substring(3, startX.length);
@@ -200,21 +202,24 @@ function create() {
 
 function addPlayerPhysics(){
 	//Add our player sprite to the world and allow it to move/collide
-    player = game.add.sprite(game.world.centerX, game.world.centerY, 'player');
+    player = game.add.sprite(/*game.world.centerX, game.world.centerY*/0,0, 'player');
+	//Scale the player sprite if needed
+	player.scale.setTo(0.8,0.7);
+	
 	game.physics.arcade.enable(player);
 	player.body.collideWorldBounds = true;
-//	player.body.setSize(player.width*2, player.height*2);
+
 
 }
 
 function update() {
 	
-	checkHitBuilding();
-	
 	//Render player on top
 	game.world.bringToTop(buildingGroup);
 	game.world.bringToTop(playerGroup);
-	
+
+	checkHitBuilding();
+		
 	//Stop movement
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
