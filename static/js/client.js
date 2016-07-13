@@ -1,3 +1,5 @@
+//TODO: check out what eric said about dicts being dumped as objects n accessing properties
+
 var gameSize = 1200;
 //number to center the town
 var center = gameSize/26;
@@ -8,6 +10,7 @@ var player;
 var building;
 var lots_dict;
 var blocks_list;
+var revisedLotsCoords = new Array();
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -29,14 +32,20 @@ function parseLotsJson(json){
 }
 
 function renderLots(xCoord, yCoord, value){
-	var x, y, tmpX, tmpY, scaleX, scaleY;
+	var x, y, tmpX, tmpY, scaleX, scaleY, c;
 	
 	//subtract 1 to normalize the coordinates
 	x = xCoord - 1;
 	y = yCoord - 1;	
 	x = (x*(gameSize/9)) + center;
 	y = (y*(gameSize/9)) + center;
-
+	
+	//TODO: ok, so we put the new x and y values into arrays
+	// we check the player x and y and see which is closest
+	var c = {revisedX: x, revisedY: y}; 
+	revisedLotsCoords.push(c);
+	
+	
 	if (value == "House") { 
 		building = game.add.sprite(x, y, 'house');
 	} else if (value == "NoneType") {
@@ -71,6 +80,9 @@ function renderLots(xCoord, yCoord, value){
 	
 	//collisions
 	addBuildingPhysics();
+	
+
+	
 	
 }
 
@@ -229,26 +241,22 @@ function update() {
     {
 		player.body.velocity.x = 0;
 		player.body.velocity.y = -speed;
-        //player.body.moveUp(speed)
     }
     else if (cursors.down.isDown)
     {
 		player.body.velocity.x = 0;
 		player.body.velocity.y = speed;
-        //player.body.moveDown(speed);
     }
 
     if (cursors.left.isDown)
     {
 		player.body.velocity.y = 0;
-		//player.body.moveLeft(speed);
         player.body.velocity.x = -speed;
     }
     else if (cursors.right.isDown)
     {
 		player.body.velocity.y = 0;
 		player.body.velocity.x = speed;
-        //player.body.moveRight(speed);
     }
 		
 }
@@ -258,6 +266,16 @@ function checkHitBuilding(){
 			(player, buildingGroup)){
 
 			console.log('boom');
+			console.log(player.x);
+			console.log(player.y);
+
+
+
+//TODO: check which set of coordinates in the dictionary the player'
+//position best matches, make note of the index,
+// then print out the description from the ORIGINAL dictionary using tha index
+
+	//console.log(revisedLotsCoords[0].revisedX);
 	}
 }
 
