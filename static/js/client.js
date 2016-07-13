@@ -10,7 +10,7 @@ var player;
 var building;
 var lots_dict;
 var blocks_list;
-var revisedLotsCoords = new Array();
+
 /********************************************
 *                                           *
 *       parse and render lots               *
@@ -31,20 +31,23 @@ function parseLotsJson(json){
 	}
 }
 
+function convert(num) {
+	return (num*(gameSize/9)) + center;
+}
+
+function reconvert(num) {
+	return (num/(gameSize/9)) - center;
+}
+
 function renderLots(xCoord, yCoord, value){
 	var x, y, tmpX, tmpY, scaleX, scaleY, c;
 	
 	//subtract 1 to normalize the coordinates
 	x = xCoord - 1;
 	y = yCoord - 1;	
-	x = (x*(gameSize/9)) + center;
-	y = (y*(gameSize/9)) + center;
-	
-	//TODO: ok, so we put the new x and y values into arrays
-	// we check the player x and y and see which is closest
-	var c = {revisedX: x, revisedY: y}; 
-	revisedLotsCoords.push(c);
-	
+	x = convert(x);
+	y = convert(y);
+
 	
 	if (value == "House") { 
 		building = game.add.sprite(x, y, 'house');
@@ -138,8 +141,8 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	endingBlockX = endX - 1;
 	endingBlockY = endY - 1;
 	
-	x = (startingBlockX*(gameSize/9))+center;
-	y = (startingBlockY*(gameSize/9))+center;
+	x = convert(startingBlockX);
+	y = convert(startingBlockY);
 	
 	cont = true;
 	while (cont){
