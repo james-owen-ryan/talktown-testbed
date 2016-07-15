@@ -17,6 +17,17 @@ var blocks_list;
 *       parse and render lots               *
 *                                           *
 ********************************************/
+
+function convert(num) {
+	return ((num - 1) *(gameSize/9)) + center; 
+	//subtract 1 to normalize the coordinates
+}
+
+function reconvert(num) {
+	return ((num + 1)/(gameSize/9)) - center;
+}
+
+
 function parseLotsJson(json){
 	var coordinates, xCoord, yCoord, value, type;
 	lots_dict = JSON.parse(json);
@@ -29,29 +40,19 @@ function parseLotsJson(json){
 		xCoord = coordinates[0];
 		yCoord = coordinates[1];
 		
-		
-		var tmp = {x: xCoord, y: yCoord, firstDes: value[1], secondDes: value[2]};
+		var x = convert(xCoord);
+		var y = convert(yCoord);
+
+		var tmp = {x: x, y: y, firstDes: value[1], secondDes: value[2]};
 		converted_lots.push(tmp);
-		renderLots(xCoord, yCoord, type);
+		renderLots(xCoord, yCoord, x, y, type);
 	}
 }
 
-function convert(num) {
-	return ((num - 1) *(gameSize/9)) + center; 
-	//subtract 1 to normalize the coordinates
-}
 
-function reconvert(num) {
-	return ((num + 1)/(gameSize/9)) - center;
-}
-
-
-function renderLots(xCoord, yCoord, value){
-	var x, y, tmpX, tmpY, scaleX, scaleY, c;
+function renderLots(xCoord, yCoord, x, y, value){
+	var tmpX, tmpY, scaleX, scaleY, c;
 	
-
-	x = convert(xCoord);
-	y = convert(yCoord);
 
 	
 	if (value == "House") { 
