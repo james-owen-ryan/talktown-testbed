@@ -288,20 +288,19 @@ function closestX(num, arr) {
 }
 
 function closestY(num, arr, indices) {
-	var curr = arr[0].y;
 	var i;
 	var index;
 	for (i = 0; i < indices.length; i++){
 		var index = indices[i];
-			if (Math.abs(num - arr[index].y) < Math.abs(num - curr)){
-				curr = arr[index].y;
-				
-			}
+		var curr = arr[index].y;
+		if (Math.abs(num - arr[index].y) <= Math.abs(num - curr)){
+			curr = arr[index].y;
+			
+		}
 	}
 	for (i = 0; i < arr.length; i++){
 		//itnever goes in here..
 		if (curr == arr[index].y) {
-			console.log("i found the index: " + index);
 			return index;
 		}
 	}
@@ -318,11 +317,12 @@ function checkHitBuilding(){
 			
 			var pX = Math.floor(player.x);
 			var pY = Math.floor(player.y);
-			var indices = closestX(player.x, converted_lots); // return indices
+			
+			var indices = closestX(pX, converted_lots); // return indices
 			console.log(indices);
-			var index = closestY(player.Y, converted_lots, indices);
+			var index = closestY(pY, converted_lots, indices);
 			console.log("final index: " + index);
-			//console.log(converted_lots[index].FirstDes);
+			console.log(converted_lots[index].secondDes);
 		
 
 //TODO: check which set of coordinates in the dictionary the player'
