@@ -269,6 +269,45 @@ function update() {
 		
 }
 
+function closestX(num, arr) {
+	var curr = arr[0].x;
+	var i;
+	var indices = new Array();
+	for (i = 0; i < arr.length; i++){
+		if (Math.abs(num - arr[i].x) < Math.abs(num - curr)){
+			curr = arr[i].x;
+			
+		}
+	}
+	for (i = 0; i < arr.length; i++){
+		if (curr == arr[i].x) {
+			indices.push(i);
+		}
+	}
+	return indices;
+}
+
+function closestY(num, arr, indices) {
+	var curr = arr[0].y;
+	var i;
+	var index;
+	for (i = 0; i < indices.length; i++){
+		var index = indices[i];
+			if (Math.abs(num - arr[index].y) < Math.abs(num - curr)){
+				curr = arr[index].y;
+				
+			}
+	}
+	for (i = 0; i < arr.length; i++){
+		//itnever goes in here..
+		if (curr == arr[index].y) {
+			console.log("i found the index: " + index);
+			return index;
+		}
+	}
+	
+}
+
 function checkHitBuilding(){
 	if (game.physics.arcade.collide
 			(player, buildingGroup)){
@@ -276,8 +315,15 @@ function checkHitBuilding(){
 			console.log('boom');
 			console.log(player.x);
 			console.log(player.y);
-
-
+			
+			var pX = Math.floor(player.x);
+			var pY = Math.floor(player.y);
+			var indices = closestX(player.x, converted_lots); // return indices
+			console.log(indices);
+			var index = closestY(player.Y, converted_lots, indices);
+			console.log("final index: " + index);
+			//console.log(converted_lots[index].FirstDes);
+		
 
 //TODO: check which set of coordinates in the dictionary the player'
 //position best matches, make note of the index,
