@@ -9,6 +9,7 @@ var cursors;
 var player;
 var building;
 var lots_dict;
+var converted_lots = new Array();
 var blocks_list;
 
 /********************************************
@@ -27,26 +28,30 @@ function parseLotsJson(json){
 		coordinates = key.split(', ');
 		xCoord = coordinates[0];
 		yCoord = coordinates[1];
+		
+		
+		var tmp = {x: xCoord, y: yCoord, firstDes: value[1], secondDes: value[2]};
+		converted_lots.push(tmp);
 		renderLots(xCoord, yCoord, type);
 	}
 }
 
 function convert(num) {
-	return (num*(gameSize/9)) + center;
+	return ((num - 1) *(gameSize/9)) + center; 
+	//subtract 1 to normalize the coordinates
 }
 
 function reconvert(num) {
-	return (num/(gameSize/9)) - center;
+	return ((num + 1)/(gameSize/9)) - center;
 }
+
 
 function renderLots(xCoord, yCoord, value){
 	var x, y, tmpX, tmpY, scaleX, scaleY, c;
 	
-	//subtract 1 to normalize the coordinates
-	x = xCoord - 1;
-	y = yCoord - 1;	
-	x = convert(x);
-	y = convert(y);
+
+	x = convert(xCoord);
+	y = convert(yCoord);
 
 	
 	if (value == "House") { 
@@ -136,13 +141,12 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	// instead, we are left with extra space that we deal with 
 	// using "center"
 	
-	startingBlockX = startX - 1;
-	startingBlockY = startY - 1;
+	/*TODO: conversion for these*/
 	endingBlockX = endX - 1;
 	endingBlockY = endY - 1;
 	
-	x = convert(startingBlockX);
-	y = convert(startingBlockY);
+	x = convert(startX);
+	y = convert(startY);
 	
 	cont = true;
 	while (cont){
