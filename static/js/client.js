@@ -45,6 +45,9 @@ function parseLotsJson(json){
 
 		var tmp = {x: x, y: y, firstDes: value[1], secondDes: value[2]};
 		converted_lots.push(tmp);
+		
+		
+		
 		renderLots(xCoord, yCoord, x, y, type);
 	}
 }
@@ -284,24 +287,32 @@ function closestX(num, arr) {
 			indices.push(i);
 		}
 	}
+	
+	console.log("indices are: "+indices);
 	return indices;
 }
 
 function closestY(num, arr, indices) {
 	var i;
-	var index;
-	for (i = 0; i < indices.length; i++){
-		var index = indices[i];
-		var curr = arr[index].y;
-		if (Math.abs(num - arr[index].y) <= Math.abs(num - curr)){
-			curr = arr[index].y;
+	var j=indices[0];//the first index element
+	var curr = arr[j].y;//curr is the value of y at first index
+	var finalIndex;
+	
+	for (i = 1; i < indices.length; i++){//for each element(index) in indices array
+		j = indices[i];
+		if (Math.abs(num - arr[j].y) <= Math.abs(num - curr)){
+			curr = arr[j].y;
 			
 		}
 	}
-	for (i = 0; i < arr.length; i++){
-		//itnever goes in here..
-		if (curr == arr[index].y) {
-			return index;
+	for (i = 0; i < indices.length; i++){//for each index in indices array
+		j = indices[i];
+		if (curr == arr[j].y) {//if the closest element we found is the element at that index
+			finalIndex = j;
+			console.log("final index is: "+finalIndex);//return that index
+			
+			//always returning the last of the indices..
+			return finalIndex;
 		}
 	}
 	
