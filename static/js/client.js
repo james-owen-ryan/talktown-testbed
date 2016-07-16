@@ -288,7 +288,6 @@ function closestX(num, arr) {
 		}
 	}
 	
-	console.log("indices are: "+indices);
 	return indices;
 }
 
@@ -309,7 +308,6 @@ function closestY(num, arr, indices) {
 		j = indices[i];
 		if (curr == arr[j].y) {//if the closest element we found is the element at that index
 			finalIndex = j;
-			console.log("final index is: "+finalIndex);//return that index
 			
 			//always returning the last of the indices..
 			return finalIndex;
@@ -321,26 +319,17 @@ function closestY(num, arr, indices) {
 function checkHitBuilding(){
 	if (game.physics.arcade.collide
 			(player, buildingGroup)){
-
-			console.log('boom');
-			console.log(player.x);
-			console.log(player.y);
-			
+//TODO: inner corners of tracts buggy
 			var pX = Math.floor(player.x);
 			var pY = Math.floor(player.y);
-			
 			var indices = closestX(pX, converted_lots); // return indices
-			console.log(indices);
 			var index = closestY(pY, converted_lots, indices);
-			console.log("final index: " + index);
-			console.log(converted_lots[index].secondDes);
-		
+			if (converted_lots[index].firstDes == "None") {
+				console.log(converted_lots[index].secondDes);
+			} else {
+				console.log(converted_lots[index].firstDes);
+			}
 
-//TODO: check which set of coordinates in the dictionary the player'
-//position best matches, make note of the index,
-// then print out the description from the ORIGINAL dictionary using tha index
-
-	//console.log(revisedLotsCoords[0].revisedX);
 	}
 }
 
