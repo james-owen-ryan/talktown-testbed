@@ -496,7 +496,7 @@ class City(object):
         being set to either that street's number plus 0.25 or plus 0.75, depending on the lot's
         position on the city block (which can be inferred from its address).
         """
-        for lot in self.lots:
+        for lot in self.lots | self.tracts:
             # Determine base x- and y-coordinates, which can be inferred from the
             # number of the street that the lot's address is on and the lot's house
             # number itself
