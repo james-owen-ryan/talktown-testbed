@@ -241,34 +241,30 @@ function update() {
 	game.world.bringToTop(buildingGroup);
 	game.world.bringToTop(playerGroup);
 
-	checkHitBuilding();
 		
 	//Stop movement
     player.body.velocity.x = 0;
     player.body.velocity.y = 0;
 
 	//Check keyboard input and move accordingly
-    if (cursors.up.isDown)
-    {
+    if (cursors.up.isDown) {
 		player.body.velocity.x = 0;
 		player.body.velocity.y = -speed;
-    }
-    else if (cursors.down.isDown)
-    {
+		
+    } else if (cursors.down.isDown) {
 		player.body.velocity.x = 0;
 		player.body.velocity.y = speed;
-    }
-
-    if (cursors.left.isDown)
-    {
+		
+    } else if (cursors.left.isDown) {
 		player.body.velocity.y = 0;
         player.body.velocity.x = -speed;
-    }
-    else if (cursors.right.isDown)
-    {
+		
+    } else if (cursors.right.isDown) {
 		player.body.velocity.y = 0;
 		player.body.velocity.x = speed;
     }
+	
+	checkHitBuilding();
 		
 }
 
@@ -287,6 +283,7 @@ function closestX(num, arr) {
 			indices.push(i);
 		}
 	}
+	console.log("closest x: " + curr);
 	
 	return indices;
 }
@@ -310,6 +307,7 @@ function closestY(num, arr, indices) {
 			finalIndex = j;
 			
 			//always returning the last of the indices..
+			console.log("closest y: " + curr);
 			return finalIndex;
 		}
 	}
