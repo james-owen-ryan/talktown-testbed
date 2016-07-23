@@ -1,3 +1,4 @@
+var blocks_list;
 /********************************************
 *                                           *
 *       parse and render block              *

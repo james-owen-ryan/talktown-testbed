@@ -1,3 +1,5 @@
+var lots_dict;
+var converted_lots = new Array();
 /********************************************
 *                                           *
 *       parse and render lots               *

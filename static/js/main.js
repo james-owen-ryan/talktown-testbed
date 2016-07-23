@@ -6,9 +6,6 @@ var speed = 310 ;
 var cursors;
 var player;
 var building;
-var lots_dict;
-var converted_lots = new Array();
-var blocks_list;
 
 
 /********************************************
