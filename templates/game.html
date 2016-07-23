@@ -9,6 +9,7 @@
 		<script type="text/javascript" src= "/js/physicsHelpers.js"></script>
 		<script type="text/javascript" src= "/js/lots.js"></script>
 		<script type="text/javascript" src= "/js/blocks.js"></script>
+		<script type="text/javascript" src= "/js/tracts.js"></script>
 		<script type="text/javascript" src= "/js/main.js"></script>
 		<script type="text/javascript" src= "/js/phaser.js"></script>
 		<script type="text/javascript" charset="utf-8">
@@ -66,6 +67,14 @@
 		
 				});
 				
+		        /********************************************
+				*	receive json list of tracts      		*
+				********************************************/
+				socket.on('return tracts', function(msg) {
+					parseTractsJson(msg.data);
+		
+				});
+				
 				/********************************************
 				*	python server will return			 	*
 				*	true if world finished generating		*
@@ -95,6 +104,7 @@
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_block_json', {data: '0'});
 					socket.emit('get_lot_json', {data: '0'});
+					socket.emit('get_tract_json', {data: '0'});
 				}
 				
 				

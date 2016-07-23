@@ -11,6 +11,7 @@ function parseLotsJson(json){
 	
 	var coordinates, xCoord, yCoord, value, type;
 	lots_dict = JSON.parse(json);
+	console.log(lots_dict);
 	// parse coordinates given by sim
 	for(var key in lots_dict) {
 		value = lots_dict[key] // value is treated as an array ?? perhaps json dicts keep intact

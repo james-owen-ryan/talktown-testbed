@@ -99,3 +99,16 @@ def game_start():
 
     global json_block_coordinates_list
     json_block_coordinates_list = json.dumps(block_coordinates_list)
+
+    # ****************************************************#
+    #  Tracts json dict                                   #
+    # ****************************************************#
+    tract_dict = {}
+
+    for tract in list(game.city.tracts):
+        first_description = str(tract.building)
+        second_description = str(tract)
+        tract_tuple = (first_description, second_description)
+        tract_dict[str(tract.coordinates)] = tract_tuple
+    global json_tract_dict
+    json_tract_dict = json.dumps(tract_dict)

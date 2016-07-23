@@ -65,6 +65,10 @@ def send_block_json(message):
     emit('return blocks',
          {'data': startgame.json_block_coordinates_list, 'count': session['receive_count']})
 
+@socketio.on('get_tract_json', namespace='/gameplay')
+def send_tract_json(message):
+    emit('return tracts',
+         {'data': startgame.json_tract_dict, 'count': session['receive_count']})
 
 @socketio.on('ready', namespace='/gameplay')
 def ready():
