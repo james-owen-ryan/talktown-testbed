@@ -20,6 +20,7 @@ function preload() {
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
+	game.load.image('tract', 'Sprites/tract.png');
 	game.load.image('business', 'Sprites/business.png');
 	game.load.image('verBlock', 'Sprites/verBlock.png');
 	game.load.image('horBlock', 'Sprites/horBlock.png');

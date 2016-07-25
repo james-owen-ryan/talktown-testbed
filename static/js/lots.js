@@ -14,7 +14,7 @@ function parseLotsJson(json){
 	console.log(lots_dict);
 	// parse coordinates given by sim
 	for(var key in lots_dict) {
-		value = lots_dict[key] // value is treated as an array ?? perhaps json dicts keep intact
+		value = lots_dict[key]; // value is treated as an array ?? perhaps json dicts keep intact
 		type = value[0];
 		key = key.substring(1, key.length-1);
 		coordinates = key.split(', ');
