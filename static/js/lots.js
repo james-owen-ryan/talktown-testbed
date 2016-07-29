@@ -11,7 +11,6 @@ function parseLotsJson(json){
 	
 	var coordinates, xCoord, yCoord, value, type;
 	lots_dict = JSON.parse(json);
-	console.log(lots_dict);
 	// parse coordinates given by sim
 	for(var key in lots_dict) {
 		value = lots_dict[key]; // value is treated as an array ?? perhaps json dicts keep intact
@@ -29,16 +28,14 @@ function parseLotsJson(json){
 		
 		
 		
-		renderLots(xCoord, yCoord, x, y, type);
+		//renderLots(xCoord, yCoord, x, y, type);
 	}
 }
 
 
 function renderLots(xCoord, yCoord, x, y, value){
 	var tmpX, tmpY, scaleX, scaleY, c;
-	
-	console.log("lot coordinates: " + x + " " + y);
-	
+		
 	if (value == "House") { 
 		building = game.add.sprite(x, y, 'house');
 	} else if (value == "NoneType") {
@@ -64,8 +61,8 @@ function renderLots(xCoord, yCoord, x, y, value){
 	}
 	
 	// scale all the buildings smaller than roads
-	scaleX = (gameSize/26)/building.width;	
-	scaleY = (gameSize/26)/building.height;
+	scaleX = (gameSize/49)/building.width;	
+	scaleY = (gameSize/49)/building.height;
 	building.scale.setTo(scaleX,scaleY);
 	
 	// add this building to collection of buildings

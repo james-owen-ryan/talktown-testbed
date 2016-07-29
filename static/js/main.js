@@ -1,6 +1,6 @@
-var gameSize = 1200;
+var gameSize = 800;
 //number to center the town
-var center = gameSize/26;
+var center = gameSize/18;
 //Determine movement speed
 var speed = 310 ;
 var cursors;
@@ -35,7 +35,7 @@ function create() {
     game.world.setBounds(0, 0, gameSize, gameSize);
 
 	//Grass
-	game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
+	//game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
 	
 	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();

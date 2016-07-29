@@ -17,14 +17,9 @@ function parseTractsJson(json){
 
 		var tmp = {x: x, y: y, firstDes: value[0], secondDes: value[1]};
 		converted_tracts.push(tmp);
-		console.log(tmp.x)
-		console.log(tmp.y)
-		console.log(tmp.firstDes);
-		console.log(tmp.secondDes);
 		
-	
 		
-		renderTracts(xCoord, yCoord, x, y);
+		//renderTracts(xCoord, yCoord, x, y);
 	}
 }
 

@@ -13,7 +13,7 @@ function closestX(num, arr) {
 			indices.push(i);
 		}
 	}
-	console.log("closest x: " + curr);
+//	console.log("closest x: " + curr);
 	
 	return indices;
 }

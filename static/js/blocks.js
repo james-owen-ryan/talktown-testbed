@@ -41,11 +41,15 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	// using "center"
 	
 	/*TODO: conversion for these*/
-	endingBlockX = endX - 1;
-	endingBlockY = endY - 1;
-	
+
 	x = convert(startX);
 	y = convert(startY);
+	console.log("start block: " + x + " " + y);
+
+	ex = convert(endX);
+	ey = convert(endY);
+	console.log("end block: " + ex + " " + ey);
+
 	
 	cont = true;
 	while (cont){
@@ -53,19 +57,19 @@ function renderBlocks(startX, startY, endX, endY, dir){
 		if (dir == "v") {
 			block = game.add.sprite(x, y, 'verBlock');
 			y += 1;
-			if (y > (endingBlockY*(gameSize/9))+center) {
+			if (y > ey) {
 				cont = false;
 			}
 		} else if (dir == "h") {
 			block = game.add.sprite(x, y, 'horBlock');
 			x += 1;
-			if (x > (endingBlockX*(gameSize/9))+center) {
+			if (x > ex) {
 				cont = false;
 			}
 		}
 	// scale blocks smaller than buildings
-	scaleX = (gameSize/33)/block.width;	
-	scaleY = (gameSize/33)/block.height;
+	scaleX = (gameSize/49)/block.width;	
+	scaleY = (gameSize/49)/block.height;
 	block.scale.setTo(scaleX,scaleY);
 
 	}	

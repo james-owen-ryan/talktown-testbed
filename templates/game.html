@@ -43,7 +43,6 @@
 		
 			
 			$(document).ready(function(){
-				console.log("4 four");
 				game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'talktown', { preload: preload, create: create, update: update });
 
 				namespace = '/gameplay'; 
@@ -99,7 +98,6 @@
 				*	Get information about generated world	*
 				********************************************/
 				function requestWorldInfo() {
-					console.log("requestWorldInfo");
 					socket.emit('get_random_person', {data: 'random person'});
 					socket.emit('get_city_name', {data: 'city name'});
 					socket.emit('get_block_json', {data: '0'});
