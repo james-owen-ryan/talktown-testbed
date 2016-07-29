@@ -37,7 +37,7 @@ function parseLotsJson(json){
 function renderLots(xCoord, yCoord, x, y, value){
 	var tmpX, tmpY, scaleX, scaleY, c;
 	
-
+	console.log("lot coordinates: " + x + " " + y);
 	
 	if (value == "House") { 
 		building = game.add.sprite(x, y, 'house');
