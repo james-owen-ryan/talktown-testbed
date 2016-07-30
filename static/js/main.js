@@ -7,6 +7,7 @@ var speed = 310 ;
 var cursors;
 var player;
 var building;
+var buildingGroup;
 
 
 /********************************************

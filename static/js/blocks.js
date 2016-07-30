@@ -44,11 +44,11 @@ function renderBlocks(startX, startY, endX, endY, dir){
 
 	x = convert(startX);
 	y = convert(startY);
-	console.log("start block: " + x + " " + y);
+
 
 	ex = convert(endX);
 	ey = convert(endY);
-	console.log("end block: " + ex + " " + ey);
+
 
 	
 	cont = true;

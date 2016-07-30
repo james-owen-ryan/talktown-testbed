@@ -27,7 +27,7 @@ function renderTracts(xCoord, yCoord, x, y){
 var tmpX, tmpY, scaleX, scaleY, c;
 		
 	building = game.add.sprite(x, y, 'tract');
-	console.log("tract coordinates: " + x + " " + y);
+//	console.log("tract coordinates: " + x + " " + y);
 	/*
 	// logic for clustering lots
 	tmpX = xCoord.toString().substring(2, xCoord.length);
