@@ -39,31 +39,31 @@ function renderLots(xCoord, yCoord, x, y, value){
  
 	for (var i = 0; i < 2; i++){
 		for (var j = 0; j < 2; j++) {
-			var tmpX = x+(i*tileSize);
-			var tmpY = y+(j*tileSize);
+			var tileX = x+(i*tileSize);
+			var tileY = y+(j*tileSize);
 			if (value == "House") {
-				if (i == 0 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'houseUL'); }
-				else if (i == 0 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'houseLL'); }
-				else if (i == 1 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'houseUR'); }
-				else if (i == 1 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'houseLR'); }
+				if (i == 0 && j == 0) { building = game.add.sprite(tileX, tileY, 'houseUL'); }
+				else if (i == 0 && j == 1) { building = game.add.sprite(tileX, tileY, 'houseLL'); }
+				else if (i == 1 && j == 0) { building = game.add.sprite(tileX, tileY, 'houseUR'); }
+				else if (i == 1 && j == 1) { building = game.add.sprite(tileX, tileY, 'houseLR'); }
 				
 			} else if (value == "NoneType") {
-				if (i == 0 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'empty_lot'); }
-				else if (i == 0 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'empty_lot'); }
-				else if (i == 1 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'empty_lot'); }
-				else if (i == 1 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'empty_lot'); }
+				if (i == 0 && j == 0) { building = game.add.sprite(tileX, tileY, 'empty_lot'); }
+				else if (i == 0 && j == 1) { building = game.add.sprite(tileX, tileY, 'empty_lot'); }
+				else if (i == 1 && j == 0) { building = game.add.sprite(tileX, tileY, 'empty_lot'); }
+				else if (i == 1 && j == 1) { building = game.add.sprite(tileX, tileY, 'empty_lot'); }
 			
 			} else {
-				if (i == 0 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'business'); }
-				else if (i == 0 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'business'); }
-				else if (i == 1 && j == 0) { building = game.add.sprite(tmpX, tmpY, 'business'); }
-				else if (i == 1 && j == 1) { building = game.add.sprite(tmpX, tmpY, 'business'); }
+				if (i == 0 && j == 0) { building = game.add.sprite(tileX, tileY, 'business'); }
+				else if (i == 0 && j == 1) { building = game.add.sprite(tileX, tileY, 'business'); }
+				else if (i == 1 && j == 0) { building = game.add.sprite(tileX, tileY, 'business'); }
+				else if (i == 1 && j == 1) { building = game.add.sprite(tileX, tileY, 'business'); }
 			}
 			helper(building);
 		}
 	}
-	
-/*	// logic for clustering lots
+	/*
+	// logic for clustering lots
 	tmpX = xCoord.toString().substring(2, xCoord.length);
 	tmpY = yCoord.toString().substring(2, yCoord.length);
 
@@ -77,22 +77,8 @@ function renderLots(xCoord, yCoord, x, y, value){
 		building.anchor.y = -0.1;
 	} else if (tmpY.valueOf() == "75") {
 		building.anchor.y = 0.3;
-	}*/
-	
-/*	// scale all the buildings smaller than roads
-	scaleX = (gameSize/49)/building.width;	
-	scaleY = (gameSize/49)/building.height;
-	building.scale.setTo(scaleX,scaleY);
-	
-	// add this building to collection of buildings
-	buildingGroup.add(building);
-	
-	//collisions
-	addBuildingPhysics(building);
-	*/
-
-	
-	
+	}
+*/
 }
 
 function helper(building) {

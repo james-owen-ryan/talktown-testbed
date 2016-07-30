@@ -33,14 +33,6 @@ function parseBlocksJson(json){
 
 function renderBlocks(startX, startY, endX, endY, dir){
 	var x, y, cont, block, scaleX, scaleY;
-		
-	// block number * unit size + center
-	// the reason the unit is 1/9 of gamesize and not 1/8
-	// is because the last block will be cut off otherwise.
-	// instead, we are left with extra space that we deal with 
-	// using "center"
-	
-	/*TODO: conversion for these*/
 
 	x = convert(startX);
 	y = convert(startY);
@@ -67,7 +59,7 @@ function renderBlocks(startX, startY, endX, endY, dir){
 				cont = false;
 			}
 		}
-	// scale blocks smaller than buildings
+
 	scaleX = tileSize/block.width;	
 	scaleY = tileSize/block.height;
 	block.scale.setTo(scaleX,scaleY);
