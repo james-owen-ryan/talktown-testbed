@@ -68,8 +68,8 @@ function renderBlocks(startX, startY, endX, endY, dir){
 			}
 		}
 	// scale blocks smaller than buildings
-	scaleX = (gameSize/49)/block.width;	
-	scaleY = (gameSize/49)/block.height;
+	scaleX = tileSize/block.width;	
+	scaleY = tileSize/block.height;
 	block.scale.setTo(scaleX,scaleY);
 
 	}	

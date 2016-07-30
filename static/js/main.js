@@ -1,6 +1,7 @@
-var gameSize = 800;
+var gameSize = 2000;
 //number to center the town
 var center = gameSize/18;
+var tileSize = gameSize/49;
 //Determine movement speed
 var speed = 310 ;
 var cursors;
@@ -16,14 +17,18 @@ var building;
 ********************************************/
 
 function preload() {
+	game.load.image('verBlock', 'Sprites/verBlock.png');
+	game.load.image('horBlock', 'Sprites/horBlock.png');
 	game.load.image("background", "Sprites/grass.png");
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
+	game.load.image('houseUL', 'Sprites/houseUL.png');
+	game.load.image('houseLL', 'Sprites/houseLL.png');
+	game.load.image('houseUR', 'Sprites/houseUR.png');
+	game.load.image('houseLR', 'Sprites/houseLR.png');
 	game.load.image('empty_lot', 'Sprites/empty_lot.png');
 	game.load.image('tract', 'Sprites/tract.png');
 	game.load.image('business', 'Sprites/business.png');
-	game.load.image('verBlock', 'Sprites/verBlock.png');
-	game.load.image('horBlock', 'Sprites/horBlock.png');
 }
 
 
@@ -35,7 +40,7 @@ function create() {
     game.world.setBounds(0, 0, gameSize, gameSize);
 
 	//Grass
-	//game.add.tileSprite(0, 0, gameSize, gameSize, 'background');
+	//game.add.tile(0, 0, gameSize, gameSize, 'background');
 	
 	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();

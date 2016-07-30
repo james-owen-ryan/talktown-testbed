@@ -1,4 +1,4 @@
-function addBuildingPhysics(){
+function addBuildingPhysics(building){
 	game.physics.enable(building, Phaser.Physics.ARCADE);
     building.body.immovable = true;
 }

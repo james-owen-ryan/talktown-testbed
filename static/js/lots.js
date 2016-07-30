@@ -28,7 +28,7 @@ function parseLotsJson(json){
 		
 		
 		
-		//renderLots(xCoord, yCoord, x, y, type);
+		renderLots(xCoord, yCoord, x, y, type);
 	}
 }
 
@@ -36,15 +36,22 @@ function parseLotsJson(json){
 function renderLots(xCoord, yCoord, x, y, value){
 	var tmpX, tmpY, scaleX, scaleY, c;
 		
-	if (value == "House") { 
-		building = game.add.sprite(x, y, 'house');
-	} else if (value == "NoneType") {
-		building = game.add.sprite(x, y, 'empty_lot');
-	} else {
-		building = game.add.sprite(x, y, 'business');
+ 
+	for (var i = 0; i < 2; i++){
+		for (var j = 0; j < 2; j++) {
+			
+			if (value == "House") {
+				building = game.add.sprite(x+(i*tileSize), y+(j*tileSize), 'house');
+			} else if (value == "NoneType") {
+				building = game.add.sprite(x+(i*tileSize), y+(j*tileSize), 'empty_lot');
+			} else {
+				building = game.add.sprite(x+(i*tileSize), y+(j*tileSize), 'business');
+			}
+			helper(building);
+		}
 	}
 	
-	// logic for clustering lots
+/*	// logic for clustering lots
 	tmpX = xCoord.toString().substring(2, xCoord.length);
 	tmpY = yCoord.toString().substring(2, yCoord.length);
 
@@ -58,9 +65,9 @@ function renderLots(xCoord, yCoord, x, y, value){
 		building.anchor.y = -0.1;
 	} else if (tmpY.valueOf() == "75") {
 		building.anchor.y = 0.3;
-	}
+	}*/
 	
-	// scale all the buildings smaller than roads
+/*	// scale all the buildings smaller than roads
 	scaleX = (gameSize/49)/building.width;	
 	scaleY = (gameSize/49)/building.height;
 	building.scale.setTo(scaleX,scaleY);
@@ -69,9 +76,22 @@ function renderLots(xCoord, yCoord, x, y, value){
 	buildingGroup.add(building);
 	
 	//collisions
-	addBuildingPhysics();
-	
+	addBuildingPhysics(building);
+	*/
 
 	
+	
+}
+
+function helper(building) {
+	scaleX = (tileSize)/building.width;	
+	scaleY = (tileSize)/building.height;
+	building.scale.setTo(scaleX,scaleY);
+	
+	// add this building to collection of buildings
+	buildingGroup.add(building);
+	
+	//collisions
+	addBuildingPhysics(building);
 	
 }
