@@ -34,7 +34,6 @@ function parseLotsJson(json){
 
 
 function renderLots(xCoord, yCoord, x, y, value){
-	var tmpX, tmpY, scaleX, scaleY, c;
 		
  
 	for (var i = 0; i < 2; i++){
@@ -59,29 +58,32 @@ function renderLots(xCoord, yCoord, x, y, value){
 				else if (i == 1 && j == 0) { building = game.add.sprite(tileX, tileY, 'business'); }
 				else if (i == 1 && j == 1) { building = game.add.sprite(tileX, tileY, 'business'); }
 			}
-			helper(building);
+			helper(building, xCoord, yCoord);
 		}
 	}
-	/*
+	
+
+
+}
+
+function helper(building, xCoord, yCoord) {
+	var tmpX, tmpY, scaleX, scaleY, c;
 	// logic for clustering lots
-	tmpX = xCoord.toString().substring(2, xCoord.length);
-	tmpY = yCoord.toString().substring(2, yCoord.length);
+	var tmpX = xCoord.toString().substring(2, xCoord.length);
+	var tmpY = yCoord.toString().substring(2, yCoord.length);
 
 	if (tmpX.valueOf() == "25") {
-		building.anchor.x = -0.1;
+		building.anchor.x = 0.35;
 	} else if (tmpX.valueOf() == "75") {
-		building.anchor.x = 0.3;
+		building.anchor.x = 0.65;
 	}
 
 	if (tmpY.valueOf() == "25") {
-		building.anchor.y = -0.1;
+		building.anchor.y = 0.35;
 	} else if (tmpY.valueOf() == "75") {
-		building.anchor.y = 0.3;
+		building.anchor.y = 0.65;
 	}
-*/
-}
-
-function helper(building) {
+	
 	scaleX = (tileSize)/building.width;	
 	scaleY = (tileSize)/building.height;
 	building.scale.setTo(scaleX,scaleY);

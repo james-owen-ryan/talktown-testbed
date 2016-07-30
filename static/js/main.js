@@ -1,4 +1,4 @@
-var gameSize = 2000;
+var gameSize = 800;
 //number to center the town
 var center = gameSize/18;
 var tileSize = gameSize/49;
@@ -8,7 +8,8 @@ var cursors;
 var player;
 var building;
 var buildingGroup;
-
+var playerGroup;
+var streetGroup;
 
 /********************************************
 *                                           *
@@ -20,7 +21,7 @@ var buildingGroup;
 function preload() {
 	game.load.image('verBlock', 'Sprites/verBlock.png');
 	game.load.image('horBlock', 'Sprites/horBlock.png');
-	game.load.image("background", "Sprites/grass.png");
+	game.load.image("grass", "Sprites/grass.png");
 	game.load.image('player', 'Sprites/player.png');
 	game.load.image('house', 'Sprites/house.png');
 	game.load.image('houseUL', 'Sprites/houseUL.png');
@@ -36,12 +37,15 @@ function preload() {
 function create() {
 	//Make a group for all the buildings
 	buildingGroup = game.add.physicsGroup();
+	
+	//Make a group for all the streets
+	streetGroup = game.add.physicsGroup();
 
     //Define size of game world
     game.world.setBounds(0, 0, gameSize, gameSize);
 
 	//Grass
-	//game.add.tile(0, 0, gameSize, gameSize, 'background');
+//	game.add.tileSprite(0, 0, gameSize, gameSize, 'grass');
 	
 	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();
@@ -67,7 +71,9 @@ function update() {
 	
 	//Render player on top
 	game.world.bringToTop(buildingGroup);
+	game.world.bringToTop(streetGroup);
 	game.world.bringToTop(playerGroup);
+
 
 		
 	//Stop movement

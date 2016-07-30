@@ -60,9 +60,11 @@ function renderBlocks(startX, startY, endX, endY, dir){
 			}
 		}
 
-	scaleX = tileSize/block.width;	
-	scaleY = tileSize/block.height;
-	block.scale.setTo(scaleX,scaleY);
+		scaleX = tileSize/block.width;	
+		scaleY = tileSize/block.height;
+		block.scale.setTo(scaleX,scaleY);
+		
+		streetGroup.add(block);
 
 	}	
 }
