@@ -7,6 +7,8 @@ var speed = 310 ;
 var cursors;
 var player;
 var building;
+var tract;
+var block;
 var buildingGroup;
 var playerGroup;
 var streetGroup;

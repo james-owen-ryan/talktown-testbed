@@ -19,14 +19,23 @@ function parseTractsJson(json){
 		converted_tracts.push(tmp);
 		
 		
-		//renderTracts(xCoord, yCoord, x, y);
+		renderTracts(x, y);
 	}
 }
 
-function renderTracts(xCoord, yCoord, x, y){
+function renderTracts(x, y){
 var tmpX, tmpY, scaleX, scaleY, c;
 		
-	building = game.add.sprite(x, y, 'tract');
+	var tileX = x+tileSize;
+	var tileY = y+tileSize;	
+	console.log("tract at: " + tileX + " " + tileY);
+	
+	tract = game.add.sprite(tileX, tileY, 'tract');
+	
+	scaleX = (tileSize)/tract.width;	
+	scaleY = (tileSize)/tract.height;
+	tract.scale.setTo(scaleX,scaleY);
+	
 //	console.log("tract coordinates: " + x + " " + y);
 	/*
 	// logic for clustering lots

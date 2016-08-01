@@ -64,7 +64,7 @@ function renderBlocks(startX, startY, endX, endY, dir){
 		scaleY = tileSize/block.height;
 		block.scale.setTo(scaleX,scaleY);
 		
-		streetGroup.add(block);
+		//streetGroup.add(block);
 
 	}	
 }
