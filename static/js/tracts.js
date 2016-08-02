@@ -26,11 +26,11 @@ function parseTractsJson(json){
 function renderTracts(x, y){
 var tmpX, tmpY, scaleX, scaleY, c;
 		
-	var tileX = x+tileSize;
-	var tileY = y+tileSize;	
-	console.log("tract at: " + tileX + " " + tileY);
+	//var tileX = x+tileSize;
+	//var tileY = y+tileSize;	
+	console.log("tract at: " + x + " " + y);
 	
-	tract = game.add.sprite(tileX, tileY, 'tract');
+	tract = game.add.sprite(x, y, 'tract');
 	
 	scaleX = (tileSize)/tract.width;	
 	scaleY = (tileSize)/tract.height;

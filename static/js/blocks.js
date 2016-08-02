@@ -1,4 +1,5 @@
 var blocks_list;
+var streetGroup;
 /********************************************
 *                                           *
 *       parse and render block              *

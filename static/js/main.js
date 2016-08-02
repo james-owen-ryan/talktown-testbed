@@ -9,9 +9,7 @@ var player;
 var building;
 var tract;
 var block;
-var buildingGroup;
 var playerGroup;
-var streetGroup;
 
 /********************************************
 *                                           *
@@ -44,10 +42,10 @@ function create() {
 	streetGroup = game.add.physicsGroup();
 
     //Define size of game world
-    game.world.setBounds(0, 0, gameSize, gameSize);
+    game.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
 
 	//Grass
-//	game.add.tileSprite(0, 0, gameSize, gameSize, 'grass');
+	game.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'grass');
 	
 	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();
@@ -71,10 +69,10 @@ function create() {
 
 function update() {
 	
-	//Render player on top
-	game.world.bringToTop(buildingGroup);
+	//Render player on top	
 	game.world.bringToTop(streetGroup);
 	game.world.bringToTop(playerGroup);
+	game.world.bringToTop(buildingGroup);
 
 
 		
