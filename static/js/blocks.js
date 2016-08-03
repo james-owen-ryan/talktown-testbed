@@ -1,5 +1,5 @@
 var blocks_list;
-var streetGroup;
+
 /********************************************
 *                                           *
 *       parse and render block              *
@@ -33,6 +33,9 @@ function parseBlocksJson(json){
 }
 
 function renderBlocks(startX, startY, endX, endY, dir){
+	//Make a group for all the streets
+	streetGroup = game.add.physicsGroup();
+
 	var x, y, cont, block, scaleX, scaleY;
 
 	x = convert(startX);
@@ -49,12 +52,14 @@ function renderBlocks(startX, startY, endX, endY, dir){
 	
 		if (dir == "v") {
 			block = game.add.sprite(x, y, 'verBlock');
+			streetGroup.add(block);
 			y += 1;
 			if (y > ey) {
 				cont = false;
 			}
 		} else if (dir == "h") {
 			block = game.add.sprite(x, y, 'horBlock');
+			streetGroup.add(block);
 			x += 1;
 			if (x > ex) {
 				cont = false;
@@ -65,7 +70,7 @@ function renderBlocks(startX, startY, endX, endY, dir){
 		scaleY = tileSize/block.height;
 		block.scale.setTo(scaleX,scaleY);
 		
-		//streetGroup.add(block);
+
 
 	}	
 }

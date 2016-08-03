@@ -1,4 +1,3 @@
-var buildingGroup;
 var lots_dict;
 var converted_lots = new Array();
 /********************************************
@@ -36,7 +35,9 @@ function parseLotsJson(json){
 
 function renderLots(xCoord, yCoord, x, y, value){
 		
- 
+	//Make a group for all the buildings
+	buildingGroup = game.add.physicsGroup();
+	
 	for (var i = 0; i < 2; i++){
 		for (var j = 0; j < 2; j++) {
 			var tileX = x+(i*tileSize);
