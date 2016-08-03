@@ -38,7 +38,7 @@ function preload() {
 
 function create() {
 	//Grass
-	game.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'grass');
+	//game.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'grass');
 
 	
 	//Make a group for all the buildings
