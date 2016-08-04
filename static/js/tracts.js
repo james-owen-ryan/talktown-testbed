@@ -1,5 +1,6 @@
 var tracts_dict;
 var converted_tracts = new Array();
+var tractGroup;
 
 function parseTractsJson(json){
 	var coordinates, xCoord, yCoord, value;
@@ -35,6 +36,9 @@ var tmpX, tmpY, scaleX, scaleY, c;
 	scaleX = (tileSize)/tract.width;	
 	scaleY = (tileSize)/tract.height;
 	tract.scale.setTo(scaleX,scaleY);
+	
+	// add this tract to the collection
+	tractGroup.add(tract);
 	
 //	console.log("tract coordinates: " + x + " " + y);
 	/*

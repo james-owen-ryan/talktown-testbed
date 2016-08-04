@@ -1,4 +1,4 @@
-var gameSize = 800;
+var gameSize = 1600;
 //number to center the town
 var center = gameSize/18;
 var tileSize = gameSize/49;
@@ -35,17 +35,23 @@ function preload() {
 
 
 function create() {
-	//Make a group for all the buildings
-	buildingGroup = game.add.physicsGroup();
+
 	
 	//Make a group for all the streets
 	streetGroup = game.add.physicsGroup();
 
+	//Make a group for all the tracts
+	tractGroup = game.add.physicsGroup();
+
+	
+	//Make a group for all the buildings
+	buildingGroup = game.add.physicsGroup();
+	
     //Define size of game world
     game.world.setBounds(0, 0, window.innerWidth, window.innerHeight);
 
 	//Grass
-	game.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'grass');
+	//game.add.tileSprite(0, 0, window.innerWidth, window.innerHeight, 'grass');
 	
 	//Keyboard input
     cursors = game.input.keyboard.createCursorKeys();
@@ -73,6 +79,7 @@ function update() {
 	game.world.bringToTop(streetGroup);
 	game.world.bringToTop(playerGroup);
 	game.world.bringToTop(buildingGroup);
+	game.world.bringToTop(tractGroup);
 
 
 		
