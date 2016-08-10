@@ -6,12 +6,13 @@ from person import *
 from business import *
 from city import *
 import datetime
+import time
 
 
 class Game(object):
     """A gameplay instance."""
 
-    def __init__(self):
+    def __init__(self, event_emitter=None):
         """Initialize a Game object."""
         # Load config parameters
         self.config = Config()
@@ -52,6 +53,11 @@ class Game(object):
         # self.establish_setting()
         # self._sim_and_save_a_week_of_timesteps()
         self.weather = None
+        """
+        event_emitter: An object that has a ".emit" function. If set, certain methods will emit rather than
+        print to stdout.
+        """
+        self.event_emitter = event_emitter
 
     @property
     def random_person(self):
@@ -203,7 +209,11 @@ class Game(object):
         return ids_of_these_people
 
     def enact_lo_fi_simulation(self, n_timesteps=1):
-        """Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay."""
+        """
+        Simulate the passing of a chunk of time at a lower fidelity than the simulation during gameplay.
+
+        Event: 'tott_lo_fi_event'
+        """
         last_simulated_day = self.ordinal_date
         chance_of_a_timestep_being_simulated = self.config.chance_of_a_timestep_being_simulated
         chance_an_unemployed_person_departs_on_a_simulated_timestep = (
@@ -279,14 +289,19 @@ class Game(object):
                         if person.age > 3:  # Must be at least four years old to socialize
                             person.socialize(missing_timesteps_to_account_for=days_since_last_simulated_day*2)
                 last_simulated_day = self.ordinal_date
-            # Write out samples from the event stream to stdout
-            try:
-                recent_event = random.choice(self.events[-10:])
-                recent_event_str = str(recent_event)[:94]
-                sys.stdout.write('\r' + recent_event_str.ljust(94))
-                sys.stdout.flush()
-            except (NameError, IndexError):  # This won't work for the first iteration of the loop
-                pass
+            # Prepare the events that will be output.
+            recent_event = random.choice(self.events[-10:])
+            recent_event_str = str(recent_event)[:94]
+            if self.event_emitter: # Write out samples from the event stream to an emitter.
+                self.event_emitter.emit('tott_lo_fi_event', recent_event_str)
+                time.sleep(0.0001)
+            else: # Write out samples from the event stream to stdout
+                try:
+                    sys.stdout.write('\r' + recent_event_str.ljust(94))
+                    sys.stdout.flush()
+                except (NameError, IndexError):  # This won't work for the first iteration of the loop
+                    pass
+
 
     def potentially_establish_a_new_business(self):
         """Potentially have a new business get constructed in town."""
