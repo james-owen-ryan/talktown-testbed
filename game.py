@@ -71,6 +71,12 @@ class Game(object):
     def establish_setting(self):
         """Establish the city in which this gameplay instance will take place."""
         # Generate a city plan with at least two tracts
+
+        import time
+
+        print "Generating a town..."
+        time.sleep(0.7)
+
         self.city = City(self)
         while len(self.city.tracts) < 2:
             self.city = City(self)
@@ -103,6 +109,13 @@ class Game(object):
         # Set the city's 'settlers' attribute
         self.city.settlers = set(self.city.residents)
         # Now simulate to a week before gameplay
+        print "Simulating {n} years of history...".format(
+            n=self.config.date_gameplay_begins[0]-self.config.date_worldgen_begins[0]
+        )
+        time.sleep(1.2)
+
+        self.date_gameplay_begins = (1979, 8, 19)
+        self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
         n_days_until_gameplay_begins = self.ordinal_date_that_gameplay_begins-self.ordinal_date
         n_days_until_hi_fi_sim_begins = n_days_until_gameplay_begins - 7
         n_timesteps_until_hi_fi_sim_begins = n_days_until_hi_fi_sim_begins * 2
@@ -117,9 +130,7 @@ class Game(object):
         # Now simulate at full fidelity for the remaining week
         while self.ordinal_date < self.ordinal_date_that_gameplay_begins:
             self.enact_hi_fi_simulation()
-            print "{} days remain until gameplay begins".format(
-                self.ordinal_date_that_gameplay_begins-self.ordinal_date
-            )
+            print "Simulating one {day_or_night} at full fidelity...".format(day_or_night=self.time_of_day)
         # Simulate the night in question, on which the founder dies
         self.enact_hi_fi_simulation()
 

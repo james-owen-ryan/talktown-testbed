@@ -265,7 +265,7 @@ class Relationship(object):
         )
         # Set new age-difference spark effect
         self.age_difference_effect_on_spark_increment = (
-            config.function_to_determine_how_age_difference_reduces_charge_intensity(
+            config.function_to_determine_how_age_difference_reduces_spark_increment(
                 age1=self.owner.age, age2=self.subject.age
             )
         )
@@ -514,5 +514,3 @@ class Romance(Relationship):
         )
         owner.significant_other = subject
         # TODO AUTOMATICALLY CALL SUBJECT.ROMANCE RIGHT? ROMANCE CAN'T BE UNIDIRECTIONAL, right?
-
-

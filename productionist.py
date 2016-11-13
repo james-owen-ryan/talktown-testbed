@@ -642,6 +642,8 @@ class DialogueGenerator(Productionist):
             symbol_sort_evaluation_function=lambda symbol: random.random(),
             state=conversation, rule_evaluation_metric=lambda rule: rule.application_rate
         )
+        if not raw_derivation_built_by_targeting_this_symbol:
+            return None
         # Reify the template as a LineOfDialogue object and return that
         line_of_dialogue_object = LineOfDialogue(
             raw_template=raw_derivation_built_by_targeting_this_symbol,
@@ -666,6 +668,8 @@ class DialogueGenerator(Productionist):
             symbol_sort_evaluation_function=lambda symbol: random.random(),
             state=conversation, rule_evaluation_metric=lambda rule: rule.application_rate
         )
+        if not raw_derivation_built_by_targeting_this_symbol:
+            return None
         # Reify the template as a LineOfDialogue object and return that
         line_of_dialogue_object = LineOfDialogue(
             raw_template=raw_derivation_built_by_targeting_this_symbol,

@@ -434,7 +434,7 @@ class Turn(object):
             selected_line = self.conversation.target_topic()
         else:
             # Either engage in small talk or adopt a goal to end the conversation
-            if random.random() < max(self.speaker.personality.extroversion, 0.05):
+            if random.random() < max(self.speaker.personality.extroversion, 0.05):  # TODO PUT MAGIC NUMBER IN CONFIG.PY
                 selected_line = self.conversation.target_move(move_name='make small talk')
             else:
                 new_goal_to_end_conversation = Goal(

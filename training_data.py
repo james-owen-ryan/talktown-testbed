@@ -11,7 +11,9 @@ import pickle
 PATH_TO_JSON_GRAMMAR_SPECIFICATION = (
     #'/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-player-input_hair-queries-probabilistic.json'
     #'/Users/jamesryan/Desktop/IVA2016/talktown-grammar-used-in-iva-study.json'
-    '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-aiide-study-2016.json'
+    # '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown-aiide-study-2016.json'
+    # '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/talktown.json'
+    '/Users/jamesryan/Desktop/Expressionist0.51/grammars/load/mobiusTrainingDataGenerator.json'
 )
 CURRENT_DATE = time.strftime("%d%b%Y")  # In this format: 29Apr2016
 DIRECTORY_TO_WRITE_OUT_TO = os.getcwd()
@@ -25,9 +27,9 @@ DERIVATIONS_OUT_FILENAME = 'PLAYER-INPUT_HAIR_DERIVATIONS_{current_date}'.format
 # USE THESE HOOKS TO DO CURRICULUM TRAINING
 # TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['player appearance query']  # COLLEGE
 # TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['appearance features']  # HIGH SCHOOL
-TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['reasonable amount of appearance features']  # MIDDLE SCHOOL
+# TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = ['reasonable amount of appearance features']  # MIDDLE SCHOOL
 # To expand *all* top-level symbols to generate training data, use this line instead:
-# TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = 'ALL'
+TOP_LEVEL_SYMBOLS_TO_GENERATE_FROM = 'ALL'
 TARGETED_NUMBER_OF_TERMINAL_DERIVATIONS = 1000  # 1317888 produces roughly 1GB of training data (of traces)
 BASE_EXPLORATION_BOOST = 1
 EXPLORATION_BOOST_DECAY_RATE = 0.90
@@ -465,4 +467,11 @@ class ProductionRule(object):
 if __name__ == "__main__":
     writer = TrainingDataWriter()
     # writer.write_out_pickled_symbol_and_token_serialization_dictionaries()
-    writer.produce_lstm_training_data()
+    # writer.produce_lstm_training_data()
+    print "Nonterminals: {}".format(len(writer.nonterminal_symbols))
+    rules = set()
+    for s in writer.nonterminal_symbols:
+        for r in s.production_rules:
+            rules.add(r)
+    print "Rules: {}".format(len(rules))
+    print "Terminal expansions: {}".format(writer.total_generable_derivations)

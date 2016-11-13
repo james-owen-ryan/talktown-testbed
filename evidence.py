@@ -61,7 +61,7 @@ class PieceOfEvidence(object):
             )
         elif self.type == 'mutation':
             return "{}'s mutation of {} mental model of {} {}".format(
-                self.source.name, self.source.possessive, self.subject.name, location_and_time
+                self.source.name, self.source.possessive_pronoun, self.subject.name, location_and_time
             )
         elif self.type == 'transference':
             return "{}'s transference from {} mental model of {} to {} mental model of {} {}".format(
