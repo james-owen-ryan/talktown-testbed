@@ -3,6 +3,7 @@ from event import *
 from business import *
 from conversation import *
 import math
+import os
 
 
 class Config(object):
@@ -2488,14 +2489,16 @@ class Config(object):
             ##  CONVERSATION  ##
             ####################
 
+        cwd = os.path.dirname(os.path.realpath(__file__))
+
         self.path_to_dialogue_nlg_json_grammar_specification = (
-            './content/talktown-dialogue-nlg.json'
+            cwd+'/content/talktown-dialogue-nlg.json'
         )
         self.path_to_dialogue_nlu_json_grammar_specification = (
-            './content/talktown-dialogue-nlu.json'
+            cwd+'/content/talktown-dialogue-nlu.json'
         )
         self.path_to_thought_nlg_json_grammar_specification = (
-            './content/talktown-thoughts.json'
+            cwd+'/content/talktown-thoughts.json'
         )
         # Frame definitions
         self.conversational_frames = {
