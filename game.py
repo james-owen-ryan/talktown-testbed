@@ -264,7 +264,7 @@ class Game(object):
                                 lawyer = person.contract_person_of_certain_occupation(occupation_in_question=Lawyer)
                                 lawyer = None if not lawyer else lawyer.occupation
                                 Divorce(subjects=(person, person.spouse), lawyer=lawyer)
-                        if person.age > 68 and random.random() > self.config.chance_someone_dies_some_timestep:
+                        if person.age > 68 and random.random() < self.config.chance_someone_dies_some_timestep:
                             # TODO make this era-accurate (i.e., different death rates in 1910 than in 1970)
                             person.die(cause_of_death="Natural causes")
                         elif person.occupation and person.age > max(65, random.random() * 100):

@@ -65,8 +65,8 @@ class PieceOfEvidence(object):
             )
         elif self.type == 'transference':
             return "{}'s transference from {} mental model of {} to {} mental model of {} {}".format(
-                self.source.name, self.source.possessive, self.attribute_transferred.subject.name,
-                self.source.possessive, self.subject.name, location_and_time
+                self.source.name, self.source.possessive_pronoun, self.attribute_transferred.subject.name,
+                self.source.possessive_pronoun, self.subject.name, location_and_time
             )
         elif self.type == 'forgetting':
             return "{}'s forgetting of knowledge about {} {}".format(

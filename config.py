@@ -19,7 +19,7 @@ class Config(object):
         self.chance_of_a_quarry_at_time_of_town_founding = 0.15
         # When to stop
         self.date_gameplay_begins = (1979, 8, 19)
-        self.date_worldgen_begins = (1839, 8, 19)  # Date world gen begins
+        self.date_worldgen_begins = (1839, 8, 20)  # Date world gen begins
         self.year_worldgen_begins = self.date_worldgen_begins[0]
         self.date_of_epilogue = (2009, 8, 19)  # Date of epilogue 40 years after gameplay
         # City generation (in a topological sense)
@@ -246,7 +246,7 @@ class Config(object):
         self.chance_someones_hair_goes_gray_or_white = 0.02
         self.chance_someones_loses_their_hair_some_year = 0.02
         # Death
-        self.chance_someone_dies_some_timestep = 0.125
+        self.chance_someone_dies_some_timestep = 0.05
         self.function_to_derive_chance_a_widow_remarries = (
             lambda years_married: 1.0 / (int(years_married) + 4)
         )
@@ -634,8 +634,8 @@ class Config(object):
                 'supplemental night': [Secretary, Nurse],
             },
             Hotel: {
-                'day': (HotelMaid, Concierge),
-                'night': (Concierge,),
+                'day': (HotelMaid, Concierge, Bartender),
+                'night': (Concierge, Bartender),
                 'supplemental day': [Manager, HotelMaid],
                 'supplemental night': [],
             },
@@ -672,8 +672,8 @@ class Config(object):
             Restaurant: {
                 'day': (Waiter, Cook),
                 'night': (Waiter, Cook),
-                'supplemental day': [Busboy, Waiter, Manager, Dishwasher],
-                'supplemental night': [Busboy, Waiter, Manager, Dishwasher],
+                'supplemental day': [Busboy, Waiter, Manager, Dishwasher, Bartender],
+                'supplemental night': [Busboy, Waiter, Manager, Dishwasher, Bartender],
             },
             School: {
                 'day': (Janitor, Teacher, Teacher, Nurse, Principal),
@@ -706,7 +706,7 @@ class Config(object):
                 'supplemental night': [Professor],
             },
             Cemetery: {
-                'day': (Mortician,),
+                'day': (Groundskeeper,),
                 'night': (Groundskeeper,),
                 'supplemental day': [],
                 'supplemental night': [],
