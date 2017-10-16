@@ -36,13 +36,17 @@ class Names(object):
         name.strip('\n') for name in
         open(cwd+'/corpora/irish_surnames.txt', 'r')
     )
+    italian_surnames = tuple(
+        name.strip('\n') for name in
+        open(cwd + '/corpora/italian_surnames.txt', 'r')
+    )
     scandinavian_surnames = tuple(
         name.strip('\n') for name in
         open(cwd+'/corpora/scandinavian_surnames.txt', 'r')
     )
     all_surnames = (
         english_surnames + french_surnames + german_surnames +
-        irish_surnames + scandinavian_surnames
+        irish_surnames + italian_surnames + scandinavian_surnames
     )
     place_names = tuple(
         name.strip('\n') for name in
@@ -116,6 +120,11 @@ class Names(object):
     def an_irish_surname(cls):
         """Return a random Irish surname."""
         return random.choice(cls.irish_surnames)
+
+    @classmethod
+    def an_italian_surname(cls):
+        """Return a random Italian surname."""
+        return random.choice(cls.italian_surnames)
 
     @classmethod
     def a_scandinavian_surname(cls):
